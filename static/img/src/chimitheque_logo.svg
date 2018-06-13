@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg8426"
+   inkscape:version="0.92.2 2405546, 2018-03-11"
+   sodipodi:docname="chimitheque_logo.svg">
+  <defs
+     id="defs8420" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="2.8"
+     inkscape:cx="107.21882"
+     inkscape:cy="1032.2618"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1916"
+     inkscape:window-height="1033"
+     inkscape:window-x="1920"
+     inkscape:window-y="20"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata8423">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Calque 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g9077"
+       transform="matrix(1.6701356,0,0,1.6701356,-7.7964377,-8.5810859)"
+       inkscape:export-filename="/home/thbellem/workspace/workspace_Go/src/github.com/tbellembois/gochimitheque/static/img/chimitheque_logo.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <path
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/tbellemb/workspace/workspace_ProduitsChimiques/chimitheque/trunk/static/images/logo.png"
+         sodipodi:nodetypes="ccccccc"
+         inkscape:connector-curvature="0"
+         id="path5379-3-8"
+         d="m 17.565855,19.178369 v 3.786532 l 3.786531,2.271919 3.786532,-2.271919 V 19.178369 L 21.352386,16.90645 Z"
+         style="fill:none;stroke:#80bb29;stroke-width:0.38656589;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <text
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/tbellemb/workspace/workspace_ProduitsChimiques/chimitheque/trunk/static/images/logo.png"
+         id="text5399-5-3"
+         y="19.014841"
+         x="8.830699"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.64444447px;line-height:0%;font-family:'Avenir LT Std';-inkscape-font-specification:'Avenir LT Std';letter-spacing:0px;word-spacing:0px;fill:#006699;fill-opacity:1;stroke:none;stroke-width:0.207;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         xml:space="preserve"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.64444447px;line-height:1.25;font-family:'Avenir LT Std';-inkscape-font-specification:'Avenir LT Std';fill:#006699;fill-opacity:1;stroke:none;stroke-width:0.207;stroke-miterlimit:4;stroke-dasharray:none"
+           y="19.014841"
+           x="8.830699"
+           id="tspan5401-73-5"
+           sodipodi:role="line">Chi</tspan></text>
+      <text
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/tbellemb/workspace/workspace_ProduitsChimiques/chimitheque/trunk/static/images/logo.png"
+         id="text5399-0-7-2"
+         y="16.53232"
+         x="19.107029"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.64444447px;line-height:0%;font-family:'Avenir LT Std';-inkscape-font-specification:'Avenir LT Std';letter-spacing:0px;word-spacing:0px;fill:#006699;fill-opacity:1;stroke:none;stroke-width:0.207;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         xml:space="preserve"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.64444447px;line-height:1.25;font-family:'Avenir LT Std';-inkscape-font-specification:'Avenir LT Std';fill:#006699;fill-opacity:1;stroke:none;stroke-width:0.207;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           y="16.53232"
+           x="19.107029"
+           id="tspan5401-7-3-6"
+           sodipodi:role="line">mi</tspan></text>
+      <path
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/tbellemb/workspace/workspace_ProduitsChimiques/chimitheque/trunk/static/images/logo.png"
+         sodipodi:open="true"
+         sodipodi:end="6.2750861"
+         sodipodi:start="0"
+         d="m 18.688558,14.302288 a 0.84125245,0.84125245 0 0 1 -0.839549,0.841251 0.84125245,0.84125245 0 0 1 -0.842949,-0.837844 0.84125245,0.84125245 0 0 1 0.836135,-0.844644 0.84125245,0.84125245 0 0 1 0.846335,0.834424"
+         sodipodi:ry="0.84125245"
+         sodipodi:rx="0.84125245"
+         sodipodi:cy="14.302288"
+         sodipodi:cx="17.847305"
+         id="path3011-4-6-1-9"
+         style="fill:#ffffff;fill-opacity:1;stroke:#ff6600;stroke-width:0.244;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:7.6500001;stroke-dasharray:none;stroke-opacity:1"
+         sodipodi:type="arc" />
+      <path
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/tbellemb/workspace/workspace_ProduitsChimiques/chimitheque/trunk/static/images/logo.png"
+         sodipodi:open="true"
+         sodipodi:end="6.2750861"
+         sodipodi:start="0"
+         d="m 17.486117,12.679391 a 1.018935,1.018935 0 0 1 -1.016872,1.018933 1.018935,1.018935 0 0 1 -1.020989,-1.014807 1.018935,1.018935 0 0 1 1.012737,-1.023042 1.018935,1.018935 0 0 1 1.025091,1.010663"
+         sodipodi:ry="1.018935"
+         sodipodi:rx="1.018935"
+         sodipodi:cy="12.679391"
+         sodipodi:cx="16.467182"
+         id="path3011-47-1-6-3"
+         style="fill:#ffffff;fill-opacity:1;stroke:#ff6600;stroke-width:0.244;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:7.6500001;stroke-dasharray:none;stroke-opacity:1"
+         sodipodi:type="arc" />
+      <path
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/tbellemb/workspace/workspace_ProduitsChimiques/chimitheque/trunk/static/images/logo.png"
+         sodipodi:open="true"
+         sodipodi:end="6.2750861"
+         sodipodi:start="0"
+         d="m 18.708424,12.297533 a 0.57472861,0.57472861 0 0 1 -0.573565,0.574727 0.57472861,0.57472861 0 0 1 -0.575887,-0.5724 0.57472861,0.57472861 0 0 1 0.571232,-0.577045 0.57472861,0.57472861 0 0 1 0.578201,0.570063"
+         sodipodi:ry="0.57472861"
+         sodipodi:rx="0.57472861"
+         sodipodi:cy="12.297533"
+         sodipodi:cx="18.133696"
+         id="path3011-6-7-6-8"
+         style="fill:#ffffff;fill-opacity:1;stroke:#ff6600;stroke-width:0.244;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:7.6500001;stroke-dasharray:none;stroke-opacity:1"
+         sodipodi:type="arc" />
+      <path
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/tbellemb/workspace/workspace_ProduitsChimiques/chimitheque/trunk/static/images/logo.png"
+         sodipodi:open="true"
+         sodipodi:end="6.2750861"
+         sodipodi:start="0"
+         d="m 17.992442,10.626904 a 0.57472861,0.57472861 0 0 1 -0.573565,0.574727 0.57472861,0.57472861 0 0 1 -0.575888,-0.5724 0.57472861,0.57472861 0 0 1 0.571233,-0.577045 0.57472861,0.57472861 0 0 1 0.578201,0.570063"
+         sodipodi:ry="0.57472861"
+         sodipodi:rx="0.57472861"
+         sodipodi:cy="10.626904"
+         sodipodi:cx="17.417713"
+         id="path3011-6-3-0-3-7"
+         style="fill:#ffffff;fill-opacity:1;stroke:#ff6600;stroke-width:0.244;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:7.6500001;stroke-dasharray:none;stroke-opacity:1"
+         sodipodi:type="arc" />
+      <path
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/tbellemb/workspace/workspace_ProduitsChimiques/chimitheque/trunk/static/images/logo.png"
+         sodipodi:nodetypes="cccccc"
+         inkscape:connector-curvature="0"
+         id="path5379-7-8-0"
+         d="m 25.138918,19.178369 v 3.786532 l 3.78653,1.514611 3.029226,-3.78653 -3.029226,-3.029226 z"
+         style="fill:none;stroke:#80bb29;stroke-width:0.38656589;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <path
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/tbellemb/workspace/workspace_ProduitsChimiques/chimitheque/trunk/static/images/logo.png"
+         inkscape:connector-curvature="0"
+         id="path5576-6-7"
+         d="m 18.323161,18.875447 c 0,4.543837 0,4.543837 0,4.543837"
+         style="fill:none;stroke:#80bb29;stroke-width:0.15667634;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <path
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/tbellemb/workspace/workspace_ProduitsChimiques/chimitheque/trunk/static/images/logo.png"
+         inkscape:connector-curvature="0"
+         id="path5578-1-6"
+         d="m 20.292157,17.391126 4.998221,2.998933"
+         style="fill:none;stroke:#80bb29;stroke-width:0.15667634;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <path
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/tbellemb/workspace/workspace_ProduitsChimiques/chimitheque/trunk/static/images/logo.png"
+         inkscape:connector-curvature="0"
+         id="path5580-28-4"
+         d="m 20.443619,24.782436 4.695299,-2.817179"
+         style="fill:none;stroke:#80bb29;stroke-width:0.15667634;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <path
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/tbellemb/workspace/workspace_ProduitsChimiques/chimitheque/trunk/static/images/logo.png"
+         inkscape:connector-curvature="0"
+         id="path5602-77-5"
+         d="m 28.168143,24.025129 c 3.029224,-3.786531 3.029224,-3.786531 3.029224,-3.786531"
+         style="fill:none;stroke:#80bb29;stroke-width:0.15667634;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+      <text
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/tbellemb/workspace/workspace_ProduitsChimiques/chimitheque/trunk/static/images/logo.png"
+         id="text5399-0-8-1-1"
+         y="16.922123"
+         x="26.367208"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.64444447px;line-height:0%;font-family:'Avenir LT Std';-inkscape-font-specification:'Avenir LT Std';letter-spacing:0px;word-spacing:0px;fill:#006699;fill-opacity:1;stroke:none;stroke-width:0.207;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         xml:space="preserve"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.64444447px;line-height:1.25;font-family:'Avenir LT Std';-inkscape-font-specification:'Avenir LT Std';fill:#006699;fill-opacity:1;stroke:none;stroke-width:0.207;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           y="16.922123"
+           x="26.367208"
+           id="tspan5401-7-6-21-0"
+           sodipodi:role="line">thè</tspan></text>
+      <text
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/tbellemb/workspace/workspace_ProduitsChimiques/chimitheque/trunk/static/images/logo.png"
+         id="text5399-0-8-2-44-2"
+         y="21.175072"
+         x="31.905106"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.64444447px;line-height:0%;font-family:'Avenir LT Std';-inkscape-font-specification:'Avenir LT Std';letter-spacing:0px;word-spacing:0px;fill:#006699;fill-opacity:1;stroke:none;stroke-width:0.207;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         xml:space="preserve"><tspan
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.64444447px;line-height:1.25;font-family:'Avenir LT Std';-inkscape-font-specification:'Avenir LT Std';fill:#006699;fill-opacity:1;stroke:none;stroke-width:0.207;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           y="21.175072"
+           x="31.905106"
+           id="tspan5401-7-6-2-3-7"
+           sodipodi:role="line">que</tspan></text>
+      <text
+         transform="rotate(-15)"
+         id="text9036"
+         y="33.560497"
+         x="17.226023"
+         style="font-style:oblique;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222223px;line-height:1.25;font-family:'Avenir LT Std';-inkscape-font-specification:'Avenir LT Std Light Oblique';letter-spacing:0px;word-spacing:0px;fill:#006699;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+         xml:space="preserve"><tspan
+           style="font-style:oblique;font-variant:normal;font-weight:300;font-stretch:normal;font-size:2.82222223px;font-family:'Avenir LT Std';-inkscape-font-specification:'Avenir LT Std Light Oblique';fill:#006699;fill-opacity:1;stroke-width:0.26458332"
+           y="33.560497"
+           x="17.226023"
+           id="tspan9034"
+           sodipodi:role="line">lithium</tspan></text>
+    </g>
+  </g>
+</svg>

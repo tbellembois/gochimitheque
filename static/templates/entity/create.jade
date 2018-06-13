@@ -1,0 +1,84 @@
+extends static/templates/base.jade
+
+block content
+    form#entity-create
+        .form-group.row
+            label.col-sm-2.col-form-label(for='name') name
+            .col-sm-10
+                input#name.form-control(type='text', value='', name='name')
+        .form-group.row
+            label.col-sm-2.col-form-label(for='description') description
+            .col-sm-10
+                input#description.form-control(type='text', value='', name='description')
+        .form-group.row
+            label.col-sm-2.col-form-label(for='person') manager
+            .col-sm-10
+                select#person.form-control(name='person')
+        button.btn.btn-primary(type='button', onclick='doSubmit()') ok
+
+block contentjs
+    script.
+        // form validation
+        $( "#entity-create" ).validate({
+        errorClass: "alert alert-danger",
+        rules: {
+            name: {
+            required: true,
+            remote: {
+                url: "",
+                beforeSend: function(jqXhr, settings) {
+                    settings.url = "/validate/entity/-1/name/" + $("input#name").val();
+                },
+            },
+            },
+            person: {
+                required: true,
+            },
+        },
+        });
+
+        // manager select
+        $('#person').select2({
+        ajax: {
+            url: '/people',
+            dataType: 'json',
+            processResults: function (data) {
+            // replacing email by text expected by select2
+            var newdata = $.map(data, function (obj) {
+                obj.text = obj.text || obj.person_email;
+                obj.id = obj.id || obj.person_id;
+                return obj;
+            });
+            return {
+                results: newdata
+            };
+            }
+        }
+        });
+
+        // call ajax on submit
+        function doSubmit(form) {
+            var form = $("#entity-create");
+            if (!form.valid()) {
+                return;
+            };
+
+            var name = $("input#name").val(),
+                description = $("input#description").val();
+                person_id = $("select#person").val();
+            $.ajax({
+                url: "/entity",
+                method: "POST",
+                dataType: 'json',
+                data: {
+                    "entity_name": name,
+                    "entity_description": description,
+                    "entity_person_id.person_id": person_id,
+                },
+            }).done(function(data, textStatus, jqXHR) {
+            displayMessage("entity " + name + " created", "success");
+            setTimeout(function(){ window.location = "/v/entities"; }, 1000);
+            }).fail(function(jqXHR, textStatus, errorThrown) {  
+            handleHTTPError(jqXHR.statusText, jqXHR.status)
+            }); 
+        }

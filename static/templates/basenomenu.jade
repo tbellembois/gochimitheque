@@ -1,0 +1,13 @@
+include static/templates/mixins.jade
+doctype html
+html
+    head
+        include static/templates/head.jade
+    body
+        div.container
+            include static/templates/header.jade
+            block content
+            include static/templates/footer.jade
+
+        include static/templates/foot.jade
+        block contentjs
