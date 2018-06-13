@@ -1,0 +1,250 @@
+extends static/templates/base.jade
+
+block content
+    #accordion
+        #list-collapse.collapse.show(data-parent='#accordion')
+            header.row
+                .col-sm-12
+                    table#table(data-toggle='table', data-striped='true', data-search='true', data-side-pagination='server', data-pagination='true', data-ajax='getData', data-sort-name='entity_name')
+                        thead
+                            tr
+                                th(data-field='entity_id') ID
+                                th(data-field='entity_name' data-sortable='true') name
+                                th(data-field='entity_description' data-sortable='true') description
+                                th(data-field='entity_person_id.person_email' data-sortable='true') manager
+                                th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') actions
+
+        #view-collapse.collapse(data-parent='#accordion')
+            .form-group.row
+                label.col-sm-2.col-form-label(for='name') name
+                .col-sm-10
+                    input#entity_name.form-control(disabled='disabled', type='text', value='', name='name')
+            .form-group.row
+                label.col-sm-2.col-form-label(for='description') description
+                .col-sm-10
+                    input#entity_description.form-control(disabled='disabled', type='text', value='', name='description')
+            .form-group.row
+                label.col-sm-2.col-form-label(for='person') manager
+                .col-sm-10
+                    input.form-control(disabled='disabled', type='text', value='', name='person', id='entity_person_id.person_email')
+            button.btn.btn-primary(type='button', onclick='closeView();') back
+
+        #edit-collapse.collapse(data-parent='#accordion')
+            form#entity-update
+                input#entity_id(type='hidden', name='entity_id', value='')
+                .form-group.row
+                label.col-sm-2.col-form-label(for='name') name
+                .col-sm-10
+                    input#entity_name.form-control(type='text', value='', name='name')
+                .form-group.row
+                label.col-sm-2.col-form-label(for='description') description
+                .col-sm-10
+                    input#entity_description.form-control(type='text', value='', name='description')
+                .form-group.row
+                label.col-sm-2.col-form-label(for='person') manager
+                .col-sm-10
+                    select.form-control(style='width: 100% !important;', id='entity_person_id.person_email', name='person')
+            button.btn.btn-primary(type='button', onclick='saveEntity()') save changes
+            button.btn.btn-secondary(type='button', onclick='closeEdit();') close
+
+block contentjs
+    script.
+        //
+        // close buttons actions
+        //
+        function closeEdit() { $("#list-collapse").collapse("show"); $("#edit-collapse").collapse("hide"); }
+        function closeView() { $("#list-collapse").collapse("show"); $("#view-collapse").collapse("hide"); }
+
+        //
+        // update form validation
+        //
+        $( "#entity-update" ).validate({
+            errorClass: "alert alert-danger",
+            rules: {
+                name: {
+                    required: true,
+                    remote: {
+                        url: "",
+                        beforeSend: function(jqXhr, settings) {
+                            settings.url = "/validate/entity/" + $("form#entity-update input#entity_id").val() + "/name/" + $("form#entity-update input#entity_name").val();
+                        },
+                    },
+                },
+                person: {
+                    required: true,
+                },
+            },
+        });
+
+        //
+        // manager select2
+        //
+        $('select[id="entity_person_id.person_email"]').select2({
+            dropdownParent: $('#edit-collapse'),
+            ajax: {
+                url: '/people',
+                dataType: 'json',
+                processResults: function (data) {
+                    // replacing email by text expected by select2
+                    var newdata = $.map(data, function (obj) {
+                        obj.text = obj.text || obj.person_email;
+                        obj.id = obj.id || obj.person_id;
+                        return obj;
+                    });
+                    return {
+                        results: newdata
+                    };
+                }
+            }
+        });
+
+        //
+        // save entity callback
+        //
+        function saveEntity() {
+            var form = $("#entity-update");
+            if (! form.valid()) {
+                return;
+            };
+
+            var id = $("#edit-collapse input#entity_id").val(),
+                name = $("#edit-collapse input#entity_name").val(),
+                description = $("#edit-collapse input#entity_description").val();
+                person_id = $('select[id="entity_person_id.person_email"]').val();
+                person_email = $('select[id="entity_person_id.person_email"] option:selected').text();
+                console.log(person_email);
+                $.ajax({
+                    url: "/entity/" + id,
+                    method: "PUT",
+                    dataType: 'json',
+                    data: {
+                        "entity_id": id,
+                        "entity_name": name,
+                        "entity_description": description,
+                        "entity_person_id.person_id": person_id,
+                    },
+                }).done(function(data, textStatus, jqXHR) {
+                    $('#list-collapse').collapse('show');
+                    $('#edit-collapse').collapse('hide');
+                    var $table = $('#table');
+                    $table.bootstrapTable('updateRow', {
+                        index: id - 1,
+                        row: {
+                            "entity_name": name,
+                            "entity_description": description,
+                            "entity_person_id.person_email": person_email,
+                        }
+                    });
+                    displayMessage("entity " + name + " updated", "success");
+                }).fail(function(jqXHR, textStatus, errorThrown) {
+                    handleHTTPError(jqXHR.statusText, jqXHR.status)
+                });  
+        }
+
+        //
+        // table data loading
+        //
+        function getData(params) {
+                $.ajax({
+                    url: "/entities",
+                    method: "GET",
+                    dataType: "JSON",
+                    data: params.data,
+                }).done(function(data, textStatus, jqXHR) {
+                    params.success({
+                        rows: data,
+                        total: data.length,
+                    });
+                }).fail(function(jqXHR, textStatus, errorThrown) {
+                    params.error(jqXHR.statusText);                
+                    handleHTTPError(jqXHR.statusText, jqXHR.status)
+                });           
+        }
+
+        //
+        // table items actions
+        //
+        function operateFormatter(value, row, index) {
+            // show action button if permitted
+            eid = row.entity_id
+            hasPermission("{{ .PersonID }}", "r", "entity", eid).done(function(result){
+                if(result) {
+                    $("#view"+this.itemId).fadeIn();
+                }
+            })
+            hasPermission("{{ .PersonID }}", "w", "entity", eid).done(function(result){
+                if(result) {
+                    $("#edit"+this.itemId).fadeIn();
+                    $("#delete"+this.itemId).fadeIn();
+                }
+            })
+
+            // buttons are hidden by default
+            var actions = [
+            '<button id="view' + eid + '" class="view btn btn-secondary" style="display: none;" title="view" type="button">',
+                '<i class="fas fa-eye"></i>',
+            '</button>',
+            '<button id="edit' + eid + '" class="edit btn btn-secondary" style="display: none;" title="edit" type="button">',
+                '<i class="fas fa-edit"></i>',
+            '</button>',
+            '<button id="delete' + eid + '" class="delete btn btn-secondary" style="display: none;" title="delete" type="button">',
+                '<i class="fas fa-trash-alt"></i>',
+            '</button>'];
+
+            return actions.join('&nbsp;')    
+        }
+
+        // items actions callback
+        window.operateEvents = {
+            'click .view': function (e, value, row, index) {
+                $.ajax({
+                    url: "/entity/" + row['entity_id'],
+                    method: "GET",
+                }).done(function(data, textStatus, jqXHR) {
+                    fdata = flatten(data);
+                    $("#view-collapse").autofill( fdata, {"findbyname": false } );
+                    $('#view-collapse').collapse('show');
+                    $('#list-collapse').collapse('hide');
+                }).fail(function(jqXHR, textStatus, errorThrown) {
+                    handleHTTPError(jqXHR.statusText, jqXHR.status)
+                });
+            },
+            'click .edit': function (e, value, row, index) {
+                $.ajax({
+                    url: "/entity/" + row['entity_id'],
+                    method: "GET",
+                }).done(function(data, textStatus, jqXHR) {
+                    // flattening response data
+                    fdata = flatten(data);
+                    // autofilling form
+                    $("#edit-collapse").autofill( fdata, {"findbyname": false } );
+                    // select2 is not autofilled - we need a special operation
+                    var newOption = new Option(data.entity_person_id.person_email, data.entity_person_id.person_id, false, false);
+                    $('select[id="entity_person_id.person_email"]').append(newOption).trigger('change');
+                    // finally collapsing the view
+                    $('#edit-collapse').collapse('show');
+                    $('#list-collapse').collapse('hide');
+                }).fail(function(jqXHR, textStatus, errorThrown) {
+                    handleHTTPError(jqXHR.statusText, jqXHR.status)
+                });
+            },
+            'click .delete': function (e, value, row, index) {
+                // hidding possible previous confirmation button
+                $(this).confirmation("show").off( "confirmed.bs.confirmation");
+                $(this).confirmation("show").off( "canceled.bs.confirmation");
+                
+                // ask for confirmation and then delete
+                $(this).confirmation("show").on( "confirmed.bs.confirmation", function() {
+                    $.ajax({
+                        url: "/entity/" + row['entity_id'],
+                        method: "DELETE",
+                    }).done(function(data, textStatus, jqXHR) {
+                        var $table = $('#table');
+                        $table.bootstrapTable('refresh');
+                    }).fail(function(jqXHR, textStatus, errorThrown) {
+                        handleHTTPError(jqXHR.statusText, jqXHR.status)
+                    });
+                }).on( "canceled.bs.confirmation", function() {
+                });
+            }
+        };

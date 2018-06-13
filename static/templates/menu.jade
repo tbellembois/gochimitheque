@@ -1,0 +1,33 @@
+nav.navbar.navbar-expand-lg.navbar-light.bg-light
+    button.navbar-toggler(
+                        type="button"
+                        data-toggle="collapse" 
+                        data-target="#navbarSupportedContent" 
+                        aria-controls="navbarSupportedContent" 
+                        aria-expanded="false" 
+                        aria-label="Toggle navigation")
+        span.navbar-toggler-icon
+
+    div.collapse.navbar-collapse#navbarSupportedContent
+        ul.navbar-nav.mr-auto
+            li.nav-item.active
+                a(href="/").nav-link home
+            li.nav-item
+                a(href="/login").nav-link login
+
+            if HasPermission .PersonID "r" "entities" -1
+                li.nav-item.dropdown
+                    a(href="#", title="entities").nav-link.dropdown-toggle#navbarDropdown(
+                        role="button" 
+                        data-toggle="dropdown" 
+                        aria-haspopup="true" 
+                        aria-expanded="false") entity
+                    div.dropdown-menu(aria-labelledby="navbarDropdown")
+                        a(href="/v/entities", title="list").dropdown-item list
+                        if HasPermission .PersonID "w" "entities" -1
+                            a(href="/vc/entity", title="create").dropdown-item create
+            li.nav-item
+                a.nav-link.disabled(href="#")
+                    span#logged
+
+    
