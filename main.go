@@ -63,7 +63,7 @@ func main() {
 	// HasPermission used by template rendering to show/hide html elements
 	funcMap := template.FuncMap{
 		"HasPermission": func(id int, perm string, item string, itemid int) bool {
-			p, _ := env.DB.HasPermission(id, perm, item, itemid)
+			p, _ := env.DB.HasPersonPermission(id, perm, item, itemid)
 			return p
 		},
 	}
@@ -106,28 +106,30 @@ func main() {
 	r := mux.NewRouter()
 	commonChain := alice.New(env.HeadersMiddleware, env.LogingMiddleware)
 	securechain := alice.New(env.HeadersMiddleware, env.LogingMiddleware, env.AuthenticateMiddleware, env.AuthorizeMiddleware)
+	// login
 	r.Handle("/login", commonChain.Then(env.AppMiddleware(env.VLoginHandler))).Methods("GET")
 	r.Handle("/get-token", commonChain.Then(env.AppMiddleware(env.GetTokenHandler))).Methods("POST")
-
-	r.Handle("/", securechain.Then(env.AppMiddleware(env.HomeHandler))).Methods("GET")
-
+	// developper tests
 	r.Handle("/v/test", commonChain.Then(env.AppMiddleware(env.VTestHandler))).Methods("GET")
-
+	// home page
+	r.Handle("/", securechain.Then(env.AppMiddleware(env.HomeHandler))).Methods("GET")
+	// entities
 	r.Handle("/{view:v}/{item:entities}", securechain.Then(env.AppMiddleware(env.VGetEntitiesHandler))).Methods("GET")
 	r.Handle("/{view:vc}/{item:entity}", securechain.Then(env.AppMiddleware(env.VCreateEntityHandler))).Methods("GET")
-
 	r.Handle("/{item:entities}", securechain.Then(env.AppMiddleware(env.GetEntitiesHandler))).Methods("GET")
 	r.Handle("/{item:entity}/{id}", securechain.Then(env.AppMiddleware(env.GetEntityHandler))).Methods("GET")
 	r.Handle("/{item:entity}", securechain.Then(env.AppMiddleware(env.CreateEntityHandler))).Methods("POST")
 	r.Handle("/{item:entity}/{id}", securechain.Then(env.AppMiddleware(env.UpdateEntityHandler))).Methods("PUT")
 	r.Handle("/{item:entity}/{id}", securechain.Then(env.AppMiddleware(env.DeleteEntityHandler))).Methods("DELETE")
-
+	// people
 	r.Handle("/{item:people}", securechain.Then(env.AppMiddleware(env.GetPeopleHandler))).Methods("GET")
 	r.Handle("/{item:person}/{id}/entities", securechain.Then(env.AppMiddleware(env.GetPersonEntitiesHandler))).Methods("GET")
-
+	// entity name validation
 	r.Handle("/validate/entity/{id}/name/{name}", commonChain.Then(env.AppMiddleware(env.ValidateEntityNameHandler))).Methods("GET")
+	// permissions checker
 	r.Handle("/haspermission/{personid}/{perm}/{item}/{itemid}", commonChain.Then(env.AppMiddleware(env.HasPermissionHandler))).Methods("GET")
 
+	// rice boxes
 	cssBox := rice.MustFindBox("static/css")
 	cssFileServer := http.StripPrefix("/css/", http.FileServer(cssBox.HTTPBox()))
 	http.Handle("/css/", cssFileServer)

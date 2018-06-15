@@ -2,13 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
-	"net/http"
-	"strconv"
-
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/models"
+	"net/http"
+	"strconv"
 )
 
 // VGetEntitiesHandler

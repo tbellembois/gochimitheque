@@ -3,10 +3,9 @@ package handlers
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"github.com/tbellembois/gochimitheque/models"
 	"net/http"
 	"strconv"
-
-	"github.com/tbellembois/gochimitheque/models"
 )
 
 // GetPeopleHandler

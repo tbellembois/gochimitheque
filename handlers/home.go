@@ -1,9 +1,8 @@
 package handlers
 
 import (
-	"net/http"
-
 	"github.com/tbellembois/gochimitheque/models"
+	"net/http"
 )
 
 func containerFromRequestContext(r *http.Request) models.ViewContainer {
@@ -19,7 +18,7 @@ func containerFromRequestContext(r *http.Request) models.ViewContainer {
 	return container
 }
 
-// HomeHandler serve the main page
+// HomeHandler serves the main page
 func (env *Env) HomeHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 
 	c := containerFromRequestContext(r)
