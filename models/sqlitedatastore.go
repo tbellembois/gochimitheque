@@ -132,41 +132,8 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	return nil
 }
 
-func (db *SQLiteDataStore) DeleteEntity(id int) error {
-	var (
-		sqlr string
-	)
-	sqlr = `DELETE FROM entity 
-	WHERE entity_id = ?`
-	if _, db.err = db.Exec(sqlr, id); db.err != nil {
-		return db.err
-	}
-	return nil
-}
-
-func (db *SQLiteDataStore) UpdateEntity(e Entity) error {
-	var (
-		sqlr string
-	)
-	sqlr = `UPDATE entity SET entity_name = ?, entity_description = ?, entity_person_id = ?
-	WHERE entity_id = ?`
-	if _, db.err = db.Exec(sqlr, e.EntityName, e.EntityDescription, e.PersonID, e.EntityID); db.err != nil {
-		return db.err
-	}
-	return nil
-}
-
-func (db *SQLiteDataStore) CreateEntity(e Entity) error {
-	var (
-		sqlr string
-	)
-	sqlr = `INSERT INTO entity(entity_name, entity_description, entity_person_id) VALUES (?, ?, ?)`
-	if _, db.err = db.Exec(sqlr, e.EntityName, e.EntityDescription, e.Person.PersonID); db.err != nil {
-		return db.err
-	}
-	return nil
-}
-
+// GetEntities returns the entities matching the search criteria
+// order, offset and limit are passed to the sql request
 func (db *SQLiteDataStore) GetEntities(search string, order string, offset uint64, limit uint64) ([]Entity, error) {
 	var (
 		entities []Entity
@@ -197,21 +164,82 @@ func (db *SQLiteDataStore) GetEntities(search string, order string, offset uint6
 	return entities, nil
 }
 
-func (db *SQLiteDataStore) GetEntity(ID int) (Entity, error) {
+// GetEntity returns the entity with id "id"
+func (db *SQLiteDataStore) GetEntity(id int) (Entity, error) {
 	var (
 		entity Entity
 		sqlr   string
 	)
 
 	sqlr = "SELECT e.entity_id, e.entity_name, e.entity_description, p.person_id, p.person_email, p.person_password FROM entity AS e, person AS p WHERE e.entity_person_id = p.person_id AND e.entity_id = ?"
-	if db.err = db.Get(&entity, sqlr, ID); db.err != nil {
+	if db.err = db.Get(&entity, sqlr, id); db.err != nil {
 		return Entity{}, db.err
 	}
-	log.WithFields(log.Fields{"ID": ID, "entity": entity}).Debug("GetEntity")
+	log.WithFields(log.Fields{"ID": id, "entity": entity}).Debug("GetEntity")
 	return entity, nil
 }
 
-func (db *SQLiteDataStore) HasEntityWithNameExcept(name string, except ...string) (bool, error) {
+// DeleteEntity deletes the entity with id "id"
+func (db *SQLiteDataStore) DeleteEntity(id int) error {
+	var (
+		sqlr string
+	)
+	sqlr = `DELETE FROM entity 
+	WHERE entity_id = ?`
+	if _, db.err = db.Exec(sqlr, id); db.err != nil {
+		return db.err
+	}
+	return nil
+}
+
+// CreateEntity creates the given entity
+func (db *SQLiteDataStore) CreateEntity(e Entity) error {
+	var (
+		sqlr string
+	)
+	sqlr = `INSERT INTO entity(entity_name, entity_description, entity_person_id) VALUES (?, ?, ?)`
+	if _, db.err = db.Exec(sqlr, e.EntityName, e.EntityDescription, e.Person.PersonID); db.err != nil {
+		return db.err
+	}
+	return nil
+}
+
+// UpdateEntity updates the given entity
+func (db *SQLiteDataStore) UpdateEntity(e Entity) error {
+	var (
+		sqlr string
+	)
+	sqlr = `UPDATE entity SET entity_name = ?, entity_description = ?, entity_person_id = ?
+	WHERE entity_id = ?`
+	if _, db.err = db.Exec(sqlr, e.EntityName, e.EntityDescription, e.PersonID, e.EntityID); db.err != nil {
+		return db.err
+	}
+	return nil
+}
+
+// IsEntityWithName returns true is the entity "name" exists
+func (db *SQLiteDataStore) IsEntityWithName(name string) (bool, error) {
+	var (
+		res   bool
+		count int
+		sqlr  string
+	)
+
+	sqlr = "SELECT count(*) from entity WHERE entity.entity_name = ?"
+	if db.err = db.Get(&count, sqlr, name); db.err != nil {
+		return false, db.err
+	}
+	log.WithFields(log.Fields{"name": name, "count": count}).Debug("HasEntityWithName")
+	if count == 0 {
+		res = false
+	} else {
+		res = true
+	}
+	return res, nil
+}
+
+// IsEntityWithNameExcept returns true is the entity "name" exists ignoring the "except" names
+func (db *SQLiteDataStore) IsEntityWithNameExcept(name string, except ...string) (bool, error) {
 	var (
 		res   bool
 		count int
@@ -240,27 +268,85 @@ func (db *SQLiteDataStore) HasEntityWithNameExcept(name string, except ...string
 	return res, nil
 }
 
-func (db *SQLiteDataStore) HasEntityWithName(name string) (bool, error) {
+// GetPeople returns all the people
+func (db *SQLiteDataStore) GetPeople() ([]Person, error) {
 	var (
-		res   bool
-		count int
-		sqlr  string
+		people []Person
+		sqlr   string
 	)
 
-	sqlr = "SELECT count(*) from entity WHERE entity.entity_name = ?"
-	if db.err = db.Get(&count, sqlr, name); db.err != nil {
-		return false, db.err
+	sqlr = "SELECT person_id, person_email FROM person"
+	if db.err = db.Select(&people, sqlr); db.err != nil {
+		return nil, db.err
 	}
-	log.WithFields(log.Fields{"name": name, "count": count}).Debug("HasEntityWithName")
-	if count == 0 {
-		res = false
-	} else {
-		res = true
-	}
-	return res, nil
+	return people, nil
 }
 
-func (db *SQLiteDataStore) HasPermission(id int, perm string, item string, itemid int) (bool, error) {
+// GetPerson returns the person with id "id"
+func (db *SQLiteDataStore) GetPerson(id int) (Person, error) {
+	var (
+		person Person
+		sqlr   string
+	)
+
+	sqlr = "SELECT person_id, person_email FROM person WHERE person_id = ?"
+	if db.err = db.Get(&person, sqlr, id); db.err != nil {
+		return Person{}, db.err
+	}
+	return person, nil
+}
+
+// GetPersonByEmail returns the person with email "email"
+func (db *SQLiteDataStore) GetPersonByEmail(email string) (Person, error) {
+	var (
+		person Person
+		sqlr   string
+	)
+
+	sqlr = "SELECT person_id, person_email FROM person WHERE person_email = ?"
+	if db.err = db.Get(&person, sqlr, email); db.err != nil {
+		return Person{}, db.err
+	}
+	return person, nil
+}
+
+// GetPersonPermissions returns the person (with id "id") permissions
+func (db *SQLiteDataStore) GetPersonPermissions(id int) ([]Permission, error) {
+	var (
+		ps   []Permission
+		sqlr string
+	)
+
+	sqlr = `SELECT permission_id, permission_perm_name, permission_item_name, permission_itemid 
+	FROM permission
+	WHERE permission_person_id = ?`
+	if db.err = db.Select(&ps, sqlr, id); db.err != nil {
+		return nil, db.err
+	}
+	log.WithFields(log.Fields{"personID": id, "ps": ps}).Debug("GetPersonPermissions")
+	return ps, nil
+}
+
+// GetPersonEntities returns the person (with id "id") entities
+func (db *SQLiteDataStore) GetPersonEntities(id int) ([]Entity, error) {
+	var (
+		es   []Entity
+		sqlr string
+	)
+
+	sqlr = `SELECT entity_id, entity_name, entity_description 
+	FROM entity
+	INNER JOIN personentities ON personentities.personentities_entity_id = entity.entity_id
+	WHERE personentities.personentities_person_id = ?`
+	if db.err = db.Select(&es, sqlr, id); db.err != nil {
+		return nil, db.err
+	}
+	log.WithFields(log.Fields{"personID": id, "es": es}).Debug("GetPersonEntities")
+	return es, nil
+}
+
+// HasPersonPermission returns true if the person with id "id" has the permission "perm" on the item "item" with id "itemid"
+func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string, itemid int) (bool, error) {
 	var (
 		res   bool
 		count int
@@ -311,76 +397,4 @@ func (db *SQLiteDataStore) HasPermission(id int, perm string, item string, itemi
 		res = true
 	}
 	return res, nil
-}
-
-func (db *SQLiteDataStore) GetPeople() ([]Person, error) {
-	var (
-		people []Person
-		sqlr   string
-	)
-
-	sqlr = "SELECT person_id, person_email FROM person"
-	if db.err = db.Select(&people, sqlr); db.err != nil {
-		return nil, db.err
-	}
-	return people, nil
-}
-
-func (db *SQLiteDataStore) GetPerson(personID int) (Person, error) {
-	var (
-		person Person
-		sqlr   string
-	)
-
-	sqlr = "SELECT person_id, person_email FROM person WHERE person_id = ?"
-	if db.err = db.Get(&person, sqlr, personID); db.err != nil {
-		return Person{}, db.err
-	}
-	return person, nil
-}
-
-func (db *SQLiteDataStore) GetPersonByEmail(personEmail string) (Person, error) {
-	var (
-		person Person
-		sqlr   string
-	)
-
-	sqlr = "SELECT person_id, person_email FROM person WHERE person_email = ?"
-	if db.err = db.Get(&person, sqlr, personEmail); db.err != nil {
-		return Person{}, db.err
-	}
-	return person, nil
-}
-
-func (db *SQLiteDataStore) GetPersonPermissions(personID int) ([]Permission, error) {
-	var (
-		ps   []Permission
-		sqlr string
-	)
-
-	sqlr = `SELECT permission_id, permission_perm_name, permission_item_name, permission_itemid 
-	FROM permission
-	WHERE permission_person_id = ?`
-	if db.err = db.Select(&ps, sqlr, personID); db.err != nil {
-		return nil, db.err
-	}
-	log.WithFields(log.Fields{"personID": personID, "ps": ps}).Debug("GetPersonPermissions")
-	return ps, nil
-}
-
-func (db *SQLiteDataStore) GetPersonEntities(personID int) ([]Entity, error) {
-	var (
-		es   []Entity
-		sqlr string
-	)
-
-	sqlr = `SELECT entity_id, entity_name, entity_description 
-	FROM entity
-	INNER JOIN personentities ON personentities.personentities_entity_id = entity.entity_id
-	WHERE personentities.personentities_person_id = ?`
-	if db.err = db.Select(&es, sqlr, personID); db.err != nil {
-		return nil, db.err
-	}
-	log.WithFields(log.Fields{"personID": personID, "es": es}).Debug("GetPersonEntities")
-	return es, nil
 }

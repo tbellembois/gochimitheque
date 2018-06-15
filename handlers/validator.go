@@ -33,7 +33,7 @@ func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request
 
 	if entity_id == -1 {
 		// querying the database
-		if res, err = env.DB.HasEntityWithName(vars["name"]); err != nil {
+		if res, err = env.DB.IsEntityWithName(vars["name"]); err != nil {
 			return &models.AppError{
 				Error:   err,
 				Code:    http.StatusBadRequest,
@@ -50,7 +50,7 @@ func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request
 			}
 		}
 		// querying the database
-		if res, err = env.DB.HasEntityWithNameExcept(vars["name"], entity.EntityName); err != nil {
+		if res, err = env.DB.IsEntityWithNameExcept(vars["name"], entity.EntityName); err != nil {
 			return &models.AppError{
 				Error:   err,
 				Code:    http.StatusBadRequest,
