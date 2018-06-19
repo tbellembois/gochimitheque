@@ -2,14 +2,15 @@ package handlers
 
 import (
 	"context"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/gorilla/mux"
-	log "github.com/sirupsen/logrus"
-	"github.com/tbellembois/gochimitheque/models"
 	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/dgrijalva/jwt-go"
+	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
+	"github.com/tbellembois/gochimitheque/models"
 )
 
 // AppMiddleware is the application handlers wrapper handling the "func() *models.AppError" functions
@@ -148,13 +149,9 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 		id := vars["id"]
 		log.WithFields(log.Fields{"id": id, "item": item, "view": view, "personemail": personemail}).Debug("AuthorizeMiddleware")
 
-		if id == "" {
-			itemid = -1
-		} else {
-			if itemid, err = strconv.Atoi(id); err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
+		if item == "entities" {
+			item = "entity"
+			id = "-2"
 		}
 
 		switch r.Method {
@@ -173,6 +170,15 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			log.Debug("unsupported http verb")
 			http.Error(w, "unsupported http verb", http.StatusBadRequest)
 			return
+		}
+
+		if id == "" {
+			itemid = -1
+		} else {
+			if itemid, err = strconv.Atoi(id); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 		}
 
 		if permok, err = env.DB.HasPersonPermission(personid, perm, item, itemid); err != nil {

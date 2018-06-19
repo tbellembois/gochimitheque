@@ -111,14 +111,13 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		entity1id, _ := res5.LastInsertId()
 		entity2id, _ := res6.LastInsertId()
 		entity3id, _ := res7.LastInsertId()
-		db.MustExec(permissions, johnid, "r", "entities", nil)
 		db.MustExec(permissions, johnid, "r", "entity", entity1id)
 		db.MustExec(permissions, johnid, "w", "entity", entity1id)
-		db.MustExec(permissions, mickeyid, "r", "entities", nil)
+		db.MustExec(permissions, mickeyid, "r", "entity", -1)
 		db.MustExec(permissions, mickeyid, "r", "entity", entity2id)
 		db.MustExec(permissions, mickeyid, "w", "entity", entity2id)
-		db.MustExec(permissions, obioneid, "all", "all", nil)
-		db.MustExec(permissions, darkid, "r", "entities", nil)
+		db.MustExec(permissions, obioneid, "all", "all", -1)
+		db.MustExec(permissions, darkid, "r", "entity", -1)
 		// then people entities
 		db.MustExec(personentities, johnid, entity1id)
 		db.MustExec(personentities, mickeyid, entity2id)
@@ -143,6 +142,7 @@ func (db *SQLiteDataStore) GetEntities(search string, order string, offset uint6
 	log.WithFields(log.Fields{"search": search, "order": order, "offset": offset, "limit": limit}).Debug("GetEntities")
 
 	sqlr, sqla, db.err = sq.Select(`e.entity_id, 
+		e.entity_id,
 		e.entity_name, 
 		e.entity_description, 
 		p.person_id, 
@@ -150,6 +150,14 @@ func (db *SQLiteDataStore) GetEntities(search string, order string, offset uint6
 		p.person_password`).
 		From("entity AS e, person AS p").
 		Where("e.entity_person_id = p.person_id AND e.entity_name LIKE ?", fmt.Sprint("%", search, "%")).
+		Join(`permission AS p on p.permission_person_id = 1 and (
+			(p.permission_perm_name = "all" and p.permission_item_name = "all" and p.permission_itemid = -1) or
+			(p.permission_perm_name == "all" and p.permission_item_name == "entity" and p.permission_itemid == -1) or
+			(p.permission_perm_name == "all" and p.permission_item_name == "entity" and p.permission_itemid == e.entity_id) or
+			(p.permission_perm_name == "r" and p.permission_item_name == "entity" and p.permission_itemid == -1) or
+			(p.permission_perm_name == "r" and p.permission_item_name == "entity" and p.permission_itemid == e.entity_id)
+			)`).
+		GroupBy("e.entity_id").
 		OrderBy(fmt.Sprintf("entity_name %s", order)).
 		Offset(offset).
 		Limit(limit).ToSql()
@@ -347,6 +355,8 @@ func (db *SQLiteDataStore) GetPersonEntities(id int) ([]Entity, error) {
 
 // HasPersonPermission returns true if the person with id "id" has the permission "perm" on the item "item" with id "itemid"
 func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string, itemid int) (bool, error) {
+	// itemid == -1 means all items
+	// itemid == -2 means any items (-2 is not a database permission_itemid possible value)
 	var (
 		res   bool
 		count int
@@ -360,13 +370,19 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 		"itemid": itemid}).Debug("HasPermission")
 
 	// then counting the permissions matching the parameters
-	if itemid == -1 {
+	if itemid == -2 {
+		// possible matchs:
+		// permission_perm_name | permission_item_name
+		// all | all
+		// all | ?
+		// ?   | all  => no sense (look at explanation in the else section)
+		// ?   | ?
 		sqlr = `SELECT count(*) FROM permission WHERE 
-		permission_person_id = ? AND permission_perm_name = ? AND permission_item_name = ? OR 
-		permission_person_id = ? AND permission_perm_name = "all" AND permission_item_name = ? OR
-		permission_person_id = ? AND permission_perm_name = ? AND permission_item_name = "all" OR
-		permission_person_id = ? AND permission_perm_name = "all" AND permission_item_name = "all"`
-		if db.err = db.Get(&count, sqlr, id, perm, item, id, item, id, perm, id); db.err != nil {
+		permission_person_id = ? AND permission_perm_name = "all" AND permission_item_name = "all"  OR 
+		permission_person_id = ? AND permission_perm_name = "all" AND permission_item_name = ? OR 
+		permission_person_id = ? AND permission_perm_name = ? AND permission_item_name = "all"  OR
+		permission_person_id = ? AND permission_perm_name = ? AND permission_item_name = ?`
+		if db.err = db.Get(&count, sqlr, id, id, item, id, perm, id, perm, item); db.err != nil {
 			switch {
 			case db.err == sql.ErrNoRows:
 				return false, nil
@@ -375,12 +391,23 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 			}
 		}
 	} else {
+		// possible matchs:
+		// permission_perm_name | permission_item_name | permission_itemid
+		// all | ?   | -1 (ex: all permissions on all entities)
+		// all | ?   | ?  (ex: all permissions on entity 3)
+		// ?   | all | -1 => no sense (ex: r permission on entities, store_locations...) we will put the permissions for each item
+		// ?   | all | ?  => no sense (ex: r permission on entities, store_locations... with id = 3)
+		// all | all | -1 => means super admin
+		// all | all | ?  => no sense (ex: all permission on entities, store_locations... with id = 3)
+		// ?   | ?   | -1 => (ex: r permission on all entities)
+		// ?   | ?   | ?  => (ex: r permission on entity 3)
 		sqlr = `SELECT count(*) FROM permission WHERE 
-		permission_person_id = ? AND permission_perm_name = ? AND permission_item_name = ? AND permission_itemid = ? OR 
-		permission_person_id = ? AND permission_perm_name = ? AND permission_item_name = "all" AND permission_itemid = ? OR
+		permission_person_id = ? AND permission_perm_name = "all" AND permission_item_name = "all" AND permission_itemid = -1 OR 
+		permission_person_id = ? AND permission_perm_name = "all" AND permission_item_name = ? AND permission_itemid = -1 OR 
 		permission_person_id = ? AND permission_perm_name = "all" AND permission_item_name = ? AND permission_itemid = ? OR
-		permission_person_id = ? AND permission_perm_name = "all" AND permission_item_name = "all"`
-		if db.err = db.Get(&count, sqlr, id, perm, item, itemid, id, perm, itemid, id, item, itemid, id); db.err != nil {
+		permission_person_id = ? AND permission_perm_name = ? AND permission_item_name = ? AND permission_itemid = -1 OR
+		permission_person_id = ? AND permission_perm_name = ? AND permission_item_name = ? AND permission_itemid =  ?`
+		if db.err = db.Get(&count, sqlr, id, id, item, id, item, itemid, id, perm, item, id, perm, item, itemid); db.err != nil {
 			switch {
 			case db.err == sql.ErrNoRows:
 				return false, nil
@@ -389,8 +416,8 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 			}
 		}
 	}
-	log.WithFields(log.Fields{"count": count}).Debug("HasPermission")
 
+	log.WithFields(log.Fields{"count": count}).Debug("HasPermission")
 	if count == 0 {
 		res = false
 	} else {
