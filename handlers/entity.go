@@ -2,15 +2,20 @@ package handlers
 
 import (
 	"encoding/json"
+	"net/http"
+	"strconv"
+
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/models"
-	"net/http"
-	"strconv"
 )
 
-// VGetEntitiesHandler
+/*
+	views handlers
+*/
+
+// VGetEntitiesHandler handles the entity list page
 func (env *Env) VGetEntitiesHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 
 	c := containerFromRequestContext(r)
@@ -25,6 +30,7 @@ func (env *Env) VGetEntitiesHandler(w http.ResponseWriter, r *http.Request) *mod
 	return nil
 }
 
+// VCreateEntityHandler handles the entity creation page
 func (env *Env) VCreateEntityHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 
 	c := containerFromRequestContext(r)
@@ -39,7 +45,11 @@ func (env *Env) VCreateEntityHandler(w http.ResponseWriter, r *http.Request) *mo
 	return nil
 }
 
-// GetEntitiesHandler
+/*
+	REST handlers
+*/
+
+// GetEntitiesHandler returns a json list of the entities matching the search criteria
 func (env *Env) GetEntitiesHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	log.Debug("GetEntitiesHandler")
 
@@ -103,7 +113,7 @@ func (env *Env) GetEntitiesHandler(w http.ResponseWriter, r *http.Request) *mode
 	return nil
 }
 
-// GetEntityHandler
+// GetEntityHandler returns a json of the entity with the requested id
 func (env *Env) GetEntityHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	vars := mux.Vars(r)
 	var (
@@ -127,7 +137,7 @@ func (env *Env) GetEntityHandler(w http.ResponseWriter, r *http.Request) *models
 	return nil
 }
 
-// CreateEntityHandler
+// CreateEntityHandler creates the entity from the request form
 func (env *Env) CreateEntityHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	log.Debug("CreateEntityHandler")
 	var (
@@ -162,7 +172,7 @@ func (env *Env) CreateEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 	return nil
 }
 
-// UpdateEntityHandler
+// UpdateEntityHandler updates the entity from the request form
 func (env *Env) UpdateEntityHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	vars := mux.Vars(r)
 	var (
@@ -211,7 +221,7 @@ func (env *Env) UpdateEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 	return nil
 }
 
-// DeleteEntityHandler
+// DeleteEntityHandler deletes the entity with the requested id
 func (env *Env) DeleteEntityHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	vars := mux.Vars(r)
 	var (

@@ -33,17 +33,17 @@ block content
             form#entity-update
                 input#entity_id(type='hidden', name='entity_id', value='')
                 .form-group.row
-                label.col-sm-2.col-form-label(for='name') name
-                .col-sm-10
-                    input#entity_name.form-control(type='text', value='', name='name')
+                    label.col-sm-2.col-form-label(for='name') name
+                    .col-sm-10
+                        input#entity_name.form-control(type='text', value='', name='name')
                 .form-group.row
-                label.col-sm-2.col-form-label(for='description') description
-                .col-sm-10
-                    input#entity_description.form-control(type='text', value='', name='description')
+                    label.col-sm-2.col-form-label(for='description') description
+                    .col-sm-10
+                        input#entity_description.form-control(type='text', value='', name='description')
                 .form-group.row
-                label.col-sm-2.col-form-label(for='person') manager
-                .col-sm-10
-                    select.form-control(style='width: 100% !important;', id='entity_person_id.person_email', name='person')
+                    label.col-sm-2.col-form-label(for='person') manager
+                    .col-sm-10
+                        select.form-control(style='width: 100% !important;', id='entity_person_id.person_email', name='person')
             button.btn.btn-primary(type='button', onclick='saveEntity()') save changes
             button.btn.btn-secondary(type='button', onclick='closeEdit();') close
 
@@ -112,7 +112,6 @@ block contentjs
                 description = $("#edit-collapse input#entity_description").val();
                 person_id = $('select[id="entity_person_id.person_email"]').val();
                 person_email = $('select[id="entity_person_id.person_email"] option:selected').text();
-                console.log(person_email);
                 $.ajax({
                     url: "/entity/" + id,
                     method: "PUT",
@@ -165,7 +164,7 @@ block contentjs
         // table items actions
         //
         function operateFormatter(value, row, index) {
-            // show action button if permitted
+            // show action buttons if permitted
             eid = row.entity_id
             hasPermission("{{ .PersonID }}", "r", "entity", eid).done(function(result){
                 if(result) {

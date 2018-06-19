@@ -1,4 +1,4 @@
-//https://coderwall.com/p/w22s0w/recursive-merge-flatten-objects-in-plain-old-vanilla-javascript
+// https://coderwall.com/p/w22s0w/recursive-merge-flatten-objects-in-plain-old-vanilla-javascript
 var merge = function(objects) {
     var out = {};
   
@@ -10,7 +10,6 @@ var merge = function(objects) {
   
     return out;
 }
-
 var flatten = function(obj, name, stem) {
     var out = {};
     var newStem = (typeof stem !== 'undefined' && stem !== '') ? stem + '.' + name : name;
@@ -28,6 +27,7 @@ var flatten = function(obj, name, stem) {
     return out;
 };
 
+// displays and fadeout the given message
 function displayMessage(msgText, type) {
     var d = $("<div>");
     d.attr("role", "alert");
@@ -36,6 +36,7 @@ function displayMessage(msgText, type) {
     $("body").prepend(d.delay(800).fadeOut("slow"));
 }
 
+// handle HTTP errors
 function handleHTTPError(msgText, msgStatus) {
     console.log(msgStatus);
     switch(msgStatus) {
@@ -56,6 +57,7 @@ function handleHTTPError(msgText, msgStatus) {
     }
 }
 
+// get a JWT token for the user
 function getToken() {
     var email = $("#person_email").val(),
         password = $("#person_password").val();
@@ -75,6 +77,7 @@ function getToken() {
     });
 }
 
+// returns the cookie value
 function readCookie(name) {
     var nameEQ = name + "=";
     var ca = document.cookie.split(';');
@@ -86,6 +89,7 @@ function readCookie(name) {
     return null;
 }
 
+// returns true if the persoon with personId has the permission "perm" on the item "item" with item id "itemId"
 function hasPermission(personId, perm, item, itemId) {
     return $.ajax({
         url: "/haspermission/" + personId + "/" + perm + "/" + item + "/" + itemId,
