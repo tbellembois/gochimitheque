@@ -37,7 +37,7 @@ block contentjs
         },
         });
 
-        // manager select
+        // manager select2
         $('#person').select2({
         ajax: {
             url: '/people',
@@ -76,9 +76,9 @@ block contentjs
                     "entity_person_id.person_id": person_id,
                 },
             }).done(function(data, textStatus, jqXHR) {
-            displayMessage("entity " + name + " created", "success");
-            setTimeout(function(){ window.location = "/v/entities"; }, 1000);
+                displayMessage("entity " + name + " created", "success");
+                setTimeout(function(){ window.location = "/v/entities"; }, 1000);
             }).fail(function(jqXHR, textStatus, errorThrown) {  
-            handleHTTPError(jqXHR.statusText, jqXHR.status)
+                handleHTTPError(jqXHR.statusText, jqXHR.status)
             }); 
         }

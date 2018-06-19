@@ -2,13 +2,18 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/gorilla/mux"
-	"github.com/tbellembois/gochimitheque/models"
 	"net/http"
 	"strconv"
+
+	"github.com/gorilla/mux"
+	"github.com/tbellembois/gochimitheque/models"
 )
 
-// GetPeopleHandler
+/*
+	REST handlers
+*/
+
+// GetPeopleHandler returns a json list of the entities matching the search criteria
 func (env *Env) GetPeopleHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	people, err := env.DB.GetPeople()
 	if err != nil {
@@ -25,7 +30,7 @@ func (env *Env) GetPeopleHandler(w http.ResponseWriter, r *http.Request) *models
 	return nil
 }
 
-// GetPersonEntitiesHandler
+// GetPersonEntitiesHandler returns a json of the person with the requested id
 func (env *Env) GetPersonEntitiesHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	vars := mux.Vars(r)
 	var (

@@ -2,17 +2,16 @@ package handlers
 
 import (
 	"encoding/json"
+	"net/http"
+	"strconv"
+
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/models"
-	"net/http"
-	"strconv"
 )
 
-type LoginNameResp struct {
-	Name string `json:"name"`
-}
-
+// ValidateEntityNameHandler checks that the entity name does not already exist
+// if an id is given is the request the validator ignore the name the entity with this id
 func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	vars := mux.Vars(r)
 	var (
