@@ -22,4 +22,5 @@ type Datastore interface {
 	GetPersonPermissions(id int) ([]Permission, error)
 	GetPersonEntities(id int) ([]Entity, error)
 	HasPersonPermission(id int, perm string, item string, itemid int) (bool, error)
+	UpdatePerson(p Person) error
 }

@@ -31,6 +31,7 @@ block content
 
         #edit-collapse.collapse(data-parent='#accordion')
             form#entity-update
+                input#index(type='hidden', name='index', value='')
                 input#entity_id(type='hidden', name='entity_id', value='')
                 .form-group.row
                     label.col-sm-2.col-form-label(for='name') name
@@ -126,8 +127,9 @@ block contentjs
                     $('#list-collapse').collapse('show');
                     $('#edit-collapse').collapse('hide');
                     var $table = $('#table');
+                    var index = $('input#index').val();
                     $table.bootstrapTable('updateRow', {
-                        index: id - 1,
+                        index: index,
                         row: {
                             "entity_name": name,
                             "entity_description": description,
@@ -217,6 +219,8 @@ block contentjs
                     fdata = flatten(data);
                     // autofilling form
                     $("#edit-collapse").autofill( fdata, {"findbyname": false } );
+                    // setting index hidden input
+                    $("input#index").val(index);
                     // select2 is not autofilled - we need a special operation
                     var newOption = new Option(data.entity_person_id.person_email, data.entity_person_id.person_id, false, false);
                     $('select[id="entity_person_id.person_email"]').append(newOption).trigger('change');
