@@ -15,6 +15,28 @@ import (
 // TokenSignKey is the JWT token signing key
 var TokenSignKey = []byte("secret")
 
+/*
+	views handlers
+*/
+
+// VLoginHandler returns the login page
+func (env *Env) VLoginHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+
+	if e := env.Templates["login"].Execute(w, nil); e != nil {
+		return &models.AppError{
+			Error:   e,
+			Code:    http.StatusInternalServerError,
+			Message: "error executing template base",
+		}
+	}
+
+	return nil
+}
+
+/*
+	REST handlers
+*/
+
 // GetTokenHandler authenticate the user and return a JWT token on success
 func (env *Env) GetTokenHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 
@@ -81,20 +103,6 @@ func (env *Env) GetTokenHandler(w http.ResponseWriter, r *http.Request) *models.
 	}
 	http.SetCookie(w, &ctoken)
 	http.SetCookie(w, &cemail)
-
-	return nil
-}
-
-// VLoginHandler returns the login page
-func (env *Env) VLoginHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-
-	if e := env.Templates["login"].Execute(w, nil); e != nil {
-		return &models.AppError{
-			Error:   e,
-			Code:    http.StatusInternalServerError,
-			Message: "error executing template base",
-		}
-	}
 
 	return nil
 }

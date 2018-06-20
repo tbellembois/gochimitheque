@@ -8,43 +8,25 @@ block content
                     table#table(data-toggle='table', data-striped='true', data-search='true', data-side-pagination='server', data-pagination='true', data-ajax='getData', data-sort-name='entity_name')
                         thead
                             tr
-                                th(data-field='entity_id') ID
-                                th(data-field='entity_name' data-sortable='true') name
-                                th(data-field='entity_description' data-sortable='true') description
-                                th(data-field='entity_person_id.person_email' data-sortable='true') manager
+                                th(data-field='person_id') ID
+                                th(data-field='person_email' data-sortable='true') email
                                 th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') actions
 
         #view-collapse.collapse(data-parent='#accordion')
             .form-group.row
-                label.col-sm-2.col-form-label(for='name') name
+                label.col-sm-2.col-form-label(for='name') email
                 .col-sm-10
-                    input#entity_name.form-control(disabled='disabled', type='text', value='', name='name')
-            .form-group.row
-                label.col-sm-2.col-form-label(for='description') description
-                .col-sm-10
-                    input#entity_description.form-control(disabled='disabled', type='text', value='', name='description')
-            .form-group.row
-                label.col-sm-2.col-form-label(for='person') manager
-                .col-sm-10
-                    input.form-control(disabled='disabled', type='text', value='', name='person', id='entity_person_id.person_email')
+                    input#person_email.form-control(disabled='disabled', type='text', value='', name='email')
             button.btn.btn-primary(type='button', onclick='closeView();') back
 
         #edit-collapse.collapse(data-parent='#accordion')
-            form#entity-update
-                input#entity_id(type='hidden', name='entity_id', value='')
+            form#person-update
+                input#person_id(type='hidden', name='person_id', value='')
                 .form-group.row
-                    label.col-sm-2.col-form-label(for='name') name
+                    label.col-sm-2.col-form-label(for='email') email
                     .col-sm-10
-                        input#entity_name.form-control(type='text', value='', name='name')
-                .form-group.row
-                    label.col-sm-2.col-form-label(for='description') description
-                    .col-sm-10
-                        input#entity_description.form-control(type='text', value='', name='description')
-                .form-group.row
-                    label.col-sm-2.col-form-label(for='person') manager
-                    .col-sm-10
-                        select.form-control(style='width: 100% !important;', id='entity_person_id.person_email', name='person')
-            button.btn.btn-primary(type='button', onclick='saveEntity()') save changes
+                        input#person_email.form-control(type='text', value='', name='email')
+            button.btn.btn-primary(type='button', onclick='savePerson()') save changes
             button.btn.btn-secondary(type='button', onclick='closeEdit();') close
 
 block contentjs
@@ -58,69 +40,40 @@ block contentjs
         //
         // update form validation
         //
-        $( "#entity-update" ).validate({
+        $( "#person-update" ).validate({
             errorClass: "alert alert-danger",
             rules: {
-                name: {
+                email: {
                     required: true,
+                    email: true,
                     remote: {
                         url: "",
                         beforeSend: function(jqXhr, settings) {
-                            settings.url = "/validate/entity/" + $("form#entity-update input#entity_id").val() + "/name/" + $("form#entity-update input#entity_name").val();
+                            settings.url = "/validate/person/" + $("form#person-update input#person_id").val() + "/name/" + $("form#person-update input#person_email").val();
                         },
                     },
-                },
-                person: {
-                    required: true,
                 },
             },
         });
 
         //
-        // manager select2
+        // save person callback
         //
-        $('select[id="entity_person_id.person_email"]').select2({
-            dropdownParent: $('#edit-collapse'),
-            ajax: {
-                url: '/people',
-                dataType: 'json',
-                processResults: function (data) {
-                    // replacing email by text expected by select2
-                    var newdata = $.map(data, function (obj) {
-                        obj.text = obj.text || obj.person_email;
-                        obj.id = obj.id || obj.person_id;
-                        return obj;
-                    });
-                    return {
-                        results: newdata
-                    };
-                }
-            }
-        });
-
-        //
-        // save entity callback
-        //
-        function saveEntity() {
-            var form = $("#entity-update");
+        function savePerson() {
+            var form = $("#person-update");
             if (! form.valid()) {
                 return;
             };
 
-            var id = $("#edit-collapse input#entity_id").val(),
-                name = $("#edit-collapse input#entity_name").val(),
-                description = $("#edit-collapse input#entity_description").val(),
-                person_id = $('select[id="entity_person_id.person_email"]').val(),
-                person_email = $('select[id="entity_person_id.person_email"] option:selected').text();
+            var id = $("#edit-collapse input#person_id").val(),
+                email = $("#edit-collapse input#person_email").val();
                 $.ajax({
-                    url: "/entity/" + id,
+                    url: "/person/" + id,
                     method: "PUT",
                     dataType: 'json',
                     data: {
-                        "entity_id": id,
-                        "entity_name": name,
-                        "entity_description": description,
-                        "entity_person_id.person_id": person_id,
+                        "person_id": id,
+                        "person_email": email,
                     },
                 }).done(function(data, textStatus, jqXHR) {
                     $('#list-collapse').collapse('show');
@@ -129,12 +82,10 @@ block contentjs
                     $table.bootstrapTable('updateRow', {
                         index: id - 1,
                         row: {
-                            "entity_name": name,
-                            "entity_description": description,
-                            "entity_person_id.person_email": person_email,
+                            "person_email": email,
                         }
                     });
-                    displayMessage("entity " + name + " updated", "success");
+                    displayMessage("person " + email + " updated", "success");
                 }).fail(function(jqXHR, textStatus, errorThrown) {
                     handleHTTPError(jqXHR.statusText, jqXHR.status)
                 });  
@@ -145,7 +96,7 @@ block contentjs
         //
         function getData(params) {
                 $.ajax({
-                    url: "/entities",
+                    url: "/people",
                     method: "GET",
                     dataType: "JSON",
                     data: params.data,
@@ -165,13 +116,13 @@ block contentjs
         //
         function operateFormatter(value, row, index) {
             // show action buttons if permitted
-            eid = row.entity_id
-            hasPermission("{{ .PersonID }}", "r", "entity", eid).done(function(result){
+            eid = row.person_id
+            hasPermission("{{ .PersonID }}", "r", "person", eid).done(function(result){
                 if(result) {
                     $("#view"+this.itemId).fadeIn();
                 }
             })
-            hasPermission("{{ .PersonID }}", "w", "entity", eid).done(function(result){
+            hasPermission("{{ .PersonID }}", "w", "person", eid).done(function(result){
                 if(result) {
                     $("#edit"+this.itemId).fadeIn();
                     $("#delete"+this.itemId).fadeIn();
@@ -197,7 +148,7 @@ block contentjs
         window.operateEvents = {
             'click .view': function (e, value, row, index) {
                 $.ajax({
-                    url: "/entity/" + row['entity_id'],
+                    url: "/person/" + row['person_id'],
                     method: "GET",
                 }).done(function(data, textStatus, jqXHR) {
                     fdata = flatten(data);
@@ -210,16 +161,13 @@ block contentjs
             },
             'click .edit': function (e, value, row, index) {
                 $.ajax({
-                    url: "/entity/" + row['entity_id'],
+                    url: "/entity/" + row['person_id'],
                     method: "GET",
                 }).done(function(data, textStatus, jqXHR) {
                     // flattening response data
                     fdata = flatten(data);
                     // autofilling form
                     $("#edit-collapse").autofill( fdata, {"findbyname": false } );
-                    // select2 is not autofilled - we need a special operation
-                    var newOption = new Option(data.entity_person_id.person_email, data.entity_person_id.person_id, false, false);
-                    $('select[id="entity_person_id.person_email"]').append(newOption).trigger('change');
                     // finally collapsing the view
                     $('#edit-collapse').collapse('show');
                     $('#list-collapse').collapse('hide');
@@ -235,7 +183,7 @@ block contentjs
                 // ask for confirmation and then delete
                 $(this).confirmation("show").on( "confirmed.bs.confirmation", function() {
                     $.ajax({
-                        url: "/entity/" + row['entity_id'],
+                        url: "/person/" + row['person_id'],
                         method: "DELETE",
                     }).done(function(data, textStatus, jqXHR) {
                         var $table = $('#table');

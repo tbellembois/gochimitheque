@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	log "github.com/sirupsen/logrus"
+	"github.com/tbellembois/gochimitheque/constants"
 	"github.com/tbellembois/gochimitheque/models"
 )
 
@@ -85,7 +86,7 @@ func (env *Env) GetEntitiesHandler(w http.ResponseWriter, r *http.Request) *mode
 		offset = uint64(of)
 	}
 	if l, ok := r.URL.Query()["limit"]; !ok {
-		limit = 0
+		limit = constants.MaxUint64
 	} else {
 		var lm int
 		if lm, err = strconv.Atoi(l[0]); err != nil {
@@ -98,7 +99,9 @@ func (env *Env) GetEntitiesHandler(w http.ResponseWriter, r *http.Request) *mode
 		limit = uint64(lm)
 	}
 
-	entities, err := env.DB.GetEntities(search, order, offset, limit)
+	// retrieving the logged user id from request context
+	c := containerFromRequestContext(r)
+	entities, err := env.DB.GetEntities(c.PersonID, search, order, offset, limit)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
