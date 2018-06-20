@@ -184,3 +184,16 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 	}
 	return res, nil
 }
+
+// UpdatePerson updates the given person
+func (db *SQLiteDataStore) UpdatePerson(p Person) error {
+	var (
+		sqlr string
+	)
+	sqlr = `UPDATE person SET person_email = ?
+	WHERE person_id = ?`
+	if _, db.err = db.Exec(sqlr, p.PersonEmail, p.PersonID); db.err != nil {
+		return db.err
+	}
+	return nil
+}

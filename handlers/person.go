@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/gorilla/schema"
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/constants"
 	"github.com/tbellembois/gochimitheque/models"
@@ -100,6 +101,30 @@ func (env *Env) GetPeopleHandler(w http.ResponseWriter, r *http.Request) *models
 	return nil
 }
 
+// GetPersonHandler returns a json of the person with the requested id
+func (env *Env) GetPersonHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+	vars := mux.Vars(r)
+	var (
+		id  int
+		err error
+	)
+
+	if id, err = strconv.Atoi(vars["id"]); err != nil {
+		return &models.AppError{
+			Error:   err,
+			Message: "id atoi conversion",
+			Code:    http.StatusInternalServerError}
+	}
+
+	person, _ := env.DB.GetPerson(id)
+	log.WithFields(log.Fields{"person": person}).Debug("GetPersonHandler")
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(person)
+	return nil
+}
+
 // GetPersonEntitiesHandler returns a json of the entities of the person with the requested id
 func (env *Env) GetPersonEntitiesHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	vars := mux.Vars(r)
@@ -127,5 +152,82 @@ func (env *Env) GetPersonEntitiesHandler(w http.ResponseWriter, r *http.Request)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(entities)
+	return nil
+}
+
+// GetPersonPermissionsHandler returns a json of the permissions of the person with the requested id
+func (env *Env) GetPersonPermissionsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+	vars := mux.Vars(r)
+	var (
+		id  int
+		err error
+	)
+
+	if id, err = strconv.Atoi(vars["id"]); err != nil {
+		return &models.AppError{
+			Error:   err,
+			Message: "id atoi conversion",
+			Code:    http.StatusInternalServerError}
+	}
+
+	permissions, err := env.DB.GetPersonPermissions(id)
+	if err != nil {
+		return &models.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the entities",
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(permissions)
+	return nil
+}
+
+// UpdatePersonHandler updates the person from the request form
+func (env *Env) UpdatePersonHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+	vars := mux.Vars(r)
+	var (
+		id  int
+		err error
+		p   models.Person
+	)
+	if err := r.ParseForm(); err != nil {
+		return &models.AppError{
+			Error:   err,
+			Message: "form parsing error",
+			Code:    http.StatusBadRequest}
+	}
+	var decoder = schema.NewDecoder()
+	if err := decoder.Decode(&p, r.PostForm); err != nil {
+		return &models.AppError{
+			Error:   err,
+			Message: "form decoding error",
+			Code:    http.StatusBadRequest}
+	}
+	log.WithFields(log.Fields{"p": p}).Debug("UpdatePersonHandler")
+
+	if id, err = strconv.Atoi(vars["id"]); err != nil {
+		return &models.AppError{
+			Error:   err,
+			Message: "id atoi conversion",
+			Code:    http.StatusInternalServerError}
+	}
+
+	updatedp, _ := env.DB.GetPerson(id)
+	updatedp.PersonEmail = p.PersonEmail
+	log.WithFields(log.Fields{"updatedp": updatedp}).Debug("UpdatePersonHandler")
+
+	if err := env.DB.UpdatePerson(updatedp); err != nil {
+		return &models.AppError{
+			Error:   err,
+			Message: "update person error",
+			Code:    http.StatusInternalServerError}
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(updatedp)
 	return nil
 }
