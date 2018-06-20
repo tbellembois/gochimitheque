@@ -6,7 +6,8 @@ type Datastore interface {
 	FlushErrors() error
 	CreateDatabase() error
 
-	GetEntities(search string, order string, offset uint64, limit uint64) ([]Entity, error)
+	// entities
+	GetEntities(personID int, search string, order string, offset uint64, limit uint64) ([]Entity, error)
 	GetEntity(id int) (Entity, error)
 	DeleteEntity(id int) error
 	CreateEntity(e Entity) error
@@ -14,7 +15,8 @@ type Datastore interface {
 	IsEntityWithName(name string) (bool, error)
 	IsEntityWithNameExcept(string, ...string) (bool, error)
 
-	GetPeople() ([]Person, error)
+	// people
+	GetPeople(personID int, search string, order string, offset uint64, limit uint64) ([]Person, error)
 	GetPerson(id int) (Person, error)
 	GetPersonByEmail(email string) (Person, error)
 	GetPersonPermissions(id int) ([]Permission, error)

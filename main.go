@@ -69,6 +69,7 @@ func main() {
 	}
 
 	// template compilation
+	// home
 	hometmpl, e := jade.ParseFile("static/templates/home/index.jade")
 	if e != nil {
 		log.Fatal("hometmpl jade:" + e.Error())
@@ -77,6 +78,7 @@ func main() {
 	if err != nil {
 		log.Fatal("hometmpl parse:" + e.Error())
 	}
+	// login
 	logintmpl, e := jade.ParseFile("static/templates/login/index.jade")
 	if e != nil {
 		log.Fatal("logintmpl jade:" + e.Error())
@@ -85,6 +87,7 @@ func main() {
 	if err != nil {
 		log.Fatal("logintmpl parse:" + e.Error())
 	}
+	// entity
 	entityindextmpl, e := jade.ParseFile("static/templates/entity/index.jade")
 	if e != nil {
 		log.Fatal("entityindextmpl jade:" + e.Error())
@@ -100,6 +103,15 @@ func main() {
 	env.Templates["entitycreate"], err = template.New("entitycreate").Funcs(funcMap).Parse(entitycreatetmpl)
 	if err != nil {
 		log.Fatal("entitycreatetmpl parse:" + e.Error())
+	}
+	// person
+	personindextmpl, e := jade.ParseFile("static/templates/person/index.jade")
+	if e != nil {
+		log.Fatal("personindextmpl jade:" + e.Error())
+	}
+	env.Templates["personindex"], err = template.New("personindex").Funcs(funcMap).Parse(personindextmpl)
+	if err != nil {
+		log.Fatal("personindextmpl parse:" + e.Error())
 	}
 
 	// router definition
@@ -122,6 +134,7 @@ func main() {
 	r.Handle("/{item:entity}/{id}", securechain.Then(env.AppMiddleware(env.UpdateEntityHandler))).Methods("PUT")
 	r.Handle("/{item:entity}/{id}", securechain.Then(env.AppMiddleware(env.DeleteEntityHandler))).Methods("DELETE")
 	// people
+	r.Handle("/{view:v}/{item:people}", securechain.Then(env.AppMiddleware(env.VGetPeopleHandler))).Methods("GET")
 	r.Handle("/{item:people}", securechain.Then(env.AppMiddleware(env.GetPeopleHandler))).Methods("GET")
 	r.Handle("/{item:person}/{id}/entities", securechain.Then(env.AppMiddleware(env.GetPersonEntitiesHandler))).Methods("GET")
 	// entity name validation

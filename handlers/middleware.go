@@ -45,9 +45,9 @@ func (env *Env) HeadersMiddleware(h http.Handler) http.Handler {
 func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var (
-			email       string
-			person      models.Person
-			permissions []models.Permission
+			email  string
+			person models.Person
+			//permissions []models.Permission
 			err         error
 			reqToken    *http.Cookie
 			reqTokenStr string
@@ -108,11 +108,11 @@ func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 		}
 
 		// getting the logged user permissions
-		if permissions, err = env.DB.GetPersonPermissions(person.PersonID); err != nil {
-			http.Error(w, "can not get logged user permissions", http.StatusBadRequest)
-		}
+		// if permissions, err = env.DB.GetPersonPermissions(person.PersonID); err != nil {
+		// 	http.Error(w, "can not get logged user permissions", http.StatusBadRequest)
+		// }
 
-		ctx := context.WithValue(r.Context(), "container", models.ViewContainer{PersonEmail: person.PersonEmail, PersonID: person.PersonID, Permissions: permissions})
+		ctx := context.WithValue(r.Context(), "container", models.ViewContainer{PersonEmail: person.PersonEmail, PersonID: person.PersonID})
 
 		h.ServeHTTP(w, r.WithContext(ctx))
 	})
@@ -149,22 +149,26 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 		id := vars["id"]
 		log.WithFields(log.Fields{"id": id, "item": item, "view": view, "personemail": personemail}).Debug("AuthorizeMiddleware")
 
-		if item == "entities" {
-			item = "entity"
-			id = "-2"
-		}
-
 		switch r.Method {
 		case "GET":
 			switch view {
-			// view (list)
+			// view (list) or
+			// REST view methods
 			case "v", "":
+				if item == "entities" {
+					item = "entity"
+					id = "-2"
+				} else if item == "people" {
+					item = "person"
+					id = "-2"
+				}
 				perm = "r"
-			// update, create
+			// views update, create
 			case "vu", "vc":
 				perm = "w"
 			}
 		case "POST", "PUT", "DELETE":
+			//REST update, delete, create methods
 			perm = "w"
 		default:
 			log.Debug("unsupported http verb")

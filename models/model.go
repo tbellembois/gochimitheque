@@ -20,7 +20,7 @@ type AppError struct {
 type ViewContainer struct {
 	PersonEmail string
 	PersonID    int
-	Permissions []Permission
+	//Permissions []Permission
 }
 
 // Entity represent a department, a laboratory...
@@ -48,7 +48,7 @@ type PersonEntities struct {
 // Permission represent who is able to do what on something
 type Permission struct {
 	PermissionID       int           `db:"permission_id" json:"permission_id" schema:"permission_id"`
-	PermissionPermName string        `db:"permission_perm_name" json:"permission_perm_name" schema:"permission_perm_name"` // ex: read
+	PermissionPermName string        `db:"permission_perm_name" json:"permission_perm_name" schema:"permission_perm_name"` // ex: r
 	PermissionItemName string        `db:"permission_item_name" json:"permission_item_name" schema:"permission_item_name"` // ex: entity
 	PermissionItemID   sql.NullInt64 `db:"permission_itemid" json:"permission_itemid" schema:"permission_itemid"`          // ex: 8
 	Person             `json:"permission_person_id" schema:"permission_person_id"`
