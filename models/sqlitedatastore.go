@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
 	log "github.com/sirupsen/logrus"
@@ -15,6 +16,18 @@ const (
 type SQLiteDataStore struct {
 	*sqlx.DB
 	err error
+}
+
+// buildJoinFilterForItem return the sql join to return only items of tableName that the person permission_person_id can permission_perm_name
+func buildJoinFilterForItem(tableName string, tableAlias string, tableJoinField string, permName string) string {
+	return fmt.Sprintf(`permission AS perm on perm.permission_person_id = ? and (
+		(perm.permission_item_name = "all" and perm.permission_perm_name = "all") or
+		(perm.permission_item_name == "all" and perm.permission_perm_name == "%s" and perm.permission_itemid == -1) or
+		(perm.permission_item_name == "%s" and perm.permission_perm_name == "all" and perm.permission_itemid == %s.%s) or
+		(perm.permission_item_name == "%s" and perm.permission_perm_name == "all" and perm.permission_itemid == -1) or
+		(perm.permission_item_name == "%s" and perm.permission_perm_name == "%s" and perm.permission_itemid == -1) or
+		(perm.permission_item_name == "%s" and perm.permission_perm_name == "%s" and perm.permission_itemid == %s.%s)
+		)`, permName, tableName, tableAlias, tableJoinField, tableName, tableName, permName, tableName, permName, tableAlias, tableJoinField)
 }
 
 // NewDBstore returns a database connection to the given dataSourceName

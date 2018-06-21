@@ -37,8 +37,35 @@ possible combinations for a given person:
 
 => 6
 
-`item_id` = -1 : all items
-`item_name` can be `all`
+final clean table:
+
+| item_name (ex: entity) | item_permname (ex: r) | item_id (ex: 2) | notes |
+| :-- | :--: | --: | :-- |
+| `all`       |     `all`     | -1 | super admin |
+| `all`     |   ?    |      -1| ex: `r` permission on all items |
+| ?     |   `all`    |      ? | ex: `all` permission on `entity` `3` |
+| ?     |   `all`    |      -1| ex: `all` permission on all `entity`|
+| ?     |   ?    |   -1 | ex: `r` permission on all `entity` |
+| ?     |   ?    |   ?  | ex: `r` permission on `entity` `3` |
+
+- `item_id` = -1 : all items
+- `item_name` can be `all`
+- `perm_name` can be `all`
+
+possible items:
+- product card
+- restricted product card
+- storage card
+- archived storage card
+- store location
+- entity
+- person
+- class of compounds
+- supplier
+
+entities / people management:
+- only super admins can create new entities and modify entities
+- entity managers can create/update/delete people in their entities
 
 ### database name convention:
  
@@ -46,7 +73,7 @@ possible combinations for a given person:
  - separate words with underscore
  - singular names
  - pk: tablename_id
- - fk: tablename_targettablename_id
+ - fk: tablename_target_tablename_id
  - columns: tablename_fieldname
 
 ## middlewares
