@@ -24,21 +24,14 @@ func (db *SQLiteDataStore) GetPeople(personID int, search string, order string, 
 		p.person_email`).
 		From("person AS p").
 		Where("p.person_email LIKE ?", fmt.Sprint("%", search, "%")).
-		Join(`permission AS pr on pr.permission_person_id = ? and (
-			(pr.permission_perm_name = "all" and pr.permission_item_name = "all") or
-			(pr.permission_perm_name = "all" and pr.permission_item_name = "all" and pr.permission_itemid = -1) or
-			(pr.permission_perm_name == "all" and pr.permission_item_name == "person" and pr.permission_itemid == -1) or
-			(pr.permission_perm_name == "all" and pr.permission_item_name == "person" and pr.permission_itemid == p.person_id) or
-			(pr.permission_perm_name == "r" and pr.permission_item_name == "person" and pr.permission_itemid == -1) or
-			(pr.permission_perm_name == "r" and pr.permission_item_name == "person" and pr.permission_itemid == p.person_id)
-			)`, fmt.Sprint(personID)).
+		Join(buildJoinFilterForItem("person", "p", "person_id", "r"), fmt.Sprint(personID)).
 		GroupBy("p.person_id").
 		OrderBy(fmt.Sprintf("person_email %s", order))
 	if limit != constants.MaxUint64 {
 		sbuilder = sbuilder.Offset(offset).Limit(limit)
 	}
 	sqlr, sqla, db.err = sbuilder.ToSql()
-
+	log.Debug(sqlr)
 	if db.err != nil {
 		return nil, db.err
 	}
@@ -161,14 +154,14 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 		// ?   | ?   | -1 => (ex: r permission on all entities)
 		// ?   | ?   | ?  => (ex: r permission on entity 3)
 		sqlr = `SELECT count(*) FROM permission WHERE 
-		permission_person_id = ? AND permission_perm_name = "all" AND permission_item_name = "all" AND permission_itemid = -1 OR 
-		permission_person_id = ? AND permission_perm_name = "all" AND permission_item_name = ? AND permission_itemid = -1 OR 
-		permission_person_id = ? AND permission_perm_name = ? AND permission_item_name = "all" AND permission_itemid = ? OR
-		permission_person_id = ? AND permission_perm_name = ? AND permission_item_name = "all" AND permission_itemid = -1 OR
-		permission_person_id = ? AND permission_perm_name = ? AND permission_item_name = ? AND permission_itemid = -1 OR
-		permission_person_id = ? AND permission_perm_name = ? AND permission_item_name = ? AND permission_itemid = ?
+		permission_person_id = ? AND permission_item_name = "all" AND permission_perm_name = "all" OR 
+		permission_person_id = ? AND permission_item_name = "all" AND permission_perm_name = ? AND permission_itemid = -1 OR
+		permission_person_id = ? AND permission_item_name = ? AND permission_perm_name = "all" AND permission_itemid = ? OR
+		permission_person_id = ? AND permission_item_name = ? AND permission_perm_name = "all" AND permission_itemid = -1 OR 
+		permission_person_id = ? AND permission_item_name = ? AND permission_perm_name = ? AND permission_itemid = -1 OR
+		permission_person_id = ? AND permission_item_name = ? AND permission_perm_name = ? AND permission_itemid = ?
 		`
-		if db.err = db.Get(&count, sqlr, id, id, item, id, perm, itemid, id, perm, id, perm, item, id, perm, item, itemid); db.err != nil {
+		if db.err = db.Get(&count, sqlr, id, id, perm, id, item, itemid, id, item, id, item, perm, id, item, perm, itemid); db.err != nil {
 			switch {
 			case db.err == sql.ErrNoRows:
 				return false, nil

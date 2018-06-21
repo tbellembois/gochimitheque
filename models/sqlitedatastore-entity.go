@@ -28,14 +28,7 @@ func (db *SQLiteDataStore) GetEntities(personID int, search string, order string
 		p.person_password`).
 		From("entity AS e, person AS p").
 		Where("e.entity_person_id = p.person_id AND e.entity_name LIKE ?", fmt.Sprint("%", search, "%")).
-		Join(`permission AS p on p.permission_person_id = ? and (
-			(p.permission_perm_name = "all" and p.permission_item_name = "all") or
-			(p.permission_perm_name = "all" and p.permission_item_name = "all" and p.permission_itemid = -1) or
-			(p.permission_perm_name == "all" and p.permission_item_name == "entity" and p.permission_itemid == -1) or
-			(p.permission_perm_name == "all" and p.permission_item_name == "entity" and p.permission_itemid == e.entity_id) or
-			(p.permission_perm_name == "r" and p.permission_item_name == "entity" and p.permission_itemid == -1) or
-			(p.permission_perm_name == "r" and p.permission_item_name == "entity" and p.permission_itemid == e.entity_id)
-			)`, fmt.Sprint(personID)).
+		Join(buildJoinFilterForItem("entity", "e", "entity_id", "r"), fmt.Sprint(personID)).
 		GroupBy("e.entity_id").
 		OrderBy(fmt.Sprintf("entity_name %s", order))
 	if limit != constants.MaxUint64 {
