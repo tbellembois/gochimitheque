@@ -126,7 +126,7 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 		"id":     id,
 		"perm":   perm,
 		"item":   item,
-		"itemid": itemid}).Debug("HasPermission")
+		"itemid": itemid}).Debug("HasPersonPermission")
 
 	// then counting the permissions matching the parameters
 	if itemid == -2 {
@@ -163,10 +163,12 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 		sqlr = `SELECT count(*) FROM permission WHERE 
 		permission_person_id = ? AND permission_perm_name = "all" AND permission_item_name = "all" AND permission_itemid = -1 OR 
 		permission_person_id = ? AND permission_perm_name = "all" AND permission_item_name = ? AND permission_itemid = -1 OR 
-		permission_person_id = ? AND permission_perm_name = "all" AND permission_item_name = ? AND permission_itemid = ? OR
+		permission_person_id = ? AND permission_perm_name = ? AND permission_item_name = "all" AND permission_itemid = ? OR
+		permission_person_id = ? AND permission_perm_name = ? AND permission_item_name = "all" AND permission_itemid = -1 OR
 		permission_person_id = ? AND permission_perm_name = ? AND permission_item_name = ? AND permission_itemid = -1 OR
-		permission_person_id = ? AND permission_perm_name = ? AND permission_item_name = ? AND permission_itemid =  ?`
-		if db.err = db.Get(&count, sqlr, id, id, item, id, item, itemid, id, perm, item, id, perm, item, itemid); db.err != nil {
+		permission_person_id = ? AND permission_perm_name = ? AND permission_item_name = ? AND permission_itemid = ?
+		`
+		if db.err = db.Get(&count, sqlr, id, id, item, id, perm, itemid, id, perm, id, perm, item, id, perm, item, itemid); db.err != nil {
 			switch {
 			case db.err == sql.ErrNoRows:
 				return false, nil
@@ -176,7 +178,7 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 		}
 	}
 
-	log.WithFields(log.Fields{"count": count}).Debug("HasPermission")
+	log.WithFields(log.Fields{"count": count}).Debug("HasPersonPermission")
 	if count == 0 {
 		res = false
 	} else {

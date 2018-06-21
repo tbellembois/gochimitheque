@@ -18,6 +18,28 @@ Restfull API.
 - [https://github.com/jmoiron/sqlx]
 - [https://github.com/Masterminds/squirrel]
 
+## permissions
+
+`r`, `rw` or `` on earch item
+
+possible combinations for a given person:
+
+| item_name (ex: entity) | item_permname (ex: r) | item_id (ex: 2) | notes |
+| :-- | :--: | --: | :-- |
+| `all`       |     `all`     |  ? | *not used* - we will use -1 |
+| `all`       |     `all`     | -1 | super admin |
+| `all`     |   ?    |      ? | *not used* - non sense (ex: `r` on `all` items with `id` 3) |
+| `all`     |   ?    |      -1| ex: `r` permission on all items |
+| ?     |   `all`    |      ? | ex: `all` permission on `entity` `3` |
+| ?     |   `all`    |      -1| ex: `all` permission on all `entity`|
+| ?     |   ?    |   -1 | ex: `r` permission on all `entity` |
+| ?     |   ?    |   ?  | ex: `r` permission on `entity` `3` |
+
+=> 6
+
+`item_id` = -1 : all items
+`item_name` can be `all`
+
 ### database name convention:
  
  - lowercase names
