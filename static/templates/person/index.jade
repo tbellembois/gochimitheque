@@ -154,7 +154,6 @@ block contentjs
                     method: "GET",
                 }).done(function(data, textStatus, jqXHR) {
                     fdata = flatten(data);
-                    console.log(fdata);
                     $("#view-collapse").autofill( fdata, {"findbyname": false } );
                     $('#view-collapse').collapse('show');
                     $('#list-collapse').collapse('hide');
@@ -165,8 +164,10 @@ block contentjs
                     url: "/person/" + row['person_id'] + "/permissions",
                     method: "GET",
                 }).done(function(data, textStatus, jqXHR) {
-                    fdata = flatten(data);
-                    console.log(fdata);
+                    console.log(data);
+                    global.test(data);
+                    //fdata = flatten(data);
+                    //console.log(fdata);
                     //$("#view-collapse").autofill( fdata, {"findbyname": false } );
                     //$('#view-collapse').collapse('show');
                     //$('#list-collapse').collapse('hide');

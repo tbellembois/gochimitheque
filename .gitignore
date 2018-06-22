@@ -13,3 +13,6 @@
 
 # Databases
 *.db
+
+# GopherJS
+gjs-*.js*

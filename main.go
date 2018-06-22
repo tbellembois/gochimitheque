@@ -69,6 +69,15 @@ func main() {
 	}
 
 	// template compilation
+	// test
+	testtmpl, e := jade.ParseFile("static/templates/test.jade")
+	if e != nil {
+		log.Fatal("testtmpl jade:" + e.Error())
+	}
+	env.Templates["test"], err = template.New("test").Funcs(funcMap).Parse(testtmpl)
+	if err != nil {
+		log.Fatal("testtmpl parse:" + e.Error())
+	}
 	// home
 	hometmpl, e := jade.ParseFile("static/templates/home/index.jade")
 	if e != nil {
