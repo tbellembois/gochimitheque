@@ -6,11 +6,14 @@ import (
 )
 
 func (env *Env) VTestHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	if e := env.Templates["jadetest"].ExecuteTemplate(w, "menu", nil); e != nil {
+
+	c := containerFromRequestContext(r)
+
+	if e := env.Templates["test"].Execute(w, c); e != nil {
 		return &models.AppError{
 			Error:   e,
 			Code:    http.StatusInternalServerError,
-			Message: "error executing template menu",
+			Message: "error executing template base",
 		}
 	}
 	return nil

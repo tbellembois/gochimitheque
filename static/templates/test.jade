@@ -1,0 +1,9 @@
+extends static/templates/base.jade
+
+block content
+
+block contentjs
+    script.
+        var p = global.buildPermissionWidget(1);
+        console.log(p);
+        $("div.container").append(p);
