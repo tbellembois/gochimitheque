@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/gopherjs/gopherjs/js"
 	"honnef.co/go/js/dom"
 )
@@ -25,8 +26,19 @@ func init() {
 	document = window.Document()
 }
 
-func Test(params interface{}) {
+// Permission represent who is able to do what on something
+type Permission struct {
+	PermissionID       int    `db:"permission_id" json:"permission_id" schema:"permission_id"`
+	PermissionPermName string `db:"permission_perm_name" json:"permission_perm_name" schema:"permission_perm_name"` // ex: r
+	PermissionItemName string `db:"permission_item_name" json:"permission_item_name" schema:"permission_item_name"` // ex: entity
+	PermissionItemID   int    `db:"permission_itemid" json:"permission_itemid" schema:"permission_itemid"`          // ex: 8
+}
+
+func Test(params []interface{}) {
 	println(params)
+	for _, p := range params {
+		println(p)
+	}
 }
 
 // BuildInlineRadioElement return a radio inline block such as:
