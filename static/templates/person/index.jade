@@ -17,6 +17,32 @@ block content
                 label.col-sm-2.col-form-label(for='name') email
                 .col-sm-10
                     input#person_email.form-control(disabled='disabled', type='text', value='', name='email')
+            .form-group.row
+                .col-sm-6
+                    .alert.alert-primary product
+                .col-sm-6
+                    div.custom-control.custom-radio.custom-control-inline
+                        input#producto.custom-control-input(type='radio' name='product')
+                        label.custom-control-label(for='product') o
+                    div.custom-control.custom-radio.custom-control-inline
+                        input#productr.custom-control-input(type='radio' name='product')
+                        label.custom-control-label(for='product') r
+                    div.custom-control.custom-radio.custom-control-inline
+                        input#productrw.custom-control-input(type='radio' name='product')
+                        label.custom-control-label(for='product') rw
+                .col-sm-6
+                    .alert.alert-primary storage
+                .col-sm-6
+                    div.custom-control.custom-radio.custom-control-inline
+                        input#storageo.custom-control-input(type='radio' name='storage')
+                        label.custom-control-label(for='storage') o
+                    div.custom-control.custom-radio.custom-control-inline
+                        input#storager.custom-control-input(type='radio' name='storage')
+                        label.custom-control-label(for='storage') r
+                    div.custom-control.custom-radio.custom-control-inline
+                        input#storagerw.custom-control-input(type='radio' name='storage')
+                        label.custom-control-label(for='storage') rw
+
             button.btn.btn-primary(type='button', onclick='closeView();') back
 
         #edit-collapse.collapse(data-parent='#accordion')
