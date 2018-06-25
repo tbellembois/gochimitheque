@@ -140,6 +140,7 @@ func main() {
 	r.Handle("/{view:vc}/{item:entity}", securechain.Then(env.AppMiddleware(env.VCreateEntityHandler))).Methods("GET")
 	r.Handle("/{item:entities}", securechain.Then(env.AppMiddleware(env.GetEntitiesHandler))).Methods("GET")
 	r.Handle("/{item:entity}/{id}", securechain.Then(env.AppMiddleware(env.GetEntityHandler))).Methods("GET")
+	r.Handle("/{item:entity}/{id}/people", securechain.Then(env.AppMiddleware(env.GetEntityPeopleHandler))).Methods("GET")
 	r.Handle("/{item:entity}", securechain.Then(env.AppMiddleware(env.CreateEntityHandler))).Methods("POST")
 	r.Handle("/{item:entity}/{id}", securechain.Then(env.AppMiddleware(env.UpdateEntityHandler))).Methods("PUT")
 	r.Handle("/{item:entity}/{id}", securechain.Then(env.AppMiddleware(env.DeleteEntityHandler))).Methods("DELETE")

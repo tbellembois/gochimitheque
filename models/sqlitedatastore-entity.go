@@ -22,12 +22,9 @@ func (db *SQLiteDataStore) GetEntities(personID int, search string, order string
 	sbuilder := sq.Select(`e.entity_id, 
 		e.entity_id,
 		e.entity_name, 
-		e.entity_description, 
-		p.person_id, 
-		p.person_email, 
-		p.person_password`).
-		From("entity AS e, person AS p").
-		Where("e.entity_person_id = p.person_id AND e.entity_name LIKE ?", fmt.Sprint("%", search, "%")).
+		e.entity_description`).
+		From("entity AS e, person AS p, entitypeople as ep").
+		Where("e.entity_id = ep.entitypeople_entity_id AND ep.entitypeople_person_id == p.person_id AND e.entity_name LIKE ?", fmt.Sprint("%", search, "%")).
 		Join(buildJoinFilterForItem("entity", "e", "entity_id", "r"), fmt.Sprint(personID)).
 		GroupBy("e.entity_id").
 		OrderBy(fmt.Sprintf("entity_name %s", order))
@@ -36,6 +33,7 @@ func (db *SQLiteDataStore) GetEntities(personID int, search string, order string
 	}
 	sqlr, sqla, db.err = sbuilder.ToSql()
 
+	log.Debug(sqlr)
 	if db.err != nil {
 		return nil, db.err
 	}
@@ -53,12 +51,31 @@ func (db *SQLiteDataStore) GetEntity(id int) (Entity, error) {
 		sqlr   string
 	)
 
-	sqlr = "SELECT e.entity_id, e.entity_name, e.entity_description, p.person_id, p.person_email, p.person_password FROM entity AS e, person AS p WHERE e.entity_person_id = p.person_id AND e.entity_id = ?"
+	sqlr = `SELECT e.entity_id, e.entity_name, e.entity_description
+	FROM entity AS e
+	WHERE e.entity_id = ?`
 	if db.err = db.Get(&entity, sqlr, id); db.err != nil {
 		return Entity{}, db.err
 	}
 	log.WithFields(log.Fields{"ID": id, "entity": entity}).Debug("GetEntity")
 	return entity, nil
+}
+
+// GetEntityPeople returns the entity (with id "id") managers
+func (db *SQLiteDataStore) GetEntityPeople(id int) ([]Person, error) {
+	var (
+		people []Person
+		sqlr   string
+	)
+
+	sqlr = `SELECT p.person_id, p.person_email
+	FROM person AS p
+	WHERE entitypeople.person_id == p.person_id AND entitypeople.entity_id = ?`
+	if db.err = db.Get(&people, sqlr, id); db.err != nil {
+		return []Person{}, db.err
+	}
+	log.WithFields(log.Fields{"ID": id, "people": people}).Debug("GetEntityPeople")
+	return people, nil
 }
 
 // DeleteEntity deletes the entity with id "id"
@@ -79,8 +96,8 @@ func (db *SQLiteDataStore) CreateEntity(e Entity) error {
 	var (
 		sqlr string
 	)
-	sqlr = `INSERT INTO entity(entity_name, entity_description, entity_person_id) VALUES (?, ?, ?)`
-	if _, db.err = db.Exec(sqlr, e.EntityName, e.EntityDescription, e.Person.PersonID); db.err != nil {
+	sqlr = `INSERT INTO entity(entity_name, entity_description, entity_person_id) VALUES (?, ?)`
+	if _, db.err = db.Exec(sqlr, e.EntityName, e.EntityDescription); db.err != nil {
 		return db.err
 	}
 	return nil
@@ -91,9 +108,9 @@ func (db *SQLiteDataStore) UpdateEntity(e Entity) error {
 	var (
 		sqlr string
 	)
-	sqlr = `UPDATE entity SET entity_name = ?, entity_description = ?, entity_person_id = ?
+	sqlr = `UPDATE entity SET entity_name = ?, entity_description = ?
 	WHERE entity_id = ?`
-	if _, db.err = db.Exec(sqlr, e.EntityName, e.EntityDescription, e.PersonID, e.EntityID); db.err != nil {
+	if _, db.err = db.Exec(sqlr, e.EntityName, e.EntityDescription, e.EntityID); db.err != nil {
 		return db.err
 	}
 	return nil

@@ -9,6 +9,7 @@ type Datastore interface {
 	// entities
 	GetEntities(personID int, search string, order string, offset uint64, limit uint64) ([]Entity, error)
 	GetEntity(id int) (Entity, error)
+	GetEntityPeople(id int) ([]Person, error)
 	DeleteEntity(id int) error
 	CreateEntity(e Entity) error
 	UpdateEntity(e Entity) error

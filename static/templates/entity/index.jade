@@ -11,7 +11,6 @@ block content
                                 th(data-field='entity_id') ID
                                 th(data-field='entity_name' data-sortable='true') name
                                 th(data-field='entity_description' data-sortable='true') description
-                                th(data-field='entity_person_id.person_email' data-sortable='true') manager
                                 th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') actions
 
         #viewedit-collapse.collapse(data-parent='#accordion')
@@ -29,7 +28,7 @@ block content
                 .form-group.row
                     label.col-sm-2.col-form-label(for='person') manager
                     .col-sm-10
-                        select.form-control(style='width: 100% !important;', id='entity_person_id.person_email', name='person')
+                        select.form-control(style='width: 100% !important;', id='person_email', name='person')
             button#save.btn.btn-primary(type='button', onclick='saveEntity()') save changes
             button.btn.btn-secondary(type='button', onclick='closeViewEdit();') close
 
@@ -181,35 +180,35 @@ block contentjs
 
         // items actions callback
         function operateEditView(e, value, row, index) {
-                $.ajax({
-                    url: "/entity/" + row['entity_id'],
-                    method: "GET",
-                }).done(function(data, textStatus, jqXHR) {
-                    // flattening response data
-                    fdata = flatten(data);
-                    // autofilling form
-                    $("#viewedit-collapse").autofill( fdata, {"findbyname": false } );
-                    // setting index hidden input
-                    $("input#index").val(index);
-                    // select2 is not autofilled - we need a special operation
-                    var newOption = new Option(data.entity_person_id.person_email, data.entity_person_id.person_id, false, false);
-                    $('select[id="entity_person_id.person_email"]').append(newOption).trigger('change');
-                    // finally collapsing the view
-                    $('#viewedit-collapse').collapse('show');
-                    $('#list-collapse').collapse('hide');
-                }).fail(function(jqXHR, textStatus, errorThrown) {
-                    handleHTTPError(jqXHR.statusText, jqXHR.status)
-                });
+            $.ajax({
+                url: "/entity/" + row['entity_id'],
+                method: "GET",
+            }).done(function(data, textStatus, jqXHR) {
+                // flattening response data
+                fdata = flatten(data);
+                // autofilling form
+                $("#viewedit-collapse").autofill( fdata, {"findbyname": false } );
+                // setting index hidden input
+                $("input#index").val(index);
+                // select2 is not autofilled - we need a special operation
+                //var newOption = new Option(data.entity_person_id.person_email, data.entity_person_id.person_id, false, false);
+                //$('select[id="entity_person_id.person_email"]').append(newOption).trigger('change');
+                // finally collapsing the view
+                $('#viewedit-collapse').collapse('show');
+                $('#list-collapse').collapse('hide');
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                handleHTTPError(jqXHR.statusText, jqXHR.status)
+            });
 
-                if ($(e.target).hasClass("view")) {
-                    $("#viewedit-collapse").find("input").prop("disabled", true);
-                    $("#viewedit-collapse").find("select").prop("disabled", true);
-                    $("#viewedit-collapse").find("button#save").hide();
-                } else {
-                    $("#viewedit-collapse").find("input").prop("disabled", false);
-                    $("#viewedit-collapse").find("select").prop("disabled", false);
-                    $("#viewedit-collapse").find("button#save").show();
-                }
+            if ($(e.target).hasClass("view")) {
+                $("#viewedit-collapse").find("input").prop("disabled", true);
+                $("#viewedit-collapse").find("select").prop("disabled", true);
+                $("#viewedit-collapse").find("button#save").hide();
+            } else {
+                $("#viewedit-collapse").find("input").prop("disabled", false);
+                $("#viewedit-collapse").find("select").prop("disabled", false);
+                $("#viewedit-collapse").find("button#save").show();
+            }
         }
         window.operateEvents = {
             'click .view': function (e, value, row, index) {
