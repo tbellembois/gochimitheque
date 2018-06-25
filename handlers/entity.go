@@ -140,6 +140,31 @@ func (env *Env) GetEntityHandler(w http.ResponseWriter, r *http.Request) *models
 	return nil
 }
 
+// GetEntityPeopleHandler return the entity managers
+func (env *Env) GetEntityPeopleHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+	log.Debug("CreateEntityHandler")
+	vars := mux.Vars(r)
+	var (
+		id  int
+		err error
+	)
+
+	if id, err = strconv.Atoi(vars["id"]); err != nil {
+		return &models.AppError{
+			Error:   err,
+			Message: "id atoi conversion",
+			Code:    http.StatusInternalServerError}
+	}
+
+	people, _ := env.DB.GetEntityPeople(id)
+	log.WithFields(log.Fields{"people": people}).Debug("GetEntityPeopleHandler")
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(people)
+	return nil
+}
+
 // CreateEntityHandler creates the entity from the request form
 func (env *Env) CreateEntityHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	log.Debug("CreateEntityHandler")
@@ -208,7 +233,6 @@ func (env *Env) UpdateEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 	updatede, _ := env.DB.GetEntity(id)
 	updatede.EntityName = e.EntityName
 	updatede.EntityDescription = e.EntityDescription
-	updatede.PersonID = e.PersonID
 	log.WithFields(log.Fields{"updatede": updatede}).Debug("UpdateEntityHandler")
 
 	if err := env.DB.UpdateEntity(updatede); err != nil {

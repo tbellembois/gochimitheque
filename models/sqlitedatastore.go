@@ -70,9 +70,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	CREATE TABLE IF NOT EXISTS entity (
 		entity_id integer PRIMARY KEY,
 		entity_name string NOT NULL,
-		entity_description string,
-		entity_person_id integer,
-		FOREIGN KEY (entity_person_id) references person(person_id));
+		entity_description string);
 	CREATE TABLE IF NOT EXISTS permission (
 		permission_id integer PRIMARY KEY,
 		permission_person_id integer NOT NULL,
@@ -80,11 +78,19 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		permission_item_name string NOT NULL,
 		permission_itemid integer,
 		FOREIGN KEY (permission_person_id) references person(person_id));
+	-- entities people belongs to
 	CREATE TABLE IF NOT EXISTS personentities (
 		personentities_person_id integer NOT NULL,
 		personentities_entity_id integer NOT NULL,
 		FOREIGN KEY (personentities_person_id) references person(person_id),
-		FOREIGN KEY (personentities_entity_id) references entity(entity_id));`
+		FOREIGN KEY (personentities_entity_id) references entity(entity_id));
+	-- entities managers	
+	CREATE TABLE IF NOT EXISTS entitypeople (
+		entitypeople_person_id integer NOT NULL,
+		entitypeople_entity_id integer NOT NULL,
+		FOREIGN KEY (entitypeople_person_id) references person(person_id),
+		FOREIGN KEY (entitypeople_entity_id) references entity(entity_id));
+	`
 
 	// tables creation
 	if _, db.err = db.Exec(schema); db.err != nil {
@@ -99,45 +105,104 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		log.Debug("populating database")
 		// preparing requests
 		people := `INSERT INTO person (person_email, person_password) VALUES (?, ?)`
-		entities := `INSERT INTO entity (entity_name, entity_description, entity_person_id) VALUES (?, ?, ?)`
+		entities := `INSERT INTO entity (entity_name, entity_description) VALUES (?, ?)`
 		permissions := `INSERT INTO permission (permission_person_id, permission_perm_name, permission_item_name, permission_itemid) VALUES (?, ?, ?, ?)`
 		personentities := `INSERT INTO personentities (personentities_person_id, personentities_entity_id) VALUES (? ,?)`
+		entitypeople := `INSERT INTO entitypeople (entitypeople_entity_id, entitypeople_person_id) VALUES (? ,?)`
 		// inserting people
-		res1 := db.MustExec(people, "john.doe@foo.com", "johndoe")
-		res2 := db.MustExec(people, "mickey.mouse@foo.com", "mickeymouse")
-		res3 := db.MustExec(people, "obione.kenobi@foo.com", "obionekenobi")
-		res4 := db.MustExec(people, "dark.vader@foo.com", "darkvader")
-		// getting last inserted ids
-		johnid, _ := res1.LastInsertId()
-		mickeyid, _ := res2.LastInsertId()
-		obioneid, _ := res3.LastInsertId()
-		darkid, _ := res4.LastInsertId()
+		user1, _ := db.MustExec(people, "user1@entity1.com", "user").LastInsertId()
+		user11, _ := db.MustExec(people, "user11@entity1.com", "user").LastInsertId()
+		userm1, _ := db.MustExec(people, "manager1@entity1.com", "user").LastInsertId()
+
+		user2, _ := db.MustExec(people, "user2@entity2.com", "user").LastInsertId()
+		user22, _ := db.MustExec(people, "user22@entity2.com", "user").LastInsertId()
+		userm2, _ := db.MustExec(people, "manager2@entity2.com", "user").LastInsertId()
+
+		user3, _ := db.MustExec(people, "user3@entity3.com", "user").LastInsertId()
+		user33, _ := db.MustExec(people, "user33@entity3.com", "user").LastInsertId()
+		userm3, _ := db.MustExec(people, "manager3@entity3.com", "user").LastInsertId()
+		userm33, _ := db.MustExec(people, "manager33@entity3.com", "user").LastInsertId()
+
+		usersuper, _ := db.MustExec(people, "user@super.com", "user").LastInsertId()
 		// inserted entities and permissions
-		res5 := db.MustExec(entities, "entity1", "sample entity one", johnid)
-		res6 := db.MustExec(entities, "entity2", "sample entity two", mickeyid)
-		res7 := db.MustExec(entities, "entity3", "sample entity three", obioneid)
-		// getting last inserted ids
-		entity1id, _ := res5.LastInsertId()
-		entity2id, _ := res6.LastInsertId()
-		entity3id, _ := res7.LastInsertId()
-		db.MustExec(permissions, johnid, "r", "entity", entity1id)
-		db.MustExec(permissions, johnid, "w", "entity", entity1id)
-		db.MustExec(permissions, johnid, "r", "product", -1)
-		db.MustExec(permissions, mickeyid, "r", "product", -1)
-		db.MustExec(permissions, mickeyid, "r", "entity", entity2id)
-		db.MustExec(permissions, mickeyid, "w", "entity", entity2id)
-		db.MustExec(permissions, johnid, "w", "product", -1)
-		db.MustExec(permissions, obioneid, "all", "all", -1)
-		db.MustExec(permissions, darkid, "r", "entity", -1)
+		entity1id, _ := db.MustExec(entities, "entity1", "sample entity one").LastInsertId()
+		entity2id, _ := db.MustExec(entities, "entity2", "sample entity two").LastInsertId()
+		entity3id, _ := db.MustExec(entities, "entity3", "sample entity three").LastInsertId()
+
+		// setting up permissions
+		// entity1 users
+		db.MustExec(permissions, userm1, "r", "entity", entity1id)
+		db.MustExec(permissions, userm1, "w", "entity", entity1id)
+		db.MustExec(permissions, userm1, "r", "person", entity1id)
+		db.MustExec(permissions, userm1, "w", "person", entity1id)
+		db.MustExec(permissions, userm1, "all", "product", -1)
+		db.MustExec(permissions, userm1, "all", "storage", entity1id)
+
+		db.MustExec(permissions, user1, "r", "product", -1)
+		db.MustExec(permissions, user1, "r", "entity", entity1id)
+		db.MustExec(permissions, user1, "r", "storage", entity1id)
+
+		db.MustExec(permissions, user11, "r", "product", -1)
+		db.MustExec(permissions, user11, "r", "storage", entity1id)
+		db.MustExec(permissions, user11, "w", "storage", entity1id)
+
+		// entity2 users
+		db.MustExec(permissions, userm2, "r", "entity", entity2id)
+		db.MustExec(permissions, userm2, "w", "entity", entity2id)
+		db.MustExec(permissions, userm2, "r", "person", entity2id)
+		db.MustExec(permissions, userm2, "w", "person", entity2id)
+		db.MustExec(permissions, userm2, "all", "product", -1)
+		db.MustExec(permissions, userm2, "all", "storage", entity2id)
+
+		db.MustExec(permissions, user2, "r", "product", -1)
+		db.MustExec(permissions, user2, "r", "entity", entity2id)
+		db.MustExec(permissions, user2, "r", "storage", entity2id)
+
+		db.MustExec(permissions, user22, "r", "product", -1)
+		db.MustExec(permissions, user22, "r", "storage", entity2id)
+		db.MustExec(permissions, user22, "w", "storage", entity2id)
+
+		// entity3 users
+		db.MustExec(permissions, userm3, "r", "entity", entity3id)
+		db.MustExec(permissions, userm3, "w", "entity", entity3id)
+		db.MustExec(permissions, userm3, "r", "person", entity3id)
+		db.MustExec(permissions, userm3, "w", "person", entity3id)
+		db.MustExec(permissions, userm3, "all", "product", -1)
+		db.MustExec(permissions, userm3, "all", "storage", entity3id)
+
+		db.MustExec(permissions, userm33, "r", "entity", entity3id)
+		db.MustExec(permissions, userm33, "w", "entity", entity3id)
+		db.MustExec(permissions, userm33, "r", "person", entity3id)
+		db.MustExec(permissions, userm33, "w", "person", entity3id)
+		db.MustExec(permissions, userm33, "all", "product", -1)
+		db.MustExec(permissions, userm33, "all", "storage", entity3id)
+
+		db.MustExec(permissions, user3, "r", "product", -1)
+		db.MustExec(permissions, user3, "r", "storage", entity3id)
+
+		db.MustExec(permissions, user33, "r", "product", -1)
+		db.MustExec(permissions, user33, "r", "storage", entity3id)
+		db.MustExec(permissions, user33, "w", "storage", entity3id)
+
+		// super admin
+		db.MustExec(permissions, usersuper, "all", "all", -1)
+
 		// then people entities
-		db.MustExec(personentities, johnid, entity1id)
-		db.MustExec(personentities, mickeyid, entity2id)
-		db.MustExec(personentities, obioneid, entity1id)
-		db.MustExec(personentities, obioneid, entity2id)
-		db.MustExec(personentities, obioneid, entity3id)
-		db.MustExec(personentities, darkid, entity1id)
-		db.MustExec(personentities, darkid, entity2id)
-		db.MustExec(personentities, darkid, entity3id)
+		db.MustExec(personentities, user1, entity1id)
+		db.MustExec(personentities, user11, entity1id)
+		db.MustExec(personentities, userm1, entity1id)
+		db.MustExec(personentities, user2, entity2id)
+		db.MustExec(personentities, user22, entity2id)
+		db.MustExec(personentities, userm2, entity2id)
+		db.MustExec(personentities, user3, entity3id)
+		db.MustExec(personentities, user33, entity3id)
+		db.MustExec(personentities, userm3, entity3id)
+
+		// then entities managers
+		db.MustExec(entitypeople, entity1id, userm1)
+		db.MustExec(entitypeople, entity2id, userm2)
+		db.MustExec(entitypeople, entity3id, userm3)
+		db.MustExec(entitypeople, entity3id, userm33)
 	}
 	return nil
 }
