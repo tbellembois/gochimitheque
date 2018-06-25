@@ -74,6 +74,7 @@ func main() {
 	if e != nil {
 		log.Fatal("testtmpl jade:" + e.Error())
 	}
+	log.Debug(testtmpl)
 	env.Templates["test"], err = template.New("test").Funcs(funcMap).Parse(testtmpl)
 	if err != nil {
 		log.Fatal("testtmpl parse:" + e.Error())
