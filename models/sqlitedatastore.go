@@ -122,9 +122,11 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		entity3id, _ := res7.LastInsertId()
 		db.MustExec(permissions, johnid, "r", "entity", entity1id)
 		db.MustExec(permissions, johnid, "w", "entity", entity1id)
-		db.MustExec(permissions, mickeyid, "r", "entity", -1)
+		db.MustExec(permissions, johnid, "r", "product", -1)
+		db.MustExec(permissions, mickeyid, "r", "product", -1)
 		db.MustExec(permissions, mickeyid, "r", "entity", entity2id)
 		db.MustExec(permissions, mickeyid, "w", "entity", entity2id)
+		db.MustExec(permissions, johnid, "w", "product", -1)
 		db.MustExec(permissions, obioneid, "all", "all", -1)
 		db.MustExec(permissions, darkid, "r", "entity", -1)
 		// then people entities

@@ -1,6 +1,25 @@
-extends static/templates/base.jade
+// extends static/templates/base.jade
+mixin test
+  img(src="{{$Foo}}")
+
+mixin test2
+    div.form-group
+        h1 {{$Bar}}
+
+mixin inlineradio
+    div.custom-control.custom-radio.custom-control-inline
+        label.custom-control-label(for='{{$id}}') {{$label}}
+        input(class='{{$class}} custom-control-input' id='{{$id}}' type='radio' name='{{$name}}')
 
 block content
+    | {{$Foo := "toto"}}
+    +test
+    | {{$Foo := "tata"}}
+    +test
+    | {{$Bar := "tata"}}
+    +test2
+    | {{$id := "myid"}} {{$class := "myclass"}} {{$label := "mylabel"}} {{$name := "myname"}}
+    +inlineradio
 
 block contentjs
     script.

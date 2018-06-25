@@ -1,3 +1,8 @@
-mixin test(myvar)
-    div.form-group
-        h1= myvar
+//<div class="form-group">
+//  <label for="exampleInputPassword1">Password</label>
+//  <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
+//</div>
+mixin inlineradio
+    div.custom-control.custom-radio.custom-control-inline
+        input(class='custom-control-input {{$class}}' id='{{$id}}' type='radio' name='{{$name}}')
+        label.custom-control-label(for='{{$id}}') {{$label}}

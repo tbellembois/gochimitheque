@@ -12,13 +12,9 @@ var (
 	document dom.Document
 
 	// database tables
-	tableitems = [6]string{
+	tableitems = [2]string{
 		"product",
-		"rproduct",
-		"storage",
-		"astorage",
-		"classofcompounds",
-		"supplier"}
+		"storage"}
 )
 
 func init() {
@@ -26,18 +22,48 @@ func init() {
 	document = window.Document()
 }
 
-// Permission represent who is able to do what on something
-type Permission struct {
-	PermissionID       int    `db:"permission_id" json:"permission_id" schema:"permission_id"`
-	PermissionPermName string `db:"permission_perm_name" json:"permission_perm_name" schema:"permission_perm_name"` // ex: r
-	PermissionItemName string `db:"permission_item_name" json:"permission_item_name" schema:"permission_item_name"` // ex: entity
-	PermissionItemID   int    `db:"permission_itemid" json:"permission_itemid" schema:"permission_itemid"`          // ex: 8
-}
+func PopulatePermissionWidget(params []*js.Object) {
+	// unchecking all permissions
+	for _, e := range document.GetElementsByClassName("perm") {
+		e.(*dom.HTMLInputElement).RemoveAttribute("checked")
+	}
 
-func Test(params []interface{}) {
-	println(params)
+	// setting all permissions at none by defaut
+	for _, e := range tableitems {
+		//document.GetElementByID("perm"+e).SetAttribute("checked", "checked")
+		document.GetElementByID("perm" + e).(*dom.HTMLInputElement).Checked = true
+	}
+
+	// then setting up new permissions
 	for _, p := range params {
-		println(p)
+		pitemname := p.Get("permission_item_name").String()
+		ppermname := p.Get("permission_perm_name").String()
+		//pitemid := p.Get("permission_itemid").Get("Int64").Int64()
+
+		switch pitemname {
+		case "product", "storage":
+			switch ppermname {
+			case "w", "all":
+				//document.GetElementByID("perm"+pitemname+"rw").SetAttribute("checked", "checked")
+				document.GetElementByID("perm" + pitemname + "rw").(*dom.HTMLInputElement).Checked = true
+			case "r":
+				//document.GetElementByID("perm"+pitemname+"r").SetAttribute("checked", "checked")
+				document.GetElementByID("perm" + pitemname + "r").(*dom.HTMLInputElement).Checked = true
+			}
+		case "all":
+			switch ppermname {
+			case "w", "all":
+				for _, e := range tableitems {
+					//document.GetElementByID("perm"+e+"rw").SetAttribute("checked", "checked")
+					document.GetElementByID("perm" + e + "rw").(*dom.HTMLInputElement).Checked = true
+				}
+			case "r":
+				for _, e := range tableitems {
+					//document.GetElementByID("perm"+e+"r").SetAttribute("checked", "checked")
+					document.GetElementByID("perm" + e + "r").(*dom.HTMLInputElement).Checked = true
+				}
+			}
+		}
 	}
 }
 
@@ -115,8 +141,8 @@ func main() {
 
 	// exporting functions to be called from other JS files
 	js.Global.Set("global", map[string]interface{}{
-		"buildPermissionWidget": BuildPermissionWidget,
-		"test":                  Test,
+		"buildPermissionWidget":    BuildPermissionWidget,
+		"populatePermissionWidget": PopulatePermissionWidget,
 	})
 
 }
