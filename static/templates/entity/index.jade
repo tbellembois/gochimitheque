@@ -97,8 +97,13 @@ block contentjs
             var id = $("#viewedit-collapse input#entity_id").val(),
                 name = $("#viewedit-collapse input#entity_name").val(),
                 description = $("#viewedit-collapse input#entity_description").val(),
-                person_id = $('select[id="entity_person_id.person_email"]').val(),
-                person_email = $('select[id="entity_person_id.person_email"] option:selected').text();
+                selectedmanagers = $('select[id="person_email"]').select2('data');
+                var managers = $.map(selectedmanagers, function (obj, i) {
+                    obj.person_email = obj.person_email || obj.text;
+                    obj.person_id = obj.person_id || obj.id;
+                    return obj;
+                });
+                console.log(managers);
                 $.ajax({
                     url: "/entity/" + id,
                     method: "PUT",
@@ -107,7 +112,7 @@ block contentjs
                         "entity_id": id,
                         "entity_name": name,
                         "entity_description": description,
-                        "entity_person_id.person_id": person_id,
+                        "managers": JSON.stringify(managers),
                     },
                 }).done(function(data, textStatus, jqXHR) {
                     $('#list-collapse').collapse('show');
