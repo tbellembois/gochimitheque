@@ -69,9 +69,9 @@ func (db *SQLiteDataStore) GetEntityPeople(id int) ([]Person, error) {
 	)
 
 	sqlr = `SELECT p.person_id, p.person_email
-	FROM person AS p
-	WHERE entitypeople.person_id == p.person_id AND entitypeople.entity_id = ?`
-	if db.err = db.Get(&people, sqlr, id); db.err != nil {
+	FROM person AS p, entitypeople
+	WHERE entitypeople.entitypeople_person_id == p.person_id AND entitypeople.entitypeople_entity_id = ?`
+	if db.err = db.Select(&people, sqlr, id); db.err != nil {
 		return []Person{}, db.err
 	}
 	log.WithFields(log.Fields{"ID": id, "people": people}).Debug("GetEntityPeople")
