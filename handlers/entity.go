@@ -131,7 +131,14 @@ func (env *Env) GetEntityHandler(w http.ResponseWriter, r *http.Request) *models
 			Code:    http.StatusInternalServerError}
 	}
 
-	entity, _ := env.DB.GetEntity(id)
+	entity, err := env.DB.GetEntity(id)
+	if err != nil {
+		return &models.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the entity",
+		}
+	}
 	log.WithFields(log.Fields{"entity": entity}).Debug("GetEntityHandler")
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -142,7 +149,7 @@ func (env *Env) GetEntityHandler(w http.ResponseWriter, r *http.Request) *models
 
 // GetEntityPeopleHandler return the entity managers
 func (env *Env) GetEntityPeopleHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	log.Debug("CreateEntityHandler")
+	log.Debug("GetEntityPeopleHandler")
 	vars := mux.Vars(r)
 	var (
 		id  int
@@ -156,7 +163,14 @@ func (env *Env) GetEntityPeopleHandler(w http.ResponseWriter, r *http.Request) *
 			Code:    http.StatusInternalServerError}
 	}
 
-	people, _ := env.DB.GetEntityPeople(id)
+	people, err := env.DB.GetEntityPeople(id)
+	if err != nil {
+		return &models.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the entity people",
+		}
+	}
 	log.WithFields(log.Fields{"people": people}).Debug("GetEntityPeopleHandler")
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
