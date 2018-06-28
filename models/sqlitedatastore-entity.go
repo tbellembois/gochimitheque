@@ -108,6 +108,7 @@ func (db *SQLiteDataStore) UpdateEntity(e Entity) error {
 	var (
 		sqlr string
 	)
+	log.WithFields(log.Fields{"e": e}).Debug("UpdateEntity")
 	sqlr = `UPDATE entity SET entity_name = ?, entity_description = ?
 	WHERE entity_id = ?`
 	if _, db.err = db.Exec(sqlr, e.EntityName, e.EntityDescription, e.EntityID); db.err != nil {

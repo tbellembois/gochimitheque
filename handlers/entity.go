@@ -247,6 +247,7 @@ func (env *Env) UpdateEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 	updatede, _ := env.DB.GetEntity(id)
 	updatede.EntityName = e.EntityName
 	updatede.EntityDescription = e.EntityDescription
+	updatede.Managers = e.Managers
 	log.WithFields(log.Fields{"updatede": updatede}).Debug("UpdateEntityHandler")
 
 	if err := env.DB.UpdateEntity(updatede); err != nil {
