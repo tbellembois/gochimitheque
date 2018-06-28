@@ -98,22 +98,21 @@ block contentjs
                 name = $("#viewedit-collapse input#entity_name").val(),
                 description = $("#viewedit-collapse input#entity_description").val(),
                 selectedmanagers = $('select[id="person_email"]').select2('data');
-                var managers = $.map(selectedmanagers, function (obj, i) {
-                    obj.person_email = obj.person_email || obj.text;
-                    obj.person_id = obj.person_id || obj.id;
-                    return obj;
+                data = {};
+                $.each(selectedmanagers, function( index, m ) {
+                    data["managers." + index +".person_id"] = m.id;
+                    data["managers." + index +".person_email"] = m.text;
                 });
-                console.log(managers);
+                $.extend(data, {
+                    "entity_id": id,
+                    "entity_name": name,
+                    "entity_description": description,
+                });
                 $.ajax({
                     url: "/entity/" + id,
                     method: "PUT",
                     dataType: 'json',
-                    data: {
-                        "entity_id": id,
-                        "entity_name": name,
-                        "entity_description": description,
-                        "managers": JSON.stringify(managers),
-                    },
+                    data: data,
                 }).done(function(data, textStatus, jqXHR) {
                     $('#list-collapse').collapse('show');
                     $('#viewedit-collapse').collapse('hide');
