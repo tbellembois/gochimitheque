@@ -16,6 +16,21 @@ import (
 	views handlers
 */
 
+// VCreatePersonHandler handles the person creation page
+func (env *Env) VCreatePersonHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+
+	c := containerFromRequestContext(r)
+
+	if e := env.Templates["personcreate"].Execute(w, c); e != nil {
+		return &models.AppError{
+			Error:   e,
+			Code:    http.StatusInternalServerError,
+			Message: "error executing template base",
+		}
+	}
+	return nil
+}
+
 // VGetPeopleHandler handles the people list page
 func (env *Env) VGetPeopleHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 
@@ -182,6 +197,42 @@ func (env *Env) GetPersonPermissionsHandler(w http.ResponseWriter, r *http.Reque
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(permissions)
+	return nil
+}
+
+// CreatePersonHandler creates the person from the request form
+func (env *Env) CreatePersonHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+	var (
+		p models.Person
+	)
+	if err := r.ParseForm(); err != nil {
+		return &models.AppError{
+			Error:   err,
+			Message: "form parsing error",
+			Code:    http.StatusBadRequest}
+	}
+	var decoder = schema.NewDecoder()
+	if err := decoder.Decode(&p, r.PostForm); err != nil {
+		return &models.AppError{
+			Error:   err,
+			Message: "form decoding error",
+			Code:    http.StatusBadRequest}
+	}
+	log.WithFields(log.Fields{"p": p}).Debug("CreatePersonHandler")
+
+	// TODO
+	p.PersonPassword = "TODO"
+
+	if err := env.DB.CreatePerson(p); err != nil {
+		return &models.AppError{
+			Error:   err,
+			Message: "create person error",
+			Code:    http.StatusInternalServerError}
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(p)
 	return nil
 }
 

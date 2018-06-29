@@ -123,6 +123,14 @@ func main() {
 	if err != nil {
 		log.Fatal("personindextmpl parse:" + e.Error())
 	}
+	personcreatetmpl, e := jade.ParseFile("static/templates/person/create.jade")
+	if e != nil {
+		log.Fatal("personcreatetmpl jade:" + e.Error())
+	}
+	env.Templates["personcreate"], err = template.New("personcreate").Funcs(funcMap).Parse(personcreatetmpl)
+	if err != nil {
+		log.Fatal("personcreatetmpl parse:" + e.Error())
+	}
 
 	// router definition
 	r := mux.NewRouter()
@@ -146,12 +154,13 @@ func main() {
 	r.Handle("/{item:entity}/{id}", securechain.Then(env.AppMiddleware(env.DeleteEntityHandler))).Methods("DELETE")
 	// people
 	r.Handle("/{view:v}/{item:people}", securechain.Then(env.AppMiddleware(env.VGetPeopleHandler))).Methods("GET")
+	r.Handle("/{view:vc}/{item:person}", securechain.Then(env.AppMiddleware(env.VCreatePersonHandler))).Methods("GET")
 	r.Handle("/{item:people}", securechain.Then(env.AppMiddleware(env.GetPeopleHandler))).Methods("GET")
 	r.Handle("/{item:person}/{id}", securechain.Then(env.AppMiddleware(env.GetPersonHandler))).Methods("GET")
 	r.Handle("/{item:person}/{id}/entities", securechain.Then(env.AppMiddleware(env.GetPersonEntitiesHandler))).Methods("GET")
 	r.Handle("/{item:person}/{id}/permissions", securechain.Then(env.AppMiddleware(env.GetPersonPermissionsHandler))).Methods("GET")
 	r.Handle("/{item:person}/{id}", securechain.Then(env.AppMiddleware(env.UpdatePersonHandler))).Methods("PUT")
-	// r.Handle("/{item:person}/{id}", securechain.Then(env.AppMiddleware(env.CreatePersonHandler))).Methods("POST")
+	r.Handle("/{item:person}", securechain.Then(env.AppMiddleware(env.CreatePersonHandler))).Methods("POST")
 	// r.Handle("/{item:person}/{id}/{subitem:entity}/{eid}", securechain.Then(env.AppMiddleware(env.CreatePersonEntityHandler))).Methods("PUT")
 	// r.Handle("/{item:person}/{id}/{subitem:entity}/{eid}", securechain.Then(env.AppMiddleware(env.UpdatePersonEntityHandler))).Methods("POST")
 	// r.Handle("/{item:person}/{id}/{subitem:permission}/{pid}", securechain.Then(env.AppMiddleware(env.CreatePersonPermissionHandler))).Methods("PUT")

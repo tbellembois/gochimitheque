@@ -180,6 +180,35 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 	return res, nil
 }
 
+// CreatePerson creates the given person
+func (db *SQLiteDataStore) CreatePerson(p Person) error {
+	var (
+		sqlr   string
+		res    sql.Result
+		lastid int64
+	)
+	// inserting person
+	sqlr = `INSERT INTO person(person_email, person_password) VALUES (?, ?)`
+	if res, db.err = db.Exec(sqlr, p.PersonEmail, p.PersonPassword); db.err != nil {
+		return db.err
+	}
+
+	// getting the last inserted id
+	if lastid, db.err = res.LastInsertId(); db.err != nil {
+		return db.err
+	}
+	p.PersonID = int(lastid)
+
+	// inserting permissions
+	for _, per := range p.Permissions {
+		sqlr = `INSERT INTO permission(permission_person_id, permission_perm_name, permission_item_name, permission_itemid) VALUES (?, ?, ?, ?)`
+		if _, db.err = db.Exec(sqlr, p.PersonID, per.PermissionPermName, per.PermissionItemName, -1); db.err != nil {
+			return db.err
+		}
+	}
+	return nil
+}
+
 // UpdatePerson updates the given person
 func (db *SQLiteDataStore) UpdatePerson(p Person) error {
 	var (
