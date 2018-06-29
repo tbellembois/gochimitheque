@@ -28,27 +28,22 @@ type Entity struct {
 	EntityID          int      `db:"entity_id" json:"entity_id" schema:"entity_id"`
 	EntityName        string   `db:"entity_name" json:"entity_name" schema:"entity_name"`
 	EntityDescription string   `db:"entity_description" json:"entity_description" schema:"entity_description"`
-	Managers          []Person `schema:"managers"`
+	Managers          []Person `db:"-" schema:"managers"`
 }
 
 // Person represent a person
 type Person struct {
-	PersonID       int    `db:"person_id" json:"person_id" schema:"person_id"`
-	PersonEmail    string `db:"person_email" json:"person_email" schema:"person_email"`
-	PersonPassword string `db:"person_password" json:"person_password" schema:"person_password"`
-}
-
-// PersonEntities stores the person entities
-type PersonEntities struct {
-	Person
-	Entity
+	PersonID       int          `db:"person_id" json:"person_id" schema:"person_id"`
+	PersonEmail    string       `db:"person_email" json:"person_email" schema:"person_email"`
+	PersonPassword string       `db:"person_password" json:"person_password" schema:"person_password"`
+	Permissions    []Permission `db:"-" schema:"permissions"`
 }
 
 // Permission represent who is able to do what on something
 type Permission struct {
-	PermissionID       int           `db:"permission_id" json:"permission_id" schema:"permission_id"`
+	PermissionID       int           `db:"permission_id" json:"permission_id"`
 	PermissionPermName string        `db:"permission_perm_name" json:"permission_perm_name" schema:"permission_perm_name"` // ex: r
 	PermissionItemName string        `db:"permission_item_name" json:"permission_item_name" schema:"permission_item_name"` // ex: entity
-	PermissionItemID   sql.NullInt64 `db:"permission_itemid" json:"permission_itemid" schema:"permission_itemid"`          // ex: 8
-	Person             `json:"permission_person_id" schema:"permission_person_id"`
+	PermissionItemID   sql.NullInt64 `db:"permission_itemid" json:"permission_itemid"`                                     // ex: 8
+	Person             `json:"permission_person_id"`
 }

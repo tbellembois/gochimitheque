@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 
+	"database/sql"
 	sq "github.com/Masterminds/squirrel"
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
 	log "github.com/sirupsen/logrus"
@@ -32,8 +33,6 @@ func (db *SQLiteDataStore) GetEntities(personID int, search string, order string
 		sbuilder = sbuilder.Offset(offset).Limit(limit)
 	}
 	sqlr, sqla, db.err = sbuilder.ToSql()
-
-	log.Debug(sqlr)
 	if db.err != nil {
 		return nil, db.err
 	}
@@ -94,12 +93,29 @@ func (db *SQLiteDataStore) DeleteEntity(id int) error {
 // CreateEntity creates the given entity
 func (db *SQLiteDataStore) CreateEntity(e Entity) error {
 	var (
-		sqlr string
+		sqlr   string
+		res    sql.Result
+		lastid int64
 	)
-	sqlr = `INSERT INTO entity(entity_name, entity_description, entity_person_id) VALUES (?, ?)`
-	if _, db.err = db.Exec(sqlr, e.EntityName, e.EntityDescription); db.err != nil {
+	sqlr = `INSERT INTO entity(entity_name, entity_description) VALUES (?, ?)`
+	if res, db.err = db.Exec(sqlr, e.EntityName, e.EntityDescription); db.err != nil {
 		return db.err
 	}
+
+	// getting the last inserted id
+	if lastid, db.err = res.LastInsertId(); db.err != nil {
+		return db.err
+	}
+	e.EntityID = int(lastid)
+
+	// adding the new managers
+	for _, m := range e.Managers {
+		sqlr = `insert into entitypeople (entitypeople_entity_id, entitypeople_person_id) values (?, ?)`
+		if _, db.err = db.Exec(sqlr, e.EntityID, m.PersonID); db.err != nil {
+			return db.err
+		}
+	}
+
 	return nil
 }
 
@@ -107,13 +123,44 @@ func (db *SQLiteDataStore) CreateEntity(e Entity) error {
 func (db *SQLiteDataStore) UpdateEntity(e Entity) error {
 	var (
 		sqlr string
+		sqla []interface{}
 	)
 	log.WithFields(log.Fields{"e": e}).Debug("UpdateEntity")
+
+	// updating the entity
 	sqlr = `UPDATE entity SET entity_name = ?, entity_description = ?
 	WHERE entity_id = ?`
 	if _, db.err = db.Exec(sqlr, e.EntityName, e.EntityDescription, e.EntityID); db.err != nil {
 		return db.err
 	}
+
+	// removing former managers
+	notin := sq.Or{}
+	// ex: AND (entitypeople_person_id <> ? OR entitypeople_person_id <> ?)
+	for _, m := range e.Managers {
+		notin = append(notin, sq.NotEq{"entitypeople_person_id": m.PersonID})
+	}
+	// ex: DELETE FROM entitypeople WHERE (entitypeople_entity_id = ? AND (entitypeople_person_id <> ? OR entitypeople_person_id <> ?)
+	sbuilder := sq.Delete(`entitypeople`).Where(
+		sq.And{
+			sq.Eq{`entitypeople_entity_id`: e.EntityID},
+			notin})
+	sqlr, sqla, db.err = sbuilder.ToSql()
+	if db.err != nil {
+		return db.err
+	}
+	if _, db.err = db.Exec(sqlr, sqla...); db.err != nil {
+		return db.err
+	}
+
+	// adding the new ones
+	for _, m := range e.Managers {
+		sqlr = `insert or ignore into entitypeople (entitypeople_entity_id, entitypeople_person_id) values (?, ?)`
+		if _, db.err = db.Exec(sqlr, e.EntityID, m.PersonID); db.err != nil {
+			return db.err
+		}
+	}
+
 	return nil
 }
 
