@@ -22,11 +22,11 @@ type SQLiteDataStore struct {
 func buildJoinFilterForItem(tableName string, tableAlias string, tableJoinField string, permName string) string {
 	return fmt.Sprintf(`permission AS perm on perm.permission_person_id = ? and (
 		(perm.permission_item_name = "all" and perm.permission_perm_name = "all") or
-		(perm.permission_item_name == "all" and perm.permission_perm_name == "%s" and perm.permission_itemid == -1) or
-		(perm.permission_item_name == "%s" and perm.permission_perm_name == "all" and perm.permission_itemid == %s.%s) or
-		(perm.permission_item_name == "%s" and perm.permission_perm_name == "all" and perm.permission_itemid == -1) or
-		(perm.permission_item_name == "%s" and perm.permission_perm_name == "%s" and perm.permission_itemid == -1) or
-		(perm.permission_item_name == "%s" and perm.permission_perm_name == "%s" and perm.permission_itemid == %s.%s)
+		(perm.permission_item_name == "all" and perm.permission_perm_name == "%s" and perm.permission_entityid == -1) or
+		(perm.permission_item_name == "%s" and perm.permission_perm_name == "all" and perm.permission_entityid == %s.%s) or
+		(perm.permission_item_name == "%s" and perm.permission_perm_name == "all" and perm.permission_entityid == -1) or
+		(perm.permission_item_name == "%s" and perm.permission_perm_name == "%s" and perm.permission_entityid == -1) or
+		(perm.permission_item_name == "%s" and perm.permission_perm_name == "%s" and perm.permission_entityid == %s.%s)
 		)`, permName, tableName, tableAlias, tableJoinField, tableName, tableName, permName, tableName, permName, tableAlias, tableJoinField)
 }
 
@@ -76,7 +76,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		permission_person_id integer NOT NULL,
 		permission_perm_name string NOT NULL,
 		permission_item_name string NOT NULL,
-		permission_itemid integer,
+		permission_entityid integer,
 		FOREIGN KEY (permission_person_id) references person(person_id));
 	-- entities people belongs to
 	CREATE TABLE IF NOT EXISTS personentities (
@@ -107,7 +107,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		// preparing requests
 		people := `INSERT INTO person (person_email, person_password) VALUES (?, ?)`
 		entities := `INSERT INTO entity (entity_name, entity_description) VALUES (?, ?)`
-		permissions := `INSERT INTO permission (permission_person_id, permission_perm_name, permission_item_name, permission_itemid) VALUES (?, ?, ?, ?)`
+		permissions := `INSERT INTO permission (permission_person_id, permission_perm_name, permission_item_name, permission_entityid) VALUES (?, ?, ?, ?)`
 		personentities := `INSERT INTO personentities (personentities_person_id, personentities_entity_id) VALUES (? ,?)`
 		entitypeople := `INSERT INTO entitypeople (entitypeople_entity_id, entitypeople_person_id) VALUES (? ,?)`
 		// inserting people
@@ -125,7 +125,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		userm33, _ := db.MustExec(people, "manager33@entity3.com", "user").LastInsertId()
 
 		usersuper, _ := db.MustExec(people, "user@super.com", "user").LastInsertId()
-		// inserted entities and permissions
+		// inserting entities
 		entity1id, _ := db.MustExec(entities, "entity1", "sample entity one").LastInsertId()
 		entity2id, _ := db.MustExec(entities, "entity2", "sample entity two").LastInsertId()
 		entity3id, _ := db.MustExec(entities, "entity3", "sample entity three").LastInsertId()
@@ -198,6 +198,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		db.MustExec(personentities, user3, entity3id)
 		db.MustExec(personentities, user33, entity3id)
 		db.MustExec(personentities, userm3, entity3id)
+		db.MustExec(personentities, userm33, entity3id)
 
 		// then entities managers
 		db.MustExec(entitypeople, entity1id, userm1)

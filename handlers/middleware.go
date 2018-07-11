@@ -143,12 +143,16 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			return
 		}
 
+		// extraction request variables
 		vars := mux.Vars(r)
 		item := vars["item"]
 		view := vars["view"]
 		id := vars["id"]
 		log.WithFields(log.Fields{"id": id, "item": item, "view": view, "personemail": personemail}).Debug("AuthorizeMiddleware")
 
+		// depending on the request
+		// preparing the HasPersonPermission parameters
+		// to allow/deny access
 		switch r.Method {
 		case "GET":
 			switch view {
@@ -185,6 +189,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			}
 		}
 
+		// allow/deny access
 		if permok, err = env.DB.HasPersonPermission(personid, perm, item, itemid); err != nil {
 			log.Debug("unauthorized:" + err.Error())
 			http.Error(w, err.Error(), http.StatusUnauthorized)
