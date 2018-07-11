@@ -24,29 +24,29 @@ Restfull API.
 
 possible combinations for a given person:
 
-| item_name (ex: entity) | item_permname (ex: r) | item_id (ex: 2) | notes |
+| item_name (ex: entity) | item_permname (ex: r) | entity_id (ex: 2) | notes |
 | :-- | :--: | --: | :-- |
 | `all`       |     `all`     |  ? | *not used* - we will use -1 |
 | `all`       |     `all`     | -1 | super admin |
-| `all`     |   ?    |      ? | *not used* - non sense (ex: `r` on `all` items with `id` 3) |
-| `all`     |   ?    |      -1| ex: `r` permission on all items |
-| ?     |   `all`    |      ? | ex: `all` permission on `entity` `3` |
-| ?     |   `all`    |      -1| ex: `all` permission on all `entity`|
-| ?     |   ?    |   -1 | ex: `r` permission on all `entity` |
-| ?     |   ?    |   ?  | ex: `r` permission on `entity` `3` |
+| `all`     |   ?    |      ? | *not used* - non sense (ex: `r` on `all` items of entity with `id` 3) |
+| `all`     |   ?    |      -1| ex: `r` permission on all items of all entities |
+| ?     |   `all`    |      ? | ex: `all` permission on `storage` of entity with `id` 3 |
+| ?     |   `all`    |      -1| ex: `all` permission on all `storage` of all entities |
+| ?     |   ?    |   -1 | ex: `r` permission on all `storage` of all entities |
+| ?     |   ?    |   ?  | ex: `r` permission on `storage` of entity with `id` 3 |
 
 => 6
 
 final clean table:
 
-| item_name (ex: entity) | item_permname (ex: r) | item_id (ex: 2) | notes |
+| item_name (ex: entity) | item_permname (ex: r) | entity_id (ex: 2) | notes |
 | :-- | :--: | --: | :-- |
 | `all`       |     `all`     | -1 | super admin |
-| `all`     |   ?    |      -1| ex: `r` permission on all items |
-| ?     |   `all`    |      ? | ex: `all` permission on `entity` `3` |
-| ?     |   `all`    |      -1| ex: `all` permission on all `entity`|
-| ?     |   ?    |   -1 | ex: `r` permission on all `entity` |
-| ?     |   ?    |   ?  | ex: `r` permission on `entity` `3` |
+| `all`     |   ?    |      -1| ex: `r` permission on all items of all entities |
+| ?     |   `all`    |      ? | ex: `all` permission on `storage` of entity with `id` 3 |
+| ?     |   `all`    |      -1| ex: `all` permission on all `storage` of all entities |
+| ?     |   ?    |   -1 | ex: `r` permission on all `storage` of all entities |
+| ?     |   ?    |   ?  | ex: `r` permission on `storage` of entity with `id` 3 |
 
 - `item_id` = -1 : all items
 - `item_name` can be `all`
