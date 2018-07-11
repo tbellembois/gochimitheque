@@ -22,6 +22,7 @@ type Datastore interface {
 	GetPersonByEmail(email string) (Person, error)
 	GetPersonPermissions(id int) ([]Permission, error)
 	GetPersonEntities(id int) ([]Entity, error)
+	DoesPersonBelongsTo(id int, entities []Entity) (bool, error)
 	HasPersonPermission(id int, perm string, item string, itemid int) (bool, error)
 	CreatePerson(p Person) error
 	UpdatePerson(p Person) error

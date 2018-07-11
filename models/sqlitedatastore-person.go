@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"fmt"
+	"github.com/jmoiron/sqlx"
 
 	sq "github.com/Masterminds/squirrel"
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
@@ -77,7 +78,7 @@ func (db *SQLiteDataStore) GetPersonPermissions(id int) ([]Permission, error) {
 		sqlr string
 	)
 
-	sqlr = `SELECT permission_id, permission_perm_name, permission_item_name, permission_itemid 
+	sqlr = `SELECT permission_id, permission_perm_name, permission_item_name, permission_entityid 
 	FROM permission
 	WHERE permission_person_id = ?`
 	if db.err = db.Select(&ps, sqlr, id); db.err != nil {
@@ -105,14 +106,41 @@ func (db *SQLiteDataStore) GetPersonEntities(id int) ([]Entity, error) {
 	return es, nil
 }
 
+// DoesPersonBelongsTo returns true if the person (with id "id") belongs to the entities
+func (db *SQLiteDataStore) DoesPersonBelongsTo(id int, entities []Entity) (bool, error) {
+	var (
+		sqlr  string
+		count int
+	)
+
+	// extracting entities ids
+	var eids []int
+	for _, i := range entities {
+		eids = append(eids, i.EntityID)
+	}
+
+	sqlr = `SELECT count(*) 
+	FROM personentities
+	WHERE personentities_person_id = ? 
+	AND personentities_entity_id IN (?)`
+	if db.err = db.Get(&count, sqlr, id, eids); db.err != nil {
+		return false, db.err
+	}
+	log.WithFields(log.Fields{"personID": id, "count": count}).Debug("DoesPersonBelongsTo")
+	return count > 0, nil
+}
+
 // HasPersonPermission returns true if the person with id "id" has the permission "perm" on the item "item" with id "itemid"
 func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string, itemid int) (bool, error) {
 	// itemid == -1 means all items
-	// itemid == -2 means any items (-2 is not a database permission_itemid possible value)
+	// itemid == -2 means any items (-2 is not a database permission_entityid possible value)
 	var (
-		res   bool
-		count int
-		sqlr  string
+		res     bool
+		count   int
+		sqlr    string
+		sqlargs []interface{}
+		err     error
+		eids    []int
 	)
 
 	log.WithFields(log.Fields{
@@ -121,7 +149,27 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 		"item":   item,
 		"itemid": itemid}).Debug("HasPersonPermission")
 
-	// then counting the permissions matching the parameters
+	//
+	// first: retrieving the entities of the item to be accessed
+	//
+	switch item {
+	case "person":
+		// retrieving the requeted person entities
+		var rpe []Entity
+		if rpe, err = db.GetPersonEntities(itemid); err != nil {
+			return false, err
+		}
+		// and their ids
+		for _, i := range rpe {
+			eids = append(eids, i.EntityID)
+		}
+	case "entity":
+		eids = append(eids, itemid)
+	}
+
+	//
+	// second: has the logged user "perm" on the "item" of the entities in "eids"
+	//
 	if itemid == -2 {
 		// possible matchs:
 		// permission_perm_name | permission_item_name
@@ -144,7 +192,7 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 		}
 	} else {
 		// possible matchs:
-		// permission_perm_name | permission_item_name | permission_itemid
+		// permission_perm_name | permission_item_name | permission_entityid
 		// all | ?   | -1 (ex: all permissions on all entities)
 		// all | ?   | ?  (ex: all permissions on entity 3)
 		// ?   | all | -1 => no sense (ex: r permission on entities, store_locations...) we will put the permissions for each item
@@ -153,15 +201,18 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 		// all | all | ?  => no sense (ex: all permission on entities, store_locations... with id = 3)
 		// ?   | ?   | -1 => (ex: r permission on all entities)
 		// ?   | ?   | ?  => (ex: r permission on entity 3)
-		sqlr = `SELECT count(*) FROM permission WHERE 
+		if sqlr, sqlargs, db.err = sqlx.In(`SELECT count(*) FROM permission WHERE 
 		permission_person_id = ? AND permission_item_name = "all" AND permission_perm_name = "all" OR 
-		permission_person_id = ? AND permission_item_name = "all" AND permission_perm_name = ? AND permission_itemid = -1 OR
-		permission_person_id = ? AND permission_item_name = ? AND permission_perm_name = "all" AND permission_itemid = ? OR
-		permission_person_id = ? AND permission_item_name = ? AND permission_perm_name = "all" AND permission_itemid = -1 OR 
-		permission_person_id = ? AND permission_item_name = ? AND permission_perm_name = ? AND permission_itemid = -1 OR
-		permission_person_id = ? AND permission_item_name = ? AND permission_perm_name = ? AND permission_itemid = ?
-		`
-		if db.err = db.Get(&count, sqlr, id, id, perm, id, item, itemid, id, item, id, item, perm, id, item, perm, itemid); db.err != nil {
+		permission_person_id = ? AND permission_item_name = "all" AND permission_perm_name = ? AND permission_entityid = -1 OR
+		permission_person_id = ? AND permission_item_name = ? AND permission_perm_name = "all" AND permission_entityid IN (?) OR
+		permission_person_id = ? AND permission_item_name = ? AND permission_perm_name = "all" AND permission_entityid = -1 OR 
+		permission_person_id = ? AND permission_item_name = ? AND permission_perm_name = ? AND permission_entityid = -1 OR
+		permission_person_id = ? AND permission_item_name = ? AND permission_perm_name = ? AND permission_entityid IN (?)
+		`, id, id, perm, id, item, eids, id, item, id, item, perm, id, item, perm, eids); db.err != nil {
+			return false, db.err
+		}
+
+		if db.err = db.Get(&count, sqlr, sqlargs...); db.err != nil {
 			switch {
 			case db.err == sql.ErrNoRows:
 				return false, nil
@@ -201,7 +252,7 @@ func (db *SQLiteDataStore) CreatePerson(p Person) error {
 
 	// inserting permissions
 	for _, per := range p.Permissions {
-		sqlr = `INSERT INTO permission(permission_person_id, permission_perm_name, permission_item_name, permission_itemid) VALUES (?, ?, ?, ?)`
+		sqlr = `INSERT INTO permission(permission_person_id, permission_perm_name, permission_item_name, permission_entityid) VALUES (?, ?, ?, ?)`
 		if _, db.err = db.Exec(sqlr, p.PersonID, per.PermissionPermName, per.PermissionItemName, -1); db.err != nil {
 			return db.err
 		}

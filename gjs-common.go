@@ -38,7 +38,7 @@ func PopulatePermissionWidget(params []*js.Object) {
 	for _, p := range params {
 		pitemname := p.Get("permission_item_name").String()
 		ppermname := p.Get("permission_perm_name").String()
-		//pitemid := p.Get("permission_itemid").Get("Int64").Int64()
+		//pitemid := p.Get("permission_entityid").Get("Int64").Int64()
 
 		switch pitemname {
 		case "product", "storage":
@@ -137,12 +137,12 @@ func BuildPermissionWidget(persID int) *dom.HTMLDivElement {
 	return widgetdiv
 }
 
-func main() {
+// func main() {
 
-	// exporting functions to be called from other JS files
-	js.Global.Set("global", map[string]interface{}{
-		"buildPermissionWidget":    BuildPermissionWidget,
-		"populatePermissionWidget": PopulatePermissionWidget,
-	})
+// 	// exporting functions to be called from other JS files
+// 	js.Global.Set("global", map[string]interface{}{
+// 		"buildPermissionWidget":    BuildPermissionWidget,
+// 		"populatePermissionWidget": PopulatePermissionWidget,
+// 	})
 
-}
+// }
