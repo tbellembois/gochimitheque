@@ -18,8 +18,8 @@ type SQLiteDataStore struct {
 	err error
 }
 
-// buildJoinFilterForItem return the sql join to return only items of tableName that the person permission_person_id can permission_perm_name
-func buildJoinFilterForItem(tableName string, tableAlias string, tableJoinField string, permName string) string {
+// buildPermissionFilter return the sql join to return only items of tableName that the person permission_person_id can permission_perm_name
+func buildPermissionFilter(tableName string, tableAlias string, tableJoinField string, permName string) string {
 	return fmt.Sprintf(`permission AS perm on perm.permission_person_id = ? and (
 		(perm.permission_item_name = "all" and perm.permission_perm_name = "all") or
 		(perm.permission_item_name == "all" and perm.permission_perm_name == "%s" and perm.permission_entityid == -1) or

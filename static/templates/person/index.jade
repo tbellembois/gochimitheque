@@ -21,6 +21,10 @@ block content
                     .col-sm-10
                         input#person_email.form-control(disabled='disabled', type='text', value='', name='email')
                 .form-group.row
+                    label.col-sm-2.col-form-label(for='entity') entities
+                    .col-sm-10
+                        select.form-control(style='width: 100% !important;', id='person_entity', name='entity', multiple='multiple')
+                .form-group.row
                     .col-sm-6
                         .alert.alert-primary product
                     .col-sm-6
@@ -45,6 +49,31 @@ block content
 
 block contentjs
     script.
+
+        $( document ).ready(function() {
+            //
+            // manager select2
+            //
+            $('select[id="person_entity"]').select2({
+                dropdownParent: $('#viewedit-collapse'),
+                ajax: {
+                    url: '/entities',
+                    dataType: 'json',
+                    processResults: function (data) {
+                        // replacing email by text expected by select2
+                        var newdata = $.map(data, function (obj) {
+                            obj.text = obj.text || obj.entity_name;
+                            obj.id = obj.id || obj.entity_id;
+                            return obj;
+                        });
+                        return {
+                            results: newdata
+                        };
+                    }
+                }
+            });
+        });
+
         //
         // close buttons actions
         //
@@ -160,6 +189,11 @@ block contentjs
 
         // items actions callback
         function operateEditView(e, value, row, index) {
+            // clearing selections
+            $('select[id="person_entity"]').val(null).trigger('change');
+            $('select[id="person_entity"]').find('option').remove();
+
+            // getting the person
             $.ajax({
                 url: "/person/" + row['person_id'],
                 method: "GET",
@@ -176,6 +210,22 @@ block contentjs
             }).fail(function(jqXHR, textStatus, errorThrown) {
                 handleHTTPError(jqXHR.statusText, jqXHR.status)
             });
+
+            // getting the person entities
+            $.ajax({
+                url: "/person/" + row['person_id'] + "/entities",
+                method: "GET",
+            }).done(function(data, textStatus, jqXHR) {
+                // select2 is not autofilled - we need a special operation
+                for(var i in data) {
+                   var newOption = new Option(data[i].entity_name, data[i].entity_id, true, true);
+                   $('select[id="person_entity"]').append(newOption).trigger('change');
+                }
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                handleHTTPError(jqXHR.statusText, jqXHR.status)
+            });
+
+            // getting the person permissions
             $.ajax({
                 url: "/person/" + row['person_id'] + "/permissions",
                 method: "GET",
