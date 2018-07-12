@@ -191,6 +191,7 @@ block contentjs
             $('select[id="person_email"]').val(null).trigger('change');
             $('select[id="person_email"]').find('option').remove();
 
+            // getting the entity
             $.ajax({
                 url: "/entity/" + row['entity_id'],
                 method: "GET",
@@ -205,6 +206,7 @@ block contentjs
                 handleHTTPError(jqXHR.statusText, jqXHR.status)
             });
 
+            // getting the entity managers
             $.ajax({
                 url: "/entity/" + row['entity_id'] + "/people",
                 method: "GET",
