@@ -1,7 +1,6 @@
 package models
 
 import (
-	"database/sql"
 	"net/http"
 )
 
@@ -37,13 +36,14 @@ type Person struct {
 	PersonEmail    string       `db:"person_email" json:"person_email" schema:"person_email"`
 	PersonPassword string       `db:"person_password" json:"person_password" schema:"person_password"`
 	Permissions    []Permission `db:"-" schema:"permissions"`
+	Entities       []Entity     `db:"-" schema:"entities"`
 }
 
 // Permission represent who is able to do what on something
 type Permission struct {
-	PermissionID       int           `db:"permission_id" json:"permission_id"`
-	PermissionPermName string        `db:"permission_perm_name" json:"permission_perm_name" schema:"permission_perm_name"` // ex: r
-	PermissionItemName string        `db:"permission_item_name" json:"permission_item_name" schema:"permission_item_name"` // ex: entity
-	PermissionEntityID sql.NullInt64 `db:"permission_entityid" json:"permission_entityid"`                                 // ex: 8
+	PermissionID       int    `db:"permission_id" json:"permission_id"`
+	PermissionPermName string `db:"permission_perm_name" json:"permission_perm_name" schema:"permission_perm_name"` // ex: r
+	PermissionItemName string `db:"permission_item_name" json:"permission_item_name" schema:"permission_item_name"` // ex: entity
+	PermissionEntityID int    `db:"permission_entity_id" json:"permission_entity_id" schema:"permission_entity_id"` // ex: 8
 	Person             `json:"permission_person_id"`
 }

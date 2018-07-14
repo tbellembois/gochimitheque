@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"fmt"
+
 	"github.com/jmoiron/sqlx"
 
 	sq "github.com/Masterminds/squirrel"
@@ -78,7 +79,7 @@ func (db *SQLiteDataStore) GetPersonPermissions(id int) ([]Permission, error) {
 		sqlr string
 	)
 
-	sqlr = `SELECT permission_id, permission_perm_name, permission_item_name, permission_entityid 
+	sqlr = `SELECT permission_id, permission_perm_name, permission_item_name, permission_entity_id 
 	FROM permission
 	WHERE permission_person_id = ?`
 	if db.err = db.Select(&ps, sqlr, id); db.err != nil {
@@ -133,7 +134,7 @@ func (db *SQLiteDataStore) DoesPersonBelongsTo(id int, entities []Entity) (bool,
 // HasPersonPermission returns true if the person with id "id" has the permission "perm" on the item "item" with id "itemid"
 func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string, itemid int) (bool, error) {
 	// itemid == -1 means all items
-	// itemid == -2 means any items (-2 is not a database permission_entityid possible value)
+	// itemid == -2 means any items (-2 is not a database permission_entity_id possible value)
 	var (
 		res     bool
 		count   int
@@ -192,7 +193,7 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 		}
 	} else {
 		// possible matchs:
-		// permission_perm_name | permission_item_name | permission_entityid
+		// permission_perm_name | permission_item_name | permission_entity_id
 		// all | ?   | -1 (ex: all permissions on all entities)
 		// all | ?   | ?  (ex: all permissions on entity 3)
 		// ?   | all | -1 => no sense (ex: r permission on entities, store_locations...) we will put the permissions for each item
@@ -203,11 +204,11 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 		// ?   | ?   | ?  => (ex: r permission on entity 3)
 		if sqlr, sqlargs, db.err = sqlx.In(`SELECT count(*) FROM permission WHERE 
 		permission_person_id = ? AND permission_item_name = "all" AND permission_perm_name = "all" OR 
-		permission_person_id = ? AND permission_item_name = "all" AND permission_perm_name = ? AND permission_entityid = -1 OR
-		permission_person_id = ? AND permission_item_name = ? AND permission_perm_name = "all" AND permission_entityid IN (?) OR
-		permission_person_id = ? AND permission_item_name = ? AND permission_perm_name = "all" AND permission_entityid = -1 OR 
-		permission_person_id = ? AND permission_item_name = ? AND permission_perm_name = ? AND permission_entityid = -1 OR
-		permission_person_id = ? AND permission_item_name = ? AND permission_perm_name = ? AND permission_entityid IN (?)
+		permission_person_id = ? AND permission_item_name = "all" AND permission_perm_name = ? AND permission_entity_id = -1 OR
+		permission_person_id = ? AND permission_item_name = ? AND permission_perm_name = "all" AND permission_entity_id IN (?) OR
+		permission_person_id = ? AND permission_item_name = ? AND permission_perm_name = "all" AND permission_entity_id = -1 OR 
+		permission_person_id = ? AND permission_item_name = ? AND permission_perm_name = ? AND permission_entity_id = -1 OR
+		permission_person_id = ? AND permission_item_name = ? AND permission_perm_name = ? AND permission_entity_id IN (?)
 		`, id, id, perm, id, item, eids, id, item, id, item, perm, id, item, perm, eids); db.err != nil {
 			return false, db.err
 		}
@@ -252,7 +253,7 @@ func (db *SQLiteDataStore) CreatePerson(p Person) error {
 
 	// inserting permissions
 	for _, per := range p.Permissions {
-		sqlr = `INSERT INTO permission(permission_person_id, permission_perm_name, permission_item_name, permission_entityid) VALUES (?, ?, ?, ?)`
+		sqlr = `INSERT INTO permission(permission_person_id, permission_perm_name, permission_item_name, permission_entity_id) VALUES (?, ?, ?, ?)`
 		if _, db.err = db.Exec(sqlr, p.PersonID, per.PermissionPermName, per.PermissionItemName, -1); db.err != nil {
 			return db.err
 		}
@@ -265,10 +266,46 @@ func (db *SQLiteDataStore) UpdatePerson(p Person) error {
 	var (
 		sqlr string
 	)
+	// updating person
 	sqlr = `UPDATE person SET person_email = ?
 	WHERE person_id = ?`
 	if _, db.err = db.Exec(sqlr, p.PersonEmail, p.PersonID); db.err != nil {
 		return db.err
 	}
+
+	// lazily deleting former entities
+	sqlr = `DELETE FROM personentities 
+	WHERE personentities_person_id = ?`
+	if _, db.err = db.Exec(sqlr, p.PersonID); db.err != nil {
+		return db.err
+	}
+
+	// updating person entities
+	for _, e := range p.Entities {
+		sqlr = `INSERT INTO personentities(personentities_person_id, personentities_entity_id) 
+		VALUES (?, ?)`
+		if _, db.err = db.Exec(sqlr, p.PersonID, e.EntityID); db.err != nil {
+			return db.err
+		}
+	}
+
+	// lazily deleting former permissions
+	sqlr = `DELETE FROM permission 
+		WHERE permission_person_id = ?`
+	if _, db.err = db.Exec(sqlr, p.PersonID); db.err != nil {
+		return db.err
+	}
+
+	// updating person permissions
+	for _, perm := range p.Permissions {
+		sqlr = `INSERT INTO permission(permission_person_id, permission_perm_name, permission_item_name, permission_entity_id) 
+		VALUES (?, ?, ?, ?)`
+		if perm.PermissionPermName == "r" || perm.PermissionPermName == "w" || perm.PermissionPermName == "all" {
+			if _, db.err = db.Exec(sqlr, p.PersonID, perm.PermissionPermName, perm.PermissionItemName, perm.PermissionEntityID); db.err != nil {
+				return db.err
+			}
+		}
+	}
+
 	return nil
 }

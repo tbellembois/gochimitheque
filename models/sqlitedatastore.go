@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
 	log "github.com/sirupsen/logrus"
@@ -22,11 +23,11 @@ type SQLiteDataStore struct {
 func buildPermissionFilter(tableName string, tableAlias string, tableJoinField string, permName string) string {
 	return fmt.Sprintf(`permission AS perm on perm.permission_person_id = ? and (
 		(perm.permission_item_name = "all" and perm.permission_perm_name = "all") or
-		(perm.permission_item_name == "all" and perm.permission_perm_name == "%s" and perm.permission_entityid == -1) or
-		(perm.permission_item_name == "%s" and perm.permission_perm_name == "all" and perm.permission_entityid == %s.%s) or
-		(perm.permission_item_name == "%s" and perm.permission_perm_name == "all" and perm.permission_entityid == -1) or
-		(perm.permission_item_name == "%s" and perm.permission_perm_name == "%s" and perm.permission_entityid == -1) or
-		(perm.permission_item_name == "%s" and perm.permission_perm_name == "%s" and perm.permission_entityid == %s.%s)
+		(perm.permission_item_name == "all" and perm.permission_perm_name == "%s" and perm.permission_entity_id == -1) or
+		(perm.permission_item_name == "%s" and perm.permission_perm_name == "all" and perm.permission_entity_id == %s.%s) or
+		(perm.permission_item_name == "%s" and perm.permission_perm_name == "all" and perm.permission_entity_id == -1) or
+		(perm.permission_item_name == "%s" and perm.permission_perm_name == "%s" and perm.permission_entity_id == -1) or
+		(perm.permission_item_name == "%s" and perm.permission_perm_name == "%s" and perm.permission_entity_id == %s.%s)
 		)`, permName, tableName, tableAlias, tableJoinField, tableName, tableName, permName, tableName, permName, tableAlias, tableJoinField)
 }
 
@@ -76,7 +77,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		permission_person_id integer NOT NULL,
 		permission_perm_name string NOT NULL,
 		permission_item_name string NOT NULL,
-		permission_entityid integer,
+		permission_entity_id integer,
 		FOREIGN KEY (permission_person_id) references person(person_id));
 	-- entities people belongs to
 	CREATE TABLE IF NOT EXISTS personentities (
@@ -107,7 +108,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		// preparing requests
 		people := `INSERT INTO person (person_email, person_password) VALUES (?, ?)`
 		entities := `INSERT INTO entity (entity_name, entity_description) VALUES (?, ?)`
-		permissions := `INSERT INTO permission (permission_person_id, permission_perm_name, permission_item_name, permission_entityid) VALUES (?, ?, ?, ?)`
+		permissions := `INSERT INTO permission (permission_person_id, permission_perm_name, permission_item_name, permission_entity_id) VALUES (?, ?, ?, ?)`
 		personentities := `INSERT INTO personentities (personentities_person_id, personentities_entity_id) VALUES (? ,?)`
 		entitypeople := `INSERT INTO entitypeople (entitypeople_entity_id, entitypeople_person_id) VALUES (? ,?)`
 		// inserting people

@@ -24,25 +24,7 @@ block content
                     label.col-sm-2.col-form-label(for='entity') entities
                     .col-sm-10
                         select.form-control(style='width: 100% !important;', id='person_entity', name='entity', multiple='multiple')
-                .form-group.row
-                    .col-sm-6
-                        .alert.alert-primary product
-                    .col-sm-6
-                        | {{$id := "permproduct"}} {{$value := "_"}} {{$label := "_"}} {{$class := "perm"}}  {{$name := "product"}}
-                        +inlineradio
-                        | {{$id := "permproductr"}} {{$value := "r"}} {{$label := "r"}}
-                        +inlineradio
-                        | {{$id := "permproductrw"}} {{$value := "w"}} {{$label := "rw"}}
-                        +inlineradio
-                    .col-sm-6
-                        .alert.alert-primary storage
-                    .col-sm-6
-                        | {{$id := "permstorage"}} {{$value := "_"}} {{$label := "_"}} {{$class := "perm"}}  {{$name := "storage"}}
-                        +inlineradio
-                        | {{$id := "permstorager"}} {{$value := "r"}} {{$label := "r"}}
-                        +inlineradio
-                        | {{$id := "permstoragerw"}} {{$value := "w"}} {{$label := "rw"}}
-                        +inlineradio
+                .form-group.row#permissions
 
                 button#save.btn.btn-primary(type='button', onclick='savePerson()') save changes
                 button.btn.btn-secondary(type='button', onclick='closeView();') close
@@ -108,15 +90,28 @@ block contentjs
             };
 
             var id = $("#viewedit-collapse input#person_id").val(),
-                email = $("#viewedit-collapse input#person_email").val();
+                email = $("#viewedit-collapse input#person_email").val(),
+                selectedentities = $('select[id="person_entity"]').select2('data');
+                selectedpermissions = $("input[type=radio]:checked");
+                data = {};
+                $.each(selectedpermissions, function( index, e ) {
+                    data["permissions." + index +".permission_perm_name"] = $(e).attr("perm_name");
+                    data["permissions." + index +".permission_item_name"] = $(e).attr("item_name");
+                    data["permissions." + index +".permission_entity_id"] = $(e).attr("entity_id");
+                });               
+                $.each(selectedentities, function( index, e ) {
+                    data["entities." + index +".entity_id"] = e.id;
+                    data["entities." + index +".entity_name"] = e.text;
+                });
+                $.extend(data, {
+                        "person_id": id,
+                        "person_email": email,
+                });
                 $.ajax({
                     url: "/person/" + id,
                     method: "PUT",
                     dataType: 'json',
-                    data: {
-                        "person_id": id,
-                        "person_email": email,
-                    },
+                    data: data,
                 }).done(function(data, textStatus, jqXHR) {
                     $('#list-collapse').collapse('show');
                     $('#viewedit-collapse').collapse('hide');
@@ -216,25 +211,32 @@ block contentjs
                 url: "/person/" + row['person_id'] + "/entities",
                 method: "GET",
             }).done(function(data, textStatus, jqXHR) {
-                // select2 is not autofilled - we need a special operation
+                // filling select2
                 for(var i in data) {
                    var newOption = new Option(data[i].entity_name, data[i].entity_id, true, true);
                    $('select[id="person_entity"]').append(newOption).trigger('change');
                 }
-            }).fail(function(jqXHR, textStatus, errorThrown) {
-                handleHTTPError(jqXHR.statusText, jqXHR.status)
-            });
 
-            // getting the person permissions
-            $.ajax({
-                url: "/person/" + row['person_id'] + "/permissions",
-                method: "GET",
-            }).done(function(data, textStatus, jqXHR) {
-                global.populatePermissionWidget(data);
+                // adding a permission widget for each entity
+                $("#permissions").empty();
+                for(var i in data) {
+                    $("#permissions").append(global.buildPermissionWidget(data[i].entity_id));
+                }
+
+                // getting the person permissions and populating the wodget
+                $.ajax({
+                    url: "/person/" + row['person_id'] + "/permissions",
+                    method: "GET",
+                }).done(function(data, textStatus, jqXHR) {
+                    global.populatePermissionWidget(data);
+                }).fail(function(jqXHR, textStatus, errorThrown) {
+                    handleHTTPError(jqXHR.statusText, jqXHR.status)
+                });
+
             }).fail(function(jqXHR, textStatus, errorThrown) {
                 handleHTTPError(jqXHR.statusText, jqXHR.status)
             });
-    
+   
             if ($(e.target).hasClass("view")) {
                 $("#viewedit-collapse").find("input").prop("disabled", true);
                 $("#viewedit-collapse").find("select").prop("disabled", true);
