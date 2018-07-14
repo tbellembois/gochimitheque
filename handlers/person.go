@@ -268,6 +268,8 @@ func (env *Env) UpdatePersonHandler(w http.ResponseWriter, r *http.Request) *mod
 
 	updatedp, _ := env.DB.GetPerson(id)
 	updatedp.PersonEmail = p.PersonEmail
+	updatedp.Entities = p.Entities
+	updatedp.Permissions = p.Permissions
 	log.WithFields(log.Fields{"updatedp": updatedp}).Debug("UpdatePersonHandler")
 
 	if err := env.DB.UpdatePerson(updatedp); err != nil {

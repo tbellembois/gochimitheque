@@ -22,6 +22,33 @@ func init() {
 	document = window.Document()
 }
 
+//// buildInlineRadio returns a b4 inline radio element
+//func buildInlineRadio(id string, class string, label string, name string, value string) *dom.HTMLDivElement {
+//
+//	d := document.CreateElement("div").(*dom.HTMLDivElement)
+//	d.SetClass("custom-control")
+//	d.SetClass("custom-radio")
+//	d.SetClass("custom-control-inline")
+//
+//	i := document.CreateElement("input").(*dom.HTMLInputElement)
+//	i.SetClass("custom-control-input")
+//	i.SetClass(class)
+//	i.SetID(id)
+//	i.SetAttribute("type", "radio")
+//	i.SetAttribute("name", name)
+//	i.SetAttribute("value", value)
+//
+//	l := document.CreateElement("label").(*dom.HTMLLabelElement)
+//	l.SetClass("custom-control-label")
+//	l.SetAttribute("for", id)
+//	l.SetInnerHTML(label)
+//
+//	d.AppendChild(i)
+//	d.AppendChild(l)
+//
+//	return d
+//}
+
 func PopulatePermissionWidget(params []*js.Object) {
 	// unchecking all permissions
 	for _, e := range document.GetElementsByClassName("perm") {
@@ -29,38 +56,79 @@ func PopulatePermissionWidget(params []*js.Object) {
 	}
 
 	// setting all permissions at none by defaut
-	for _, e := range tableitems {
-		//document.GetElementByID("perm"+e).SetAttribute("checked", "checked")
-		document.GetElementByID("perm" + e).(*dom.HTMLInputElement).Checked = true
+	for _, e := range document.GetElementsByClassName("permn") {
+		e.(*dom.HTMLInputElement).Checked = true
 	}
 
 	// then setting up new permissions
 	for _, p := range params {
 		pitemname := p.Get("permission_item_name").String()
 		ppermname := p.Get("permission_perm_name").String()
-		//pitemid := p.Get("permission_entityid").Get("Int64").Int64()
+		pentityid := p.Get("permission_entity_id").String()
+
+		println("---")
+		println(pitemname)
+		println(ppermname)
+		println(pentityid)
 
 		switch pitemname {
-		case "product", "storage":
+		case "product":
 			switch ppermname {
 			case "w", "all":
-				//document.GetElementByID("perm"+pitemname+"rw").SetAttribute("checked", "checked")
-				document.GetElementByID("perm" + pitemname + "rw").(*dom.HTMLInputElement).Checked = true
+				if pentityid == "-1" {
+					for _, e := range document.GetElementsByClassName("permwproduct") {
+						e.(*dom.HTMLInputElement).Checked = true
+					}
+				} else {
+					document.GetElementByID("permw" + pitemname + pentityid).(*dom.HTMLInputElement).Checked = true
+				}
 			case "r":
-				//document.GetElementByID("perm"+pitemname+"r").SetAttribute("checked", "checked")
-				document.GetElementByID("perm" + pitemname + "r").(*dom.HTMLInputElement).Checked = true
+				if pentityid == "-1" {
+					for _, e := range document.GetElementsByClassName("permrproduct") {
+						e.(*dom.HTMLInputElement).Checked = true
+					}
+				} else {
+					// should never happen
+					// permissions on products are not related to an entity id
+					document.GetElementByID("permr" + pitemname + pentityid).(*dom.HTMLInputElement).Checked = true
+				}
+			}
+		case "storage":
+			switch ppermname {
+			case "w", "all":
+				if pentityid == "-1" {
+					for _, e := range document.GetElementsByClassName("permwstorage") {
+						e.(*dom.HTMLInputElement).Checked = true
+					}
+				} else {
+					document.GetElementByID("permw" + pitemname + pentityid).(*dom.HTMLInputElement).Checked = true
+				}
+			case "r":
+				if pentityid == "-1" {
+					for _, e := range document.GetElementsByClassName("permrstorage") {
+						e.(*dom.HTMLInputElement).Checked = true
+					}
+				} else {
+					document.GetElementByID("permr" + pitemname + pentityid).(*dom.HTMLInputElement).Checked = true
+				}
 			}
 		case "all":
 			switch ppermname {
 			case "w", "all":
-				for _, e := range tableitems {
-					//document.GetElementByID("perm"+e+"rw").SetAttribute("checked", "checked")
-					document.GetElementByID("perm" + e + "rw").(*dom.HTMLInputElement).Checked = true
+				if pentityid == "-1" {
+					// super admin (if "all")
+					for _, e := range document.GetElementsByClassName("permw") {
+						e.(*dom.HTMLInputElement).Checked = true
+					}
+				} else {
+					// manager (if "all")
+					for _, e := range document.GetElementsByClassName("permw") {
+						e.(*dom.HTMLInputElement).Checked = true
+					}
 				}
 			case "r":
-				for _, e := range tableitems {
-					//document.GetElementByID("perm"+e+"r").SetAttribute("checked", "checked")
-					document.GetElementByID("perm" + e + "r").(*dom.HTMLInputElement).Checked = true
+				for _, e := range document.GetElementsByClassName("permr") {
+					e.(*dom.HTMLInputElement).Checked = true
 				}
 			}
 		}
@@ -100,13 +168,17 @@ func BuildInlineRadioElement(inputattr map[string]string) *dom.HTMLDivElement {
 }
 
 // BuildPermissionWidget return a widget to setup people permissions
-func BuildPermissionWidget(persID int) *dom.HTMLDivElement {
+func BuildPermissionWidget(entityID int) *dom.HTMLDivElement {
 
 	var widgetdiv *dom.HTMLDivElement
 	// create main widget div
 	widgetdiv = document.CreateElement("div").(*dom.HTMLDivElement)
-	widgetdiv.SetID(fmt.Sprintf("perm%d", persID))
+	widgetdiv.SetID(fmt.Sprintf("perm%d", entityID))
+	widgetdiv.SetClass("col-sm-12")
+	title := document.CreateElement("label").(*dom.HTMLLabelElement)
+	title.SetInnerHTML(fmt.Sprintf("%d", entityID))
 
+	widgetdiv.AppendChild(title)
 	for _, i := range tableitems {
 		// building main row
 		mainrowdiv := document.CreateElement("div").(*dom.HTMLDivElement)
@@ -119,9 +191,33 @@ func BuildPermissionWidget(persID int) *dom.HTMLDivElement {
 		firstcoldiv.SetClass("col-sm-6")
 		firstcoldiv.AppendChild(label)
 		// building second col for radios
-		noneradioattrs := map[string]string{"id": i, "name": fmt.Sprintf("perm%s", i), "value": "none", "label": "no permission"}
-		readradioattrs := map[string]string{"id": i, "name": fmt.Sprintf("perm%s", i), "value": "r", "label": "read"}
-		writeradioattrs := map[string]string{"id": i, "name": fmt.Sprintf("perm%s", i), "value": "w", "label": "read/write"}
+		noneradioattrs := map[string]string{
+			"id":        fmt.Sprintf("permn%s%d", i, entityID),
+			"name":      fmt.Sprintf("perm%s%d", i, entityID),
+			"value":     "none",
+			"label":     "_",
+			"perm_name": "n",
+			"item_name": fmt.Sprintf("%s", i),
+			"entity_id": fmt.Sprintf("%d", entityID),
+			"class":     fmt.Sprintf("perm permn permn%s", i)}
+		readradioattrs := map[string]string{
+			"id":        fmt.Sprintf("permr%s%d", i, entityID),
+			"name":      fmt.Sprintf("perm%s%d", i, entityID),
+			"value":     "r",
+			"label":     "r",
+			"perm_name": "r",
+			"item_name": fmt.Sprintf("%s", i),
+			"entity_id": fmt.Sprintf("%d", entityID),
+			"class":     fmt.Sprintf("perm permr permr%s", i)}
+		writeradioattrs := map[string]string{
+			"id":        fmt.Sprintf("permw%s%d", i, entityID),
+			"name":      fmt.Sprintf("perm%s%d", i, entityID),
+			"value":     "w",
+			"label":     "rw",
+			"perm_name": "w",
+			"item_name": fmt.Sprintf("%s", i),
+			"entity_id": fmt.Sprintf("%d", entityID),
+			"class":     fmt.Sprintf("perm permw permw%s", i)}
 		secondcoldiv := document.CreateElement("div").(*dom.HTMLDivElement)
 		secondcoldiv.SetClass("col-sm-6")
 		secondcoldiv.AppendChild(BuildInlineRadioElement(noneradioattrs))
@@ -137,12 +233,12 @@ func BuildPermissionWidget(persID int) *dom.HTMLDivElement {
 	return widgetdiv
 }
 
-// func main() {
+func main() {
 
-// 	// exporting functions to be called from other JS files
-// 	js.Global.Set("global", map[string]interface{}{
-// 		"buildPermissionWidget":    BuildPermissionWidget,
-// 		"populatePermissionWidget": PopulatePermissionWidget,
-// 	})
+	// exporting functions to be called from other JS files
+	js.Global.Set("global", map[string]interface{}{
+		"buildPermissionWidget":    BuildPermissionWidget,
+		"populatePermissionWidget": PopulatePermissionWidget,
+	})
 
-// }
+}

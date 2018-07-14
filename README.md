@@ -24,9 +24,9 @@ Restfull API.
 
 possible combinations for a given person:
 
-| item_name (ex: entity) | item_permname (ex: r) | entity_id (ex: 2) | notes |
+| item_name (ex: storage) | item_permname (ex: r) | entity_id (ex: 2) | notes |
 | :-- | :--: | --: | :-- |
-| `all`       |     `all`     |  ? | *not used* - we will use -1 |
+| `all`       |     `all`     |  ? | ex: `all` permission on all items of entity with id `3` : manager |
 | `all`       |     `all`     | -1 | super admin |
 | `all`     |   ?    |      ? | *not used* - non sense (ex: `r` on `all` items of entity with `id` 3) |
 | `all`     |   ?    |      -1| ex: `r` permission on all items of all entities |
@@ -39,8 +39,9 @@ possible combinations for a given person:
 
 final clean table:
 
-| item_name (ex: entity) | item_permname (ex: r) | entity_id (ex: 2) | notes |
+| item_name (ex: storage) | item_permname (ex: r) | entity_id (ex: 2) | notes |
 | :-- | :--: | --: | :-- |
+| `all`       |     `all`     |  ? | ex: `all` permission on all items of entity with id `3` : manager |
 | `all`       |     `all`     | -1 | super admin |
 | `all`     |   ?    |      -1| ex: `r` permission on all items of all entities |
 | ?     |   `all`    |      ? | ex: `all` permission on `storage` of entity with `id` 3 |
