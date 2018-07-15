@@ -83,6 +83,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	CREATE TABLE IF NOT EXISTS personentities (
 		personentities_person_id integer NOT NULL,
 		personentities_entity_id integer NOT NULL,
+		PRIMARY KEY (personentities_person_id, personentities_entity_id),
 		FOREIGN KEY (personentities_person_id) references person(person_id),
 		FOREIGN KEY (personentities_entity_id) references entity(entity_id));
 	-- entities managers	

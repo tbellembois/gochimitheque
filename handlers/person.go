@@ -140,6 +140,36 @@ func (env *Env) GetPersonHandler(w http.ResponseWriter, r *http.Request) *models
 	return nil
 }
 
+// GetPersonManageEntitiesHandler returns a json of the entities the person with the requested id is manager of
+func (env *Env) GetPersonManageEntitiesHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+	vars := mux.Vars(r)
+	var (
+		id  int
+		err error
+	)
+
+	if id, err = strconv.Atoi(vars["id"]); err != nil {
+		return &models.AppError{
+			Error:   err,
+			Message: "id atoi conversion",
+			Code:    http.StatusInternalServerError}
+	}
+
+	entities, err := env.DB.GetPersonManageEntities(id)
+	if err != nil {
+		return &models.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the entities",
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(entities)
+	return nil
+}
+
 // GetPersonEntitiesHandler returns a json of the entities of the person with the requested id
 func (env *Env) GetPersonEntitiesHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	vars := mux.Vars(r)

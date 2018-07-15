@@ -17,11 +17,11 @@ block content
                 input#index(type='hidden', name='index', value='')
                 input#person_id(type='hidden', name='person_id', value='')
                 .form-group.row
-                    label.col-sm-2.col-form-label(for='name') email
+                    label.col-sm-2.col-form-label(for='person_email') email
                     .col-sm-10
-                        input#person_email.form-control(disabled='disabled', type='text', value='', name='email')
+                        input#person_email.form-control(type='text', value='', name='email')
                 .form-group.row
-                    label.col-sm-2.col-form-label(for='entity') entities
+                    label.col-sm-2.col-form-label(for='person_entity') entities
                     .col-sm-10
                         select.form-control(style='width: 100% !important;', id='person_entity', name='entity', multiple='multiple')
                 .form-group.row#permissions
@@ -54,6 +54,34 @@ block contentjs
                     }
                 }
             });
+            $('select[id="person_entity"]').on('select2:unselecting', function (e) {
+                var ismanager = false;
+                var data = e.params.args.data,
+                    entityid = data.id,
+                    entityname = data.text;
+                
+                // preventing unselecting entity if the person is one its manager
+                manageentities = $("input.manageentities")
+                $.each(manageentities, function( index, e ) {
+                    if ($(e).val() == entityid) {
+                        ismanager = true;
+                    }
+                });
+                if (ismanager) {
+                    displayMessage("this entity can not be removed, the user is one of its manager", "success");
+                    e.preventDefault();
+                } else {
+                    // removing permissions widget
+                    $("#perm" + data.id).remove();
+                }
+            });
+            $('select[id="person_entity"]').on('select2:select', function (e) {
+                var data = e.params.data;
+                console.log(data);
+
+                // adding permissions widget
+                $("#permissions").append(global.buildPermissionWidget(data.entity_id, data.entity_name));
+            });
         });
 
         //
@@ -76,6 +104,9 @@ block contentjs
                             settings.url = "/validate/person/" + $("form#person-update input#person_id").val() + "/name/" + $("form#person-update input#person_email").val();
                         },
                     },
+                },
+                entity: {
+                    required: true,
                 },
             },
         });
@@ -188,64 +219,112 @@ block contentjs
             $('select[id="person_entity"]').val(null).trigger('change');
             $('select[id="person_entity"]').find('option').remove();
 
+            var persondata,
+                managedentitydata,
+                entitydata,
+                permissiondata;
+            var managedentitydataids;
+
             // getting the person
-            $.ajax({
+            personpromise = $.ajax({
                 url: "/person/" + row['person_id'],
                 method: "GET",
             }).done(function(data, textStatus, jqXHR) {
-                // flattening response data
-                fdata = flatten(data);
-                // autofilling form
-                $("#viewedit-collapse").autofill( fdata, {"findbyname": false } );
-                // setting index hidden input
-                $("input#index").val(index);
-                // finally collapsing the view
-                $('#viewedit-collapse').collapse('show');
-                $('#list-collapse').collapse('hide');
+                console.log("done personpromise");
+                persondata = data;
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                handleHTTPError(jqXHR.statusText, jqXHR.status)
+            });
+
+            // getting the entities the person is manager of
+            managerpromise = $.ajax({
+                url: "/person/" + row['person_id'] + "/manageentities",
+                method: "GET",
+            }).done(function(data, textStatus, jqXHR) {
+                console.log("done managerpromise");
+                managedentitydata = data;
+                if (data != null) {
+                    managedentitydataids = data.map(function(a) {return a.entity_id;});
+                } else {
+                    managedentitydataids = [];
+                }
+            });
+
+            // getting the person permissions
+            permissionpromise = $.ajax({
+                url: "/person/" + row['person_id'] + "/permissions",
+                method: "GET",
+            }).done(function(data, textStatus, jqXHR) {
+                console.log("done permissionpromise");
+                permissiondata = data;
             }).fail(function(jqXHR, textStatus, errorThrown) {
                 handleHTTPError(jqXHR.statusText, jqXHR.status)
             });
 
             // getting the person entities
-            $.ajax({
+            entitypromise = $.ajax({
                 url: "/person/" + row['person_id'] + "/entities",
                 method: "GET",
             }).done(function(data, textStatus, jqXHR) {
-                // filling select2
-                for(var i in data) {
-                   var newOption = new Option(data[i].entity_name, data[i].entity_id, true, true);
-                   $('select[id="person_entity"]').append(newOption).trigger('change');
-                }
-
-                // adding a permission widget for each entity
-                $("#permissions").empty();
-                for(var i in data) {
-                    $("#permissions").append(global.buildPermissionWidget(data[i].entity_id));
-                }
-
-                // getting the person permissions and populating the wodget
-                $.ajax({
-                    url: "/person/" + row['person_id'] + "/permissions",
-                    method: "GET",
-                }).done(function(data, textStatus, jqXHR) {
-                    global.populatePermissionWidget(data);
-                }).fail(function(jqXHR, textStatus, errorThrown) {
-                    handleHTTPError(jqXHR.statusText, jqXHR.status)
-                });
-
+                console.log("done entitypromise");
+                entitydata = data;
             }).fail(function(jqXHR, textStatus, errorThrown) {
                 handleHTTPError(jqXHR.statusText, jqXHR.status)
             });
-   
-            if ($(e.target).hasClass("view")) {
-                $("#viewedit-collapse").find("input").prop("disabled", true);
-                $("#viewedit-collapse").find("select").prop("disabled", true);
-                $("#viewedit-collapse").find("button#save").hide();
-            } else {
-                $("#viewedit-collapse").find("input").prop("disabled", false);
-                $("#viewedit-collapse").find("select").prop("disabled", false);
-                $("#viewedit-collapse").find("button#save").show();
-            }
+
+            $.when(personpromise, managerpromise, entitypromise, permissionpromise).done(function(firstData, secondData) {
+                console.log("done all");
+                // flattening person response data
+                fdata = flatten(persondata);
+                // autofilling form
+                $("#viewedit-collapse").autofill( fdata, {"findbyname": false } );
+                // setting index hidden input
+                $("input#index").val(index);
+
+                // appending managed entities in hidden inputs for further use
+                $("input.manageentities").remove();
+                for(var i in managedentitydata) {
+                   var newOption = $("<input></input>");
+                   newOption.addClass("manageentities");
+                   newOption.attr("type", "hidden");
+                   newOption.val(managedentitydata[i].entity_id);
+                   $('form[id="person-update"]').append(newOption);
+                }
+
+                // populating the entities select2
+                for(var i in entitydata) {
+                   var newOption = new Option(entitydata[i].entity_name, entitydata[i].entity_id, true, true);
+                   $('select[id="person_entity"]').append(newOption).trigger('change');
+                }
+                // adding a permission widget for each entity
+                // except for managed entities
+                $("#permissions").empty();
+                for(var i in entitydata) {
+                    if ($.inArray(entitydata[i].entity_id, managedentitydataids) == -1){
+                        $("#permissions").append(global.buildPermissionWidget(entitydata[i].entity_id, entitydata[i].entity_name));
+                    }
+                }
+
+                // populating the permissions widget
+                if ($("input.perm").length > 0) {
+                    global.populatePermissionWidget(permissiondata);
+                }
+
+                // disabling or enabling the widgets
+                if ($(e.target).hasClass("view")) {
+                    $("#viewedit-collapse").find("input").prop("disabled", true);
+                    $("#viewedit-collapse").find("select").prop("disabled", true);
+                    $("#viewedit-collapse").find("button#save").hide();
+                } else {
+                    $("#viewedit-collapse").find("input").prop("disabled", false);
+                    $("#viewedit-collapse").find("select").prop("disabled", false);
+                    $("#viewedit-collapse").find("button#save").show();
+                }
+
+                // finally collapsing the view
+                $('#viewedit-collapse').collapse('show');
+                $('#list-collapse').collapse('hide');
+            });
         }
 
         // items actions callback
