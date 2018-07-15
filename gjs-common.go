@@ -66,10 +66,10 @@ func PopulatePermissionWidget(params []*js.Object) {
 		ppermname := p.Get("permission_perm_name").String()
 		pentityid := p.Get("permission_entity_id").String()
 
-		println("---")
-		println(pitemname)
-		println(ppermname)
-		println(pentityid)
+		// println("---")
+		// println(pitemname)
+		// println(ppermname)
+		// println(pentityid)
 
 		switch pitemname {
 		case "product":
@@ -168,7 +168,7 @@ func BuildInlineRadioElement(inputattr map[string]string) *dom.HTMLDivElement {
 }
 
 // BuildPermissionWidget return a widget to setup people permissions
-func BuildPermissionWidget(entityID int) *dom.HTMLDivElement {
+func BuildPermissionWidget(entityID int, entityName string) *dom.HTMLDivElement {
 
 	var widgetdiv *dom.HTMLDivElement
 	// create main widget div
@@ -176,7 +176,7 @@ func BuildPermissionWidget(entityID int) *dom.HTMLDivElement {
 	widgetdiv.SetID(fmt.Sprintf("perm%d", entityID))
 	widgetdiv.SetClass("col-sm-12")
 	title := document.CreateElement("label").(*dom.HTMLLabelElement)
-	title.SetInnerHTML(fmt.Sprintf("%d", entityID))
+	title.SetInnerHTML(entityName)
 
 	widgetdiv.AppendChild(title)
 	for _, i := range tableitems {
@@ -233,7 +233,7 @@ func BuildPermissionWidget(entityID int) *dom.HTMLDivElement {
 	return widgetdiv
 }
 
-func main() {
+func main2() {
 
 	// exporting functions to be called from other JS files
 	js.Global.Set("global", map[string]interface{}{

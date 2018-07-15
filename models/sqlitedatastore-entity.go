@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"database/sql"
+
 	sq "github.com/Masterminds/squirrel"
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
 	log "github.com/sirupsen/logrus"
@@ -155,9 +156,34 @@ func (db *SQLiteDataStore) UpdateEntity(e Entity) error {
 
 	// adding the new ones
 	for _, m := range e.Managers {
-		sqlr = `insert or ignore into entitypeople (entitypeople_entity_id, entitypeople_person_id) values (?, ?)`
+		// adding the manager
+		sqlr = `INSERT OR IGNORE INTO entitypeople (entitypeople_entity_id, entitypeople_person_id) VALUES (?, ?)`
 		if _, db.err = db.Exec(sqlr, e.EntityID, m.PersonID); db.err != nil {
 			return db.err
+		}
+
+		for _, man := range e.Managers {
+			// setting the manager in the entity
+			sqlr = `INSERT OR IGNORE INTO personentities(personentities_person_id, personentities_entity_id) 
+			VALUES (?, ?)`
+			if _, db.err = db.Exec(sqlr, man.PersonID, e.EntityID); db.err != nil {
+				return db.err
+			}
+
+			// setting the manager permissions in the entity
+			// 1. lazily deleting former permissions
+			sqlr = `DELETE FROM permission 
+			WHERE permission_person_id = ?`
+			if _, db.err = db.Exec(sqlr, man.PersonID); db.err != nil {
+				return db.err
+			}
+			// 2. inserting manager permissions
+			sqlr = `INSERT INTO permission(permission_person_id, permission_perm_name, permission_item_name, permission_entity_id) 
+			VALUES (?, ?, ?, ?)`
+			if _, db.err = db.Exec(sqlr, man.PersonID, "all", "all", e.EntityID); db.err != nil {
+				return db.err
+			}
+
 		}
 	}
 

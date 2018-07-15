@@ -158,6 +158,7 @@ func main() {
 	r.Handle("/{item:people}", securechain.Then(env.AppMiddleware(env.GetPeopleHandler))).Methods("GET")
 	r.Handle("/{item:person}/{id}", securechain.Then(env.AppMiddleware(env.GetPersonHandler))).Methods("GET")
 	r.Handle("/{item:person}/{id}/entities", securechain.Then(env.AppMiddleware(env.GetPersonEntitiesHandler))).Methods("GET")
+	r.Handle("/{item:person}/{id}/manageentities", securechain.Then(env.AppMiddleware(env.GetPersonManageEntitiesHandler))).Methods("GET")
 	r.Handle("/{item:person}/{id}/permissions", securechain.Then(env.AppMiddleware(env.GetPersonPermissionsHandler))).Methods("GET")
 	r.Handle("/{item:person}/{id}", securechain.Then(env.AppMiddleware(env.UpdatePersonHandler))).Methods("PUT")
 	r.Handle("/{item:person}", securechain.Then(env.AppMiddleware(env.CreatePersonHandler))).Methods("POST")

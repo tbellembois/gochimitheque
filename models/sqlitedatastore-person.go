@@ -89,6 +89,24 @@ func (db *SQLiteDataStore) GetPersonPermissions(id int) ([]Permission, error) {
 	return ps, nil
 }
 
+// GetPersonManageEntities returns the entities the person (with id "id") if manager of
+func (db *SQLiteDataStore) GetPersonManageEntities(id int) ([]Entity, error) {
+	var (
+		es   []Entity
+		sqlr string
+	)
+
+	sqlr = `SELECT entity_id, entity_name, entity_description 
+	FROM entity
+	LEFT JOIN entitypeople ON entitypeople.entitypeople_entity_id = entity.entity_id
+	WHERE entitypeople.entitypeople_person_id = ?`
+	if db.err = db.Select(&es, sqlr, id); db.err != nil {
+		return nil, db.err
+	}
+	log.WithFields(log.Fields{"personID": id, "es": es}).Debug("GetPersonManageEntities")
+	return es, nil
+}
+
 // GetPersonEntities returns the person (with id "id") entities
 func (db *SQLiteDataStore) GetPersonEntities(id int) ([]Entity, error) {
 	var (
