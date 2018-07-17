@@ -121,6 +121,7 @@ func (db *SQLiteDataStore) GetPersonEntities(id int) ([]Entity, error) {
 	if db.err = db.Select(&es, sqlr, id); db.err != nil {
 		return nil, db.err
 	}
+
 	log.WithFields(log.Fields{"personID": id, "es": es}).Debug("GetPersonEntities")
 	return es, nil
 }
@@ -149,10 +150,10 @@ func (db *SQLiteDataStore) DoesPersonBelongsTo(id int, entities []Entity) (bool,
 	return count > 0, nil
 }
 
-// HasPersonPermission returns true if the person with id "id" has the permission "perm" on the item "item" with id "itemid"
+// HasPersonPermission returns true if the person with id "id" has the permission "perm" on the item "item" id "itemid"
 func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string, itemid int) (bool, error) {
-	// itemid == -1 means all items
-	// itemid == -2 means any items (-2 is not a database permission_entity_id possible value)
+	// itemid == -1 means all itemid
+	// itemid == -2 means any itemid
 	var (
 		res     bool
 		count   int
@@ -172,8 +173,8 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 	// first: retrieving the entities of the item to be accessed
 	//
 	switch item {
-	case "person":
-		// retrieving the requeted person entities
+	case "people":
+		// retrieving the requested person entities
 		var rpe []Entity
 		if rpe, err = db.GetPersonEntities(itemid); err != nil {
 			return false, err
@@ -182,9 +183,10 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 		for _, i := range rpe {
 			eids = append(eids, i.EntityID)
 		}
-	case "entity":
+	case "entities":
 		eids = append(eids, itemid)
 	}
+	log.WithFields(log.Fields{"eids": eids}).Debug("HasPersonPermission")
 
 	//
 	// second: has the logged user "perm" on the "item" of the entities in "eids"

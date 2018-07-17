@@ -6,3 +6,23 @@ mixin inlineradio
     div.custom-control.custom-radio.custom-control-inline
         input(class='custom-control-input {{$class}}' id='{{$id}}' type='radio' name='{{$name}}' value='{{$value}}')
         label.custom-control-label(for='{{$id}}') {{$label}}
+
+mixin permissions
+    .col-sm-6
+        .alert.alert-primary product
+    .col-sm-6
+        | {{$id := "permproduct"}} {{$value := "_"}} {{$label := "_"}} {{$class := "perm"}}  {{$name := "product"}}
+        +inlineradio
+        | {{$id := "permproductr"}} {{$value := "r"}} {{$label := "r"}}
+        +inlineradio
+        | {{$id := "permproductrw"}} {{$value := "w"}} {{$label := "rw"}}
+        +inlineradio
+    .col-sm-6
+        .alert.alert-primary storage
+    .col-sm-6
+        | {{$id := "permstorage"}} {{$value := "_"}} {{$label := "_"}} {{$class := "perm"}}  {{$name := "storage"}}
+        +inlineradio
+        | {{$id := "permstorager"}} {{$value := "r"}} {{$label := "r"}}
+        +inlineradio
+        | {{$id := "permstoragerw"}} {{$value := "w"}} {{$label := "rw"}}
+        +inlineradio
