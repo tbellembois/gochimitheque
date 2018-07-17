@@ -139,7 +139,7 @@ block contentjs
                         "person_email": email,
                 });
                 $.ajax({
-                    url: "/person/" + id,
+                    url: "/people/" + id,
                     method: "PUT",
                     dataType: 'json',
                     data: data,
@@ -186,12 +186,12 @@ block contentjs
         function operateFormatter(value, row, index) {
             // show action buttons if permitted
             eid = row.person_id
-            hasPermission("{{ .PersonID }}", "r", "person", eid).done(function(result){
+            hasPermission("{{ .PersonID }}", "r", "people", eid).done(function(result){
                 if(result) {
                     $("#view"+this.itemId).fadeIn();
                 }
             })
-            hasPermission("{{ .PersonID }}", "w", "person", eid).done(function(result){
+            hasPermission("{{ .PersonID }}", "w", "people", eid).done(function(result){
                 if(result) {
                     $("#edit"+this.itemId).fadeIn();
                     $("#delete"+this.itemId).fadeIn();
@@ -227,7 +227,7 @@ block contentjs
 
             // getting the person
             personpromise = $.ajax({
-                url: "/person/" + row['person_id'],
+                url: "/people/" + row['person_id'],
                 method: "GET",
             }).done(function(data, textStatus, jqXHR) {
                 console.log("done personpromise");
@@ -238,7 +238,7 @@ block contentjs
 
             // getting the entities the person is manager of
             managerpromise = $.ajax({
-                url: "/person/" + row['person_id'] + "/manageentities",
+                url: "/people/" + row['person_id'] + "/manageentities",
                 method: "GET",
             }).done(function(data, textStatus, jqXHR) {
                 console.log("done managerpromise");
@@ -252,7 +252,7 @@ block contentjs
 
             // getting the person permissions
             permissionpromise = $.ajax({
-                url: "/person/" + row['person_id'] + "/permissions",
+                url: "/people/" + row['person_id'] + "/permissions",
                 method: "GET",
             }).done(function(data, textStatus, jqXHR) {
                 console.log("done permissionpromise");
@@ -263,7 +263,7 @@ block contentjs
 
             // getting the person entities
             entitypromise = $.ajax({
-                url: "/person/" + row['person_id'] + "/entities",
+                url: "/people/" + row['person_id'] + "/entities",
                 method: "GET",
             }).done(function(data, textStatus, jqXHR) {
                 console.log("done entitypromise");
@@ -343,7 +343,7 @@ block contentjs
                 // ask for confirmation and then delete
                 $(this).confirmation("show").on( "confirmed.bs.confirmation", function() {
                     $.ajax({
-                        url: "/person/" + row['person_id'],
+                        url: "/people/" + row['person_id'],
                         method: "DELETE",
                     }).done(function(data, textStatus, jqXHR) {
                         var $table = $('#table');

@@ -109,7 +109,7 @@ block contentjs
                     "entity_description": description,
                 });
                 $.ajax({
-                    url: "/entity/" + id,
+                    url: "/entities/" + id,
                     method: "PUT",
                     dataType: 'json',
                     data: data,
@@ -158,12 +158,12 @@ block contentjs
         function operateFormatter(value, row, index) {
             // show action buttons if permitted
             eid = row.entity_id
-            hasPermission("{{ .PersonID }}", "r", "entity", eid).done(function(result){
+            hasPermission("{{ .PersonID }}", "r", "entities", eid).done(function(result){
                 if(result) {
                     $("#view"+this.itemId).fadeIn();
                 }
             })
-            hasPermission("{{ .PersonID }}", "w", "entity", eid).done(function(result){
+            hasPermission("{{ .PersonID }}", "w", "entities", eid).done(function(result){
                 if(result) {
                     $("#edit"+this.itemId).fadeIn();
                     $("#delete"+this.itemId).fadeIn();
@@ -193,7 +193,7 @@ block contentjs
 
             // getting the entity
             $.ajax({
-                url: "/entity/" + row['entity_id'],
+                url: "/entities/" + row['entity_id'],
                 method: "GET",
             }).done(function(data, textStatus, jqXHR) {
                 // flattening response data
@@ -208,7 +208,7 @@ block contentjs
 
             // getting the entity managers
             $.ajax({
-                url: "/entity/" + row['entity_id'] + "/people",
+                url: "/entities/" + row['entity_id'] + "/people",
                 method: "GET",
             }).done(function(data, textStatus, jqXHR) {
                 // select2 is not autofilled - we need a special operation
@@ -249,7 +249,7 @@ block contentjs
                 // ask for confirmation and then delete
                 $(this).confirmation("show").on( "confirmed.bs.confirmation", function() {
                     $.ajax({
-                        url: "/entity/" + row['entity_id'],
+                        url: "/entities/" + row['entity_id'],
                         method: "DELETE",
                     }).done(function(data, textStatus, jqXHR) {
                         var $table = $('#table');

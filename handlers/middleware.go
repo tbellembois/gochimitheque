@@ -159,13 +159,6 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			// view (list) or
 			// REST view methods
 			case "v", "":
-				if item == "entities" {
-					item = "entity"
-					id = "-2"
-				} else if item == "people" {
-					item = "person"
-					id = "-2"
-				}
 				perm = "r"
 			// views update, create
 			case "vu", "vc":
@@ -173,6 +166,10 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			}
 		case "POST", "PUT", "DELETE":
 			//REST update, delete, create methods
+			// we need to perform more permission check here
+			// to ensure that values in the request body
+			// are allowed for the auth user
+			// ex: can the auth user set foo@bar.com in entity 3?
 			perm = "w"
 		default:
 			log.Debug("unsupported http verb")
@@ -181,7 +178,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 		}
 
 		if id == "" {
-			itemid = -1
+			itemid = -2
 		} else {
 			if itemid, err = strconv.Atoi(id); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)

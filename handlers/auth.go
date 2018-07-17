@@ -140,7 +140,7 @@ func (env *Env) HasPermissionHandler(w http.ResponseWriter, r *http.Request) *mo
 			Message: "getting permissions error",
 			Code:    http.StatusInternalServerError}
 	}
-	log.WithFields(log.Fields{"personid": personid, "perm": perm, "item": item, "itemid": itemid}).Debug("GetEntityHandler")
+	log.WithFields(log.Fields{"personid": personid, "perm": perm, "item": item, "itemid": itemid}).Debug("HasPermissionHandler")
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
