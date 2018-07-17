@@ -26,7 +26,7 @@ func (db *SQLiteDataStore) GetPeople(personID int, search string, order string, 
 		p.person_email`).
 		From("person AS p").
 		Where("p.person_email LIKE ?", fmt.Sprint("%", search, "%")).
-		Join(buildPermissionFilter("person", "p", "person_id", "r"), fmt.Sprint(personID)).
+		Join(buildPermissionFilter("people", "p", "person_id", "r"), fmt.Sprint(personID)).
 		GroupBy("p.person_id").
 		OrderBy(fmt.Sprintf("person_email %s", order))
 	if limit != constants.MaxUint64 {

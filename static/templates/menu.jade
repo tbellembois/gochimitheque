@@ -15,7 +15,7 @@ nav.navbar.navbar-expand-lg.navbar-light.bg-light
             li.nav-item
                 a(href="/login").nav-link login
 
-            if HasPermission .PersonID "r" "entity" -2
+            if HasPermission .PersonID "r" "entities" -2
                 li.nav-item.dropdown
                     a(href="#", title="entities").nav-link.dropdown-toggle#navbarDropdown(
                         role="button" 
@@ -25,9 +25,9 @@ nav.navbar.navbar-expand-lg.navbar-light.bg-light
                     div.dropdown-menu(aria-labelledby="navbarDropdown")
                         a(href="/v/entities", title="list").dropdown-item list
                         if HasPermission .PersonID "w" "entity" -1
-                            a(href="/vc/entity", title="create").dropdown-item create
+                            a(href="/vc/entities", title="create").dropdown-item create
 
-            if HasPermission .PersonID "r" "person" -2
+            if HasPermission .PersonID "r" "people" -2
                 li.nav-item.dropdown
                     a(href="#", title="people").nav-link.dropdown-toggle#navbarDropdown(
                         role="button" 
@@ -37,7 +37,7 @@ nav.navbar.navbar-expand-lg.navbar-light.bg-light
                     div.dropdown-menu(aria-labelledby="navbarDropdown")
                         a(href="/v/people", title="list").dropdown-item list
                         if HasPermission .PersonID "w" "person" -1
-                            a(href="/vc/person", title="create").dropdown-item create
+                            a(href="/vc/people", title="create").dropdown-item create
 
             li.nav-item
                 a.nav-link.disabled(href="#")
