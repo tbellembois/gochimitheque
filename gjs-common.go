@@ -12,42 +12,15 @@ var (
 	document dom.Document
 
 	// database tables
-	tableitems = [2]string{
-		"product",
-		"storage"}
+	permitems = [2]string{
+		"products",
+		"storages"}
 )
 
 func init() {
 	window = dom.GetWindow()
 	document = window.Document()
 }
-
-//// buildInlineRadio returns a b4 inline radio element
-//func buildInlineRadio(id string, class string, label string, name string, value string) *dom.HTMLDivElement {
-//
-//	d := document.CreateElement("div").(*dom.HTMLDivElement)
-//	d.SetClass("custom-control")
-//	d.SetClass("custom-radio")
-//	d.SetClass("custom-control-inline")
-//
-//	i := document.CreateElement("input").(*dom.HTMLInputElement)
-//	i.SetClass("custom-control-input")
-//	i.SetClass(class)
-//	i.SetID(id)
-//	i.SetAttribute("type", "radio")
-//	i.SetAttribute("name", name)
-//	i.SetAttribute("value", value)
-//
-//	l := document.CreateElement("label").(*dom.HTMLLabelElement)
-//	l.SetClass("custom-control-label")
-//	l.SetAttribute("for", id)
-//	l.SetInnerHTML(label)
-//
-//	d.AppendChild(i)
-//	d.AppendChild(l)
-//
-//	return d
-//}
 
 func PopulatePermissionWidget(params []*js.Object) {
 	// unchecking all permissions
@@ -72,11 +45,11 @@ func PopulatePermissionWidget(params []*js.Object) {
 		// println(pentityid)
 
 		switch pitemname {
-		case "product":
+		case "products":
 			switch ppermname {
 			case "w", "all":
 				if pentityid == "-1" {
-					for _, e := range document.GetElementsByClassName("permwproduct") {
+					for _, e := range document.GetElementsByClassName("permwproducts") {
 						e.(*dom.HTMLInputElement).Checked = true
 					}
 				} else {
@@ -84,7 +57,7 @@ func PopulatePermissionWidget(params []*js.Object) {
 				}
 			case "r":
 				if pentityid == "-1" {
-					for _, e := range document.GetElementsByClassName("permrproduct") {
+					for _, e := range document.GetElementsByClassName("permrproducts") {
 						e.(*dom.HTMLInputElement).Checked = true
 					}
 				} else {
@@ -93,11 +66,11 @@ func PopulatePermissionWidget(params []*js.Object) {
 					document.GetElementByID("permr" + pitemname + pentityid).(*dom.HTMLInputElement).Checked = true
 				}
 			}
-		case "storage":
+		case "storages":
 			switch ppermname {
 			case "w", "all":
 				if pentityid == "-1" {
-					for _, e := range document.GetElementsByClassName("permwstorage") {
+					for _, e := range document.GetElementsByClassName("permwstorages") {
 						e.(*dom.HTMLInputElement).Checked = true
 					}
 				} else {
@@ -105,7 +78,7 @@ func PopulatePermissionWidget(params []*js.Object) {
 				}
 			case "r":
 				if pentityid == "-1" {
-					for _, e := range document.GetElementsByClassName("permrstorage") {
+					for _, e := range document.GetElementsByClassName("permrstorages") {
 						e.(*dom.HTMLInputElement).Checked = true
 					}
 				} else {
@@ -179,7 +152,7 @@ func BuildPermissionWidget(entityID int, entityName string) *dom.HTMLDivElement 
 	title.SetInnerHTML(entityName)
 
 	widgetdiv.AppendChild(title)
-	for _, i := range tableitems {
+	for _, i := range permitems {
 		// building main row
 		mainrowdiv := document.CreateElement("div").(*dom.HTMLDivElement)
 		mainrowdiv.SetClass("row")
