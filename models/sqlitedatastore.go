@@ -106,107 +106,52 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	log.WithFields(log.Fields{"c": c}).Debug("CreateDatabase")
 	if c == 0 {
 		log.Debug("populating database")
-		// preparing requests
-		people := `INSERT INTO person (person_email, person_password) VALUES (?, ?)`
-		entities := `INSERT INTO entity (entity_name, entity_description) VALUES (?, ?)`
-		permissions := `INSERT INTO permission (permission_person_id, permission_perm_name, permission_item_name, permission_entity_id) VALUES (?, ?, ?, ?)`
-		personentities := `INSERT INTO personentities (personentities_person_id, personentities_entity_id) VALUES (? ,?)`
-		entitypeople := `INSERT INTO entitypeople (entitypeople_entity_id, entitypeople_person_id) VALUES (? ,?)`
-		// inserting people
-		user1, _ := db.MustExec(people, "user1@entity1.com", "user").LastInsertId()
-		user11, _ := db.MustExec(people, "user11@entity1.com", "user").LastInsertId()
-		userm1, _ := db.MustExec(people, "manager1@entity1.com", "user").LastInsertId()
 
-		user2, _ := db.MustExec(people, "user2@entity2.com", "user").LastInsertId()
-		user22, _ := db.MustExec(people, "user22@entity2.com", "user").LastInsertId()
-		userm2, _ := db.MustExec(people, "manager2@entity2.com", "user").LastInsertId()
+		m1 := Person{PersonEmail: "manager@lab-one.com"}
+		m2 := Person{PersonEmail: "manager@lab-two.com"}
+		m3 := Person{PersonEmail: "manager@lab-three.com"}
 
-		user3, _ := db.MustExec(people, "user3@entity3.com", "user").LastInsertId()
-		user33, _ := db.MustExec(people, "user33@entity3.com", "user").LastInsertId()
-		userm3, _ := db.MustExec(people, "manager3@entity3.com", "user").LastInsertId()
-		userm33, _ := db.MustExec(people, "manager33@entity3.com", "user").LastInsertId()
+		_, m1.PersonID = db.CreatePerson(m1)
+		_, m2.PersonID = db.CreatePerson(m1)
+		_, m3.PersonID = db.CreatePerson(m1)
 
-		usersuper, _ := db.MustExec(people, "user@super.com", "user").LastInsertId()
-		// inserting entities
-		entity1id, _ := db.MustExec(entities, "entity1", "sample entity one").LastInsertId()
-		entity2id, _ := db.MustExec(entities, "entity2", "sample entity two").LastInsertId()
-		entity3id, _ := db.MustExec(entities, "entity3", "sample entity three").LastInsertId()
+		e1 := Entity{EntityName: "lab one", Managers: []Person{m1}}
+		e2 := Entity{EntityName: "lab two", Managers: []Person{m2}}
+		e3 := Entity{EntityName: "lab three", Managers: []Person{m3}}
 
-		// setting up permissions
-		// entity1 users
-		db.MustExec(permissions, userm1, "r", "entities", entity1id)
-		db.MustExec(permissions, userm1, "w", "entities", entity1id)
-		db.MustExec(permissions, userm1, "r", "people", entity1id)
-		db.MustExec(permissions, userm1, "w", "people", entity1id)
-		db.MustExec(permissions, userm1, "all", "products", -1)
-		db.MustExec(permissions, userm1, "all", "storages", entity1id)
+		_, e1.EntityID = db.CreateEntity(e1)
+		_, e2.EntityID = db.CreateEntity(e2)
+		_, e3.EntityID = db.CreateEntity(e3)
 
-		db.MustExec(permissions, user1, "r", "products", -1)
-		db.MustExec(permissions, user1, "r", "entities", entity1id)
-		db.MustExec(permissions, user1, "r", "storages", entity1id)
+		m1.Entities = []Entity{e1}
+		m2.Entities = []Entity{e2}
+		m3.Entities = []Entity{e3}
 
-		db.MustExec(permissions, user11, "r", "products", -1)
-		db.MustExec(permissions, user11, "r", "storages", entity1id)
-		db.MustExec(permissions, user11, "w", "storages", entity1id)
+		db.UpdatePerson(m1)
+		db.UpdatePerson(m2)
+		db.UpdatePerson(m3)
 
-		// entity2 users
-		db.MustExec(permissions, userm2, "r", "entities", entity2id)
-		db.MustExec(permissions, userm2, "w", "entities", entity2id)
-		db.MustExec(permissions, userm2, "r", "people", entity2id)
-		db.MustExec(permissions, userm2, "w", "people", entity2id)
-		db.MustExec(permissions, userm2, "all", "products", -1)
-		db.MustExec(permissions, userm2, "all", "storages", entity2id)
+		p0 := Person{PersonEmail: "user@super.com", Permissions: []Permission{Permission{PermissionPermName: "all", PermissionItemName: "all", PermissionEntityID: -1}}}
+		p1 := Person{PersonEmail: "john@lab-one.com", Entities: []Entity{e1}}
+		p2 := Person{PersonEmail: "mickey@lab-one.com", Entities: []Entity{e1}}
+		p3 := Person{PersonEmail: "donald@lab-one.com", Entities: []Entity{e1}}
+		p4 := Person{PersonEmail: "tom@lab-two.com", Entities: []Entity{e2}}
+		p5 := Person{PersonEmail: "mike@lab-two.com", Entities: []Entity{e2}}
+		p6 := Person{PersonEmail: "ralf@lab-two.com", Entities: []Entity{e2}}
+		p7 := Person{PersonEmail: "john@lab-three.com", Entities: []Entity{e3}}
+		p8 := Person{PersonEmail: "rob@lab-three.com", Entities: []Entity{e3}}
+		p9 := Person{PersonEmail: "harrison@lab-three.com", Entities: []Entity{e3}}
 
-		db.MustExec(permissions, user2, "r", "products", -1)
-		db.MustExec(permissions, user2, "r", "entities", entity2id)
-		db.MustExec(permissions, user2, "r", "storages", entity2id)
-
-		db.MustExec(permissions, user22, "r", "products", -1)
-		db.MustExec(permissions, user22, "r", "storages", entity2id)
-		db.MustExec(permissions, user22, "w", "storages", entity2id)
-
-		// entity3 users
-		db.MustExec(permissions, userm3, "r", "entities", entity3id)
-		db.MustExec(permissions, userm3, "w", "entities", entity3id)
-		db.MustExec(permissions, userm3, "r", "people", entity3id)
-		db.MustExec(permissions, userm3, "w", "people", entity3id)
-		db.MustExec(permissions, userm3, "all", "products", -1)
-		db.MustExec(permissions, userm3, "all", "storages", entity3id)
-
-		db.MustExec(permissions, userm33, "r", "entities", entity3id)
-		db.MustExec(permissions, userm33, "w", "entities", entity3id)
-		db.MustExec(permissions, userm33, "r", "people", entity3id)
-		db.MustExec(permissions, userm33, "w", "people", entity3id)
-		db.MustExec(permissions, userm33, "all", "products", -1)
-		db.MustExec(permissions, userm33, "all", "storages", entity3id)
-
-		db.MustExec(permissions, user3, "r", "products", -1)
-		db.MustExec(permissions, user3, "r", "storages", entity3id)
-
-		db.MustExec(permissions, user33, "r", "products", -1)
-		db.MustExec(permissions, user33, "r", "storages", entity3id)
-		db.MustExec(permissions, user33, "w", "storages", entity3id)
-
-		// super admin
-		db.MustExec(permissions, usersuper, "all", "all", -1)
-
-		// then people entities
-		db.MustExec(personentities, user1, entity1id)
-		db.MustExec(personentities, user11, entity1id)
-		db.MustExec(personentities, userm1, entity1id)
-		db.MustExec(personentities, user2, entity2id)
-		db.MustExec(personentities, user22, entity2id)
-		db.MustExec(personentities, userm2, entity2id)
-		db.MustExec(personentities, user3, entity3id)
-		db.MustExec(personentities, user33, entity3id)
-		db.MustExec(personentities, userm3, entity3id)
-		db.MustExec(personentities, userm33, entity3id)
-
-		// then entities managers
-		db.MustExec(entitypeople, entity1id, userm1)
-		db.MustExec(entitypeople, entity2id, userm2)
-		db.MustExec(entitypeople, entity3id, userm3)
-		db.MustExec(entitypeople, entity3id, userm33)
+		db.CreatePerson(p0)
+		db.CreatePerson(p1)
+		db.CreatePerson(p2)
+		db.CreatePerson(p3)
+		db.CreatePerson(p4)
+		db.CreatePerson(p5)
+		db.CreatePerson(p6)
+		db.CreatePerson(p7)
+		db.CreatePerson(p8)
+		db.CreatePerson(p9)
 	}
 	return nil
 }

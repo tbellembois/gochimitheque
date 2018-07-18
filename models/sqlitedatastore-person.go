@@ -253,7 +253,7 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 }
 
 // CreatePerson creates the given person
-func (db *SQLiteDataStore) CreatePerson(p Person) error {
+func (db *SQLiteDataStore) CreatePerson(p Person) (error, int) {
 	var (
 		sqlr   string
 		res    sql.Result
@@ -262,12 +262,12 @@ func (db *SQLiteDataStore) CreatePerson(p Person) error {
 	// inserting person
 	sqlr = `INSERT INTO person(person_email, person_password) VALUES (?, ?)`
 	if res, db.err = db.Exec(sqlr, p.PersonEmail, p.PersonPassword); db.err != nil {
-		return db.err
+		return db.err, 0
 	}
 
 	// getting the last inserted id
 	if lastid, db.err = res.LastInsertId(); db.err != nil {
-		return db.err
+		return db.err, 0
 	}
 	p.PersonID = int(lastid)
 
@@ -275,10 +275,19 @@ func (db *SQLiteDataStore) CreatePerson(p Person) error {
 	for _, per := range p.Permissions {
 		sqlr = `INSERT INTO permission(permission_person_id, permission_perm_name, permission_item_name, permission_entity_id) VALUES (?, ?, ?, ?)`
 		if _, db.err = db.Exec(sqlr, p.PersonID, per.PermissionPermName, per.PermissionItemName, -1); db.err != nil {
-			return db.err
+			return db.err, 0
 		}
 	}
-	return nil
+
+	// inserting entities
+	for _, e := range p.Entities {
+		sqlr = `INSERT INTO personentities(personentities_person_id, personentities_entity_id) 
+			VALUES (?, ?)`
+		if _, db.err = db.Exec(sqlr, p.PersonID, e.EntityID); db.err != nil {
+			return db.err, 0
+		}
+	}
+	return nil, p.PersonID
 }
 
 // UpdatePerson updates the given person

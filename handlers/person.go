@@ -253,7 +253,7 @@ func (env *Env) CreatePersonHandler(w http.ResponseWriter, r *http.Request) *mod
 	// TODO
 	p.PersonPassword = "TODO"
 
-	if err := env.DB.CreatePerson(p); err != nil {
+	if err, _ := env.DB.CreatePerson(p); err != nil {
 		return &models.AppError{
 			Error:   err,
 			Message: "create person error",

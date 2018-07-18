@@ -92,7 +92,7 @@ func (db *SQLiteDataStore) DeleteEntity(id int) error {
 }
 
 // CreateEntity creates the given entity
-func (db *SQLiteDataStore) CreateEntity(e Entity) error {
+func (db *SQLiteDataStore) CreateEntity(e Entity) (error, int) {
 	var (
 		sqlr   string
 		res    sql.Result
@@ -100,12 +100,12 @@ func (db *SQLiteDataStore) CreateEntity(e Entity) error {
 	)
 	sqlr = `INSERT INTO entity(entity_name, entity_description) VALUES (?, ?)`
 	if res, db.err = db.Exec(sqlr, e.EntityName, e.EntityDescription); db.err != nil {
-		return db.err
+		return db.err, 0
 	}
 
 	// getting the last inserted id
 	if lastid, db.err = res.LastInsertId(); db.err != nil {
-		return db.err
+		return db.err, 0
 	}
 	e.EntityID = int(lastid)
 
@@ -113,11 +113,11 @@ func (db *SQLiteDataStore) CreateEntity(e Entity) error {
 	for _, m := range e.Managers {
 		sqlr = `insert into entitypeople (entitypeople_entity_id, entitypeople_person_id) values (?, ?)`
 		if _, db.err = db.Exec(sqlr, e.EntityID, m.PersonID); db.err != nil {
-			return db.err
+			return db.err, 0
 		}
 	}
 
-	return nil
+	return nil, e.EntityID
 }
 
 // UpdateEntity updates the given entity

@@ -11,7 +11,7 @@ type Datastore interface {
 	GetEntity(id int) (Entity, error)
 	GetEntityPeople(id int) ([]Person, error)
 	DeleteEntity(id int) error
-	CreateEntity(e Entity) error
+	CreateEntity(e Entity) (error, int)
 	UpdateEntity(e Entity) error
 	IsEntityWithName(name string) (bool, error)
 	IsEntityWithNameExcept(string, ...string) (bool, error)
@@ -25,6 +25,6 @@ type Datastore interface {
 	GetPersonManageEntities(id int) ([]Entity, error)
 	DoesPersonBelongsTo(id int, entities []Entity) (bool, error)
 	HasPersonPermission(id int, perm string, item string, itemid int) (bool, error)
-	CreatePerson(p Person) error
+	CreatePerson(p Person) (error, int)
 	UpdatePerson(p Person) error
 }
