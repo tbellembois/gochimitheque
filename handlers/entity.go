@@ -201,7 +201,7 @@ func (env *Env) CreateEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 	}
 	log.WithFields(log.Fields{"e": e}).Debug("CreateEntityHandler")
 
-	if err := env.DB.CreateEntity(e); err != nil {
+	if err, _ := env.DB.CreateEntity(e); err != nil {
 		return &models.AppError{
 			Error:   err,
 			Message: "create entity error",
