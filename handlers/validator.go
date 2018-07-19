@@ -10,8 +10,69 @@ import (
 	"github.com/tbellembois/gochimitheque/models"
 )
 
+// ValidatePersonEmailHandler checks that the person email does not already exist
+// if an id is given is the request the validator ignore the email of the person with this id
+func (env *Env) ValidatePersonEmailHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+	vars := mux.Vars(r)
+	var (
+		err       error
+		res       bool
+		resp      string
+		person    models.Person
+		person_id int
+	)
+
+	// converting the id
+	if person_id, err = strconv.Atoi(vars["id"]); err != nil {
+		return &models.AppError{
+			Error:   err,
+			Message: "id atoi conversion",
+			Code:    http.StatusInternalServerError}
+	}
+
+	if person_id == -1 {
+		// querying the database
+		if res, err = env.DB.IsPersonWithEmail(vars["email"]); err != nil {
+			return &models.AppError{
+				Error:   err,
+				Code:    http.StatusBadRequest,
+				Message: "error looking for person by email",
+			}
+		}
+	} else {
+		// getting the person
+		if person, err = env.DB.GetPerson(person_id); err != nil {
+			return &models.AppError{
+				Error:   err,
+				Code:    http.StatusBadRequest,
+				Message: "error looking for person by email",
+			}
+		}
+		// querying the database
+		if res, err = env.DB.IsPersonWithEmailExcept(vars["email"], person.PersonEmail); err != nil {
+			return &models.AppError{
+				Error:   err,
+				Code:    http.StatusBadRequest,
+				Message: "error looking for person by email",
+			}
+		}
+	}
+
+	log.WithFields(log.Fields{"vars": vars, "res": res}).Debug("ValidatePersonEmailHandler")
+	if res {
+		resp = "person with this email already present"
+	} else {
+		resp = "true"
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resp)
+	return nil
+}
+
 // ValidateEntityNameHandler checks that the entity name does not already exist
-// if an id is given is the request the validator ignore the name the entity with this id
+// if an id is given is the request the validator ignore the name of the entity with this id
 func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	vars := mux.Vars(r)
 	var (

@@ -5,42 +5,66 @@ block content
         .form-group.row
             label.col-sm-2.col-form-label(for='email') email
             .col-sm-10
-                input#email.form-control(type='text', value='', name='email')
+                input#person_email.form-control(type='text', value='', name='email')
         .form-group.row
-            .col-sm-6
-                .alert.alert-primary product
-            .col-sm-6
-                | {{$id := "permproduct"}} {{$value := "_"}} {{$label := "_"}} {{$class := "perm"}}  {{$name := "product"}}
-                +inlineradio
-                | {{$id := "permproductr"}} {{$value := "r"}} {{$label := "r"}}
-                +inlineradio
-                | {{$id := "permproductrw"}} {{$value := "w"}} {{$label := "rw"}}
-                +inlineradio
-            .col-sm-6
-                .alert.alert-primary storage
-            .col-sm-6
-                | {{$id := "permstorage"}} {{$value := "_"}} {{$label := "_"}} {{$class := "perm"}}  {{$name := "storage"}}
-                +inlineradio
-                | {{$id := "permstorager"}} {{$value := "r"}} {{$label := "r"}}
-                +inlineradio
-                | {{$id := "permstoragerw"}} {{$value := "w"}} {{$label := "rw"}}
-                +inlineradio
+            label.col-sm-2.col-form-label(for='person_entity') entities
+            .col-sm-10
+                select.form-control(style='width: 100% !important;', id='person_entity', name='entity', multiple='multiple')
+        .form-group.row#permissions
         button.btn.btn-primary(type='button', onclick='savePerson()') save changes
 
 block contentjs
     script.
+
+        $( document ).ready(function() {
+            //
+            // manager select2
+            //
+            $('select[id="person_entity"]').select2({
+                ajax: {
+                    url: '/entities',
+                    dataType: 'json',
+                    processResults: function (data) {
+                        // replacing email by text expected by select2
+                        var newdata = $.map(data, function (obj) {
+                            obj.text = obj.text || obj.entity_name;
+                            obj.id = obj.id || obj.entity_id;
+                            return obj;
+                        });
+                        return {
+                            results: newdata
+                        };
+                    }
+                }
+            });
+            $('select[id="person_entity"]').on('select2:unselecting', function (e) {
+                var data = e.params.args.data;
+                // removing permissions widget
+                $("#perm" + data.id).remove();
+            });
+            $('select[id="person_entity"]').on('select2:select', function (e) {
+                var data = e.params.data;
+                
+                // adding permissions widget
+                $("#permissions").append(global.buildPermissionWidget(data.entity_id, data.entity_name));
+            });
+        });
+
         // form validation
         $( "#person-create" ).validate({
         errorClass: "alert alert-danger",
         rules: {
             email: {
-            required: true,
-            remote: {
-                url: "",
-                beforeSend: function(jqXhr, settings) {
-                    settings.url = "/validate/person/-1/email/" + $("input#email").val();
+                required: true,
+                remote: {
+                    url: "",
+                    beforeSend: function(jqXhr, settings) {
+                        settings.url = "/validate/person/-1/email/" + $("input#email").val();
+                    },
                 },
             },
+            entity: {
+                required: true,
             },
         },
         });
@@ -52,17 +76,22 @@ block contentjs
                 return;
             };
 
-            var email = $("input#email").val();
-                selectedpermissions = $(".perm:checked");
+            var email = $("input#person_email").val(),
+                selectedentities = $('select[id="person_entity"]').select2('data');
+                selectedpermissions = $("input[type=radio]:checked");
                 data = {};
-                $.each(selectedpermissions, function( index, p ) {
-                    data["permissions." + index +".permission_perm_name"] = p.value;
-                    data["permissions." + index +".permission_item_name"] = p.name;
+                $.each(selectedpermissions, function( index, e ) {
+                    data["permissions." + index +".permission_perm_name"] = $(e).attr("perm_name");
+                    data["permissions." + index +".permission_item_name"] = $(e).attr("item_name");
+                    data["permissions." + index +".permission_entity_id"] = $(e).attr("entity_id");
+                });               
+                $.each(selectedentities, function( index, e ) {
+                    data["entities." + index +".entity_id"] = e.id;
+                    data["entities." + index +".entity_name"] = e.text;
                 });
                 $.extend(data, {
-                    "person_email": email,
+                        "person_email": email,
                 });
-                console.log(data);
             $.ajax({
                 url: "/people",
                 method: "POST",

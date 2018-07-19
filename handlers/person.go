@@ -101,7 +101,7 @@ func (env *Env) GetPeopleHandler(w http.ResponseWriter, r *http.Request) *models
 
 	// retrieving the logged user id from request context
 	c := containerFromRequestContext(r)
-	people, err := env.DB.GetPeople(c.PersonID, search, order, offset, limit)
+	people, count, err := env.DB.GetPeople(c.PersonID, search, order, offset, limit)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -110,9 +110,14 @@ func (env *Env) GetPeopleHandler(w http.ResponseWriter, r *http.Request) *models
 		}
 	}
 
+	type resp struct {
+		Rows  []models.Person `json:"rows"`
+		Total int             `json:"total"`
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(people)
+	json.NewEncoder(w).Encode(resp{Rows: people, Total: count})
 	return nil
 }
 
@@ -312,5 +317,24 @@ func (env *Env) UpdatePersonHandler(w http.ResponseWriter, r *http.Request) *mod
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(updatedp)
+	return nil
+}
+
+// DeletePersonHandler deletes the person with the requested id
+func (env *Env) DeletePersonHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+	vars := mux.Vars(r)
+	var (
+		id  int
+		err error
+	)
+
+	if id, err = strconv.Atoi(vars["id"]); err != nil {
+		return &models.AppError{
+			Error:   err,
+			Message: "id atoi conversion",
+			Code:    http.StatusInternalServerError}
+	}
+
+	env.DB.DeletePerson(id)
 	return nil
 }

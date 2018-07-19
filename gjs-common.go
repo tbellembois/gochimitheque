@@ -142,7 +142,6 @@ func BuildInlineRadioElement(inputattr map[string]string) *dom.HTMLDivElement {
 
 // BuildPermissionWidget return a widget to setup people permissions
 func BuildPermissionWidget(entityID int, entityName string) *dom.HTMLDivElement {
-
 	var widgetdiv *dom.HTMLDivElement
 	// create main widget div
 	widgetdiv = document.CreateElement("div").(*dom.HTMLDivElement)
@@ -153,6 +152,7 @@ func BuildPermissionWidget(entityID int, entityName string) *dom.HTMLDivElement 
 
 	widgetdiv.AppendChild(title)
 	for _, i := range permitems {
+		println(i)
 		// building main row
 		mainrowdiv := document.CreateElement("div").(*dom.HTMLDivElement)
 		mainrowdiv.SetClass("row")
@@ -202,7 +202,6 @@ func BuildPermissionWidget(entityID int, entityName string) *dom.HTMLDivElement 
 		mainrowdiv.AppendChild(secondcoldiv)
 		widgetdiv.AppendChild(mainrowdiv)
 	}
-
 	return widgetdiv
 }
 
