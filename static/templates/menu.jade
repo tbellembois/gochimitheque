@@ -24,7 +24,7 @@ nav.navbar.navbar-expand-lg.navbar-light.bg-light
                         aria-expanded="false") entity
                     div.dropdown-menu(aria-labelledby="navbarDropdown")
                         a(href="/v/entities", title="list").dropdown-item list
-                        if HasPermission .PersonID "w" "entity" -1
+                        if HasPermission .PersonID "all" "all" -1
                             a(href="/vc/entities", title="create").dropdown-item create
 
             if HasPermission .PersonID "r" "people" -2
@@ -36,7 +36,7 @@ nav.navbar.navbar-expand-lg.navbar-light.bg-light
                         aria-expanded="false") person
                     div.dropdown-menu(aria-labelledby="navbarDropdown")
                         a(href="/v/people", title="list").dropdown-item list
-                        if HasPermission .PersonID "w" "person" -1
+                        if HasPermission .PersonID "w" "people" -2
                             a(href="/vc/people", title="create").dropdown-item create
 
             li.nav-item

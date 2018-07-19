@@ -17,7 +17,7 @@ type Datastore interface {
 	IsEntityWithNameExcept(string, ...string) (bool, error)
 
 	// people
-	GetPeople(personID int, search string, order string, offset uint64, limit uint64) ([]Person, error)
+	GetPeople(personID int, search string, order string, offset uint64, limit uint64) ([]Person, int, error)
 	GetPerson(id int) (Person, error)
 	GetPersonByEmail(email string) (Person, error)
 	GetPersonPermissions(id int) ([]Permission, error)
@@ -27,4 +27,7 @@ type Datastore interface {
 	HasPersonPermission(id int, perm string, item string, itemid int) (bool, error)
 	CreatePerson(p Person) (error, int)
 	UpdatePerson(p Person) error
+	DeletePerson(id int) error
+	IsPersonWithEmail(email string) (bool, error)
+	IsPersonWithEmailExcept(string, ...string) (bool, error)
 }

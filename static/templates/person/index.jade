@@ -5,7 +5,14 @@ block content
         #list-collapse.collapse.show(data-parent='#accordion')
             header.row
                 .col-sm-12
-                    table#table(data-toggle='table', data-striped='true', data-search='true', data-side-pagination='server', data-pagination='true', data-ajax='getData', data-sort-name='person_email')
+                    table#table(data-toggle='table', 
+                                data-striped='true', 
+                                data-search='true', 
+                                data-side-pagination='server', 
+                                data-page-list="[10, 20, 50, 100]",
+                                data-pagination='true', 
+                                data-ajax='getData', 
+                                data-sort-name='person_email')
                         thead
                             tr
                                 th(data-field='person_id') ID
@@ -77,8 +84,7 @@ block contentjs
             });
             $('select[id="person_entity"]').on('select2:select', function (e) {
                 var data = e.params.data;
-                console.log(data);
-
+                
                 // adding permissions widget
                 $("#permissions").append(global.buildPermissionWidget(data.entity_id, data.entity_name));
             });
@@ -101,7 +107,7 @@ block contentjs
                     remote: {
                         url: "",
                         beforeSend: function(jqXhr, settings) {
-                            settings.url = "/validate/person/" + $("form#person-update input#person_id").val() + "/name/" + $("form#person-update input#person_email").val();
+                            settings.url = "/validate/person/" + $("form#person-update input#person_id").val() + "/email/" + $("form#person-update input#person_email").val();
                         },
                     },
                 },
@@ -171,8 +177,8 @@ block contentjs
                     data: params.data,
                 }).done(function(data, textStatus, jqXHR) {
                     params.success({
-                        rows: data,
-                        total: data.length,
+                        rows: data.rows,
+                        total: data.total,
                     });
                 }).fail(function(jqXHR, textStatus, errorThrown) {
                     params.error(jqXHR.statusText);                
@@ -307,6 +313,9 @@ block contentjs
 
                 // populating the permissions widget
                 if ($("input.perm").length > 0) {
+                    if (permissiondata == null) {
+                        permissiondata = [];
+                    }
                     global.populatePermissionWidget(permissiondata);
                 }
 
@@ -346,6 +355,7 @@ block contentjs
                         url: "/people/" + row['person_id'],
                         method: "DELETE",
                     }).done(function(data, textStatus, jqXHR) {
+                        displayMessage("person deleted", "success");
                         var $table = $('#table');
                         $table.bootstrapTable('refresh');
                     }).fail(function(jqXHR, textStatus, errorThrown) {

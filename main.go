@@ -162,13 +162,15 @@ func main() {
 	r.Handle("/{item:people}/{id}/permissions", securechain.Then(env.AppMiddleware(env.GetPersonPermissionsHandler))).Methods("GET")
 	r.Handle("/{item:people}/{id}", securechain.Then(env.AppMiddleware(env.UpdatePersonHandler))).Methods("PUT")
 	r.Handle("/{item:people}", securechain.Then(env.AppMiddleware(env.CreatePersonHandler))).Methods("POST")
+	r.Handle("/{item:people}/{id}", securechain.Then(env.AppMiddleware(env.DeletePersonHandler))).Methods("DELETE")
 	// r.Handle("/{item:person}/{id}/{subitem:entity}/{eid}", securechain.Then(env.AppMiddleware(env.CreatePersonEntityHandler))).Methods("PUT")
 	// r.Handle("/{item:person}/{id}/{subitem:entity}/{eid}", securechain.Then(env.AppMiddleware(env.UpdatePersonEntityHandler))).Methods("POST")
 	// r.Handle("/{item:person}/{id}/{subitem:permission}/{pid}", securechain.Then(env.AppMiddleware(env.CreatePersonPermissionHandler))).Methods("PUT")
 	// r.Handle("/{item:person}/{id}/{subitem:permission}/{pid}", securechain.Then(env.AppMiddleware(env.UpdatePersonPermissionHandler))).Methods("POST")
 
-	// entity name validation
+	// validator
 	r.Handle("/validate/entity/{id}/name/{name}", commonChain.Then(env.AppMiddleware(env.ValidateEntityNameHandler))).Methods("GET")
+	r.Handle("/validate/person/{id}/email/{email}", commonChain.Then(env.AppMiddleware(env.ValidatePersonEmailHandler))).Methods("GET")
 	// permissions checker
 	r.Handle("/haspermission/{personid}/{perm}/{item}/{itemid}", commonChain.Then(env.AppMiddleware(env.HasPermissionHandler))).Methods("GET")
 

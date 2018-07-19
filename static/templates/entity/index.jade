@@ -252,6 +252,7 @@ block contentjs
                         url: "/entities/" + row['entity_id'],
                         method: "DELETE",
                     }).done(function(data, textStatus, jqXHR) {
+                        displayMessage("entity deleted", "success");
                         var $table = $('#table');
                         $table.bootstrapTable('refresh');
                     }).fail(function(jqXHR, textStatus, errorThrown) {

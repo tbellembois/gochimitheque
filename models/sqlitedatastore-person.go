@@ -14,14 +14,21 @@ import (
 
 // GetPeople returns the people matching the search criteria
 // order, offset and limit are passed to the sql request
-func (db *SQLiteDataStore) GetPeople(personID int, search string, order string, offset uint64, limit uint64) ([]Person, error) {
+func (db *SQLiteDataStore) GetPeople(personID int, search string, order string, offset uint64, limit uint64) ([]Person, int, error) {
 	var (
 		people []Person
+		count  int
 		sqlr   string
 		sqla   []interface{}
 	)
-	log.WithFields(log.Fields{"search": search, "order": order, "offset": offset, "limit": limit}).Debug("GetEntities")
+	log.WithFields(log.Fields{"search": search, "order": order, "offset": offset, "limit": limit}).Debug("GetPeople")
 
+	// count query
+	cbuilder := sq.Select("count(*)").
+		From("person AS p").
+		Where("p.person_email LIKE ?", fmt.Sprint("%", search, "%")).
+		Join(buildPermissionFilter("people", "p", "person_id", "r"), fmt.Sprint(personID))
+	// select query
 	sbuilder := sq.Select(`p.person_id, 
 		p.person_email`).
 		From("person AS p").
@@ -32,16 +39,25 @@ func (db *SQLiteDataStore) GetPeople(personID int, search string, order string, 
 	if limit != constants.MaxUint64 {
 		sbuilder = sbuilder.Offset(offset).Limit(limit)
 	}
+	// select
 	sqlr, sqla, db.err = sbuilder.ToSql()
-	log.Debug(sqlr)
 	if db.err != nil {
-		return nil, db.err
+		return nil, 0, db.err
+	}
+	if db.err = db.Select(&people, sqlr, sqla...); db.err != nil {
+		return nil, 0, db.err
+	}
+	// count
+	sqlr, sqla, db.err = cbuilder.ToSql()
+	if db.err != nil {
+		return nil, 0, db.err
+	}
+	if db.err = db.Get(&count, sqlr, sqla...); db.err != nil {
+		return nil, 0, db.err
 	}
 
-	if db.err = db.Select(&people, sqlr, sqla...); db.err != nil {
-		return nil, db.err
-	}
-	return people, nil
+	log.WithFields(log.Fields{"people": people, "count": count}).Debug("GetPeople")
+	return people, count, nil
 }
 
 // GetPerson returns the person with id "id"
@@ -252,6 +268,37 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 	return res, nil
 }
 
+// DeletePerson deletes the person with id "id"
+func (db *SQLiteDataStore) DeletePerson(id int) error {
+	var (
+		sqlr string
+	)
+	sqlr = `DELETE FROM personentities 
+	WHERE personentities_person_id = ?`
+	if _, db.err = db.Exec(sqlr, id); db.err != nil {
+		return db.err
+	}
+
+	sqlr = `DELETE FROM entitypeople 
+	WHERE entitypeople_person_id = ?`
+	if _, db.err = db.Exec(sqlr, id); db.err != nil {
+		return db.err
+	}
+
+	sqlr = `DELETE FROM permission 
+	WHERE permission_id = ?`
+	if _, db.err = db.Exec(sqlr, id); db.err != nil {
+		return db.err
+	}
+
+	sqlr = `DELETE FROM person 
+	WHERE person_id = ?`
+	if _, db.err = db.Exec(sqlr, id); db.err != nil {
+		return db.err
+	}
+	return nil
+}
+
 // CreatePerson creates the given person
 func (db *SQLiteDataStore) CreatePerson(p Person) (error, int) {
 	var (
@@ -337,4 +384,55 @@ func (db *SQLiteDataStore) UpdatePerson(p Person) error {
 	}
 
 	return nil
+}
+
+// IsPersonWithEmail returns true is the person with email "email" exists
+func (db *SQLiteDataStore) IsPersonWithEmail(email string) (bool, error) {
+	var (
+		res   bool
+		count int
+		sqlr  string
+	)
+
+	sqlr = "SELECT count(*) from person WHERE person.person_email = ?"
+	if db.err = db.Get(&count, sqlr, email); db.err != nil {
+		return false, db.err
+	}
+	log.WithFields(log.Fields{"email": email, "count": count}).Debug("IsPersonWithEmail")
+	if count == 0 {
+		res = false
+	} else {
+		res = true
+	}
+	return res, nil
+}
+
+// IsPersonWithEmailExcept returns true is the person with email "email" exists ignoring the "except" emails
+func (db *SQLiteDataStore) IsPersonWithEmailExcept(email string, except ...string) (bool, error) {
+	var (
+		res   bool
+		count int
+		sqlr  sq.SelectBuilder
+		w     sq.And
+	)
+
+	w = append(w, sq.Eq{"person.person_email": email})
+	for _, e := range except {
+		w = append(w, sq.NotEq{"person.person_email": e})
+	}
+
+	sqlr = sq.Select("count(*)").From("person").Where(w)
+	sql, args, _ := sqlr.ToSql()
+	log.WithFields(log.Fields{"sql": sql, "args": args}).Debug("IsPersonWithEmailExcept")
+
+	if db.err = db.Get(&count, sql, args...); db.err != nil {
+		return false, db.err
+	}
+	log.WithFields(log.Fields{"email": email, "count": count}).Debug("IsPersonWithEmailExcept")
+	if count == 0 {
+		res = false
+	} else {
+		res = true
+	}
+	return res, nil
 }
