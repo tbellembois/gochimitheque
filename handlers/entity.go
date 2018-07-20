@@ -101,7 +101,7 @@ func (env *Env) GetEntitiesHandler(w http.ResponseWriter, r *http.Request) *mode
 
 	// retrieving the logged user id from request context
 	c := containerFromRequestContext(r)
-	entities, err := env.DB.GetEntities(c.PersonID, search, order, offset, limit)
+	entities, count, err := env.DB.GetEntities(c.PersonID, search, order, offset, limit)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -110,9 +110,14 @@ func (env *Env) GetEntitiesHandler(w http.ResponseWriter, r *http.Request) *mode
 		}
 	}
 
+	type resp struct {
+		Rows  []models.Entity `json:"rows"`
+		Total int             `json:"total"`
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(entities)
+	json.NewEncoder(w).Encode(resp{Rows: entities, Total: count})
 	return nil
 }
 
