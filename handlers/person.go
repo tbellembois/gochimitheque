@@ -190,7 +190,9 @@ func (env *Env) GetPersonEntitiesHandler(w http.ResponseWriter, r *http.Request)
 			Code:    http.StatusInternalServerError}
 	}
 
-	entities, err := env.DB.GetPersonEntities(id)
+	// retrieving the logged user id from request context
+	c := containerFromRequestContext(r)
+	entities, err := env.DB.GetPersonEntities(c.PersonID, id)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
