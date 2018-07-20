@@ -13,14 +13,30 @@ import (
 
 // GetEntities returns the entities matching the search criteria
 // order, offset and limit are passed to the sql request
-func (db *SQLiteDataStore) GetEntities(personID int, search string, order string, offset uint64, limit uint64) ([]Entity, error) {
+func (db *SQLiteDataStore) GetEntities(personID int, search string, order string, offset uint64, limit uint64) ([]Entity, int, error) {
 	var (
 		entities []Entity
+		count    int
 		sqlr     string
 		sqla     []interface{}
 	)
 	log.WithFields(log.Fields{"search": search, "order": order, "offset": offset, "limit": limit}).Debug("GetEntities")
 
+	// count query
+	cbuilder := sq.Select(`count(DISTINCT e.entity_id)`).
+		From("entity AS e, person as p").
+		Where(`e.entity_name LIKE ?`, fmt.Sprint("%", search, "%")).
+		// join to filter entities personID can access to
+		Join(`permission AS perm on
+			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
+			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
+			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
+			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
+			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
+			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
+			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
+			`, personID, personID, personID, personID, personID, personID, personID)
+	// select query
 	sbuilder := sq.Select(`e.entity_id, 
 		e.entity_id,
 		e.entity_name, 
@@ -45,14 +61,23 @@ func (db *SQLiteDataStore) GetEntities(personID int, search string, order string
 	if limit != constants.MaxUint64 {
 		sbuilder = sbuilder.Offset(offset).Limit(limit)
 	}
+	// select
 	sqlr, sqla, db.err = sbuilder.ToSql()
 	if db.err != nil {
-		return nil, db.err
+		return nil, 0, db.err
 	}
 	if db.err = db.Select(&entities, sqlr, sqla...); db.err != nil {
-		return nil, db.err
+		return nil, 0, db.err
 	}
-	return entities, nil
+	// count
+	sqlr, sqla, db.err = cbuilder.ToSql()
+	if db.err != nil {
+		return nil, 0, db.err
+	}
+	if db.err = db.Get(&count, sqlr, sqla...); db.err != nil {
+		return nil, 0, db.err
+	}
+	return entities, count, nil
 }
 
 // GetEntity returns the entity with id "id"

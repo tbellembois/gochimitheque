@@ -24,7 +24,7 @@ func (db *SQLiteDataStore) GetPeople(personID int, search string, order string, 
 	log.WithFields(log.Fields{"search": search, "order": order, "offset": offset, "limit": limit}).Debug("GetPeople")
 
 	// count query
-	cbuilder := sq.Select("count(*)").
+	cbuilder := sq.Select("count(DISTINCT p.person_id)").
 		From("person AS p, entity AS e").
 		Where("p.person_email LIKE ?", fmt.Sprint("%", search, "%")).
 		// join to get person entities
@@ -41,8 +41,7 @@ func (db *SQLiteDataStore) GetPeople(personID int, search string, order string, 
 			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
 			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
 			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
-			`, personID, personID, personID, personID, personID, personID, personID).
-		GroupBy("p.person_id")
+			`, personID, personID, personID, personID, personID, personID, personID)
 	// select query
 	sbuilder := sq.Select(`p.person_id, 
 		p.person_email`).

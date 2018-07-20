@@ -7,7 +7,7 @@ type Datastore interface {
 	CreateDatabase() error
 
 	// entities
-	GetEntities(personID int, search string, order string, offset uint64, limit uint64) ([]Entity, error)
+	GetEntities(personID int, search string, order string, offset uint64, limit uint64) ([]Entity, int, error)
 	GetEntity(id int) (Entity, error)
 	GetEntityPeople(id int) ([]Person, error)
 	DeleteEntity(id int) error

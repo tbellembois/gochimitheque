@@ -5,7 +5,14 @@ block content
         #list-collapse.collapse.show(data-parent='#accordion')
             header.row
                 .col-sm-12
-                    table#table(data-toggle='table', data-striped='true', data-search='true', data-side-pagination='server', data-pagination='true', data-ajax='getData', data-sort-name='entity_name')
+                    table#table(data-toggle='table', 
+                                data-striped='true', 
+                                data-search='true', 
+                                data-side-pagination='server', 
+                                data-page-list="[10, 20, 50, 100]",
+                                data-pagination='true', 
+                                data-ajax='getData', 
+                                data-sort-name='entity_name')
                         thead
                             tr
                                 th(data-field='entity_id') ID
@@ -143,8 +150,8 @@ block contentjs
                 data: params.data,
             }).done(function(data, textStatus, jqXHR) {
                 params.success({
-                    rows: data,
-                    total: data.length,
+                    rows: data.rows,
+                    total: data.total,
                 });
             }).fail(function(jqXHR, textStatus, errorThrown) {
                 params.error(jqXHR.statusText);                
