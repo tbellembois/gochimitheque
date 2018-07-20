@@ -25,15 +25,46 @@ func (db *SQLiteDataStore) GetPeople(personID int, search string, order string, 
 
 	// count query
 	cbuilder := sq.Select("count(*)").
-		From("person AS p").
+		From("person AS p, entity AS e").
 		Where("p.person_email LIKE ?", fmt.Sprint("%", search, "%")).
-		Join(buildPermissionFilter("people", "p", "person_id", "r"), fmt.Sprint(personID))
+		// join to get person entities
+		Join(`personentities ON
+			personentities.personentities_person_id = p.person_id`).
+		Join(`entity ON
+			personentities.personentities_entity_id = e.entity_id`).
+		// join to filter people personID can access to
+		Join(`permission AS perm on
+			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
+			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
+			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
+			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
+			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
+			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
+			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
+			`, personID, personID, personID, personID, personID, personID, personID).
+		GroupBy("p.person_id")
 	// select query
 	sbuilder := sq.Select(`p.person_id, 
 		p.person_email`).
-		From("person AS p").
+		From("person AS p, entity AS e").
 		Where("p.person_email LIKE ?", fmt.Sprint("%", search, "%")).
-		Join(buildPermissionFilter("people", "p", "person_id", "r"), fmt.Sprint(personID)).
+		// join to get person entities
+		Join(`personentities ON
+		personentities.personentities_person_id = p.person_id
+		`).
+		Join(`entity ON
+		personentities.personentities_entity_id = e.entity_id
+		`).
+		// join to filter people personID can access to
+		Join(`permission AS perm on
+			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
+			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
+			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
+			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
+			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
+			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
+			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
+			`, personID, personID, personID, personID, personID, personID, personID).
 		GroupBy("p.person_id").
 		OrderBy(fmt.Sprintf("person_email %s", order))
 	if limit != constants.MaxUint64 {
@@ -124,22 +155,39 @@ func (db *SQLiteDataStore) GetPersonManageEntities(id int) ([]Entity, error) {
 }
 
 // GetPersonEntities returns the person (with id "id") entities
-func (db *SQLiteDataStore) GetPersonEntities(id int) ([]Entity, error) {
+func (db *SQLiteDataStore) GetPersonEntities(personID int, id int) ([]Entity, error) {
 	var (
-		es   []Entity
-		sqlr string
+		entities []Entity
+		sqlr     string
+		sqla     []interface{}
 	)
 
-	sqlr = `SELECT entity_id, entity_name, entity_description 
-	FROM entity
-	INNER JOIN personentities ON personentities.personentities_entity_id = entity.entity_id
-	WHERE personentities.personentities_person_id = ?`
-	if db.err = db.Select(&es, sqlr, id); db.err != nil {
+	sbuilder := sq.Select(`e.entity_id, 
+		e.entity_id,
+		e.entity_name, 
+		e.entity_description`).
+		From("entity AS e, person AS p, personentities as pe").
+		Where("pe.personentities_person_id = ? AND e.entity_id == pe.personentities_entity_id", fmt.Sprint(id)).
+		// join to filter entities personID can access to
+		Join(`permission AS perm on
+			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
+			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
+			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
+			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
+			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
+			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
+			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
+			`, personID, personID, personID, personID, personID, personID, personID).
+		GroupBy("e.entity_id")
+	sqlr, sqla, db.err = sbuilder.ToSql()
+	if db.err != nil {
 		return nil, db.err
 	}
 
-	log.WithFields(log.Fields{"personID": id, "es": es}).Debug("GetPersonEntities")
-	return es, nil
+	if db.err = db.Select(&entities, sqlr, sqla...); db.err != nil {
+		return nil, db.err
+	}
+	return entities, nil
 }
 
 // DoesPersonBelongsTo returns true if the person (with id "id") belongs to the entities
@@ -192,7 +240,7 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 	case "people":
 		// retrieving the requested person entities
 		var rpe []Entity
-		if rpe, err = db.GetPersonEntities(itemid); err != nil {
+		if rpe, err = db.GetPersonEntities(id, itemid); err != nil {
 			return false, err
 		}
 		// and their ids
@@ -214,11 +262,11 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 		// all | ?
 		// ?   | all  => no sense (look at explanation in the else section)
 		// ?   | ?
-		sqlr = `SELECT count(*) FROM permission WHERE 
-		permission_person_id = ? AND permission_perm_name = "all" AND permission_item_name = "all"  OR 
-		permission_person_id = ? AND permission_perm_name = "all" AND permission_item_name = ? OR 
-		permission_person_id = ? AND permission_perm_name = ? AND permission_item_name = "all"  OR
-		permission_person_id = ? AND permission_perm_name = ? AND permission_item_name = ?`
+		sqlr = `SELECT count(*) FROM permission WHERE
+		(permission_person_id = ? AND permission_perm_name = "all" AND permission_item_name = "all")  OR
+		(permission_person_id = ? AND permission_perm_name = "all" AND permission_item_name = ?) OR
+		(permission_person_id = ? AND permission_perm_name = ? AND permission_item_name = "all")  OR
+		(permission_person_id = ? AND permission_perm_name = ? AND permission_item_name = ?)`
 		if db.err = db.Get(&count, sqlr, id, id, item, id, perm, id, perm, item); db.err != nil {
 			switch {
 			case db.err == sql.ErrNoRows:
@@ -306,6 +354,7 @@ func (db *SQLiteDataStore) CreatePerson(p Person) (error, int) {
 		res    sql.Result
 		lastid int64
 	)
+
 	// inserting person
 	sqlr = `INSERT INTO person(person_email, person_password) VALUES (?, ?)`
 	if res, db.err = db.Exec(sqlr, p.PersonEmail, p.PersonPassword); db.err != nil {
@@ -321,7 +370,7 @@ func (db *SQLiteDataStore) CreatePerson(p Person) (error, int) {
 	// inserting permissions
 	for _, per := range p.Permissions {
 		sqlr = `INSERT INTO permission(permission_person_id, permission_perm_name, permission_item_name, permission_entity_id) VALUES (?, ?, ?, ?)`
-		if _, db.err = db.Exec(sqlr, p.PersonID, per.PermissionPermName, per.PermissionItemName, -1); db.err != nil {
+		if _, db.err = db.Exec(sqlr, p.PersonID, per.PermissionPermName, per.PermissionItemName, per.PermissionEntityID); db.err != nil {
 			return db.err, 0
 		}
 	}

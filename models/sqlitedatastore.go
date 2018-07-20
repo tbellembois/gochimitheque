@@ -1,8 +1,6 @@
 package models
 
 import (
-	"fmt"
-
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
 	log "github.com/sirupsen/logrus"
@@ -17,18 +15,6 @@ const (
 type SQLiteDataStore struct {
 	*sqlx.DB
 	err error
-}
-
-// buildPermissionFilter return the sql join to return only items of tableName that the person permission_person_id can permission_perm_name
-func buildPermissionFilter(tableName string, tableAlias string, tableJoinField string, permName string) string {
-	return fmt.Sprintf(`permission AS perm on perm.permission_person_id = ? and (
-		(perm.permission_item_name = "all" and perm.permission_perm_name = "all") or
-		(perm.permission_item_name == "all" and perm.permission_perm_name == "%s" and perm.permission_entity_id == -1) or
-		(perm.permission_item_name == "%s" and perm.permission_perm_name == "all" and perm.permission_entity_id == %s.%s) or
-		(perm.permission_item_name == "%s" and perm.permission_perm_name == "all" and perm.permission_entity_id == -1) or
-		(perm.permission_item_name == "%s" and perm.permission_perm_name == "%s" and perm.permission_entity_id == -1) or
-		(perm.permission_item_name == "%s" and perm.permission_perm_name == "%s" and perm.permission_entity_id == %s.%s)
-		)`, permName, tableName, tableAlias, tableJoinField, tableName, tableName, permName, tableName, permName, tableAlias, tableJoinField)
 }
 
 // NewDBstore returns a database connection to the given dataSourceName
@@ -126,6 +112,9 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		m1.Entities = []Entity{e1}
 		m2.Entities = []Entity{e2}
 		m3.Entities = []Entity{e3}
+		m1.Permissions = []Permission{Permission{PermissionPermName: "all", PermissionItemName: "all", PermissionEntityID: e1.EntityID}}
+		m2.Permissions = []Permission{Permission{PermissionPermName: "all", PermissionItemName: "all", PermissionEntityID: e2.EntityID}}
+		m3.Permissions = []Permission{Permission{PermissionPermName: "all", PermissionItemName: "all", PermissionEntityID: e3.EntityID}}
 
 		db.UpdatePerson(m1)
 		db.UpdatePerson(m2)

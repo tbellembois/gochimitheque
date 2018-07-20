@@ -25,9 +25,21 @@ func (db *SQLiteDataStore) GetEntities(personID int, search string, order string
 		e.entity_id,
 		e.entity_name, 
 		e.entity_description`).
-		From("entity AS e, person AS p, entitypeople as ep").
-		Where("e.entity_id = ep.entitypeople_entity_id AND ep.entitypeople_person_id == p.person_id AND e.entity_name LIKE ?", fmt.Sprint("%", search, "%")).
-		Join(buildPermissionFilter("entities", "e", "entity_id", "r"), fmt.Sprint(personID)).
+		From("entity AS e, person as p").
+		Where(`e.entity_name LIKE ?`, fmt.Sprint("%", search, "%")).
+		// join to filter entities personID can access to
+		Join(`permission AS perm on
+			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
+			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
+			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
+			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
+			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
+			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
+			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
+			`, personID, personID, personID, personID, personID, personID, personID).
+		// join to get managers
+		// Join(`entitypeople ON entitypeople.entitypeople_entity_id = e.entity_id`).
+		// Join(`person ON entitypeople.entitypeople_person_id = p.person_id`).
 		GroupBy("e.entity_id").
 		OrderBy(fmt.Sprintf("entity_name %s", order))
 	if limit != constants.MaxUint64 {
@@ -37,7 +49,6 @@ func (db *SQLiteDataStore) GetEntities(personID int, search string, order string
 	if db.err != nil {
 		return nil, db.err
 	}
-
 	if db.err = db.Select(&entities, sqlr, sqla...); db.err != nil {
 		return nil, db.err
 	}
