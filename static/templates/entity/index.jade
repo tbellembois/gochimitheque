@@ -79,7 +79,7 @@ block contentjs
                     dataType: 'json',
                     processResults: function (data) {
                         // replacing email by text expected by select2
-                        var newdata = $.map(data, function (obj) {
+                        var newdata = $.map(data.rows, function (obj) {
                             obj.text = obj.text || obj.person_email;
                             obj.id = obj.id || obj.person_id;
                             return obj;
@@ -165,16 +165,14 @@ block contentjs
         function operateFormatter(value, row, index) {
             // show action buttons if permitted
             eid = row.entity_id
-            hasPermission("{{ .PersonID }}", "r", "entities", eid).done(function(result){
-                if(result) {
-                    $("#view"+this.itemId).fadeIn();
-                }
+            hasPermission2("/f/entities/" + eid, "GET", eid).done(function(){
+                     $("#view"+this.itemId).fadeIn();
             })
-            hasPermission("{{ .PersonID }}", "w", "entities", eid).done(function(result){
-                if(result) {
+            hasPermission2("/f/entities/" + eid, "PUT", eid).done(function(){
                     $("#edit"+this.itemId).fadeIn();
+            })
+            hasPermission2("/f/entities/" + eid, "DELETE", eid).done(function(){
                     $("#delete"+this.itemId).fadeIn();
-                }
             })
 
             // buttons are hidden by default

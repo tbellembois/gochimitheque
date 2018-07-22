@@ -150,6 +150,15 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 		id := vars["id"]
 		log.WithFields(log.Fields{"id": id, "item": item, "view": view, "personemail": personemail}).Debug("AuthorizeMiddleware")
 
+		if id == "" {
+			itemid = -2
+		} else {
+			if itemid, err = strconv.Atoi(id); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+		}
+
 		// depending on the request
 		// preparing the HasPersonPermission parameters
 		// to allow/deny access
@@ -170,6 +179,34 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			// to ensure that values in the request body
 			// are allowed for the auth user
 			// ex: can the auth user set foo@bar.com in entity 3?
+			switch item {
+			case "people":
+				// a user can not edit/delete himself
+				if itemid == personid {
+					http.Error(w, "can not edit/delete yourself", http.StatusForbidden)
+				}
+				// we can not delete a manager
+				if r.Method == "DELETE" {
+					m, e := env.DB.IsPersonManager(itemid)
+					if e != nil {
+						http.Error(w, e.Error(), http.StatusInternalServerError)
+					}
+					if m {
+						http.Error(w, "can not delete a manager", http.StatusForbidden)
+					}
+				}
+			case "entities":
+				// we can not delete a non empty entity
+				if r.Method == "DELETE" {
+					m, e := env.DB.IsEntityEmpty(itemid)
+					if e != nil {
+						http.Error(w, e.Error(), http.StatusInternalServerError)
+					}
+					if !m {
+						http.Error(w, "can not delete a manager", http.StatusForbidden)
+					}
+				}
+			}
 			perm = "w"
 		default:
 			log.Debug("unsupported http verb")
@@ -177,24 +214,15 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			return
 		}
 
-		if id == "" {
-			itemid = -2
-		} else {
-			if itemid, err = strconv.Atoi(id); err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-		}
-
 		// allow/deny access
 		if permok, err = env.DB.HasPersonPermission(personid, perm, item, itemid); err != nil {
 			log.Debug("unauthorized:" + err.Error())
-			http.Error(w, err.Error(), http.StatusUnauthorized)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		if !permok {
 			log.Debug("unauthorized:" + perm + ":" + item + ":" + id)
-			http.Error(w, perm+":"+item+":"+id, http.StatusForbidden)
+			http.Error(w, "forbidden", http.StatusForbidden)
 			return
 		}
 

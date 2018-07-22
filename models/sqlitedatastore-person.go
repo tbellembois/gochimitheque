@@ -274,6 +274,30 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 				return false, db.err
 			}
 		}
+	} else if itemid == -1 {
+		// possible matchs:
+		// permission_perm_name | permission_item_name | permission_entity_id
+		// all | ?   | -1 (ex: all permissions on all entities)
+		// ?   | all | -1 => no sense (ex: r permission on entities, store_locations...) we will put the permissions for each item
+		// all | all | -1 => means super admin
+		// ?   | ?   | -1 => (ex: r permission on all entities)
+		if sqlr, sqlargs, db.err = sqlx.In(`SELECT count(*) FROM permission WHERE 
+		permission_person_id = ? AND permission_item_name = "all" AND permission_perm_name = "all" OR 
+		permission_person_id = ? AND permission_item_name = "all" AND permission_perm_name = ? AND permission_entity_id = -1 OR
+		permission_person_id = ? AND permission_item_name = ? AND permission_perm_name = "all" AND permission_entity_id = -1 OR 
+		permission_person_id = ? AND permission_item_name = ? AND permission_perm_name = ? AND permission_entity_id = -1
+		`, id, id, perm, id, item, id, item, perm); db.err != nil {
+			return false, db.err
+		}
+
+		if db.err = db.Get(&count, sqlr, sqlargs...); db.err != nil {
+			switch {
+			case db.err == sql.ErrNoRows:
+				return false, nil
+			default:
+				return false, db.err
+			}
+		}
 	} else {
 		// possible matchs:
 		// permission_perm_name | permission_item_name | permission_entity_id
@@ -288,11 +312,12 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 		if sqlr, sqlargs, db.err = sqlx.In(`SELECT count(*) FROM permission WHERE 
 		permission_person_id = ? AND permission_item_name = "all" AND permission_perm_name = "all" OR 
 		permission_person_id = ? AND permission_item_name = "all" AND permission_perm_name = ? AND permission_entity_id = -1 OR
+		permission_person_id = ? AND permission_item_name = "all" AND permission_perm_name = ? AND permission_entity_id IN (?) OR
 		permission_person_id = ? AND permission_item_name = ? AND permission_perm_name = "all" AND permission_entity_id IN (?) OR
 		permission_person_id = ? AND permission_item_name = ? AND permission_perm_name = "all" AND permission_entity_id = -1 OR 
 		permission_person_id = ? AND permission_item_name = ? AND permission_perm_name = ? AND permission_entity_id = -1 OR
 		permission_person_id = ? AND permission_item_name = ? AND permission_perm_name = ? AND permission_entity_id IN (?)
-		`, id, id, perm, id, item, eids, id, item, id, item, perm, id, item, perm, eids); db.err != nil {
+		`, id, id, perm, id, perm, eids, id, item, eids, id, item, id, item, perm, id, item, perm, eids); db.err != nil {
 			return false, db.err
 		}
 
@@ -432,6 +457,26 @@ func (db *SQLiteDataStore) UpdatePerson(p Person) error {
 	}
 
 	return nil
+}
+
+// IsPersonWithEmail returns true is the person with id "id" is a manager
+func (db *SQLiteDataStore) IsPersonManager(id int) (bool, error) {
+	var (
+		res   bool
+		count int
+		sqlr  string
+	)
+	sqlr = "SELECT count(*) from entitypeople WHERE entitypeople.entitypeople_person_id = ?"
+	if db.err = db.Get(&count, sqlr, id); db.err != nil {
+		return false, db.err
+	}
+	log.WithFields(log.Fields{"id": id, "count": count}).Debug("IsPersonManager")
+	if count == 0 {
+		res = false
+	} else {
+		res = true
+	}
+	return res, nil
 }
 
 // IsPersonWithEmail returns true is the person with email "email" exists

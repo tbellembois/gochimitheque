@@ -63,7 +63,10 @@ func main() {
 	// HasPermission used by template rendering to show/hide html elements
 	funcMap := template.FuncMap{
 		"HasPermission": func(id int, perm string, item string, itemid int) bool {
-			p, _ := env.DB.HasPersonPermission(id, perm, item, itemid)
+			p, e := env.DB.HasPersonPermission(id, perm, item, itemid)
+			if e != nil {
+				log.Error(e.Error())
+			}
 			return p
 		},
 	}
@@ -74,7 +77,6 @@ func main() {
 	if e != nil {
 		log.Fatal("testtmpl jade:" + e.Error())
 	}
-	log.Debug(testtmpl)
 	env.Templates["test"], err = template.New("test").Funcs(funcMap).Parse(testtmpl)
 	if err != nil {
 		log.Fatal("testtmpl parse:" + e.Error())
@@ -152,6 +154,15 @@ func main() {
 	r.Handle("/{item:entities}", securechain.Then(env.AppMiddleware(env.CreateEntityHandler))).Methods("POST")
 	r.Handle("/{item:entities}/{id}", securechain.Then(env.AppMiddleware(env.UpdateEntityHandler))).Methods("PUT")
 	r.Handle("/{item:entities}/{id}", securechain.Then(env.AppMiddleware(env.DeleteEntityHandler))).Methods("DELETE")
+
+	r.Handle("/f/{view:v}/{item:entities}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
+	r.Handle("/f/{view:vc}/{item:entities}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
+	r.Handle("/f/{item:entities}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
+	r.Handle("/f/{item:entities}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
+	r.Handle("/f/{item:entities}/{id}/people", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
+	r.Handle("/f/{item:entities}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("POST")
+	r.Handle("/f/{item:entities}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT")
+	r.Handle("/f/{item:entities}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE")
 	// people
 	r.Handle("/{view:v}/{item:people}", securechain.Then(env.AppMiddleware(env.VGetPeopleHandler))).Methods("GET")
 	r.Handle("/{view:vc}/{item:people}", securechain.Then(env.AppMiddleware(env.VCreatePersonHandler))).Methods("GET")
@@ -163,6 +174,17 @@ func main() {
 	r.Handle("/{item:people}/{id}", securechain.Then(env.AppMiddleware(env.UpdatePersonHandler))).Methods("PUT")
 	r.Handle("/{item:people}", securechain.Then(env.AppMiddleware(env.CreatePersonHandler))).Methods("POST")
 	r.Handle("/{item:people}/{id}", securechain.Then(env.AppMiddleware(env.DeletePersonHandler))).Methods("DELETE")
+
+	r.Handle("/f/{view:v}/{item:people}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
+	r.Handle("/f/{view:vc}/{item:people}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
+	r.Handle("/f/{item:people}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
+	r.Handle("/f/{item:people}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
+	r.Handle("/f/{item:people}/{id}/entities", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
+	r.Handle("/f/{item:people}/{id}/manageentities", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
+	r.Handle("/f/{item:people}/{id}/permissions", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
+	r.Handle("/f/{item:people}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT")
+	r.Handle("/f/{item:people}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("POST")
+	r.Handle("/f/{item:people}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE")
 	// r.Handle("/{item:person}/{id}/{subitem:entity}/{eid}", securechain.Then(env.AppMiddleware(env.CreatePersonEntityHandler))).Methods("PUT")
 	// r.Handle("/{item:person}/{id}/{subitem:entity}/{eid}", securechain.Then(env.AppMiddleware(env.UpdatePersonEntityHandler))).Methods("POST")
 	// r.Handle("/{item:person}/{id}/{subitem:permission}/{pid}", securechain.Then(env.AppMiddleware(env.CreatePersonPermissionHandler))).Methods("PUT")

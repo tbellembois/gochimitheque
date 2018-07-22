@@ -13,6 +13,7 @@ type Datastore interface {
 	DeleteEntity(id int) error
 	CreateEntity(e Entity) (error, int)
 	UpdateEntity(e Entity) error
+	IsEntityEmpty(id int) (bool, error)
 	IsEntityWithName(name string) (bool, error)
 	IsEntityWithNameExcept(string, ...string) (bool, error)
 
@@ -28,6 +29,7 @@ type Datastore interface {
 	CreatePerson(p Person) (error, int)
 	UpdatePerson(p Person) error
 	DeletePerson(id int) error
+	IsPersonManager(id int) (bool, error)
 	IsPersonWithEmail(email string) (bool, error)
 	IsPersonWithEmailExcept(string, ...string) (bool, error)
 }

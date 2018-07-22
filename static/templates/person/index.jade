@@ -50,7 +50,7 @@ block contentjs
                     dataType: 'json',
                     processResults: function (data) {
                         // replacing email by text expected by select2
-                        var newdata = $.map(data, function (obj) {
+                        var newdata = $.map(data.rows, function (obj) {
                             obj.text = obj.text || obj.entity_name;
                             obj.id = obj.id || obj.entity_id;
                             return obj;
@@ -192,16 +192,26 @@ block contentjs
         function operateFormatter(value, row, index) {
             // show action buttons if permitted
             eid = row.person_id
-            hasPermission("{{ .PersonID }}", "r", "people", eid).done(function(result){
-                if(result) {
-                    $("#view"+this.itemId).fadeIn();
-                }
+            //- hasPermission("{{ .PersonID }}", "r", "people", eid).done(function(result){
+            //-     if(result) {
+            //-         $("#view"+this.itemId).fadeIn();
+            //-     }
+            //- })
+            //- hasPermission("{{ .PersonID }}", "w", "people", eid).done(function(result){
+            //-     if(result) {
+            //-         $("#edit"+this.itemId).fadeIn();
+            //-         $("#delete"+this.itemId).fadeIn();
+            //-     }
+            //- })
+
+            hasPermission2("/f/people/" + eid, "GET", eid).done(function(){
+                     $("#view"+this.itemId).fadeIn();
             })
-            hasPermission("{{ .PersonID }}", "w", "people", eid).done(function(result){
-                if(result) {
+            hasPermission2("/f/people/" + eid, "PUT", eid).done(function(){
                     $("#edit"+this.itemId).fadeIn();
+            })
+            hasPermission2("/f/people/" + eid, "DELETE", eid).done(function(){
                     $("#delete"+this.itemId).fadeIn();
-                }
             })
 
             // buttons are hidden by default

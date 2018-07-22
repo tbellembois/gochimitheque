@@ -26,7 +26,7 @@ block contentjs
                     dataType: 'json',
                     processResults: function (data) {
                         // replacing email by text expected by select2
-                        var newdata = $.map(data, function (obj) {
+                        var newdata = $.map(data.rows, function (obj) {
                             obj.text = obj.text || obj.entity_name;
                             obj.id = obj.id || obj.entity_id;
                             return obj;
