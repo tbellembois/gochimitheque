@@ -1,4 +1,4 @@
-// extends static/templates/base.jade
+extends static/templates/base.jade
 mixin test
   img(src="{{$Foo}}")
 
@@ -23,6 +23,11 @@ block content
 
 block contentjs
     script.
-        var p = global.buildPermissionWidget(1);
-        console.log(p);
-        $("div.container").append(p);
+        $.ajax({
+            url: "/f/people/3",
+            method: "DELETE",
+        }).done(function(data, textStatus, jqXHR) {
+            console.log(data);
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            console(jqXHR.statusText)
+        });

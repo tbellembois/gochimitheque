@@ -51,12 +51,20 @@ function readCookie(name) {
     return null;
 }
 
-// returns true if the persoon with personId has the permission "perm" on the item "item" with item id "itemId"
+// returns true if the person with personId has the permission "perm" on the item "item" with item id "itemId"
 function hasPermission(personId, perm, item, itemId) {
     return $.ajax({
         url: "/haspermission/" + personId + "/" + perm + "/" + item + "/" + itemId,
         itemId: itemId,
         method: 'GET',
+    });
+}
+
+function hasPermission2(url, method, itemId) {
+    return $.ajax({
+        url: url,
+        itemId: itemId,
+        method: method,
     });
 }
 

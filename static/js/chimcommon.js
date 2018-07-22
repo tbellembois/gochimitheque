@@ -35,23 +35,3 @@ function displayMessage(msgText, type) {
     d.text(msgText);
     $("body").prepend(d.delay(800).fadeOut("slow"));
 }
-
-// // buidPermissionWidget returns a permission widget for the given person
-// function buildPermissionWidget(persId) {
-//     var widget = $("div").addClass("row");
-//     var items = [
-//                 'product', 
-//                 'rproduct', 
-//                 'storage', 
-//                 'astorage', 
-//                 'storelocation',
-//                 'classofcompounds',
-//                 'supplier'];
-
-//     items.forEach(function(item, index, array) {
-//         widget.append($("div").addClass("row").append($("div").addClass("col-sm").html(item)));
-//         console.log(item, index);
-//     });
-
-//     return widget
-// }

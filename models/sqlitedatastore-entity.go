@@ -147,8 +147,29 @@ func (db *SQLiteDataStore) CreateEntity(e Entity) (error, int) {
 
 	// adding the new managers
 	for _, m := range e.Managers {
-		sqlr = `insert into entitypeople (entitypeople_entity_id, entitypeople_person_id) values (?, ?)`
+		sqlr = `INSERT INTO entitypeople (entitypeople_entity_id, entitypeople_person_id) values (?, ?)`
 		if _, db.err = db.Exec(sqlr, e.EntityID, m.PersonID); db.err != nil {
+			return db.err, 0
+		}
+
+		// setting the manager in the entity
+		sqlr = `INSERT OR IGNORE INTO personentities(personentities_person_id, personentities_entity_id) 
+			VALUES (?, ?)`
+		if _, db.err = db.Exec(sqlr, m.PersonID, e.EntityID); db.err != nil {
+			return db.err, 0
+		}
+
+		// setting the manager permissions in the entity
+		// 1. lazily deleting former permissions
+		sqlr = `DELETE FROM permission 
+			WHERE permission_person_id = ? and permission_entity_id = ?`
+		if _, db.err = db.Exec(sqlr, m.PersonID, e.EntityID); db.err != nil {
+			return db.err, 0
+		}
+		// 2. inserting manager permissions
+		sqlr = `INSERT INTO permission(permission_person_id, permission_perm_name, permission_item_name, permission_entity_id) 
+			VALUES (?, ?, ?, ?)`
+		if _, db.err = db.Exec(sqlr, m.PersonID, "all", "all", e.EntityID); db.err != nil {
 			return db.err, 0
 		}
 	}
@@ -209,8 +230,8 @@ func (db *SQLiteDataStore) UpdateEntity(e Entity) error {
 			// setting the manager permissions in the entity
 			// 1. lazily deleting former permissions
 			sqlr = `DELETE FROM permission 
-			WHERE permission_person_id = ?`
-			if _, db.err = db.Exec(sqlr, man.PersonID); db.err != nil {
+			WHERE permission_person_id = ? and permission_entity_id = ?`
+			if _, db.err = db.Exec(sqlr, man.PersonID, e.EntityID); db.err != nil {
 				return db.err
 			}
 			// 2. inserting manager permissions
@@ -224,6 +245,27 @@ func (db *SQLiteDataStore) UpdateEntity(e Entity) error {
 	}
 
 	return nil
+}
+
+// IsEntityEmpty returns true is the entity is empty
+func (db *SQLiteDataStore) IsEntityEmpty(id int) (bool, error) {
+	var (
+		res   bool
+		count int
+		sqlr  string
+	)
+
+	sqlr = "SELECT count(*) from personentities WHERE personentities.entity_id = ?"
+	if db.err = db.Get(&count, sqlr, id); db.err != nil {
+		return false, db.err
+	}
+	log.WithFields(log.Fields{"id": id, "count": count}).Debug("IsEntityEmpty")
+	if count == 0 {
+		res = false
+	} else {
+		res = true
+	}
+	return res, nil
 }
 
 // IsEntityWithName returns true is the entity "name" exists

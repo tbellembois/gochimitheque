@@ -64,21 +64,21 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		permission_perm_name string NOT NULL,
 		permission_item_name string NOT NULL,
 		permission_entity_id integer,
-		FOREIGN KEY (permission_person_id) references person(person_id));
+		FOREIGN KEY(permission_person_id) references person(person_id));
 	-- entities people belongs to
 	CREATE TABLE IF NOT EXISTS personentities (
 		personentities_person_id integer NOT NULL,
 		personentities_entity_id integer NOT NULL,
-		PRIMARY KEY (personentities_person_id, personentities_entity_id),
-		FOREIGN KEY (personentities_person_id) references person(person_id),
-		FOREIGN KEY (personentities_entity_id) references entity(entity_id));
+		PRIMARY KEY(personentities_person_id, personentities_entity_id),
+		FOREIGN KEY(personentities_person_id) references person(person_id),
+		FOREIGN KEY(personentities_entity_id) references entity(entity_id));
 	-- entities managers	
 	CREATE TABLE IF NOT EXISTS entitypeople (
 		entitypeople_entity_id integer NOT NULL,
 		entitypeople_person_id integer NOT NULL,
-		PRIMARY KEY (entitypeople_entity_id, entitypeople_person_id),
-		FOREIGN KEY (entitypeople_person_id) references person(person_id),
-		FOREIGN KEY (entitypeople_entity_id) references entity(entity_id));
+		PRIMARY KEY(entitypeople_entity_id, entitypeople_person_id),
+		FOREIGN KEY(entitypeople_person_id) references person(person_id),
+		FOREIGN KEY(entitypeople_entity_id) references entity(entity_id));
 	`
 
 	// tables creation
