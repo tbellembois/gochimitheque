@@ -2,6 +2,7 @@ package models
 
 import (
 	"net/http"
+	"net/url"
 )
 
 // AppHandlerFunc is an HandlerFunc returning an AppError
@@ -14,12 +15,11 @@ type AppError struct {
 	Code    int
 }
 
-// ViewContainer is a struct passed to the view containing the logged user email
-// and his permissions
+// ViewContainer is a struct passed to the view
 type ViewContainer struct {
 	PersonEmail string
 	PersonID    int
-	//Permissions []Permission
+	URLValues   url.Values
 }
 
 // Entity represent a department, a laboratory...

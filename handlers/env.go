@@ -34,5 +34,6 @@ func containerFromRequestContext(r *http.Request) models.ViewContainer {
 	if ctxcontainer != nil {
 		container = ctxcontainer.(models.ViewContainer)
 	}
+	container.URLValues = r.URL.Query()
 	return container
 }

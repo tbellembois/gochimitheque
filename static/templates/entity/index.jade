@@ -48,6 +48,18 @@ block contentjs
         
         
         $( document ).ready(function() {
+            
+            // initializing query parameters map
+            var URLValues = new Map();
+            {{ range $key, $value := .URLValues }}
+                URLValues.set({{ $key }}, {{ $value }});
+            {{ end }}
+
+            // populating search input if needed
+            if (URLValues.has("search")) {
+                $('#table').bootstrapTable('resetSearch', URLValues.get("search")[0]);
+            }
+
             //
             // update form validation
             //
