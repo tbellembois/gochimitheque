@@ -358,7 +358,7 @@ func (db *SQLiteDataStore) DeletePerson(id int) error {
 	}
 
 	sqlr = `DELETE FROM permission 
-	WHERE permission_id = ?`
+	WHERE permission_person_id = ?`
 	if _, db.err = db.Exec(sqlr, id); db.err != nil {
 		return db.err
 	}

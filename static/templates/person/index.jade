@@ -40,6 +40,18 @@ block contentjs
     script.
 
         $( document ).ready(function() {
+            
+            // initializing query parameters map
+            var URLValues = new Map();
+            {{ range $key, $value := .URLValues }}
+                URLValues.set({{ $key }}, {{ $value }});
+            {{ end }}
+
+            // populating search input if needed
+            if (URLValues.has("search")) {
+                $('#table').bootstrapTable('resetSearch', URLValues.get("search")[0]);
+            }
+
             //
             // manager select2
             //
@@ -192,18 +204,6 @@ block contentjs
         function operateFormatter(value, row, index) {
             // show action buttons if permitted
             eid = row.person_id
-            //- hasPermission("{{ .PersonID }}", "r", "people", eid).done(function(result){
-            //-     if(result) {
-            //-         $("#view"+this.itemId).fadeIn();
-            //-     }
-            //- })
-            //- hasPermission("{{ .PersonID }}", "w", "people", eid).done(function(result){
-            //-     if(result) {
-            //-         $("#edit"+this.itemId).fadeIn();
-            //-         $("#delete"+this.itemId).fadeIn();
-            //-     }
-            //- })
-
             hasPermission2("/f/people/" + eid, "GET", eid).done(function(){
                      $("#view"+this.itemId).fadeIn();
             })
