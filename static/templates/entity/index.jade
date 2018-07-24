@@ -75,9 +75,6 @@ block contentjs
                             },
                         },
                     },
-                    person: {
-                        required: true,
-                    },
                 },
             });
 
@@ -259,7 +256,7 @@ block contentjs
                 operateEditView(e, value, row, index)
             },
             'click .delete': function (e, value, row, index) {
-                // hidding possible previous confirmation button
+                // hiding possible previous confirmation button
                 $(this).confirmation("show").off( "confirmed.bs.confirmation");
                 $(this).confirmation("show").off( "canceled.bs.confirmation");
                 
