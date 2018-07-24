@@ -29,6 +29,7 @@ type Datastore interface {
 	CreatePerson(p Person) (error, int)
 	UpdatePerson(p Person) error
 	DeletePerson(id int) error
+	IsPersonAdmin(id int) (bool, error)
 	IsPersonManager(id int) (bool, error)
 	IsPersonWithEmail(email string) (bool, error)
 	IsPersonWithEmailExcept(string, ...string) (bool, error)

@@ -130,6 +130,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		p7 := Person{PersonEmail: "john@lab-three.com", Entities: []Entity{e3}}
 		p8 := Person{PersonEmail: "rob@lab-three.com", Entities: []Entity{e3}}
 		p9 := Person{PersonEmail: "harrison@lab-three.com", Entities: []Entity{e3}}
+		p10 := Person{PersonEmail: "alone@no-entity.com"}
 
 		db.CreatePerson(p0)
 		db.CreatePerson(p1)
@@ -141,6 +142,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		db.CreatePerson(p7)
 		db.CreatePerson(p8)
 		db.CreatePerson(p9)
+		db.CreatePerson(p10)
 	}
 	return nil
 }

@@ -16,24 +16,42 @@ import (
 // order, offset and limit are passed to the sql request
 func (db *SQLiteDataStore) GetPeople(personID int, search string, order string, offset uint64, limit uint64) ([]Person, int, error) {
 	var (
-		people []Person
-		count  int
-		sqlr   string
-		sqla   []interface{}
+		people   []Person
+		count    int
+		sqlr     string
+		sqla     []interface{}
+		isadmin  bool
+		cbuilder sq.SelectBuilder
+		sbuilder sq.SelectBuilder
 	)
 	log.WithFields(log.Fields{"search": search, "order": order, "offset": offset, "limit": limit}).Debug("GetPeople")
 
-	// count query
-	cbuilder := sq.Select("count(DISTINCT p.person_id)").
-		From("person AS p, entity AS e").
-		Where("p.person_email LIKE ?", fmt.Sprint("%", search, "%")).
-		// join to get person entities
-		Join(`personentities ON
+	// is the logged user an admin?
+	if isadmin, db.err = db.IsPersonAdmin(personID); db.err != nil {
+		return nil, 0, db.err
+	}
+
+	// returning all people for admins
+	if isadmin {
+		cbuilder = sq.Select("count(*)").
+			From("person AS p").
+			Where("p.person_email LIKE ?", fmt.Sprint("%", search, "%"))
+		sbuilder = sq.Select(`p.person_id, 
+			p.person_email`).
+			From("person AS p").
+			Where("p.person_email LIKE ?", fmt.Sprint("%", search, "%"))
+	} else {
+		// count query
+		cbuilder = sq.Select("count(DISTINCT p.person_id)").
+			From("person AS p, entity AS e").
+			Where("p.person_email LIKE ?", fmt.Sprint("%", search, "%")).
+			// join to get person entities
+			Join(`personentities ON
 			personentities.personentities_person_id = p.person_id`).
-		Join(`entity ON
+			Join(`entity ON
 			personentities.personentities_entity_id = e.entity_id`).
-		// join to filter people personID can access to
-		Join(`permission AS perm on
+			// join to filter people personID can access to
+			Join(`permission AS perm on
 			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
 			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
 			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
@@ -42,20 +60,20 @@ func (db *SQLiteDataStore) GetPeople(personID int, search string, order string, 
 			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
 			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
 			`, personID, personID, personID, personID, personID, personID, personID)
-	// select query
-	sbuilder := sq.Select(`p.person_id, 
+		// select query
+		sbuilder = sq.Select(`p.person_id, 
 		p.person_email`).
-		From("person AS p, entity AS e").
-		Where("p.person_email LIKE ?", fmt.Sprint("%", search, "%")).
-		// join to get person entities
-		Join(`personentities ON
+			From("person AS p, entity AS e").
+			Where("p.person_email LIKE ?", fmt.Sprint("%", search, "%")).
+			// join to get person entities
+			Join(`personentities ON
 		personentities.personentities_person_id = p.person_id
 		`).
-		Join(`entity ON
+			Join(`entity ON
 		personentities.personentities_entity_id = e.entity_id
 		`).
-		// join to filter people personID can access to
-		Join(`permission AS perm on
+			// join to filter people personID can access to
+			Join(`permission AS perm on
 			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
 			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
 			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
@@ -64,8 +82,11 @@ func (db *SQLiteDataStore) GetPeople(personID int, search string, order string, 
 			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
 			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
 			`, personID, personID, personID, personID, personID, personID, personID).
-		GroupBy("p.person_id").
-		OrderBy(fmt.Sprintf("person_email %s", order))
+			GroupBy("p.person_id").
+			OrderBy(fmt.Sprintf("person_email %s", order))
+	}
+
+	// limit
 	if limit != constants.MaxUint64 {
 		sbuilder = sbuilder.Offset(offset).Limit(limit)
 	}
@@ -224,6 +245,7 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 		sqlargs []interface{}
 		err     error
 		eids    []int
+		isadmin bool
 	)
 
 	log.WithFields(log.Fields{
@@ -231,6 +253,15 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 		"perm":   perm,
 		"item":   item,
 		"itemid": itemid}).Debug("HasPersonPermission")
+
+	// is the user an admin?
+	if isadmin, db.err = db.IsPersonAdmin(id); db.err != nil {
+		return false, err
+	}
+	// if yes return true
+	if isadmin {
+		return true, nil
+	}
 
 	//
 	// first: retrieving the entities of the item to be accessed
@@ -457,6 +488,30 @@ func (db *SQLiteDataStore) UpdatePerson(p Person) error {
 	}
 
 	return nil
+}
+
+// IsPersonAdmin returns true is the person with id "id" is an admin
+func (db *SQLiteDataStore) IsPersonAdmin(id int) (bool, error) {
+	var (
+		res   bool
+		count int
+		sqlr  string
+	)
+	sqlr = `SELECT count(*) from permission WHERE 
+	permission.permission_person_id = ? AND
+	permission.permission_perm_name = "all" AND
+	permission.permission_item_name = "all" AND
+	permission_entity_id = -1`
+	if db.err = db.Get(&count, sqlr, id); db.err != nil {
+		return false, db.err
+	}
+	log.WithFields(log.Fields{"id": id, "count": count}).Debug("IsPersonAdmin")
+	if count == 0 {
+		res = false
+	} else {
+		res = true
+	}
+	return res, nil
 }
 
 // IsPersonWithEmail returns true is the person with id "id" is a manager
