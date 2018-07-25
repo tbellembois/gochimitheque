@@ -22,6 +22,13 @@ type ViewContainer struct {
 	URLValues   url.Values
 }
 
+// StoreLocation is where products are stored in entities
+type StoreLocation struct {
+	StoreLocationID   int    `db:"storelocation_id" json:"storelocation_id" schema:"storelocation_id"`
+	StoreLocationName string `db:"storelocation_name" json:"storelocation_name" schema:"storelocation_name"`
+	Entity            Entity `db:"storelocation_entity_id" json:"entity" schema:"entity"`
+}
+
 // Entity represent a department, a laboratory...
 type Entity struct {
 	EntityID          int      `db:"entity_id" json:"entity_id" schema:"entity_id"`

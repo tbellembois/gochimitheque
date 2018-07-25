@@ -6,6 +6,13 @@ type Datastore interface {
 	FlushErrors() error
 	CreateDatabase() error
 
+	// store locations
+	GetStoreLocations(personID int, search string, order string, offset uint64, limit uint64) ([]StoreLocation, int, error)
+	GetStoreLocation(id int) (StoreLocation, error)
+	DeleteStoreLocation(id int) error
+	CreateStoreLocation(s StoreLocation) (error, int)
+	UpdateStoreLocation(s StoreLocation) error
+
 	// entities
 	GetEntities(personID int, search string, order string, offset uint64, limit uint64) ([]Entity, int, error)
 	GetEntity(id int) (Entity, error)

@@ -38,7 +38,6 @@ func (db *SQLiteDataStore) GetEntities(personID int, search string, order string
 			`, personID, personID, personID, personID, personID, personID, personID)
 	// select query
 	sbuilder := sq.Select(`e.entity_id, 
-		e.entity_id,
 		e.entity_name, 
 		e.entity_description`).
 		From("entity AS e, person as p").

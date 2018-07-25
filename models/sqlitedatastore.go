@@ -58,6 +58,11 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		entity_id integer PRIMARY KEY,
 		entity_name string NOT NULL,
 		entity_description string);
+	CREATE TABLE IF NOT EXISTS storelocation (
+		storelocation_id integer PRIMARY KEY,
+		storelocation_name string NOT NULL,
+		storelocation_entity_id integer NOT NULL,
+		FOREIGN KEY(storelocation_entity_id) references entity(entity_id));
 	CREATE TABLE IF NOT EXISTS permission (
 		permission_id integer PRIMARY KEY,
 		permission_person_id integer NOT NULL,
@@ -108,6 +113,20 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		_, e1.EntityID = db.CreateEntity(e1)
 		_, e2.EntityID = db.CreateEntity(e2)
 		_, e3.EntityID = db.CreateEntity(e3)
+
+		sl1 := StoreLocation{StoreLocationName: "fridgeA1", Entity: e1}
+		sl2 := StoreLocation{StoreLocationName: "fridgeB1", Entity: e1}
+		sl3 := StoreLocation{StoreLocationName: "fridgeA2", Entity: e2}
+		sl4 := StoreLocation{StoreLocationName: "fridgeB2", Entity: e2}
+		sl5 := StoreLocation{StoreLocationName: "fridgeA3", Entity: e3}
+		sl6 := StoreLocation{StoreLocationName: "fridgeB3", Entity: e3}
+
+		db.CreateStoreLocation(sl1)
+		db.CreateStoreLocation(sl2)
+		db.CreateStoreLocation(sl3)
+		db.CreateStoreLocation(sl4)
+		db.CreateStoreLocation(sl5)
+		db.CreateStoreLocation(sl6)
 
 		m1.Entities = []Entity{e1}
 		m2.Entities = []Entity{e2}
