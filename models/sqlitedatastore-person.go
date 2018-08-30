@@ -14,7 +14,7 @@ import (
 
 // GetPeople returns the people matching the search criteria
 // order, offset and limit are passed to the sql request
-func (db *SQLiteDataStore) GetPeople(personID int, search string, order string, offset uint64, limit uint64) ([]Person, int, error) {
+func (db *SQLiteDataStore) GetPeople(p GetPeopleParameters) ([]Person, int, error) {
 	var (
 		people   []Person
 		count    int
@@ -24,10 +24,10 @@ func (db *SQLiteDataStore) GetPeople(personID int, search string, order string, 
 		cbuilder sq.SelectBuilder
 		sbuilder sq.SelectBuilder
 	)
-	log.WithFields(log.Fields{"search": search, "order": order, "offset": offset, "limit": limit}).Debug("GetPeople")
+	log.WithFields(log.Fields{"search": p.Search, "order": p.Order, "offset": p.Offset, "limit": p.Limit}).Debug("GetPeople")
 
 	// is the logged user an admin?
-	if isadmin, db.err = db.IsPersonAdmin(personID); db.err != nil {
+	if isadmin, db.err = db.IsPersonAdmin(p.LoggedPersonID); db.err != nil {
 		return nil, 0, db.err
 	}
 
@@ -35,16 +35,16 @@ func (db *SQLiteDataStore) GetPeople(personID int, search string, order string, 
 	if isadmin {
 		cbuilder = sq.Select("count(*)").
 			From("person AS p").
-			Where("p.person_email LIKE ?", fmt.Sprint("%", search, "%"))
+			Where("p.person_email LIKE ?", fmt.Sprint("%", p.Search, "%"))
 		sbuilder = sq.Select(`p.person_id, 
 			p.person_email`).
 			From("person AS p").
-			Where("p.person_email LIKE ?", fmt.Sprint("%", search, "%"))
+			Where("p.person_email LIKE ?", fmt.Sprint("%", p.Search, "%"))
 	} else {
 		// count query
 		cbuilder = sq.Select("count(DISTINCT p.person_id)").
 			From("person AS p, entity AS e").
-			Where("p.person_email LIKE ?", fmt.Sprint("%", search, "%")).
+			Where("p.person_email LIKE ?", fmt.Sprint("%", p.Search, "%")).
 			// join to get person entities
 			Join(`personentities ON
 			personentities.personentities_person_id = p.person_id`).
@@ -59,19 +59,17 @@ func (db *SQLiteDataStore) GetPeople(personID int, search string, order string, 
 			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
 			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
 			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
-			`, personID, personID, personID, personID, personID, personID, personID)
+			`, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID)
 		// select query
 		sbuilder = sq.Select(`p.person_id, 
 		p.person_email`).
 			From("person AS p, entity AS e").
-			Where("p.person_email LIKE ?", fmt.Sprint("%", search, "%")).
+			Where("p.person_email LIKE ?", fmt.Sprint("%", p.Search, "%")).
 			// join to get person entities
 			Join(`personentities ON
-		personentities.personentities_person_id = p.person_id
-		`).
+			personentities.personentities_person_id = p.person_id`).
 			Join(`entity ON
-		personentities.personentities_entity_id = e.entity_id
-		`).
+			personentities.personentities_entity_id = e.entity_id`).
 			// join to filter people personID can access to
 			Join(`permission AS perm on
 			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
@@ -81,14 +79,14 @@ func (db *SQLiteDataStore) GetPeople(personID int, search string, order string, 
 			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
 			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
 			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
-			`, personID, personID, personID, personID, personID, personID, personID).
+			`, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID).
 			GroupBy("p.person_id").
-			OrderBy(fmt.Sprintf("person_email %s", order))
+			OrderBy(fmt.Sprintf("person_email %s", p.Order))
 	}
 
 	// limit
-	if limit != constants.MaxUint64 {
-		sbuilder = sbuilder.Offset(offset).Limit(limit)
+	if p.Limit != constants.MaxUint64 {
+		sbuilder = sbuilder.Offset(p.Offset).Limit(p.Limit)
 	}
 	// select
 	sqlr, sqla, db.err = sbuilder.ToSql()
@@ -175,7 +173,7 @@ func (db *SQLiteDataStore) GetPersonManageEntities(id int) ([]Entity, error) {
 }
 
 // GetPersonEntities returns the person (with id "id") entities
-func (db *SQLiteDataStore) GetPersonEntities(personID int, id int) ([]Entity, error) {
+func (db *SQLiteDataStore) GetPersonEntities(LoggedPersonID int, id int) ([]Entity, error) {
 	var (
 		entities []Entity
 		sqlr     string
@@ -197,7 +195,7 @@ func (db *SQLiteDataStore) GetPersonEntities(personID int, id int) ([]Entity, er
 			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
 			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
 			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
-			`, personID, personID, personID, personID, personID, personID, personID).
+			`, LoggedPersonID, LoggedPersonID, LoggedPersonID, LoggedPersonID, LoggedPersonID, LoggedPersonID, LoggedPersonID).
 		GroupBy("e.entity_id")
 	sqlr, sqla, db.err = sbuilder.ToSql()
 	if db.err != nil {
