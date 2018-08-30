@@ -32,6 +32,8 @@ func (db *SQLiteDataStore) GetPeople(p GetPeopleParameters) ([]Person, int, erro
 	}
 
 	// returning all people for admins
+	// we need to handle admins
+	// to see people with no entities
 	if isadmin {
 		cbuilder = sq.Select("count(*)").
 			From("person AS p").
@@ -41,47 +43,26 @@ func (db *SQLiteDataStore) GetPeople(p GetPeopleParameters) ([]Person, int, erro
 			From("person AS p").
 			Where("p.person_email LIKE ?", fmt.Sprint("%", p.Search, "%"))
 	} else {
+		// building common query strings
+		from := "person AS p, entity AS e"
+		where := "p.person_email LIKE ?"
+		joinpe := `personentities ON
+		personentities.personentities_person_id = p.person_id`
+		joine := `entity ON
+		personentities.personentities_entity_id = e.entity_id`
+		joinp := `permission AS perm on
+		(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
+		(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
+		(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
+		(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
+		(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
+		(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
+		(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
+		`
 		// count query
-		cbuilder = sq.Select("count(DISTINCT p.person_id)").
-			From("person AS p, entity AS e").
-			Where("p.person_email LIKE ?", fmt.Sprint("%", p.Search, "%")).
-			// join to get person entities
-			Join(`personentities ON
-			personentities.personentities_person_id = p.person_id`).
-			Join(`entity ON
-			personentities.personentities_entity_id = e.entity_id`).
-			// join to filter people personID can access to
-			Join(`permission AS perm on
-			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
-			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
-			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
-			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
-			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
-			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
-			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
-			`, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID)
+		cbuilder = sq.Select("count(DISTINCT p.person_id)").From(from).Where(where, fmt.Sprint("%", p.Search, "%")).Join(joinpe).Join(joine).Join(joinp, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID).GroupBy("p.person_id").OrderBy(fmt.Sprintf("person_email %s", p.Order))
 		// select query
-		sbuilder = sq.Select(`p.person_id, 
-		p.person_email`).
-			From("person AS p, entity AS e").
-			Where("p.person_email LIKE ?", fmt.Sprint("%", p.Search, "%")).
-			// join to get person entities
-			Join(`personentities ON
-			personentities.personentities_person_id = p.person_id`).
-			Join(`entity ON
-			personentities.personentities_entity_id = e.entity_id`).
-			// join to filter people personID can access to
-			Join(`permission AS perm on
-			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
-			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
-			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
-			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
-			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
-			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
-			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
-			`, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID).
-			GroupBy("p.person_id").
-			OrderBy(fmt.Sprintf("person_email %s", p.Order))
+		sbuilder = sq.Select(`p.person_id, p.person_email`).From(from).Where(where, fmt.Sprint("%", p.Search, "%")).Join(joinpe).Join(joine).Join(joinp, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID).GroupBy("p.person_id").OrderBy(fmt.Sprintf("person_email %s", p.Order))
 	}
 
 	// limit
