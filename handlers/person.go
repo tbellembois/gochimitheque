@@ -101,7 +101,7 @@ func (env *Env) GetPeopleHandler(w http.ResponseWriter, r *http.Request) *models
 
 	// retrieving the logged user id from request context
 	c := containerFromRequestContext(r)
-	people, count, err := env.DB.GetPeople(c.PersonID, search, order, offset, limit)
+	people, count, err := env.DB.GetPeople(models.GetPeopleParameters{GetCommonParameters: models.GetCommonParameters{LoggedPersonID: c.PersonID, Search: search, Order: order, Offset: offset, Limit: limit}, EntityID: -1})
 	if err != nil {
 		return &models.AppError{
 			Error:   err,

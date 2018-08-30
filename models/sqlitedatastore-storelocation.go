@@ -13,7 +13,7 @@ import (
 
 // GetStoreLocations returns the store locations matching the search criteria
 // order, offset and limit are passed to the sql request
-func (db *SQLiteDataStore) GetStoreLocations(personID int, search string, order string, offset uint64, limit uint64) ([]StoreLocation, int, error) {
+func (db *SQLiteDataStore) GetStoreLocations(loggedpersonID int, search string, order string, offset uint64, limit uint64) ([]StoreLocation, int, error) {
 	var (
 		storelocations []StoreLocation
 		count          int
@@ -35,7 +35,7 @@ func (db *SQLiteDataStore) GetStoreLocations(personID int, search string, order 
 			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
 			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
 			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = s.storelocation_entity_id)
-			`, personID, personID, personID, personID, personID, personID, personID)
+			`, loggedpersonID, loggedpersonID, loggedpersonID, loggedpersonID, loggedpersonID, loggedpersonID, loggedpersonID)
 	// select query
 	sbuilder := sq.Select(`s.storelocation_id, 
 		s.storelocation_name, 
@@ -51,7 +51,7 @@ func (db *SQLiteDataStore) GetStoreLocations(personID int, search string, order 
 			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
 			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
 			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = s.storelocation_entity_id)
-			`, personID, personID, personID, personID, personID, personID, personID).
+			`, loggedpersonID, loggedpersonID, loggedpersonID, loggedpersonID, loggedpersonID, loggedpersonID, loggedpersonID).
 		GroupBy("s.storelocation_id").
 		OrderBy(fmt.Sprintf("storelocation_name %s", order))
 	if limit != constants.MaxUint64 {

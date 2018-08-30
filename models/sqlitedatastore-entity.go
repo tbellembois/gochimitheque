@@ -13,7 +13,7 @@ import (
 
 // GetEntities returns the entities matching the search criteria
 // order, offset and limit are passed to the sql request
-func (db *SQLiteDataStore) GetEntities(personID int, search string, order string, offset uint64, limit uint64) ([]Entity, int, error) {
+func (db *SQLiteDataStore) GetEntities(loggedpersonID int, search string, order string, offset uint64, limit uint64) ([]Entity, int, error) {
 	var (
 		entities []Entity
 		count    int
@@ -35,7 +35,7 @@ func (db *SQLiteDataStore) GetEntities(personID int, search string, order string
 			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
 			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
 			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
-			`, personID, personID, personID, personID, personID, personID, personID)
+			`, loggedpersonID, loggedpersonID, loggedpersonID, loggedpersonID, loggedpersonID, loggedpersonID, loggedpersonID)
 	// select query
 	sbuilder := sq.Select(`e.entity_id, 
 		e.entity_name, 
@@ -51,7 +51,7 @@ func (db *SQLiteDataStore) GetEntities(personID int, search string, order string
 			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
 			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
 			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
-			`, personID, personID, personID, personID, personID, personID, personID).
+			`, loggedpersonID, loggedpersonID, loggedpersonID, loggedpersonID, loggedpersonID, loggedpersonID, loggedpersonID).
 		// join to get managers
 		// Join(`entitypeople ON entitypeople.entitypeople_entity_id = e.entity_id`).
 		// Join(`person ON entitypeople.entitypeople_person_id = p.person_id`).
