@@ -55,13 +55,25 @@ func (env *Env) GetPeopleHandler(w http.ResponseWriter, r *http.Request) *models
 	log.Debug("GetPeopleHandler")
 
 	var (
-		search string
-		order  string
-		offset uint64
-		limit  uint64
-		err    error
+		search   string
+		order    string
+		offset   uint64
+		limit    uint64
+		entityid int
+		err      error
 	)
 
+	if e, ok := r.URL.Query()["entityid"]; !ok {
+		entityid = -1
+	} else {
+		if entityid, err = strconv.Atoi(e[0]); err != nil {
+			return &models.AppError{
+				Error:   err,
+				Code:    http.StatusInternalServerError,
+				Message: "entityid atoi conversion",
+			}
+		}
+	}
 	if s, ok := r.URL.Query()["search"]; !ok {
 		search = ""
 	} else {
@@ -101,7 +113,7 @@ func (env *Env) GetPeopleHandler(w http.ResponseWriter, r *http.Request) *models
 
 	// retrieving the logged user id from request context
 	c := containerFromRequestContext(r)
-	people, count, err := env.DB.GetPeople(models.GetPeopleParameters{GetCommonParameters: models.GetCommonParameters{LoggedPersonID: c.PersonID, Search: search, Order: order, Offset: offset, Limit: limit}, EntityID: -1})
+	people, count, err := env.DB.GetPeople(models.GetPeopleParameters{GetCommonParameters: models.GetCommonParameters{LoggedPersonID: c.PersonID, Search: search, Order: order, Offset: offset, Limit: limit}, EntityID: entityid})
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
