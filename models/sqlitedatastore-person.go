@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/jmoiron/sqlx"
 
@@ -16,15 +17,14 @@ import (
 // order, offset and limit are passed to the sql request
 func (db *SQLiteDataStore) GetPeople(p GetPeopleParameters) ([]Person, int, error) {
 	var (
-		people   []Person
-		count    int
-		sqlr     string
-		sqla     []interface{}
-		isadmin  bool
-		cbuilder sq.SelectBuilder
-		sbuilder sq.SelectBuilder
+		people                             []Person
+		isadmin                            bool
+		count                              int
+		precreq, presreq, comreq, postsreq strings.Builder
+		cnstmt                             *sqlx.NamedStmt
+		snstmt                             *sqlx.NamedStmt
 	)
-	log.WithFields(log.Fields{"search": p.Search, "order": p.Order, "offset": p.Offset, "limit": p.Limit}).Debug("GetPeople")
+	log.WithFields(log.Fields{"entityid": p.EntityID, "search": p.Search, "order": p.Order, "offset": p.Offset, "limit": p.Limit}).Debug("GetPeople")
 
 	// is the logged user an admin?
 	if isadmin, db.err = db.IsPersonAdmin(p.LoggedPersonID); db.err != nil {
@@ -34,55 +34,58 @@ func (db *SQLiteDataStore) GetPeople(p GetPeopleParameters) ([]Person, int, erro
 	// returning all people for admins
 	// we need to handle admins
 	// to see people with no entities
-	if isadmin {
-		cbuilder = sq.Select("count(*)").
-			From("person AS p").
-			Where("p.person_email LIKE ?", fmt.Sprint("%", p.Search, "%"))
-		sbuilder = sq.Select(`p.person_id, 
-			p.person_email`).
-			From("person AS p").
-			Where("p.person_email LIKE ?", fmt.Sprint("%", p.Search, "%"))
+	precreq.WriteString("SELECT count(DISTINCT p.person_id)")
+	presreq.WriteString("SELECT p.person_id, p.person_email")
+	comreq.WriteString(" FROM person AS p, entity AS e")
+	comreq.WriteString(" JOIN personentities ON personentities.personentities_person_id = p.person_id")
+	if p.EntityID != -1 {
+		comreq.WriteString(" JOIN entity ON personentities.personentities_entity_id = :entityid")
 	} else {
-		// building common query strings
-		from := "person AS p, entity AS e"
-		where := "p.person_email LIKE ?"
-		joinpe := `personentities ON
-		personentities.personentities_person_id = p.person_id`
-		joine := `entity ON
-		personentities.personentities_entity_id = e.entity_id`
-		joinp := `permission AS perm on
-		(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
-		(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
-		(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
-		(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
-		(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
-		(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
-		(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
-		`
-		// count query
-		cbuilder = sq.Select("count(DISTINCT p.person_id)").From(from).Where(where, fmt.Sprint("%", p.Search, "%")).Join(joinpe).Join(joine).Join(joinp, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID).GroupBy("p.person_id").OrderBy(fmt.Sprintf("person_email %s", p.Order))
-		// select query
-		sbuilder = sq.Select(`p.person_id, p.person_email`).From(from).Where(where, fmt.Sprint("%", p.Search, "%")).Join(joinpe).Join(joine).Join(joinp, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID, p.LoggedPersonID).GroupBy("p.person_id").OrderBy(fmt.Sprintf("person_email %s", p.Order))
+		comreq.WriteString(" JOIN entity ON personentities.personentities_entity_id = e.entity_id")
 	}
+	if !isadmin {
+		comreq.WriteString(` JOIN permission AS perm ON
+		(perm.permission_person_id = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
+		(perm.permission_person_id = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
+		(perm.permission_person_id = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
+		(perm.permission_person_id = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
+		(perm.permission_person_id = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
+		(perm.permission_person_id = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
+		(perm.permission_person_id = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
+		`)
+	}
+	comreq.WriteString(" WHERE p.person_email LIKE :search")
+	postsreq.WriteString(" GROUP BY p.person_id")
+	postsreq.WriteString(" ORDER BY p.person_email " + p.Order)
 
 	// limit
 	if p.Limit != constants.MaxUint64 {
-		sbuilder = sbuilder.Offset(p.Offset).Limit(p.Limit)
+		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
 	}
-	// select
-	sqlr, sqla, db.err = sbuilder.ToSql()
-	if db.err != nil {
+
+	// building count and select statements
+	if cnstmt, db.err = db.PrepareNamed(precreq.String() + comreq.String()); db.err != nil {
 		return nil, 0, db.err
 	}
-	if db.err = db.Select(&people, sqlr, sqla...); db.err != nil {
+	if snstmt, db.err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); db.err != nil {
+		return nil, 0, db.err
+	}
+
+	// building argument map
+	m := map[string]interface{}{
+		"search":   fmt.Sprint("%", p.Search, "%"),
+		"personid": p.LoggedPersonID,
+		"entityid": p.EntityID,
+		"order":    p.Order,
+		"limit":    p.Limit,
+		"offset":   p.Offset}
+
+	// select
+	if db.err = snstmt.Select(&people, m); db.err != nil {
 		return nil, 0, db.err
 	}
 	// count
-	sqlr, sqla, db.err = cbuilder.ToSql()
-	if db.err != nil {
-		return nil, 0, db.err
-	}
-	if db.err = db.Get(&count, sqlr, sqla...); db.err != nil {
+	if db.err = cnstmt.Get(&count, m); db.err != nil {
 		return nil, 0, db.err
 	}
 
