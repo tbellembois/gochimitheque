@@ -12,6 +12,7 @@ block content
                                 data-page-list="[10, 20, 50, 100]",
                                 data-pagination='true', 
                                 data-ajax='getData', 
+                                data-query-params='queryParams'
                                 data-sort-name='person_email')
                         thead
                             tr
@@ -38,14 +39,15 @@ block content
 
 block contentjs
     script.
+        
+        var URLValues = new Map();
+
+        // initializing query parameters map
+        {{ range $key, $value := .URLValues }}
+            URLValues.set({{ $key }}, {{ $value }});
+        {{ end }}
 
         $( document ).ready(function() {
-            
-            // initializing query parameters map
-            var URLValues = new Map();
-            {{ range $key, $value := .URLValues }}
-                URLValues.set({{ $key }}, {{ $value }});
-            {{ end }}
 
             // populating search input if needed
             if (URLValues.has("search")) {
@@ -178,6 +180,12 @@ block contentjs
         //
         // table data loading
         //
+        function queryParams(params) {
+            if (URLValues.has("entityid")) {
+                params["entityid"] = URLValues.get("entityid")[0];
+            }
+            return params;
+        }
         function getData(params) {
                 $.ajax({
                     url: "/people",
