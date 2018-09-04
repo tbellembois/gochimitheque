@@ -116,6 +116,23 @@ func main() {
 	if err != nil {
 		log.Fatal("entitycreatetmpl parse:" + e.Error())
 	}
+	// store location
+	storelocationindextmpl, e := jade.ParseFile("static/templates/storelocation/index.jade")
+	if e != nil {
+		log.Fatal("storelocationindextmpl jade:" + e.Error())
+	}
+	env.Templates["storelocationindex"], err = template.New("storelocationindex").Funcs(funcMap).Parse(storelocationindextmpl)
+	if err != nil {
+		log.Fatal("storelocationtmpl parse:" + e.Error())
+	}
+	storelocationcreatetmpl, e := jade.ParseFile("static/templates/storelocation/create.jade")
+	if e != nil {
+		log.Fatal("storelocationcreatetmpl jade:" + e.Error())
+	}
+	env.Templates["storelocationcreate"], err = template.New("storelocationcreate").Funcs(funcMap).Parse(storelocationcreatetmpl)
+	if err != nil {
+		log.Fatal("storelocationcreatetmpl parse:" + e.Error())
+	}
 	// person
 	personindextmpl, e := jade.ParseFile("static/templates/person/index.jade")
 	if e != nil {
@@ -185,10 +202,22 @@ func main() {
 	r.Handle("/f/{item:people}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT")
 	r.Handle("/f/{item:people}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("POST")
 	r.Handle("/f/{item:people}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE")
-	// r.Handle("/{item:person}/{id}/{subitem:entity}/{eid}", securechain.Then(env.AppMiddleware(env.CreatePersonEntityHandler))).Methods("PUT")
-	// r.Handle("/{item:person}/{id}/{subitem:entity}/{eid}", securechain.Then(env.AppMiddleware(env.UpdatePersonEntityHandler))).Methods("POST")
-	// r.Handle("/{item:person}/{id}/{subitem:permission}/{pid}", securechain.Then(env.AppMiddleware(env.CreatePersonPermissionHandler))).Methods("PUT")
-	// r.Handle("/{item:person}/{id}/{subitem:permission}/{pid}", securechain.Then(env.AppMiddleware(env.UpdatePersonPermissionHandler))).Methods("POST")
+	// store locations
+	r.Handle("/{view:v}/{item:storelocations}", securechain.Then(env.AppMiddleware(env.VGetStoreLocationsHandler))).Methods("GET")
+	r.Handle("/{view:vc}/{item:storelocations}", securechain.Then(env.AppMiddleware(env.VCreateStoreLocationHandler))).Methods("GET")
+	r.Handle("/{item:storelocations}", securechain.Then(env.AppMiddleware(env.GetStoreLocationsHandler))).Methods("GET")
+	r.Handle("/{item:storelocations}/{id}", securechain.Then(env.AppMiddleware(env.GetStoreLocationHandler))).Methods("GET")
+	r.Handle("/{item:storelocations}/{id}", securechain.Then(env.AppMiddleware(env.UpdateStoreLocationHandler))).Methods("PUT")
+	r.Handle("/{item:storelocations}", securechain.Then(env.AppMiddleware(env.CreateStoreLocationHandler))).Methods("POST")
+	r.Handle("/{item:storelocations}/{id}", securechain.Then(env.AppMiddleware(env.DeleteStoreLocationHandler))).Methods("DELETE")
+
+	r.Handle("/f/{view:v}/{item:storelocations}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
+	r.Handle("/f/{view:vc}/{item:storelocations}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
+	r.Handle("/f/{item:storelocations}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
+	r.Handle("/f/{item:storelocations}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
+	r.Handle("/f/{item:storelocations}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT")
+	r.Handle("/f/{item:storelocations}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("POST")
+	r.Handle("/f/{item:storelocations}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE")
 
 	// validator
 	r.Handle("/validate/entity/{id}/name/{name}", commonChain.Then(env.AppMiddleware(env.ValidateEntityNameHandler))).Methods("GET")

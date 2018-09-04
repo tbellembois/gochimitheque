@@ -12,31 +12,27 @@ block content
                                 data-page-list="[10, 20, 50, 100]",
                                 data-pagination='true', 
                                 data-ajax='getData', 
-                                data-sort-name='entity_name')
+                                data-sort-name='storelocation_name')
                         thead
                             tr
-                                th(data-field='entity_id') ID
-                                th(data-field='entity_name' data-sortable='true') name
-                                th(data-field='entity_description' data-sortable='true') description
+                                th(data-field='storelocation_id') ID
+                                th(data-field='storelocation_name' data-sortable='true') name
+                                th(data-field='entity.entity_name' data-sortable='true') entity
                                 th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') actions
 
         #viewedit-collapse.collapse(data-parent='#accordion')
-            form#entity-update
+            form#storelocation-update
                 input#index(type='hidden', name='index', value='')
-                input#entity_id(type='hidden', name='entity_id', value='')
+                input#storelocation_id(type='hidden', name='storelocation_id', value='')
                 .form-group.row
                     label.col-sm-2.col-form-label(for='name') name
                     .col-sm-10
-                        input#entity_name.form-control(type='text', value='', name='name')
+                        input#storelocation_name.form-control(type='text', value='', name='name')
                 .form-group.row
-                    label.col-sm-2.col-form-label(for='description') description
+                    label.col-sm-2.col-form-label(for='entity') entity
                     .col-sm-10
-                        input#entity_description.form-control(type='text', value='', name='description')
-                .form-group.row
-                    label.col-sm-2.col-form-label(for='person') manager
-                    .col-sm-10
-                        select.form-control(style='width: 100% !important;', id='person_email', name='person', multiple='multiple')
-            button#save.btn.btn-primary(type='button', onclick='saveEntity()') save changes
+                        select.form-control(style='width: 100% !important;', id='entity_name', name='entity')
+            button#save.btn.btn-primary(type='button', onclick='saveStoreLocation()') save changes
             button.btn.btn-secondary(type='button', onclick='closeViewEdit();') close
 
 block contentjs
@@ -63,7 +59,7 @@ block contentjs
             //
             // update form validation
             //
-            $( "#entity-update" ).validate({
+            $( "#storelocation-update" ).validate({
                 errorClass: "alert alert-danger",
                 rules: {
                     name: {
@@ -71,7 +67,7 @@ block contentjs
                         remote: {
                             url: "",
                             beforeSend: function(jqXhr, settings) {
-                                settings.url = "/validate/entity/" + $("form#entity-update input#entity_id").val() + "/name/" + $("form#entity-update input#entity_name").val();
+                                settings.url = "/validate/storelocation/" + $("form#storelocation-update input#storelocation_id").val() + "/name/" + $("form#storelocation-update input#storelocation_name").val();
                             },
                         },
                     },
@@ -81,16 +77,16 @@ block contentjs
             //
             // manager select2
             //
-            $('select[id="person_email"]').select2({
+            $('select[id="entity_name"]').select2({
                 dropdownParent: $('#viewedit-collapse'),
                 ajax: {
-                    url: '/people',
+                    url: '/entities',
                     dataType: 'json',
                     processResults: function (data) {
-                        // replacing email by text expected by select2
+                        // replacing name by text expected by select2
                         var newdata = $.map(data.rows, function (obj) {
-                            obj.text = obj.text || obj.person_email;
-                            obj.id = obj.id || obj.person_id;
+                            obj.text = obj.text || obj.entity_name;
+                            obj.id = obj.id || obj.entity_id;
                             return obj;
                         });
                         return {
@@ -102,30 +98,26 @@ block contentjs
         });
         
         //
-        // save entity callback
+        // save store location callback
         //
-        function saveEntity() {
-            var form = $("#entity-update");
+        function saveStoreLocation() {
+            var form = $("#storelocation-update");
             if (! form.valid()) {
                 return;
             };
 
-            var id = $("#viewedit-collapse input#entity_id").val(),
-                name = $("#viewedit-collapse input#entity_name").val(),
-                description = $("#viewedit-collapse input#entity_description").val(),
-                selectedmanagers = $('select[id="person_email"]').select2('data');
+            var id = $("#viewedit-collapse input#storelocation_id").val(),
+                name = $("#viewedit-collapse input#storelocation_name").val(),
+                selectedentity = $('select[id="entity_name"]').select2('data')[0];
                 data = {};
-                $.each(selectedmanagers, function( index, m ) {
-                    data["managers." + index +".person_id"] = m.id;
-                    data["managers." + index +".person_email"] = m.text;
-                });
                 $.extend(data, {
-                    "entity_id": id,
-                    "entity_name": name,
-                    "entity_description": description,
+                    "storelocation_id": id,
+                    "storelocation_name": name,
+                    "entity.entity_id": selectedentity.id,
+                    "entity.entity_name": selectedentity.text,
                 });
                 $.ajax({
-                    url: "/entities/" + id,
+                    url: "/storelocations/" + id,
                     method: "PUT",
                     dataType: 'json',
                     data: data,
@@ -137,11 +129,11 @@ block contentjs
                     $table.bootstrapTable('updateRow', {
                         index: index,
                         row: {
-                            "entity_name": name,
-                            "entity_description": description,
+                            "storelocation_name": name,
+                            "entity.entity_name": selectedentity.text,
                         }
                     });
-                    displayMessage("entity " + name + " updated", "success");
+                    displayMessage("store location " + name + " updated", "success");
                 }).fail(function(jqXHR, textStatus, errorThrown) {
                     handleHTTPError(jqXHR.statusText, jqXHR.status)
                 });  
@@ -152,7 +144,7 @@ block contentjs
         //
         function getData(params) {
             $.ajax({
-                url: "/entities",
+                url: "/storelocations",
                 method: "GET",
                 dataType: "JSON",
                 data: params.data,
@@ -172,32 +164,29 @@ block contentjs
         //
         function operateFormatter(value, row, index) {
             // show action buttons if permitted
-            eid = row.entity_id
-            hasPermission2("/f/entities/" + eid, "GET", eid).done(function(){
+            slid = row.storelocation_id
+            hasPermission2("/f/storelocations/" + slid, "GET", slid).done(function(){
                     $("#members"+this.itemId).fadeIn();
             })
-            hasPermission2("/f/entities/" + eid, "GET", eid).done(function(){
+            hasPermission2("/f/storelocations/" + slid, "GET", slid).done(function(){
                      $("#view"+this.itemId).fadeIn();
             })
-            hasPermission2("/f/entities/" + eid, "PUT", eid).done(function(){
+            hasPermission2("/f/storelocations/" + slid, "PUT", slid).done(function(){
                     $("#edit"+this.itemId).fadeIn();
             })
-            hasPermission2("/f/entities/" + eid, "DELETE", eid).done(function(){
+            hasPermission2("/f/storelocations/" + slid, "DELETE", slid).done(function(){
                     $("#delete"+this.itemId).fadeIn();
             })
 
             // buttons are hidden by default
             var actions = [
-            '<button id="members' + eid + '" class="members btn btn-secondary" style="display: none;" title="members" type="button">',
-                '<i class="fas fa-users"></i>',
-            '</button>',
-            '<button id="view' + eid + '" class="view btn btn-secondary" style="display: none;" title="view" type="button">',
+            '<button id="view' + slid + '" class="view btn btn-secondary" style="display: none;" title="view" type="button">',
                 '<i class="fas fa-eye"></i>',
             '</button>',
-            '<button id="edit' + eid + '" class="edit btn btn-secondary" style="display: none;" title="edit" type="button">',
+            '<button id="edit' + slid + '" class="edit btn btn-secondary" style="display: none;" title="edit" type="button">',
                 '<i class="fas fa-edit"></i>',
             '</button>',
-            '<button id="delete' + eid + '" class="delete btn btn-secondary" style="display: none;" title="delete" type="button">',
+            '<button id="delete' + slid + '" class="delete btn btn-secondary" style="display: none;" title="delete" type="button">',
                 '<i class="fas fa-trash-alt"></i>',
             '</button>'];
 
@@ -207,12 +196,12 @@ block contentjs
         // items actions callback
         function operateEditView(e, value, row, index) {
             // clearing selections
-            $('select[id="person_email"]').val(null).trigger('change');
-            $('select[id="person_email"]').find('option').remove();
+            $('select[id="entity_name"]').val(null).trigger('change');
+            $('select[id="entity_name"]').find('option').remove();
 
-            // getting the entity
+            // getting the store location
             $.ajax({
-                url: "/entities/" + row['entity_id'],
+                url: "/storelocations/" + row['storelocation_id'],
                 method: "GET",
             }).done(function(data, textStatus, jqXHR) {
                 // flattening response data
@@ -221,20 +210,9 @@ block contentjs
                 $("#viewedit-collapse").autofill( fdata, {"findbyname": false } );
                 // setting index hidden input
                 $("input#index").val(index);
-            }).fail(function(jqXHR, textStatus, errorThrown) {
-                handleHTTPError(jqXHR.statusText, jqXHR.status)
-            });
-
-            // getting the entity managers
-            $.ajax({
-                url: "/entities/" + row['entity_id'] + "/people",
-                method: "GET",
-            }).done(function(data, textStatus, jqXHR) {
                 // select2 is not autofilled - we need a special operation
-                for(var i in data) {
-                   var newOption = new Option(data[i].person_email, data[i].person_id, true, true);
-                   $('select[id="person_email"]').append(newOption).trigger('change');
-                }
+                var newOption = new Option(data.entity.entity_name, data.entity.entity_id, true, true);
+                $('select[id="entity_name"]').append(newOption).trigger('change');
             }).fail(function(jqXHR, textStatus, errorThrown) {
                 handleHTTPError(jqXHR.statusText, jqXHR.status)
             });
@@ -254,9 +232,6 @@ block contentjs
             }
         }
         window.operateEvents = {
-            'click .members': function (e, value, row, index) {
-                window.location.href = "/v/people?entityid=" + row['entity_id'];
-            },
             'click .view': function (e, value, row, index) {
                 operateEditView(e, value, row, index)
             },
@@ -271,10 +246,10 @@ block contentjs
                 // ask for confirmation and then delete
                 $(this).confirmation("show").on( "confirmed.bs.confirmation", function() {
                     $.ajax({
-                        url: "/entities/" + row['entity_id'],
+                        url: "/storelocations/" + row['storelocation_id'],
                         method: "DELETE",
                     }).done(function(data, textStatus, jqXHR) {
-                        displayMessage("entity deleted", "success");
+                        displayMessage("store location deleted", "success");
                         var $table = $('#table');
                         $table.bootstrapTable('refresh');
                     }).fail(function(jqXHR, textStatus, errorThrown) {
