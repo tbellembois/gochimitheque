@@ -27,6 +27,18 @@ nav.navbar.navbar-expand-lg.navbar-light.bg-light
                         if HasPermission .PersonID "all" "all" -1
                             a(href="/vc/entities", title="create").dropdown-item create
 
+            if HasPermission .PersonID "r" "entities" -2
+                li.nav-item.dropdown
+                    a(href="#", title="storelocations").nav-link.dropdown-toggle#navbarDropdown(
+                        role="button" 
+                        data-toggle="dropdown" 
+                        aria-haspopup="true" 
+                        aria-expanded="false") store location
+                    div.dropdown-menu(aria-labelledby="navbarDropdown")
+                        a(href="/v/storelocations", title="list").dropdown-item list
+                        if HasPermission .PersonID "all" "all" -2
+                            a(href="/vc/storelocations", title="create").dropdown-item create
+
             if HasPermission .PersonID "r" "people" -2
                 li.nav-item.dropdown
                     a(href="#", title="people").nav-link.dropdown-toggle#navbarDropdown(

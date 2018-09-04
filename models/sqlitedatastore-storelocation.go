@@ -39,19 +39,21 @@ func (db *SQLiteDataStore) GetStoreLocations(loggedpersonID int, search string, 
 	// select query
 	sbuilder := sq.Select(`s.storelocation_id, 
 		s.storelocation_name, 
-		s.storelocation_entity_id`).
+		entity.entity_id AS "storelocation_entity_id.entity_id",
+		entity.entity_name AS "storelocation_entity_id.entity_name"`).
 		From("storelocation AS s").
-		Where(`s.storelocation_name LIKE ?`, fmt.Sprint("%", search, "%")).
+		Join("entity ON s.storelocation_entity_id = entity.entity_id").
 		// join to filter entities personID can access to
 		Join(`permission AS perm on
-			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = s.storelocation_entity_id) OR
-			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
-			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
-			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = s.storelocation_entity_id) OR
-			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
-			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
-			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = s.storelocation_entity_id)
-			`, loggedpersonID, loggedpersonID, loggedpersonID, loggedpersonID, loggedpersonID, loggedpersonID, loggedpersonID).
+		(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = s.storelocation_entity_id) OR
+		(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
+		(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
+		(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = s.storelocation_entity_id) OR
+		(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
+		(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
+		(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = s.storelocation_entity_id)
+		`, loggedpersonID, loggedpersonID, loggedpersonID, loggedpersonID, loggedpersonID, loggedpersonID, loggedpersonID).
+		Where(`s.storelocation_name LIKE ?`, fmt.Sprint("%", search, "%")).
 		GroupBy("s.storelocation_id").
 		OrderBy(fmt.Sprintf("storelocation_name %s", order))
 	if limit != constants.MaxUint64 {
@@ -83,8 +85,12 @@ func (db *SQLiteDataStore) GetStoreLocation(id int) (StoreLocation, error) {
 		sqlr          string
 	)
 
-	sqlr = `SELECT s.storelocation_id, s.storelocation_name, s.storelocation_entity_id
+	sqlr = `SELECT s.storelocation_id, 
+	s.storelocation_name, 
+	entity.entity_id AS "storelocation_entity_id.entity_id",
+	entity.entity_name AS "storelocation_entity_id.entity_name"
 	FROM storelocation AS s
+	JOIN entity ON s.storelocation_entity_id = entity.entity_id
 	WHERE s.storelocation_id = ?`
 	if db.err = db.Get(&storelocation, sqlr, id); db.err != nil {
 		return StoreLocation{}, db.err
