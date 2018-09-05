@@ -17,6 +17,17 @@ type GetPeopleParameters struct {
 	EntityID int
 }
 
+// GetEntitiesParameters contains the parameters of the GetEntities function
+type GetEntitiesParameters struct {
+	GetCommonParameters
+}
+
+// GetStoreLocationsParameters contains the parameters of the GetStoreLocations function
+type GetStoreLocationsParameters struct {
+	GetCommonParameters
+	EntityID int
+}
+
 // Datastore is an interface to be implemented
 // to store data
 type Datastore interface {
@@ -24,14 +35,14 @@ type Datastore interface {
 	CreateDatabase() error
 
 	// store locations
-	GetStoreLocations(loggedpersonID int, search string, order string, offset uint64, limit uint64) ([]StoreLocation, int, error)
+	GetStoreLocations(GetStoreLocationsParameters) ([]StoreLocation, int, error)
 	GetStoreLocation(id int) (StoreLocation, error)
 	DeleteStoreLocation(id int) error
 	CreateStoreLocation(s StoreLocation) (error, int)
 	UpdateStoreLocation(s StoreLocation) error
 
 	// entities
-	GetEntities(loggedpersonID int, search string, order string, offset uint64, limit uint64) ([]Entity, int, error)
+	GetEntities(GetEntitiesParameters) ([]Entity, int, error)
 	GetEntity(id int) (Entity, error)
 	GetEntityPeople(id int) ([]Person, error)
 	DeleteEntity(id int) error

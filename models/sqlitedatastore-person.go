@@ -160,33 +160,43 @@ func (db *SQLiteDataStore) GetPersonManageEntities(id int) ([]Entity, error) {
 func (db *SQLiteDataStore) GetPersonEntities(LoggedPersonID int, id int) ([]Entity, error) {
 	var (
 		entities []Entity
-		sqlr     string
-		sqla     []interface{}
+		isadmin  bool
+		sqlr     strings.Builder
+		sstmt    *sqlx.NamedStmt
 	)
 
-	sbuilder := sq.Select(`e.entity_id, 
-		e.entity_id,
-		e.entity_name, 
-		e.entity_description`).
-		From("entity AS e, person AS p, personentities as pe").
-		Where("pe.personentities_person_id = ? AND e.entity_id == pe.personentities_entity_id", fmt.Sprint(id)).
-		// join to filter entities personID can access to
-		Join(`permission AS perm on
-			(perm.person = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
-			(perm.person = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
-			(perm.person = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
-			(perm.person = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
-			(perm.person = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
-			(perm.person = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
-			(perm.person = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
-			`, LoggedPersonID, LoggedPersonID, LoggedPersonID, LoggedPersonID, LoggedPersonID, LoggedPersonID, LoggedPersonID).
-		GroupBy("e.entity_id")
-	sqlr, sqla, db.err = sbuilder.ToSql()
-	if db.err != nil {
+	// is the logged user an admin?
+	if isadmin, db.err = db.IsPersonAdmin(LoggedPersonID); db.err != nil {
 		return nil, db.err
 	}
 
-	if db.err = db.Select(&entities, sqlr, sqla...); db.err != nil {
+	sqlr.WriteString("SELECT e.entity_id, e.entity_name, e.entity_description")
+	sqlr.WriteString("FROM entity AS e, person AS p, personentities as pe")
+	if !isadmin {
+		sqlr.WriteString(` JOIN permission AS perm ON
+		(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
+		(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
+		(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
+		(perm.person = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
+		(perm.person = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
+		(perm.person = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
+		(perm.person = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
+		`)
+	}
+	sqlr.WriteString(" WHERE pe.personentities_person_id = :personid AND e.entity_id == pe.personentities_entity_id")
+	sqlr.WriteString(" GROUP BY e.entity_id")
+	sqlr.WriteString(" ORDER BY e.entity_name ASC")
+
+	// building select statement
+	if sstmt, db.err = db.PrepareNamed(sqlr.String()); db.err != nil {
+		return nil, db.err
+	}
+
+	// building argument map
+	m := map[string]interface{}{
+		"personid": LoggedPersonID}
+
+	if db.err = sstmt.Select(&entities, m); db.err != nil {
 		return nil, db.err
 	}
 	return entities, nil
