@@ -175,6 +175,9 @@ block contentjs
             // show action buttons if permitted
             eid = row.entity_id
             hasPermission2("/f/entities/" + eid, "GET", eid).done(function(){
+                    $("#storelocations"+this.itemId).fadeIn();
+            })
+            hasPermission2("/f/entities/" + eid, "GET", eid).done(function(){
                     $("#members"+this.itemId).fadeIn();
             })
             hasPermission2("/f/entities/" + eid, "GET", eid).done(function(){
@@ -189,6 +192,9 @@ block contentjs
 
             // buttons are hidden by default
             var actions = [
+            '<button id="storelocations' + eid + '" class="storelocations btn btn-secondary" style="display: none;" title="store locations" type="button">',
+                '<i class="fas fa-warehouse"></i>',
+            '</button>',
             '<button id="members' + eid + '" class="members btn btn-secondary" style="display: none;" title="members" type="button">',
                 '<i class="fas fa-users"></i>',
             '</button>',
@@ -255,6 +261,9 @@ block contentjs
             }
         }
         window.operateEvents = {
+            'click .storelocations': function (e, value, row, index) {
+                window.location.href = "/v/storelocations?entityid=" + row['entity_id'];
+            },
             'click .members': function (e, value, row, index) {
                 window.location.href = "/v/people?entityid=" + row['entity_id'];
             },

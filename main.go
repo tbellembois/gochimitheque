@@ -226,6 +226,10 @@ func main() {
 	r.Handle("/haspermission/{personid}/{perm}/{item}/{itemid}", commonChain.Then(env.AppMiddleware(env.HasPermissionHandler))).Methods("GET")
 
 	// rice boxes
+	webfontsBox := rice.MustFindBox("static/webfonts")
+	webfontsFileServer := http.StripPrefix("/webfonts/", http.FileServer(webfontsBox.HTTPBox()))
+	http.Handle("/webfonts/", webfontsFileServer)
+
 	cssBox := rice.MustFindBox("static/css")
 	cssFileServer := http.StripPrefix("/css/", http.FileServer(cssBox.HTTPBox()))
 	http.Handle("/css/", cssFileServer)

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"database/sql"
+
 	"github.com/jmoiron/sqlx"
 
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
@@ -26,15 +27,10 @@ func (db *SQLiteDataStore) GetStoreLocations(p GetStoreLocationsParameters) ([]S
 
 	precreq.WriteString(" SELECT count(DISTINCT s.storelocation_id)")
 	presreq.WriteString(` SELECT s.storelocation_id, s.storelocation_name, 
-	entity.entity_id AS "entity.entity_id", 
-	entity.entity_name AS "entity.entity_name"`)
-	comreq.WriteString(" FROM storelocation AS s, entity as e")
-
-	if p.EntityID != -1 {
-		comreq.WriteString(" JOIN entity ON s.entity = :entityid")
-	} else {
-		comreq.WriteString(" JOIN entity ON s.entity = entity.entity_id")
-	}
+	e.entity_id AS "entity.entity_id", 
+	e.entity_name AS "entity.entity_name"`)
+	comreq.WriteString(" FROM storelocation AS s")
+	comreq.WriteString(" JOIN entity AS e ON s.entity = e.entity_id")
 	comreq.WriteString(` JOIN permission AS perm ON
 	(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
 	(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
@@ -45,6 +41,9 @@ func (db *SQLiteDataStore) GetStoreLocations(p GetStoreLocationsParameters) ([]S
 	(perm.person = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
 	`)
 	comreq.WriteString(" WHERE s.storelocation_name LIKE :search")
+	if p.EntityID != -1 {
+		comreq.WriteString(" AND s.entity = :entityid")
+	}
 	postsreq.WriteString(" GROUP BY s.storelocation_id")
 	postsreq.WriteString(" ORDER BY s.storelocation_name " + p.Order)
 
@@ -60,7 +59,7 @@ func (db *SQLiteDataStore) GetStoreLocations(p GetStoreLocationsParameters) ([]S
 	if snstmt, db.err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); db.err != nil {
 		return nil, 0, db.err
 	}
-
+	log.Debug(presreq.String() + comreq.String() + postsreq.String())
 	// building argument map
 	m := map[string]interface{}{
 		"search":   fmt.Sprint("%", p.Search, "%"),
