@@ -1,20 +1,16 @@
 extends static/templates/base.jade
 
 block content
-    form#entity-create
+    form#storelocation-create
         .form-group.row
             label.col-sm-2.col-form-label(for='name') name
             .col-sm-10
-                input#entity_name.form-control(type='text', value='', name='name')
+                input#storelocation_name.form-control(type='text', value='', name='name')
         .form-group.row
-            label.col-sm-2.col-form-label(for='description') description
+            label.col-sm-2.col-form-label(for='entity') entity
             .col-sm-10
-                input#entity_description.form-control(type='text', value='', name='description')
-        .form-group.row
-            label.col-sm-2.col-form-label(for='person') manager
-            .col-sm-10
-                select.form-control(style='width: 100% !important;', id='person_email', name='person', multiple='multiple')
-    button#save.btn.btn-primary(type='button', onclick='saveEntity()') save changes
+                select.form-control(style='width: 100% !important;', id='entity_name', name='entity')
+    button#save.btn.btn-primary(type='button', onclick='saveStoreLocation()') save changes
 
 block contentjs
     script.
@@ -24,33 +20,39 @@ block contentjs
             //
             // create form validation
             //
-            $( "#entity-create" ).validate({
+            $( "#storelocation-create" ).validate({
+            // ignore required to validate select2
+            // FIXME: validated but alert does not appear
+            ignore: "",
             errorClass: "alert alert-danger",
             rules: {
                 name: {
-                required: true,
-                remote: {
-                    url: "",
-                    beforeSend: function(jqXhr, settings) {
-                        settings.url = "/validate/entity/-1/name/" + $("input#entity_name").val();
+                    required: true,
+                    remote: {
+                        url: "",
+                        beforeSend: function(jqXhr, settings) {
+                            settings.url = "/validate/storelocation/-1/name/" + $("input#storelocation_name").val();
+                        },
                     },
                 },
+                entity: {
+                    required: true,
                 },
             },
             });
 
             //
-            // manager select2
+            // entity select2
             //
-            $('select[id="person_email"]').select2({
+            $('select[id="entity_name"]').select2({
             ajax: {
-                url: '/people',
+                url: '/entities',
                 dataType: 'json',
                 processResults: function (data) {
                 // replacing email by text expected by select2
                 var newdata = $.map(data.rows, function (obj) {
-                    obj.text = obj.text || obj.person_email;
-                    obj.id = obj.id || obj.person_id;
+                    obj.text = obj.text || obj.entity_name;
+                    obj.id = obj.id || obj.entity_id;
                     return obj;
                 });
                 return {
@@ -62,34 +64,30 @@ block contentjs
         });
 
         //
-        // save entity callback
+        // save store location callback
         //
-        function saveEntity() {
-            var form = $("#entity-create");
+        function saveStoreLocation() {
+            var form = $("#storelocation-create");
             if (!form.valid()) {
                 return;
             };
 
-            var name = $("input#entity_name").val(),
-                description = $("input#entity_description").val(),
-                selectedmanagers = $('select[id="person_email"]').select2('data');
+            var name = $("input#storelocation_name").val(),
+                selectedentity = $('select[id="entity_name"]').select2('data')[0];
                 data = {};
-                $.each(selectedmanagers, function( index, m ) {
-                    data["managers." + index +".person_id"] = m.id;
-                    data["managers." + index +".person_email"] = m.text;
-                });
                 $.extend(data, {
-                    "entity_name": name,
-                    "entity_description": description,
+                    "storelocation_name": name,
+                    "entity.entity_id": selectedentity.id,
+                    "entity.entity_name": selectedentity.text,
                 });
             $.ajax({
-                url: "/entities",
+                url: "/storelocations",
                 method: "POST",
                 dataType: 'json',
                 data: data,
             }).done(function(data, textStatus, jqXHR) {
-                displayMessage("entity " + name + " created", "success");
-                setTimeout(function(){ window.location = "/v/entities"; }, 1000);
+                displayMessage("store location " + name + " created", "success");
+                setTimeout(function(){ window.location = "/v/storelocations"; }, 1000);
             }).fail(function(jqXHR, textStatus, errorThrown) {  
                 handleHTTPError(jqXHR.statusText, jqXHR.status)
             }); 
