@@ -45,13 +45,13 @@ func (db *SQLiteDataStore) GetPeople(p GetPeopleParameters) ([]Person, int, erro
 	}
 	if !isadmin {
 		comreq.WriteString(` JOIN permission AS perm ON
-		(perm.permission_person_id = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
-		(perm.permission_person_id = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
-		(perm.permission_person_id = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
-		(perm.permission_person_id = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
-		(perm.permission_person_id = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
-		(perm.permission_person_id = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
-		(perm.permission_person_id = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
+		(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
+		(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
+		(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
+		(perm.person = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
+		(perm.person = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
+		(perm.person = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
+		(perm.person = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
 		`)
 	}
 	comreq.WriteString(" WHERE p.person_email LIKE :search")
@@ -130,7 +130,7 @@ func (db *SQLiteDataStore) GetPersonPermissions(id int) ([]Permission, error) {
 
 	sqlr = `SELECT permission_id, permission_perm_name, permission_item_name, permission_entity_id 
 	FROM permission
-	WHERE permission_person_id = ?`
+	WHERE person = ?`
 	if db.err = db.Select(&ps, sqlr, id); db.err != nil {
 		return nil, db.err
 	}
@@ -172,13 +172,13 @@ func (db *SQLiteDataStore) GetPersonEntities(LoggedPersonID int, id int) ([]Enti
 		Where("pe.personentities_person_id = ? AND e.entity_id == pe.personentities_entity_id", fmt.Sprint(id)).
 		// join to filter entities personID can access to
 		Join(`permission AS perm on
-			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
-			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
-			(perm.permission_person_id = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
-			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
-			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
-			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
-			(perm.permission_person_id = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
+			(perm.person = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
+			(perm.person = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
+			(perm.person = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
+			(perm.person = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
+			(perm.person = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
+			(perm.person = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
+			(perm.person = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
 			`, LoggedPersonID, LoggedPersonID, LoggedPersonID, LoggedPersonID, LoggedPersonID, LoggedPersonID, LoggedPersonID).
 		GroupBy("e.entity_id")
 	sqlr, sqla, db.err = sbuilder.ToSql()
@@ -275,10 +275,10 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 		// ?   | all  => no sense (look at explanation in the else section)
 		// ?   | ?
 		sqlr = `SELECT count(*) FROM permission WHERE
-		(permission_person_id = ? AND permission_perm_name = "all" AND permission_item_name = "all")  OR
-		(permission_person_id = ? AND permission_perm_name = "all" AND permission_item_name = ?) OR
-		(permission_person_id = ? AND permission_perm_name = ? AND permission_item_name = "all")  OR
-		(permission_person_id = ? AND permission_perm_name = ? AND permission_item_name = ?)`
+		(person = ? AND permission_perm_name = "all" AND permission_item_name = "all")  OR
+		(person = ? AND permission_perm_name = "all" AND permission_item_name = ?) OR
+		(person = ? AND permission_perm_name = ? AND permission_item_name = "all")  OR
+		(person = ? AND permission_perm_name = ? AND permission_item_name = ?)`
 		if db.err = db.Get(&count, sqlr, id, id, item, id, perm, id, perm, item); db.err != nil {
 			switch {
 			case db.err == sql.ErrNoRows:
@@ -295,10 +295,10 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 		// all | all | -1 => means super admin
 		// ?   | ?   | -1 => (ex: r permission on all entities)
 		if sqlr, sqlargs, db.err = sqlx.In(`SELECT count(*) FROM permission WHERE 
-		permission_person_id = ? AND permission_item_name = "all" AND permission_perm_name = "all" OR 
-		permission_person_id = ? AND permission_item_name = "all" AND permission_perm_name = ? AND permission_entity_id = -1 OR
-		permission_person_id = ? AND permission_item_name = ? AND permission_perm_name = "all" AND permission_entity_id = -1 OR 
-		permission_person_id = ? AND permission_item_name = ? AND permission_perm_name = ? AND permission_entity_id = -1
+		person = ? AND permission_item_name = "all" AND permission_perm_name = "all" OR 
+		person = ? AND permission_item_name = "all" AND permission_perm_name = ? AND permission_entity_id = -1 OR
+		person = ? AND permission_item_name = ? AND permission_perm_name = "all" AND permission_entity_id = -1 OR 
+		person = ? AND permission_item_name = ? AND permission_perm_name = ? AND permission_entity_id = -1
 		`, id, id, perm, id, item, id, item, perm); db.err != nil {
 			return false, db.err
 		}
@@ -323,13 +323,13 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 		// ?   | ?   | -1 => (ex: r permission on all entities)
 		// ?   | ?   | ?  => (ex: r permission on entity 3)
 		if sqlr, sqlargs, db.err = sqlx.In(`SELECT count(*) FROM permission WHERE 
-		permission_person_id = ? AND permission_item_name = "all" AND permission_perm_name = "all" OR 
-		permission_person_id = ? AND permission_item_name = "all" AND permission_perm_name = ? AND permission_entity_id = -1 OR
-		permission_person_id = ? AND permission_item_name = "all" AND permission_perm_name = ? AND permission_entity_id IN (?) OR
-		permission_person_id = ? AND permission_item_name = ? AND permission_perm_name = "all" AND permission_entity_id IN (?) OR
-		permission_person_id = ? AND permission_item_name = ? AND permission_perm_name = "all" AND permission_entity_id = -1 OR 
-		permission_person_id = ? AND permission_item_name = ? AND permission_perm_name = ? AND permission_entity_id = -1 OR
-		permission_person_id = ? AND permission_item_name = ? AND permission_perm_name = ? AND permission_entity_id IN (?)
+		person = ? AND permission_item_name = "all" AND permission_perm_name = "all" OR 
+		person = ? AND permission_item_name = "all" AND permission_perm_name = ? AND permission_entity_id = -1 OR
+		person = ? AND permission_item_name = "all" AND permission_perm_name = ? AND permission_entity_id IN (?) OR
+		person = ? AND permission_item_name = ? AND permission_perm_name = "all" AND permission_entity_id IN (?) OR
+		person = ? AND permission_item_name = ? AND permission_perm_name = "all" AND permission_entity_id = -1 OR 
+		person = ? AND permission_item_name = ? AND permission_perm_name = ? AND permission_entity_id = -1 OR
+		person = ? AND permission_item_name = ? AND permission_perm_name = ? AND permission_entity_id IN (?)
 		`, id, id, perm, id, perm, eids, id, item, eids, id, item, id, item, perm, id, item, perm, eids); db.err != nil {
 			return false, db.err
 		}
@@ -371,7 +371,7 @@ func (db *SQLiteDataStore) DeletePerson(id int) error {
 	}
 
 	sqlr = `DELETE FROM permission 
-	WHERE permission_person_id = ?`
+	WHERE person = ?`
 	if _, db.err = db.Exec(sqlr, id); db.err != nil {
 		return db.err
 	}
@@ -406,7 +406,7 @@ func (db *SQLiteDataStore) CreatePerson(p Person) (error, int) {
 
 	// inserting permissions
 	for _, per := range p.Permissions {
-		sqlr = `INSERT INTO permission(permission_person_id, permission_perm_name, permission_item_name, permission_entity_id) VALUES (?, ?, ?, ?)`
+		sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id) VALUES (?, ?, ?, ?)`
 		if _, db.err = db.Exec(sqlr, p.PersonID, per.PermissionPermName, per.PermissionItemName, per.PermissionEntityID); db.err != nil {
 			return db.err, 0
 		}
@@ -453,14 +453,14 @@ func (db *SQLiteDataStore) UpdatePerson(p Person) error {
 
 	// lazily deleting former permissions
 	sqlr = `DELETE FROM permission 
-		WHERE permission_person_id = ?`
+		WHERE person = ?`
 	if _, db.err = db.Exec(sqlr, p.PersonID); db.err != nil {
 		return db.err
 	}
 
 	// updating person permissions
 	for _, perm := range p.Permissions {
-		sqlr = `INSERT INTO permission(permission_person_id, permission_perm_name, permission_item_name, permission_entity_id) 
+		sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id) 
 		VALUES (?, ?, ?, ?)`
 		if perm.PermissionPermName == "r" || perm.PermissionPermName == "w" || perm.PermissionPermName == "all" {
 			if _, db.err = db.Exec(sqlr, p.PersonID, perm.PermissionPermName, perm.PermissionItemName, perm.PermissionEntityID); db.err != nil {
@@ -480,7 +480,7 @@ func (db *SQLiteDataStore) IsPersonAdmin(id int) (bool, error) {
 		sqlr  string
 	)
 	sqlr = `SELECT count(*) from permission WHERE 
-	permission.permission_person_id = ? AND
+	permission.person = ? AND
 	permission.permission_perm_name = "all" AND
 	permission.permission_item_name = "all" AND
 	permission_entity_id = -1`

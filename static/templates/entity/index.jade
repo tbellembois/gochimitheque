@@ -124,6 +124,7 @@ block contentjs
                     "entity_name": name,
                     "entity_description": description,
                 });
+                console.log(data);
                 $.ajax({
                     url: "/entities/" + id,
                     method: "PUT",
