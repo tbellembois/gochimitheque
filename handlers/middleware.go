@@ -195,6 +195,8 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 						http.Error(w, "can not delete a manager", http.StatusForbidden)
 					}
 				}
+			case "storelocations":
+				// TODO: we can not delete a non empty store location
 			case "entities":
 				// we can not delete a non empty entity
 				if r.Method == "DELETE" {

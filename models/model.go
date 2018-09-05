@@ -26,7 +26,7 @@ type ViewContainer struct {
 type StoreLocation struct {
 	StoreLocationID   int    `db:"storelocation_id" json:"storelocation_id" schema:"storelocation_id"`
 	StoreLocationName string `db:"storelocation_name" json:"storelocation_name" schema:"storelocation_name"`
-	Entity            `db:"storelocation_entity_id" json:"entity" schema:"entity"`
+	Entity            `db:"entity" json:"entity" schema:"entity"`
 }
 
 // Entity represent a department, a laboratory...
@@ -52,5 +52,5 @@ type Permission struct {
 	PermissionPermName string `db:"permission_perm_name" json:"permission_perm_name" schema:"permission_perm_name"` // ex: r
 	PermissionItemName string `db:"permission_item_name" json:"permission_item_name" schema:"permission_item_name"` // ex: entity
 	PermissionEntityID int    `db:"permission_entity_id" json:"permission_entity_id" schema:"permission_entity_id"` // ex: 8
-	Person             `db:"permission_person_id" json:"permission_person_id"`
+	Person             `db:"person" json:"person"`
 }
