@@ -101,7 +101,8 @@ func (env *Env) GetEntitiesHandler(w http.ResponseWriter, r *http.Request) *mode
 
 	// retrieving the logged user id from request context
 	c := containerFromRequestContext(r)
-	entities, count, err := env.DB.GetEntities(c.PersonID, search, order, offset, limit)
+
+	entities, count, err := env.DB.GetEntities(models.GetEntitiesParameters{GetCommonParameters: models.GetCommonParameters{LoggedPersonID: c.PersonID, Search: search, Order: order, Offset: offset, Limit: limit}})
 	if err != nil {
 		return &models.AppError{
 			Error:   err,

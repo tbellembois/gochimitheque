@@ -2,10 +2,11 @@ package models
 
 import (
 	"fmt"
+	"strings"
 
 	"database/sql"
+	"github.com/jmoiron/sqlx"
 
-	sq "github.com/Masterminds/squirrel"
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/constants"
@@ -13,66 +14,68 @@ import (
 
 // GetStoreLocations returns the store locations matching the search criteria
 // order, offset and limit are passed to the sql request
-func (db *SQLiteDataStore) GetStoreLocations(loggedpersonID int, search string, order string, offset uint64, limit uint64) ([]StoreLocation, int, error) {
+func (db *SQLiteDataStore) GetStoreLocations(p GetStoreLocationsParameters) ([]StoreLocation, int, error) {
 	var (
-		storelocations []StoreLocation
-		count          int
-		sqlr           string
-		sqla           []interface{}
+		storelocations                     []StoreLocation
+		count                              int
+		precreq, presreq, comreq, postsreq strings.Builder
+		cnstmt                             *sqlx.NamedStmt
+		snstmt                             *sqlx.NamedStmt
 	)
-	log.WithFields(log.Fields{"search": search, "order": order, "offset": offset, "limit": limit}).Debug("GetStoreLocations")
+	log.WithFields(log.Fields{"search": p.Search, "order": p.Order, "offset": p.Offset, "limit": p.Limit}).Debug("GetStoreLocations")
 
-	// count query
-	cbuilder := sq.Select(`count(DISTINCT s.storelocation_id)`).
-		From("storelocation AS s").
-		Where(`s.storelocation_name LIKE ?`, fmt.Sprint("%", search, "%")).
-		// join to filter store locations personID can access to
-		Join(`permission AS perm on
-			(perm.person = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = s.entity) OR
-			(perm.person = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
-			(perm.person = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
-			(perm.person = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = s.entity) OR
-			(perm.person = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
-			(perm.person = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
-			(perm.person = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = s.entity)
-			`, loggedpersonID, loggedpersonID, loggedpersonID, loggedpersonID, loggedpersonID, loggedpersonID, loggedpersonID)
-	// select query
-	sbuilder := sq.Select(`s.storelocation_id, 
-		s.storelocation_name, 
-		entity.entity_id AS "entity.entity_id",
-		entity.entity_name AS "entity.entity_name"`).
-		From("storelocation AS s").
-		Join("entity ON s.entity = entity.entity_id").
-		// join to filter entities personID can access to
-		Join(`permission AS perm on
-		(perm.person = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = s.entity) OR
-		(perm.person = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
-		(perm.person = ? and perm.permission_item_name = "all" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
-		(perm.person = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = s.entity) OR
-		(perm.person = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
-		(perm.person = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
-		(perm.person = ? and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = s.entity)
-		`, loggedpersonID, loggedpersonID, loggedpersonID, loggedpersonID, loggedpersonID, loggedpersonID, loggedpersonID).
-		Where(`s.storelocation_name LIKE ?`, fmt.Sprint("%", search, "%")).
-		GroupBy("s.storelocation_id").
-		OrderBy(fmt.Sprintf("storelocation_name %s", order))
-	if limit != constants.MaxUint64 {
-		sbuilder = sbuilder.Offset(offset).Limit(limit)
+	precreq.WriteString(" SELECT count(DISTINCT s.storelocation_id)")
+	presreq.WriteString(` SELECT s.storelocation_id, s.storelocation_name, 
+	entity.entity_id AS "entity.entity_id", 
+	entity.entity_name AS "entity.entity_name"`)
+	comreq.WriteString(" FROM storelocation AS s, entity as e")
+
+	if p.EntityID != -1 {
+		comreq.WriteString(" JOIN entity ON s.entity = :entityid")
+	} else {
+		comreq.WriteString(" JOIN entity ON s.entity = entity.entity_id")
 	}
-	// select
-	sqlr, sqla, db.err = sbuilder.ToSql()
-	if db.err != nil {
+	comreq.WriteString(` JOIN permission AS perm ON
+	(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
+	(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
+	(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
+	(perm.person = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
+	(perm.person = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
+	(perm.person = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
+	(perm.person = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
+	`)
+	comreq.WriteString(" WHERE s.storelocation_name LIKE :search")
+	postsreq.WriteString(" GROUP BY s.storelocation_id")
+	postsreq.WriteString(" ORDER BY s.storelocation_name " + p.Order)
+
+	// limit
+	if p.Limit != constants.MaxUint64 {
+		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
+	}
+
+	// building count and select statements
+	if cnstmt, db.err = db.PrepareNamed(precreq.String() + comreq.String()); db.err != nil {
 		return nil, 0, db.err
 	}
-	if db.err = db.Select(&storelocations, sqlr, sqla...); db.err != nil {
+	if snstmt, db.err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); db.err != nil {
+		return nil, 0, db.err
+	}
+
+	// building argument map
+	m := map[string]interface{}{
+		"search":   fmt.Sprint("%", p.Search, "%"),
+		"personid": p.LoggedPersonID,
+		"entityid": p.EntityID,
+		"order":    p.Order,
+		"limit":    p.Limit,
+		"offset":   p.Offset}
+
+	// select
+	if db.err = snstmt.Select(&storelocations, m); db.err != nil {
 		return nil, 0, db.err
 	}
 	// count
-	sqlr, sqla, db.err = cbuilder.ToSql()
-	if db.err != nil {
-		return nil, 0, db.err
-	}
-	if db.err = db.Get(&count, sqlr, sqla...); db.err != nil {
+	if db.err = cnstmt.Get(&count, m); db.err != nil {
 		return nil, 0, db.err
 	}
 	return storelocations, count, nil
