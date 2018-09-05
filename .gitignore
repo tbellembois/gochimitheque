@@ -16,3 +16,6 @@
 
 # GopherJS
 gjs-*.js*
+
+# vscode
+.vscode
