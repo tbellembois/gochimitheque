@@ -84,7 +84,33 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		PRIMARY KEY(entitypeople_entity_id, entitypeople_person_id),
 		FOREIGN KEY(entitypeople_person_id) references person(person_id),
 		FOREIGN KEY(entitypeople_entity_id) references entity(entity_id));
-	`
+	-- products symbols
+	CREATE TABLE IF NOT EXISTS symbol (
+		symbol_id integer PRIMARY KEY,
+		symbol_label integer NOT NULL,
+		symbol_image blob);
+	-- products names
+	CREATE TABLE IF NOT EXISTS name (
+		name_id integer PRIMARY KEY,
+		name_label integer NOT NULL);
+	-- products cas numbers
+	CREATE TABLE IF NOT EXISTS casnumber (
+		casnumber_id integer PRIMARY KEY,
+		casnumber_label integer NOT NULL);
+	-- products
+	CREATE TABLE IF NOT EXISTS product (
+		product_id integer PRIMARY KEY,
+		product_specificity string,
+		casnumber integer,
+		name integer NOT NULL,
+		FOREIGN KEY(casnumber) references casnumber(casnumber_id),
+		FOREIGN KEY(name) references name(name_id));
+	CREATE TABLE IF NOT EXISTS productsymbols (
+		productsymbols_product_id integer NOT NULL,
+		productsymbols_symbol_id integer NOT NULL,
+		PRIMARY KEY(productsymbols_product_id, productsymbols_symbol_id),
+		FOREIGN KEY(productsymbols_product_id) references product(product_id),
+		FOREIGN KEY(productsymbols_symbol_id) references symbol(symbol_id));`
 
 	// tables creation
 	if _, db.err = db.Exec(schema); db.err != nil {

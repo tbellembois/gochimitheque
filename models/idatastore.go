@@ -37,6 +37,7 @@ type Datastore interface {
 	// store locations
 	GetStoreLocations(GetStoreLocationsParameters) ([]StoreLocation, int, error)
 	GetStoreLocation(id int) (StoreLocation, error)
+	GetStoreLocationEntity(id int) (Entity, error)
 	DeleteStoreLocation(id int) error
 	CreateStoreLocation(s StoreLocation) (error, int)
 	UpdateStoreLocation(s StoreLocation) error

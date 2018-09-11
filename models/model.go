@@ -54,3 +54,31 @@ type Permission struct {
 	PermissionEntityID int    `db:"permission_entity_id" json:"permission_entity_id" schema:"permission_entity_id"` // ex: 8
 	Person             `db:"person" json:"person"`
 }
+
+// Symbol is a product symbol
+type Symbol struct {
+	SymbolID    int    `db:"symbol_id" json:"symbol_id"`
+	SymbolLabel string `db:"symbol_label" json:"symbol_label"`
+	SymbolImage []byte `db:"symbol_image" json:"symbol_image"`
+}
+
+// Name is a product name
+type Name struct {
+	NameID    int    `db:"name_id" json:"name_id"`
+	NameLabel string `db:"name_label" json:"name_label"`
+}
+
+// CasNumber is a product CAS number
+type CasNumber struct {
+	CasNumberID    int    `db:"casnumber_id" json:"casnumber_id"`
+	CasNumberLabel string `db:"casnumber_label" json:"casnumber_label"`
+}
+
+// Product is a chemical product card
+type Product struct {
+	ProductID          int    `db:"product_id" json:"product_id"`
+	ProductSpecificity string `db:"product_specificity" json:"product_specificity"`
+	CasNumber          `db:"casnumber" json:"casnumber"`
+	Name               `db:"name" json:"name"`
+	Symbols            []Symbol `db:"-" schema:"symbols"`
+}

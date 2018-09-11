@@ -218,12 +218,12 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 
 		// allow/deny access
 		if permok, err = env.DB.HasPersonPermission(personid, perm, item, itemid); err != nil {
-			log.Debug("unauthorized:" + err.Error())
+			log.WithFields(log.Fields{"unauthorized": err.Error()}).Debug("AuthorizeMiddleware")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		if !permok {
-			log.Debug("unauthorized:" + perm + ":" + item + ":" + id)
+			log.WithFields(log.Fields{"unauthorized": err.Error()}).Debug("AuthorizeMiddleware")
 			http.Error(w, "forbidden", http.StatusForbidden)
 			return
 		}

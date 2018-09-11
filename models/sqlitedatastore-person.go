@@ -171,7 +171,7 @@ func (db *SQLiteDataStore) GetPersonEntities(LoggedPersonID int, id int) ([]Enti
 	}
 
 	sqlr.WriteString("SELECT e.entity_id, e.entity_name, e.entity_description")
-	sqlr.WriteString("FROM entity AS e, person AS p, personentities as pe")
+	sqlr.WriteString(" FROM entity AS e, person AS p, personentities as pe")
 	if !isadmin {
 		sqlr.WriteString(` JOIN permission AS perm ON
 		(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
@@ -194,7 +194,7 @@ func (db *SQLiteDataStore) GetPersonEntities(LoggedPersonID int, id int) ([]Enti
 
 	// building argument map
 	m := map[string]interface{}{
-		"personid": LoggedPersonID}
+		"personid": id}
 
 	if db.err = sstmt.Select(&entities, m); db.err != nil {
 		return nil, db.err
@@ -258,21 +258,30 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 	//
 	// first: retrieving the entities of the item to be accessed
 	//
-	switch item {
-	case "people":
-		// retrieving the requested person entities
-		var rpe []Entity
-		if rpe, err = db.GetPersonEntities(id, itemid); err != nil {
-			return false, err
+	if itemid != -1 && itemid != -2 {
+		switch item {
+		case "people":
+			// retrieving the requested person entities
+			var rpe []Entity
+			if rpe, err = db.GetPersonEntities(id, itemid); err != nil {
+				return false, err
+			}
+			// and their ids
+			for _, i := range rpe {
+				eids = append(eids, i.EntityID)
+			}
+		case "entities":
+			eids = append(eids, itemid)
+		case "storelocations":
+			// retrieving the requested store location entity
+			var rpe Entity
+			if rpe, err = db.GetStoreLocationEntity(itemid); err != nil {
+				return false, err
+			}
+			eids = append(eids, rpe.EntityID)
 		}
-		// and their ids
-		for _, i := range rpe {
-			eids = append(eids, i.EntityID)
-		}
-	case "entities":
-		eids = append(eids, itemid)
+		log.WithFields(log.Fields{"eids": eids}).Debug("HasPersonPermission")
 	}
-	log.WithFields(log.Fields{"eids": eids}).Debug("HasPersonPermission")
 
 	//
 	// second: has the logged user "perm" on the "item" of the entities in "eids"
