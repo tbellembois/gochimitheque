@@ -28,11 +28,24 @@ type GetStoreLocationsParameters struct {
 	EntityID int
 }
 
+// GetProductsParameters contains the parameters of the GetProducts function
+type GetProductsParameters struct {
+	GetCommonParameters
+	EntityID int
+}
+
 // Datastore is an interface to be implemented
 // to store data
 type Datastore interface {
 	FlushErrors() error
 	CreateDatabase() error
+
+	// products
+	GetProducts(GetProductsParameters) ([Product], int, error)
+	GetProduct(id int) (Product, error)
+	DeleteProduct(id int) error
+	CreateProduct(p Product) (error, int)
+	UpdateProduct(p Product) error
 
 	// store locations
 	GetStoreLocations(GetStoreLocationsParameters) ([]StoreLocation, int, error)
