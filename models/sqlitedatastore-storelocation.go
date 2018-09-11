@@ -101,6 +101,26 @@ func (db *SQLiteDataStore) GetStoreLocation(id int) (StoreLocation, error) {
 	return storelocation, nil
 }
 
+// GetStoreLocationEntity returns the entity of the store location with id "id"
+func (db *SQLiteDataStore) GetStoreLocationEntity(id int) (Entity, error) {
+	var (
+		entity Entity
+		sqlr   string
+	)
+
+	sqlr = `SELECT 
+	entity.entity_id AS "entity_id",
+	entity.entity_name AS "entity_name"
+	FROM storelocation AS s
+	JOIN entity ON s.entity = entity.entity_id
+	WHERE s.storelocation_id = ?`
+	if db.err = db.Get(&entity, sqlr, id); db.err != nil {
+		return Entity{}, db.err
+	}
+	log.WithFields(log.Fields{"ID": id, "entity": entity}).Debug("GetStoreLocationEntity")
+	return entity, nil
+}
+
 // DeleteStoreLocation deletes the store location with id "id"
 func (db *SQLiteDataStore) DeleteStoreLocation(id int) error {
 	var (

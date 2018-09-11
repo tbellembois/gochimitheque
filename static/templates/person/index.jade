@@ -89,6 +89,7 @@ block contentjs
                     }
                 });
                 if (ismanager) {
+                    // FIXME: do we have to do something on the server side to check this?
                     displayMessage("this entity can not be removed, the user is one of its manager", "success");
                     e.preventDefault();
                 } else {
