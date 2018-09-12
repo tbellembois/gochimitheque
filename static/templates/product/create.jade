@@ -1,0 +1,94 @@
+extends static/templates/base.jade
+
+block content
+    form#storelocation-create
+        .form-group.row
+            label.col-sm-2.col-form-label(for='name') name
+            .col-sm-10
+                input#storelocation_name.form-control(type='text', value='', name='name')
+        .form-group.row
+            label.col-sm-2.col-form-label(for='entity') entity
+            .col-sm-10
+                select.form-control(style='width: 100% !important;', id='entity_name', name='entity')
+    button#save.btn.btn-primary(type='button', onclick='saveStoreLocation()') save changes
+
+block contentjs
+    script.
+
+        $( document ).ready(function() {
+
+            //
+            // create form validation
+            //
+            $( "#storelocation-create" ).validate({
+            // ignore required to validate select2
+            // FIXME: validated but alert does not appear
+            ignore: "",
+            errorClass: "alert alert-danger",
+            rules: {
+                name: {
+                    required: true,
+                    remote: {
+                        url: "",
+                        beforeSend: function(jqXhr, settings) {
+                            settings.url = "/validate/storelocation/-1/name/" + $("input#storelocation_name").val();
+                        },
+                    },
+                },
+                entity: {
+                    required: true,
+                },
+            },
+            });
+
+            //
+            // entity select2
+            //
+            $('select[id="entity_name"]').select2({
+            ajax: {
+                url: '/entities',
+                dataType: 'json',
+                processResults: function (data) {
+                // replacing email by text expected by select2
+                var newdata = $.map(data.rows, function (obj) {
+                    obj.text = obj.text || obj.entity_name;
+                    obj.id = obj.id || obj.entity_id;
+                    return obj;
+                });
+                return {
+                    results: newdata
+                };
+                }
+            }
+            });
+        });
+
+        //
+        // save store location callback
+        //
+        function saveStoreLocation() {
+            var form = $("#storelocation-create");
+            if (!form.valid()) {
+                return;
+            };
+
+            var name = $("input#storelocation_name").val(),
+                selectedentity = $('select[id="entity_name"]').select2('data')[0];
+                data = {};
+                $.extend(data, {
+                    "storelocation_name": name,
+                    "entity.entity_id": selectedentity.id,
+                    "entity.entity_name": selectedentity.text,
+                });
+            $.ajax({
+                url: "/storelocations",
+                method: "POST",
+                dataType: 'json',
+                data: data,
+            }).done(function(data, textStatus, jqXHR) {
+                displayMessage("store location " + name + " created", "success");
+                setTimeout(function(){ window.location = "/v/storelocations"; }, 1000);
+            }).fail(function(jqXHR, textStatus, errorThrown) {  
+                handleHTTPError(jqXHR.statusText, jqXHR.status)
+            }); 
+        }

@@ -150,6 +150,23 @@ func main() {
 	if err != nil {
 		log.Fatal("personcreatetmpl parse:" + e.Error())
 	}
+	// product
+	productindextmpl, e := jade.ParseFile("static/templates/product/index.jade")
+	if e != nil {
+		log.Fatal("productindextmpl jade:" + e.Error())
+	}
+	env.Templates["productindex"], err = template.New("productindex").Funcs(funcMap).Parse(productindextmpl)
+	if err != nil {
+		log.Fatal("productindextmpl parse:" + e.Error())
+	}
+	productcreatetmpl, e := jade.ParseFile("static/templates/product/create.jade")
+	if e != nil {
+		log.Fatal("productcreatetmpl jade:" + e.Error())
+	}
+	env.Templates["productcreate"], err = template.New("productcreate").Funcs(funcMap).Parse(productcreatetmpl)
+	if err != nil {
+		log.Fatal("productcreatetmpl parse:" + e.Error())
+	}
 
 	// router definition
 	r := mux.NewRouter()
@@ -218,7 +235,6 @@ func main() {
 	r.Handle("/f/{item:storelocations}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT")
 	r.Handle("/f/{item:storelocations}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("POST")
 	r.Handle("/f/{item:storelocations}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE")
-
 	// products
 	r.Handle("/{view:v}/{item:products}", securechain.Then(env.AppMiddleware(env.VGetProductsHandler))).Methods("GET")
 	r.Handle("/{view:vc}/{item:products}", securechain.Then(env.AppMiddleware(env.VCreateProductHandler))).Methods("GET")

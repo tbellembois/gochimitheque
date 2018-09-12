@@ -41,7 +41,7 @@ type Datastore interface {
 	CreateDatabase() error
 
 	// products
-	GetProducts(GetProductsParameters) ([Product], int, error)
+	GetProducts(GetProductsParameters) ([]Product, int, error)
 	GetProduct(id int) (Product, error)
 	DeleteProduct(id int) error
 	CreateProduct(p Product) (error, int)
