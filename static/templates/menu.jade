@@ -10,8 +10,9 @@ nav.navbar.navbar-expand-lg.navbar-light.bg-light
 
     div.collapse.navbar-collapse#navbarSupportedContent
         ul.navbar-nav.mr-auto
-            li.nav-item.active
-                a(href="/").nav-link home
+            if HasPermission .PersonID "r" "products" -2
+                li.nav-item.active
+                    a(href="/v/products").nav-link home
             li.nav-item
                 a(href="/login").nav-link login
 

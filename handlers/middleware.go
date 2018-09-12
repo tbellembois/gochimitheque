@@ -197,6 +197,8 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 				}
 			case "storelocations":
 				// TODO: we can not delete a non empty store location
+			case "products":
+				// TODO: we can not delete a stored product
 			case "entities":
 				// we can not delete a non empty entity
 				if r.Method == "DELETE" {
@@ -223,7 +225,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			return
 		}
 		if !permok {
-			log.WithFields(log.Fields{"unauthorized": err.Error()}).Debug("AuthorizeMiddleware")
+			log.WithFields(log.Fields{"unauthorized": "!permok"}).Debug("AuthorizeMiddleware")
 			http.Error(w, "forbidden", http.StatusForbidden)
 			return
 		}

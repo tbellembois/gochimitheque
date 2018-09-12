@@ -59,7 +59,7 @@ type Permission struct {
 type Symbol struct {
 	SymbolID    int    `db:"symbol_id" json:"symbol_id"`
 	SymbolLabel string `db:"symbol_label" json:"symbol_label"`
-	SymbolImage []byte `db:"symbol_image" json:"symbol_image"`
+	SymbolImage string `db:"symbol_image" json:"symbol_image"`
 }
 
 // Name is a product name
@@ -80,5 +80,5 @@ type Product struct {
 	ProductSpecificity string `db:"product_specificity" json:"product_specificity"`
 	CasNumber          `db:"casnumber" json:"casnumber"`
 	Name               `db:"name" json:"name"`
-	Symbols            []Symbol `db:"-" schema:"symbols"`
+	Symbols            []Symbol `db:"-" schema:"symbols" json:"symbols"`
 }

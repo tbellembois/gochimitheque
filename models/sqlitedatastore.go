@@ -91,14 +91,12 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		symbol_image string);
 	-- products names
 	CREATE TABLE IF NOT EXISTS name (
-		name_id integer NOT NULL,
-		name_label string NOT NULL,
-		PRIMARY KEY(name_id, name_label));
+		name_id integer PRIMARY KEY,
+		name_label string NOT NULL UNIQUE);
 	-- products cas numbers
 	CREATE TABLE IF NOT EXISTS casnumber (
-		casnumber_id integer NOT NULL,
-		casnumber_label string NOT NULL,
-		PRIMARY KEY(casnumber_id, casnumber_label));
+		casnumber_id integer PRIMARY KEY,
+		casnumber_label string NOT NULL UNIQUE);
 	-- products
 	CREATE TABLE IF NOT EXISTS product (
 		product_id integer PRIMARY KEY,
@@ -139,6 +137,24 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		log.Debug("populating database")
 
 		if _, db.err = db.Exec(values); db.err != nil {
+			return db.err
+		}
+
+		if _, db.err = db.Exec(`INSERT INTO name ("name_label") VALUES ("name1"), ("name2"), ("name3");`); db.err != nil {
+			return db.err
+		}
+
+		if _, db.err = db.Exec(`INSERT INTO casnumber ("casnumber_label") VALUES ("1-1-1"), ("2-2-2"), ("3-3-3");`); db.err != nil {
+			return db.err
+		}
+
+		if _, db.err = db.Exec(`INSERT INTO product ("product_specificity", "casnumber", "name") VALUES 
+		("spec1", 1, 1), ("spec2", 2, 2), ("spec3", 3, 3);`); db.err != nil {
+			return db.err
+		}
+
+		if _, db.err = db.Exec(`INSERT INTO productsymbols ("productsymbols_product_id", "productsymbols_symbol_id") VALUES 
+		(1, 1), (1, 2), (1, 3), (2, 4);`); db.err != nil {
 			return db.err
 		}
 
@@ -184,7 +200,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		db.UpdatePerson(m3)
 
 		p0 := Person{PersonEmail: "user@super.com", Permissions: []Permission{Permission{PermissionPermName: "all", PermissionItemName: "all", PermissionEntityID: -1}}}
-		p1 := Person{PersonEmail: "john@lab-one.com", Entities: []Entity{e1}}
+		p1 := Person{PersonEmail: "john@lab-one.com", Entities: []Entity{e1}, Permissions: []Permission{Permission{PermissionPermName: "r", PermissionItemName: "products", PermissionEntityID: -1}}}
 		p2 := Person{PersonEmail: "mickey@lab-one.com", Entities: []Entity{e1}}
 		p3 := Person{PersonEmail: "donald@lab-one.com", Entities: []Entity{e1}}
 		p4 := Person{PersonEmail: "tom@lab-two.com", Entities: []Entity{e2}}
