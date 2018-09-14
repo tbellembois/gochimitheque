@@ -70,7 +70,7 @@ block contentjs
             //
             // manager select2
             //
-            //- $('select[id="entity_name"]').select2({
+            //- $('select#entity_name').select2({
             //-     dropdownParent: $('#viewedit-collapse'),
             //-     ajax: {
             //-         url: '/entities',
@@ -101,7 +101,7 @@ block contentjs
 
             var id = $("#viewedit-collapse input#storelocation_id").val(),
                 name = $("#viewedit-collapse input#storelocation_name").val(),
-                selectedentity = $('select[id="entity_name"]').select2('data')[0];
+                selectedentity = $('select#entity_name').select2('data')[0];
                 data = {};
                 $.extend(data, {
                     "storelocation_id": id,
@@ -206,8 +206,8 @@ block contentjs
         // items actions callback
         function operateEditView(e, value, row, index) {
             // clearing selections
-            $('select[id="entity_name"]').val(null).trigger('change');
-            $('select[id="entity_name"]').find('option').remove();
+            $('select#entity_name').val(null).trigger('change');
+            $('select#entity_name').find('option').remove();
 
             // getting the store location
             $.ajax({
@@ -222,7 +222,7 @@ block contentjs
                 $("input#index").val(index);
                 // select2 is not autofilled - we need a special operation
                 var newOption = new Option(data.entity.entity_name, data.entity.entity_id, true, true);
-                $('select[id="entity_name"]').append(newOption).trigger('change');
+                $('select#entity_name').append(newOption).trigger('change');
             }).fail(function(jqXHR, textStatus, errorThrown) {
                 handleHTTPError(jqXHR.statusText, jqXHR.status)
             });
