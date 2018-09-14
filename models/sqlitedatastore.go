@@ -166,9 +166,9 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		_, m2.PersonID = db.CreatePerson(m1)
 		_, m3.PersonID = db.CreatePerson(m1)
 
-		e1 := Entity{EntityName: "lab one", Managers: []Person{m1}}
-		e2 := Entity{EntityName: "lab two", Managers: []Person{m2}}
-		e3 := Entity{EntityName: "lab three", Managers: []Person{m3}}
+		e1 := Entity{EntityName: "lab one", EntityDescription: "the lab one", Managers: []Person{m1}}
+		e2 := Entity{EntityName: "lab two", EntityDescription: "the lab two", Managers: []Person{m2}}
+		e3 := Entity{EntityName: "lab three", EntityDescription: "the lab three", Managers: []Person{m3}}
 
 		_, e1.EntityID = db.CreateEntity(e1)
 		_, e2.EntityID = db.CreateEntity(e2)

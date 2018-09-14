@@ -1,11 +1,28 @@
-//<div class="form-group">
-//  <label for="exampleInputPassword1">Password</label>
-//  <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
-//</div>
 mixin inlineradio
-    div.custom-control.custom-radio.custom-control-inline
+    .custom-control.custom-radio.custom-control-inline
         input(class='custom-control-input {{$class}}' id='{{$id}}' type='radio' name='{{$name}}' value='{{$value}}')
         label.custom-control-label(for='{{$id}}') {{$label}}
+
+mixin inlinecheckbox
+    .form-check.form-check-inline
+        input(class='form-check-input {{$class}}' id='{{$id}}' type='checkbox' value='{{$value}}' title='{{$id}}')
+        label.form-check-label(for='{{$id}}') {{$label}}
+
+mixin select
+    .col-sm-10
+        label.col-sm-2.col-form-label(for='{{$name}}') {{$label}}
+        select.form-control(style='width: 100% !important;' id='{{$name}}' name='{{$name}}')
+
+mixin selectmultiple
+    .col-sm-10
+        label.col-sm-2.col-form-label(for='{{$name}}') {{$label}}
+        select.form-control(style='width: 100% !important;' id='{{$name}}' name='{{$name}}' multiple='multiple')
+        
+mixin inputtext
+    .col-sm-10
+        label.col-sm-2.col-form-label(for='{{$name}}') {{$label}}
+        input.form-control(type='text' id='{{$name}}' name='{{$name}}' title='{{$name}}')
+          
 
 mixin permissions
     .col-sm-6

@@ -17,17 +17,18 @@ import (
 // order, offset and limit are passed to the sql request
 func (db *SQLiteDataStore) GetEntities(p GetEntitiesParameters) ([]Entity, int, error) {
 	var (
-		entities                           []Entity
-		count                              int
-		precreq, presreq, comreq, postsreq strings.Builder
-		cnstmt                             *sqlx.NamedStmt
-		snstmt                             *sqlx.NamedStmt
+		entities                                []Entity
+		count                                   int
+		req, precreq, presreq, comreq, postsreq strings.Builder
+		cnstmt                                  *sqlx.NamedStmt
+		snstmt                                  *sqlx.NamedStmt
 	)
 	log.WithFields(log.Fields{"search": p.Search, "order": p.Order, "offset": p.Offset, "limit": p.Limit}).Debug("GetEntities")
 
 	precreq.WriteString(" SELECT count(DISTINCT e.entity_id)")
 	presreq.WriteString(" SELECT e.entity_id, e.entity_name, e.entity_description")
 	comreq.WriteString(" FROM entity AS e, person as p")
+	// filter by permissions
 	comreq.WriteString(` JOIN permission AS perm ON
 	(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
 	(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
@@ -69,6 +70,22 @@ func (db *SQLiteDataStore) GetEntities(p GetEntitiesParameters) ([]Entity, int, 
 	// count
 	if db.err = cnstmt.Get(&count, m); db.err != nil {
 		return nil, 0, db.err
+	}
+
+	//
+	// getting managers
+	//
+	for i, e := range entities {
+		// note: do not modify e but entities[i] instead
+		req.Reset()
+		req.WriteString("SELECT person_id, person_email FROM person")
+		req.WriteString(" JOIN entitypeople ON entitypeople.entitypeople_person_id = person.person_id")
+		req.WriteString(" JOIN entity ON entitypeople.entitypeople_entity_id = entity.entity_id")
+		req.WriteString(" WHERE entity.entity_id = ?")
+
+		if db.err = db.Select(&entities[i].Managers, req.String(), e.EntityID); db.err != nil {
+			return nil, 0, db.err
+		}
 	}
 
 	return entities, count, nil

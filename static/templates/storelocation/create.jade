@@ -3,13 +3,12 @@ extends static/templates/base.jade
 block content
     form#storelocation-create
         .form-group.row
-            label.col-sm-2.col-form-label(for='name') name
-            .col-sm-10
-                input#storelocation_name.form-control(type='text', value='', name='name')
+            | {{$label := "name"}} {{$name := "storelocation_name"}}
+            +inputtext
         .form-group.row
-            label.col-sm-2.col-form-label(for='entity') entity
-            .col-sm-10
-                select.form-control(style='width: 100% !important;', id='entity_name', name='entity')
+            | {{$label := "entity"}} {{$name := "entity"}}
+            +select
+            
     button#save.btn.btn-primary(type='button', onclick='saveStoreLocation()') save changes
 
 block contentjs
@@ -22,11 +21,10 @@ block contentjs
             //
             $( "#storelocation-create" ).validate({
             // ignore required to validate select2
-            // FIXME: validated but alert does not appear
             ignore: "",
             errorClass: "alert alert-danger",
             rules: {
-                name: {
+                storelocation_name: {
                     required: true,
                     remote: {
                         url: "",
@@ -44,7 +42,7 @@ block contentjs
             //
             // entity select2
             //
-            $('select[id="entity_name"]').select2({
+            $('select#entity').select2({
             ajax: {
                 url: '/entities',
                 dataType: 'json',
@@ -72,13 +70,13 @@ block contentjs
                 return;
             };
 
-            var name = $("input#storelocation_name").val(),
-                selectedentity = $('select[id="entity_name"]').select2('data')[0];
+            var storelocation_name = $("input#storelocation_name").val(),
+                entity = $('select#entity').select2('data')[0];
                 data = {};
                 $.extend(data, {
-                    "storelocation_name": name,
-                    "entity.entity_id": selectedentity.id,
-                    "entity.entity_name": selectedentity.text,
+                    "storelocation_name": storelocation_name,
+                    "entity.entity_id": entity.id,
+                    "entity.entity_name": entity.text,
                 });
             $.ajax({
                 url: "/storelocations",

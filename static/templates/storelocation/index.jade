@@ -21,27 +21,27 @@ block content
                                 th(data-field='entity.entity_name' data-sortable='true') entity
                                 th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') actions
 
-        #viewedit-collapse.collapse(data-parent='#accordion')
+        #edit-collapse.collapse(data-parent='#accordion')
             form#storelocation-update
                 input#index(type='hidden', name='index', value='')
                 input#storelocation_id(type='hidden', name='storelocation_id', value='')
+
                 .form-group.row
-                    label.col-sm-2.col-form-label(for='name') name
-                    .col-sm-10
-                        input#storelocation_name.form-control(type='text', value='', name='name')
+                    | {{$label := "name"}} {{$name := "storelocation_name"}}
+                    +inputtext
                 .form-group.row
-                    label.col-sm-2.col-form-label(for='entity') entity
-                    .col-sm-10
-                        select.form-control(style='width: 100% !important;', id='entity_name', name='entity')
+                    | {{$label := "entity"}} {{$name := "entity"}}
+                    +select
+                    
             button#save.btn.btn-primary(type='button', onclick='saveStoreLocation()') save changes
-            button.btn.btn-secondary(type='button', onclick='closeViewEdit();') close
+            button.btn.btn-secondary(type='button', onclick='closeEdit();') close
 
 block contentjs
     script.
         //
         // close buttons actions
         //
-        function closeViewEdit() { $("#list-collapse").collapse("show"); $("#viewedit-collapse").collapse("hide"); }
+        function closeEdit() { $("#list-collapse").collapse("show"); $("#edit-collapse").collapse("hide"); }
         
         var URLValues = new Map();
 
@@ -63,7 +63,7 @@ block contentjs
             $( "#storelocation-update" ).validate({
                 errorClass: "alert alert-danger",
                 rules: {
-                    name: {
+                    storelocation_name: {
                         required: true,
                         remote: {
                             url: "",
@@ -78,8 +78,8 @@ block contentjs
             //
             // manager select2
             //
-            $('select[id="entity_name"]').select2({
-                dropdownParent: $('#viewedit-collapse'),
+            $('select#entity').select2({
+                dropdownParent: $('#edit-collapse'),
                 ajax: {
                     url: '/entities',
                     dataType: 'json',
@@ -107,9 +107,9 @@ block contentjs
                 return;
             };
 
-            var id = $("#viewedit-collapse input#storelocation_id").val(),
-                name = $("#viewedit-collapse input#storelocation_name").val(),
-                selectedentity = $('select[id="entity_name"]').select2('data')[0];
+            var id = $("#edit-collapse input#storelocation_id").val(),
+                name = $("#edit-collapse input#storelocation_name").val(),
+                selectedentity = $('select#entity').select2('data')[0];
                 data = {};
                 $.extend(data, {
                     "storelocation_id": id,
@@ -124,7 +124,7 @@ block contentjs
                     data: data,
                 }).done(function(data, textStatus, jqXHR) {
                     $('#list-collapse').collapse('show');
-                    $('#viewedit-collapse').collapse('hide');
+                    $('#edit-collapse').collapse('hide');
                     var $table = $('#table');
                     var index = $('input#index').val();
                     $table.bootstrapTable('updateRow', {
@@ -172,12 +172,6 @@ block contentjs
         function operateFormatter(value, row, index) {
             // show action buttons if permitted
             slid = row.storelocation_id
-            hasPermission2("/f/storelocations/" + slid, "GET", slid).done(function(){
-                    $("#members"+this.itemId).fadeIn();
-            })
-            hasPermission2("/f/storelocations/" + slid, "GET", slid).done(function(){
-                     $("#view"+this.itemId).fadeIn();
-            })
             hasPermission2("/f/storelocations/" + slid, "PUT", slid).done(function(){
                     $("#edit"+this.itemId).fadeIn();
             })
@@ -187,9 +181,6 @@ block contentjs
 
             // buttons are hidden by default
             var actions = [
-            '<button id="view' + slid + '" class="view btn btn-secondary" style="display: none;" title="view" type="button">',
-                '<i class="fas fa-eye"></i>',
-            '</button>',
             '<button id="edit' + slid + '" class="edit btn btn-secondary" style="display: none;" title="edit" type="button">',
                 '<i class="fas fa-edit"></i>',
             '</button>',
@@ -201,10 +192,10 @@ block contentjs
         }
 
         // items actions callback
-        function operateEditView(e, value, row, index) {
+        function operateEdit(e, value, row, index) {
             // clearing selections
-            $('select[id="entity_name"]').val(null).trigger('change');
-            $('select[id="entity_name"]').find('option').remove();
+            $('select#entity').val(null).trigger('change');
+            $('select#entity').find('option').remove();
 
             // getting the store location
             $.ajax({
@@ -214,36 +205,23 @@ block contentjs
                 // flattening response data
                 fdata = flatten(data);
                 // autofilling form
-                $("#viewedit-collapse").autofill( fdata, {"findbyname": false } );
+                $("#edit-collapse").autofill( fdata, {"findbyname": false } );
                 // setting index hidden input
                 $("input#index").val(index);
                 // select2 is not autofilled - we need a special operation
                 var newOption = new Option(data.entity.entity_name, data.entity.entity_id, true, true);
-                $('select[id="entity_name"]').append(newOption).trigger('change');
+                $('select#entity').append(newOption).trigger('change');
             }).fail(function(jqXHR, textStatus, errorThrown) {
                 handleHTTPError(jqXHR.statusText, jqXHR.status)
             });
 
             // finally collapsing the view
-            $('#viewedit-collapse').collapse('show');
+            $('#edit-collapse').collapse('show');
             $('#list-collapse').collapse('hide');
-
-            if ($(e.target).hasClass("view")) {
-                $("#viewedit-collapse").find("input").prop("disabled", true);
-                $("#viewedit-collapse").find("select").prop("disabled", true);
-                $("#viewedit-collapse").find("button#save").hide();
-            } else {
-                $("#viewedit-collapse").find("input").prop("disabled", false);
-                $("#viewedit-collapse").find("select").prop("disabled", false);
-                $("#viewedit-collapse").find("button#save").show();
-            }
         }
         window.operateEvents = {
-            'click .view': function (e, value, row, index) {
-                operateEditView(e, value, row, index)
-            },
             'click .edit': function (e, value, row, index) {
-                operateEditView(e, value, row, index)
+                operateEdit(e, value, row, index)
             },
             'click .delete': function (e, value, row, index) {
                 // hiding possible previous confirmation button

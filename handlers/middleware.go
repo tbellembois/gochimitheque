@@ -175,7 +175,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			}
 		case "POST", "PUT", "DELETE":
 			//REST update, delete, create methods
-			// we need to perform more permission check here
+			// TODO: we need to perform more permission check here
 			// to ensure that values in the request body
 			// are allowed for the auth user
 			// ex: can the auth user set foo@bar.com in entity 3?

@@ -18,24 +18,24 @@ block content
                                 th(data-field='entity_id') ID
                                 th(data-field='entity_name' data-sortable='true') name
                                 th(data-field='entity_description' data-sortable='true') description
+                                th(data-field='managers' data-sortable='true' data-formatter='managersFormatter') manager(s)
                                 th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') actions
 
-        #viewedit-collapse.collapse(data-parent='#accordion')
+        #edit-collapse.collapse(data-parent='#accordion')
             form#entity-update
                 input#index(type='hidden', name='index', value='')
                 input#entity_id(type='hidden', name='entity_id', value='')
+
                 .form-group.row
-                    label.col-sm-2.col-form-label(for='name') name
-                    .col-sm-10
-                        input#entity_name.form-control(type='text', value='', name='name')
+                    | {{$label := "name"}} {{$name := "entity_name"}}
+                    +inputtext
                 .form-group.row
-                    label.col-sm-2.col-form-label(for='description') description
-                    .col-sm-10
-                        input#entity_description.form-control(type='text', value='', name='description')
+                    | {{$label := "description"}} {{$name := "entity_description"}}
+                    +inputtext
                 .form-group.row
-                    label.col-sm-2.col-form-label(for='person') manager
-                    .col-sm-10
-                        select.form-control(style='width: 100% !important;', id='person_email', name='person', multiple='multiple')
+                    | {{$label := "manager(s)"}} {{$name := "managers"}}
+                    +selectmultiple
+
             button#save.btn.btn-primary(type='button', onclick='saveEntity()') save changes
             button.btn.btn-secondary(type='button', onclick='closeViewEdit();') close
 
@@ -44,8 +44,7 @@ block contentjs
         //
         // close buttons actions
         //
-        function closeViewEdit() { $("#list-collapse").collapse("show"); $("#viewedit-collapse").collapse("hide"); }
-        
+        function closeViewEdit() { $("#list-collapse").collapse("show"); $("#edit-collapse").collapse("hide"); }
         
         $( document ).ready(function() {
             
@@ -66,7 +65,7 @@ block contentjs
             $( "#entity-update" ).validate({
                 errorClass: "alert alert-danger",
                 rules: {
-                    name: {
+                    entity_name: {
                         required: true,
                         remote: {
                             url: "",
@@ -81,8 +80,8 @@ block contentjs
             //
             // manager select2
             //
-            $('select[id="person_email"]').select2({
-                dropdownParent: $('#viewedit-collapse'),
+            $('select#managers').select2({
+                dropdownParent: $('#edit-collapse'),
                 ajax: {
                     url: '/people',
                     dataType: 'json',
@@ -110,19 +109,19 @@ block contentjs
                 return;
             };
 
-            var id = $("#viewedit-collapse input#entity_id").val(),
-                name = $("#viewedit-collapse input#entity_name").val(),
-                description = $("#viewedit-collapse input#entity_description").val(),
-                selectedmanagers = $('select[id="person_email"]').select2('data');
+            var entity_id = $("#edit-collapse input#entity_id").val(),
+                entity_name = $("#edit-collapse input#entity_name").val(),
+                entity_description = $("#edit-collapse input#entity_description").val(),
+                managers = $('select#managers').select2('data');
                 data = {};
-                $.each(selectedmanagers, function( index, m ) {
+                $.each(managers, function( index, m ) {
                     data["managers." + index +".person_id"] = m.id;
                     data["managers." + index +".person_email"] = m.text;
                 });
                 $.extend(data, {
-                    "entity_id": id,
-                    "entity_name": name,
-                    "entity_description": description,
+                    "entity_id": entity_id,
+                    "entity_name": entity_name,
+                    "entity_description": entity_description,
                 });
                 console.log(data);
                 $.ajax({
@@ -132,17 +131,17 @@ block contentjs
                     data: data,
                 }).done(function(data, textStatus, jqXHR) {
                     $('#list-collapse').collapse('show');
-                    $('#viewedit-collapse').collapse('hide');
+                    $('#edit-collapse').collapse('hide');
                     var $table = $('#table');
                     var index = $('input#index').val();
                     $table.bootstrapTable('updateRow', {
                         index: index,
                         row: {
-                            "entity_name": name,
-                            "entity_description": description,
+                            "entity_name": entity_name,
+                            "entity_description": entity_description,
                         }
                     });
-                    displayMessage("entity " + name + " updated", "success");
+                    displayMessage("entity " + entity_name + " updated", "success");
                 }).fail(function(jqXHR, textStatus, errorThrown) {
                     handleHTTPError(jqXHR.statusText, jqXHR.status)
                 });  
@@ -169,6 +168,18 @@ block contentjs
         }
 
         //
+        // managers formatter
+        //
+        function managersFormatter(value, row, index, field) {
+            var html = [ "<ul>" ]; 
+            $.each(value, function( index, m ) {
+                html.push("<li>" + m.person_email + "</li>");
+            });
+            html.push("</ul>");
+            return html.join("");
+        }
+
+        //
         // table items actions
         //
         function operateFormatter(value, row, index) {
@@ -179,9 +190,6 @@ block contentjs
             })
             hasPermission2("/f/entities/" + eid, "GET", eid).done(function(){
                     $("#members"+this.itemId).fadeIn();
-            })
-            hasPermission2("/f/entities/" + eid, "GET", eid).done(function(){
-                     $("#view"+this.itemId).fadeIn();
             })
             hasPermission2("/f/entities/" + eid, "PUT", eid).done(function(){
                     $("#edit"+this.itemId).fadeIn();
@@ -198,9 +206,6 @@ block contentjs
             '<button id="members' + eid + '" class="members btn btn-secondary" style="display: none;" title="members" type="button">',
                 '<i class="fas fa-users"></i>',
             '</button>',
-            '<button id="view' + eid + '" class="view btn btn-secondary" style="display: none;" title="view" type="button">',
-                '<i class="fas fa-eye"></i>',
-            '</button>',
             '<button id="edit' + eid + '" class="edit btn btn-secondary" style="display: none;" title="edit" type="button">',
                 '<i class="fas fa-edit"></i>',
             '</button>',
@@ -212,10 +217,10 @@ block contentjs
         }
 
         // items actions callback
-        function operateEditView(e, value, row, index) {
+        function operateEdit(e, value, row, index) {
             // clearing selections
-            $('select[id="person_email"]').val(null).trigger('change');
-            $('select[id="person_email"]').find('option').remove();
+            $('select#managers').val(null).trigger('change');
+            $('select#managers').find('option').remove();
 
             // getting the entity
             $.ajax({
@@ -225,7 +230,7 @@ block contentjs
                 // flattening response data
                 fdata = flatten(data);
                 // autofilling form
-                $("#viewedit-collapse").autofill( fdata, {"findbyname": false } );
+                $("#edit-collapse").autofill( fdata, {"findbyname": false } );
                 // setting index hidden input
                 $("input#index").val(index);
             }).fail(function(jqXHR, textStatus, errorThrown) {
@@ -240,25 +245,15 @@ block contentjs
                 // select2 is not autofilled - we need a special operation
                 for(var i in data) {
                    var newOption = new Option(data[i].person_email, data[i].person_id, true, true);
-                   $('select[id="person_email"]').append(newOption).trigger('change');
+                   $('select#managers').append(newOption).trigger('change');
                 }
             }).fail(function(jqXHR, textStatus, errorThrown) {
                 handleHTTPError(jqXHR.statusText, jqXHR.status)
             });
 
             // finally collapsing the view
-            $('#viewedit-collapse').collapse('show');
+            $('#edit-collapse').collapse('show');
             $('#list-collapse').collapse('hide');
-
-            if ($(e.target).hasClass("view")) {
-                $("#viewedit-collapse").find("input").prop("disabled", true);
-                $("#viewedit-collapse").find("select").prop("disabled", true);
-                $("#viewedit-collapse").find("button#save").hide();
-            } else {
-                $("#viewedit-collapse").find("input").prop("disabled", false);
-                $("#viewedit-collapse").find("select").prop("disabled", false);
-                $("#viewedit-collapse").find("button#save").show();
-            }
         }
         window.operateEvents = {
             'click .storelocations': function (e, value, row, index) {
@@ -267,11 +262,8 @@ block contentjs
             'click .members': function (e, value, row, index) {
                 window.location.href = "/v/people?entityid=" + row['entity_id'];
             },
-            'click .view': function (e, value, row, index) {
-                operateEditView(e, value, row, index)
-            },
             'click .edit': function (e, value, row, index) {
-                operateEditView(e, value, row, index)
+                operateEdit(e, value, row, index)
             },
             'click .delete': function (e, value, row, index) {
                 // hiding possible previous confirmation button
