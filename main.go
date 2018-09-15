@@ -239,6 +239,8 @@ func main() {
 	r.Handle("/{view:v}/{item:products}", securechain.Then(env.AppMiddleware(env.VGetProductsHandler))).Methods("GET")
 	r.Handle("/{view:vc}/{item:products}", securechain.Then(env.AppMiddleware(env.VCreateProductHandler))).Methods("GET")
 	r.Handle("/{item:products}", securechain.Then(env.AppMiddleware(env.GetProductsHandler))).Methods("GET")
+	r.Handle("/{item:products}/casnumbers", securechain.Then(env.AppMiddleware(env.GetProductsCasNumbersHandler))).Methods("GET")
+	r.Handle("/{item:products}/names", securechain.Then(env.AppMiddleware(env.GetProductsNamesHandler))).Methods("GET")
 	r.Handle("/{item:products}/{id}", securechain.Then(env.AppMiddleware(env.GetProductHandler))).Methods("GET")
 	r.Handle("/{item:products}/{id}", securechain.Then(env.AppMiddleware(env.UpdateProductHandler))).Methods("PUT")
 	r.Handle("/{item:products}", securechain.Then(env.AppMiddleware(env.CreateProductHandler))).Methods("POST")

@@ -42,6 +42,8 @@ type Datastore interface {
 
 	// products
 	GetProducts(GetProductsParameters) ([]Product, int, error)
+	GetProductsCasNumbers(GetCommonParameters) ([]CasNumber, int, error)
+	GetProductsNames(GetCommonParameters) ([]Name, int, error)
 	GetProduct(id int) (Product, error)
 	DeleteProduct(id int) error
 	CreateProduct(p Product) (error, int)
