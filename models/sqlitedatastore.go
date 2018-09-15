@@ -1,6 +1,8 @@
 package models
 
 import (
+	"fmt"
+
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
 	log "github.com/sirupsen/logrus"
@@ -140,12 +142,15 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 			return db.err
 		}
 
-		if _, db.err = db.Exec(`INSERT INTO name ("name_label") VALUES ("name1"), ("name2"), ("name3");`); db.err != nil {
-			return db.err
-		}
-
-		if _, db.err = db.Exec(`INSERT INTO casnumber ("casnumber_label") VALUES ("1-1-1"), ("2-2-2"), ("3-3-3");`); db.err != nil {
-			return db.err
+		for i := 1; i <= 100; i++ {
+			n := fmt.Sprintf("name %d", i)
+			if _, db.err = db.Exec(`INSERT INTO name ("name_label") VALUES ("` + n + `");`); db.err != nil {
+				return db.err
+			}
+			c := fmt.Sprintf("%d-%d,%d", i, i, i)
+			if _, db.err = db.Exec(`INSERT INTO casnumber ("casnumber_label") VALUES ("` + c + `");`); db.err != nil {
+				return db.err
+			}
 		}
 
 		if _, db.err = db.Exec(`INSERT INTO product ("product_specificity", "casnumber", "name") VALUES 

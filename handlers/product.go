@@ -49,6 +49,148 @@ func (env *Env) VCreateProductHandler(w http.ResponseWriter, r *http.Request) *m
 	REST handlers
 */
 
+// GetProductsCasNumbersHandler returns a json list of the cas numbers matching the search criteria
+func (env *Env) GetProductsCasNumbersHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+	log.Debug("GetProductsCasNumbersHandler")
+
+	var (
+		search string
+		order  string
+		offset uint64
+		limit  uint64
+		err    error
+	)
+
+	if s, ok := r.URL.Query()["search"]; !ok {
+		search = ""
+	} else {
+		search = s[0]
+	}
+	if o, ok := r.URL.Query()["order"]; !ok {
+		order = "asc"
+	} else {
+		order = o[0]
+	}
+	if o, ok := r.URL.Query()["offset"]; !ok {
+		offset = 0
+	} else {
+		var of int
+		if of, err = strconv.Atoi(o[0]); err != nil {
+			return &models.AppError{
+				Error:   err,
+				Code:    http.StatusInternalServerError,
+				Message: "offset atoi conversion",
+			}
+		}
+		offset = uint64(of)
+	}
+	if l, ok := r.URL.Query()["limit"]; !ok {
+		limit = constants.MaxUint64
+	} else {
+		var lm int
+		if lm, err = strconv.Atoi(l[0]); err != nil {
+			return &models.AppError{
+				Error:   err,
+				Code:    http.StatusInternalServerError,
+				Message: "limit atoi conversion",
+			}
+		}
+		limit = uint64(lm)
+	}
+
+	// retrieving the logged user id from request context
+	c := containerFromRequestContext(r)
+	casnumbers, count, err := env.DB.GetProductsCasNumbers(models.GetCommonParameters{LoggedPersonID: c.PersonID, Search: search, Order: order, Offset: offset, Limit: limit})
+	if err != nil {
+		return &models.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the cas numbers",
+		}
+	}
+
+	type resp struct {
+		Rows  []models.CasNumber `json:"rows"`
+		Total int                `json:"total"`
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resp{Rows: casnumbers, Total: count})
+	return nil
+}
+
+// GetProductsNamesHandler returns a json list of the names matching the search criteria
+func (env *Env) GetProductsNamesHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+	log.Debug("GetProductsNamesHandler")
+
+	var (
+		search string
+		order  string
+		offset uint64
+		limit  uint64
+		err    error
+	)
+
+	if s, ok := r.URL.Query()["search"]; !ok {
+		search = ""
+	} else {
+		search = s[0]
+	}
+	if o, ok := r.URL.Query()["order"]; !ok {
+		order = "asc"
+	} else {
+		order = o[0]
+	}
+	if o, ok := r.URL.Query()["offset"]; !ok {
+		offset = 0
+	} else {
+		var of int
+		if of, err = strconv.Atoi(o[0]); err != nil {
+			return &models.AppError{
+				Error:   err,
+				Code:    http.StatusInternalServerError,
+				Message: "offset atoi conversion",
+			}
+		}
+		offset = uint64(of)
+	}
+	if l, ok := r.URL.Query()["limit"]; !ok {
+		limit = constants.MaxUint64
+	} else {
+		var lm int
+		if lm, err = strconv.Atoi(l[0]); err != nil {
+			return &models.AppError{
+				Error:   err,
+				Code:    http.StatusInternalServerError,
+				Message: "limit atoi conversion",
+			}
+		}
+		limit = uint64(lm)
+	}
+
+	// retrieving the logged user id from request context
+	c := containerFromRequestContext(r)
+	names, count, err := env.DB.GetProductsNames(models.GetCommonParameters{LoggedPersonID: c.PersonID, Search: search, Order: order, Offset: offset, Limit: limit})
+	if err != nil {
+		return &models.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the cas numbers",
+		}
+	}
+
+	type resp struct {
+		Rows  []models.Name `json:"rows"`
+		Total int           `json:"total"`
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resp{Rows: names, Total: count})
+	return nil
+}
+
 // GetProductsHandler returns a json list of the products matching the search criteria
 func (env *Env) GetProductsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	log.Debug("GetProductsHandler")

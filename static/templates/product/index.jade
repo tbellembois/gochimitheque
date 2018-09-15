@@ -23,17 +23,30 @@ block content
                                 th(data-field='product_specificity' data-sortable='false') specificity
                                 th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') actions
 
-        #viewedit-collapse.collapse(data-parent='#accordion')
+        #edit-collapse.collapse(data-parent='#accordion')
             form#product-update
-            button#save.btn.btn-primary(type='button', onclick='saveStoreLocation()') save changes
-            button.btn.btn-secondary(type='button', onclick='closeViewEdit();') close
+                input#index(type='hidden', name='index', value='')
+                input#storelocation_id(type='hidden', name='product_id', value='')
+
+                .form-group.row
+                    | {{$label := "specificity"}} {{$name := "product_specificity"}}
+                    +inputtext
+                .form-group.row
+                    | {{$label := "cas number"}} {{$name := "casnumber"}}
+                    +select
+                .form-group.row
+                    | {{$label := "name"}} {{$name := "name"}}
+                    +select
+                    
+            button#save.btn.btn-primary(type='button', onclick='saveProduct()') save changes
+            button.btn.btn-secondary(type='button', onclick='closeEdit();') close
 
 block contentjs
     script.
         //
         // close buttons actions
         //
-        function closeViewEdit() { $("#list-collapse").collapse("show"); $("#viewedit-collapse").collapse("hide"); }
+        function closeEdit() { $("#list-collapse").collapse("show"); $("#edit-collapse").collapse("hide"); }
         
         var URLValues = new Map();
 
@@ -68,26 +81,81 @@ block contentjs
             //- });
 
             //
-            // manager select2
+            // casnumber select2
             //
-            //- $('select#entity_name').select2({
-            //-     dropdownParent: $('#viewedit-collapse'),
-            //-     ajax: {
-            //-         url: '/entities',
-            //-         dataType: 'json',
-            //-         processResults: function (data) {
-            //-             // replacing name by text expected by select2
-            //-             var newdata = $.map(data.rows, function (obj) {
-            //-                 obj.text = obj.text || obj.entity_name;
-            //-                 obj.id = obj.id || obj.entity_id;
-            //-                 return obj;
-            //-             });
-            //-             return {
-            //-                 results: newdata
-            //-             };
-            //-         }
-            //-     }
-            //- });
+            $('select#casnumber').select2({
+                tags: true,
+                dropdownParent: $('#edit-collapse'),
+                ajax: {
+                    url: '/products/casnumbers',
+                        data: function (params) {
+                        var query = {
+                            search: params.term,
+                            page: params.page || 1,
+                            offset: params.page*10 || 0,
+                            limit: 10
+                        }
+
+                        // Query parameters will be ?search=[term]&page=[page]
+                        return query;
+                    },
+                    dataType: 'json',
+                    processResults: function (data) {
+                        // replacing name by text expected by select2
+                        var newdata = $.map(data.rows, function (obj) {
+                            obj.text = obj.text || obj.casnumber_label;
+                            obj.id = obj.id || obj.casnumber_id;
+                            return obj;
+                        });
+                        // getting the number of loaded select elements
+                        selectnbitems = $("ul#select2-casnumber-results li").length + 10;
+
+                        return {
+                            results: newdata,
+                            pagination: {more: selectnbitems<data.total}
+                        };
+                    }
+                }
+            });
+
+            //
+            // name select2
+            //
+            $('select#name').select2({
+                tags: true,
+                dropdownParent: $('#edit-collapse'),
+                ajax: {
+                    url: '/products/names',
+                        data: function (params) {
+                        var query = {
+                            search: params.term,
+                            page: params.page || 1,
+                            offset: params.page*10 || 0,
+                            limit: 10
+                        }
+
+                        // Query parameters will be ?search=[term]&page=[page]
+                        return query;
+                    },
+                    dataType: 'json',
+                    processResults: function (data) {
+                        // replacing name by text expected by select2
+                        var newdata = $.map(data.rows, function (obj) {
+                            obj.text = obj.text || obj.name_label;
+                            obj.id = obj.id || obj.name_id;
+                            return obj;
+                        });
+                        // getting the number of loaded select elements
+                        selectnbitems = $("ul#select2-name-results li").length + 10;
+
+                         return {
+                            results: newdata,
+                            pagination: {more: selectnbitems<data.total}
+                        };
+                    }
+                }
+            });
+
         });
         
         //
@@ -99,8 +167,8 @@ block contentjs
                 return;
             };
 
-            var id = $("#viewedit-collapse input#storelocation_id").val(),
-                name = $("#viewedit-collapse input#storelocation_name").val(),
+            var id = $("#edit-collapse input#storelocation_id").val(),
+                name = $("#edit-collapse input#storelocation_name").val(),
                 selectedentity = $('select#entity_name').select2('data')[0];
                 data = {};
                 $.extend(data, {
@@ -116,7 +184,7 @@ block contentjs
                     data: data,
                 }).done(function(data, textStatus, jqXHR) {
                     $('#list-collapse').collapse('show');
-                    $('#viewedit-collapse').collapse('hide');
+                    $('#edit-collapse').collapse('hide');
                     var $table = $('#table');
                     var index = $('input#index').val();
                     $table.bootstrapTable('updateRow', {
@@ -190,9 +258,6 @@ block contentjs
 
             // buttons are hidden by default
             var actions = [
-            '<button id="view' + slid + '" class="view btn btn-secondary" style="display: none;" title="view" type="button">',
-                '<i class="fas fa-eye"></i>',
-            '</button>',
             '<button id="edit' + slid + '" class="edit btn btn-secondary" style="display: none;" title="edit" type="button">',
                 '<i class="fas fa-edit"></i>',
             '</button>',
@@ -204,49 +269,40 @@ block contentjs
         }
 
         // items actions callback
-        function operateEditView(e, value, row, index) {
+        function operateEdit(e, value, row, index) {
             // clearing selections
-            $('select#entity_name').val(null).trigger('change');
-            $('select#entity_name').find('option').remove();
+            $('select#casnumber').val(null).trigger('change');
+            $('select#casnumber').find('option').remove();
+            $('select#name').val(null).trigger('change');
+            $('select#name').find('option').remove();
 
-            // getting the store location
+            // getting the product
             $.ajax({
-                url: "/storelocations/" + row['storelocation_id'],
+                url: "/products/" + row['product_id'],
                 method: "GET",
             }).done(function(data, textStatus, jqXHR) {
                 // flattening response data
                 fdata = flatten(data);
                 // autofilling form
-                $("#viewedit-collapse").autofill( fdata, {"findbyname": false } );
+                $("#edit-collapse").autofill( fdata, {"findbyname": false } );
                 // setting index hidden input
                 $("input#index").val(index);
                 // select2 is not autofilled - we need a special operation
-                var newOption = new Option(data.entity.entity_name, data.entity.entity_id, true, true);
-                $('select#entity_name').append(newOption).trigger('change');
+                var newOption = new Option(data.casnumber.casnumber_label, data.casnumber.casnumber_id, true, true);
+                $('select#casnumber').append(newOption).trigger('change');
+                var newOption = new Option(data.name.name_label, data.name.name_id, true, true);
+                $('select#name').append(newOption).trigger('change');
             }).fail(function(jqXHR, textStatus, errorThrown) {
                 handleHTTPError(jqXHR.statusText, jqXHR.status)
             });
 
             // finally collapsing the view
-            $('#viewedit-collapse').collapse('show');
+            $('#edit-collapse').collapse('show');
             $('#list-collapse').collapse('hide');
-
-            if ($(e.target).hasClass("view")) {
-                $("#viewedit-collapse").find("input").prop("disabled", true);
-                $("#viewedit-collapse").find("select").prop("disabled", true);
-                $("#viewedit-collapse").find("button#save").hide();
-            } else {
-                $("#viewedit-collapse").find("input").prop("disabled", false);
-                $("#viewedit-collapse").find("select").prop("disabled", false);
-                $("#viewedit-collapse").find("button#save").show();
-            }
         }
         window.operateEvents = {
-            'click .view': function (e, value, row, index) {
-                operateEditView(e, value, row, index)
-            },
             'click .edit': function (e, value, row, index) {
-                operateEditView(e, value, row, index)
+                operateEdit(e, value, row, index)
             },
             'click .delete': function (e, value, row, index) {
                 // hiding possible previous confirmation button
