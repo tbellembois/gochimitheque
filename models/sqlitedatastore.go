@@ -6,8 +6,6 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
 	log "github.com/sirupsen/logrus"
-	"math/rand"
-	"time"
 )
 
 const (
@@ -154,18 +152,17 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 			if _, db.err = db.Exec(`INSERT INTO casnumber ("casnumber_label") VALUES ("` + c + `");`); db.err != nil {
 				return db.err
 			}
-			rand.Seed(time.Now().Unix())
-			rdncas := rand.Intn(100)
-			rdnname := rand.Intn(100)
-			ins := fmt.Sprintf("(\"spec1\", \"%d\", \"%d\")", rdncas, rdnname)
+		}
+
+		for i := 1; i <= 100; i++ {
+			ins := fmt.Sprintf("(\"spec%d\", \"%d\", \"%d\")", i, i, i)
 			if _, db.err = db.Exec(`INSERT INTO product ("product_specificity", "casnumber", "name") VALUES ` + ins + `;`); db.err != nil {
 				return db.err
 			}
-		}
-
-		if _, db.err = db.Exec(`INSERT INTO productsymbols ("productsymbols_product_id", "productsymbols_symbol_id") VALUES 
-		(1, 1), (1, 2), (1, 3), (2, 4);`); db.err != nil {
-			return db.err
+			if _, db.err = db.Exec(`INSERT INTO productsymbols ("productsymbols_product_id", "productsymbols_symbol_id") VALUES 
+			(?, ?), (?, ?), (?, ?), (?, ?);`, i, (i%9)+1, i, ((i+1)%9)+1, i, ((i+2)%9)+1, i, ((i+3)%9)+1); db.err != nil {
+				return db.err
+			}
 		}
 
 		m1 := Person{PersonEmail: "manager@lab-one.com"}
