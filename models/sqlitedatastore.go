@@ -6,6 +6,8 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
 	log "github.com/sirupsen/logrus"
+	"math/rand"
+	"time"
 )
 
 const (
@@ -142,20 +144,23 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 			return db.err
 		}
 
+		// generating random values
 		for i := 1; i <= 100; i++ {
 			n := fmt.Sprintf("name %d", i)
 			if _, db.err = db.Exec(`INSERT INTO name ("name_label") VALUES ("` + n + `");`); db.err != nil {
 				return db.err
 			}
-			c := fmt.Sprintf("%d-%d,%d", i, i, i)
+			c := fmt.Sprintf("%d-%d-%d", i, i, i)
 			if _, db.err = db.Exec(`INSERT INTO casnumber ("casnumber_label") VALUES ("` + c + `");`); db.err != nil {
 				return db.err
 			}
-		}
-
-		if _, db.err = db.Exec(`INSERT INTO product ("product_specificity", "casnumber", "name") VALUES 
-		("spec1", 1, 1), ("spec2", 2, 2), ("spec3", 3, 3);`); db.err != nil {
-			return db.err
+			rand.Seed(time.Now().Unix())
+			rdncas := rand.Intn(100)
+			rdnname := rand.Intn(100)
+			ins := fmt.Sprintf("(\"spec1\", \"%d\", \"%d\")", rdncas, rdnname)
+			if _, db.err = db.Exec(`INSERT INTO product ("product_specificity", "casnumber", "name") VALUES ` + ins + `;`); db.err != nil {
+				return db.err
+			}
 		}
 
 		if _, db.err = db.Exec(`INSERT INTO productsymbols ("productsymbols_product_id", "productsymbols_symbol_id") VALUES 

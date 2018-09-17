@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"database/sql"
 	"github.com/jmoiron/sqlx"
 
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
@@ -222,5 +223,62 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 	return nil, 1
 }
 func (db *SQLiteDataStore) UpdateProduct(p Product) error {
+	var (
+		lastid int64
+		tx     *sql.Tx
+		sqlr   string
+		res    sql.Result
+	)
+
+	// beginning transaction
+	if tx, db.err = db.Begin(); db.err != nil {
+		return db.err
+	}
+
+	// if CasNumberID = -1 then it is a new cas
+	if p.CasNumber.CasNumberID == -1 {
+		sqlr = `INSERT INTO casnumber (casnumber_label) VALUES (?)`
+		if res, db.err = tx.Exec(sqlr, p.CasNumberLabel); db.err != nil {
+			tx.Rollback()
+			return db.err
+		}
+		// getting the last inserted id
+		if lastid, db.err = res.LastInsertId(); db.err != nil {
+			tx.Rollback()
+			return db.err
+		}
+		// updating the product CasNumberID (CasNumberLabel already set)
+		p.CasNumber.CasNumberID = int(lastid)
+	}
+	// if NameID = -1 then it is a new name
+	if p.Name.NameID == -1 {
+		sqlr = `INSERT INTO name (name_label) VALUES (?)`
+		if res, db.err = tx.Exec(sqlr, p.NameLabel); db.err != nil {
+			tx.Rollback()
+			return db.err
+		}
+		// getting the last inserted id
+		if lastid, db.err = res.LastInsertId(); db.err != nil {
+			tx.Rollback()
+			return db.err
+		}
+		// updating the product NameID (NameLabel already set)
+		p.Name.NameID = int(lastid)
+	}
+
+	// finally updating the product
+	sqlr = `UPDATE product SET product_specificity = ?, casnumber = ?, name = ?
+	WHERE product_id = ?`
+	if _, db.err = tx.Exec(sqlr, p.ProductSpecificity, p.CasNumber.CasNumberID, p.Name.NameID, p.ProductID); db.err != nil {
+		tx.Rollback()
+		return db.err
+	}
+
+	// committing changes
+	if db.err = tx.Commit(); db.err != nil {
+		tx.Rollback()
+		return db.err
+	}
+
 	return nil
 }
