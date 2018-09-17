@@ -64,21 +64,21 @@ type Symbol struct {
 
 // Name is a product name
 type Name struct {
-	NameID    int    `db:"name_id" json:"name_id"`
-	NameLabel string `db:"name_label" json:"name_label"`
+	NameID    int    `db:"name_id" json:"name_id" schema:"name_id"`
+	NameLabel string `db:"name_label" json:"name_label" schema:"name_label"`
 }
 
 // CasNumber is a product CAS number
 type CasNumber struct {
-	CasNumberID    int    `db:"casnumber_id" json:"casnumber_id"`
-	CasNumberLabel string `db:"casnumber_label" json:"casnumber_label"`
+	CasNumberID    int    `db:"casnumber_id" json:"casnumber_id" schema:"casnumber_id"`
+	CasNumberLabel string `db:"casnumber_label" json:"casnumber_label" schema:"casnumber_label"`
 }
 
 // Product is a chemical product card
 type Product struct {
-	ProductID          int    `db:"product_id" json:"product_id"`
-	ProductSpecificity string `db:"product_specificity" json:"product_specificity"`
-	CasNumber          `db:"casnumber" json:"casnumber"`
-	Name               `db:"name" json:"name"`
-	Symbols            []Symbol `db:"-" schema:"symbols" json:"symbols"`
+	ProductID          int    `db:"product_id" json:"product_id" schema:"product_id"`
+	ProductSpecificity string `db:"product_specificity" json:"product_specificity" schema:"product_specificity"`
+	CasNumber          `db:"casnumber" json:"casnumber" schema:"casnumber"`
+	Name               `db:"name" json:"name" schema:"name"`
+	Symbols            []Symbol `db:"-" schema:"symbols" json:"symbols" schema:"symbols"`
 }

@@ -412,6 +412,7 @@ func (db *SQLiteDataStore) CreatePerson(p Person) (error, int) {
 	)
 
 	// inserting person
+	// FIXME: use a transaction here
 	sqlr = `INSERT INTO person(person_email, person_password) VALUES (?, ?)`
 	if res, db.err = db.Exec(sqlr, p.PersonEmail, p.PersonPassword); db.err != nil {
 		return db.err, 0
@@ -448,6 +449,7 @@ func (db *SQLiteDataStore) UpdatePerson(p Person) error {
 		sqlr string
 	)
 	// updating person
+	// FIXME: use a transaction here
 	sqlr = `UPDATE person SET person_email = ?
 	WHERE person_id = ?`
 	if _, db.err = db.Exec(sqlr, p.PersonEmail, p.PersonID); db.err != nil {

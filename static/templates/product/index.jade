@@ -26,7 +26,7 @@ block content
         #edit-collapse.collapse(data-parent='#accordion')
             form#product-update
                 input#index(type='hidden', name='index', value='')
-                input#storelocation_id(type='hidden', name='product_id', value='')
+                input#product_id(type='hidden', name='product_id', value='')
 
                 .form-group.row
                     | {{$label := "specificity"}} {{$name := "product_specificity"}}
@@ -73,7 +73,7 @@ block contentjs
             //-             remote: {
             //-                 url: "",
             //-                 beforeSend: function(jqXhr, settings) {
-            //-                     settings.url = "/validate/storelocation/" + $("form#storelocation-update input#storelocation_id").val() + "/name/" + $("form#storelocation-update input#storelocation_name").val();
+            //-                     settings.url = "/validate/storelocation/" + $("form#product-update input#storelocation_id").val() + "/name/" + $("form#product-update input#storelocation_name").val();
             //-                 },
             //-             },
             //-         },
@@ -161,24 +161,27 @@ block contentjs
         //
         // save store location callback
         //
-        function saveStoreLocation() {
-            var form = $("#storelocation-update");
+        function saveProduct() {
+            var form = $("#product-update");
             if (! form.valid()) {
                 return;
             };
 
-            var id = $("#edit-collapse input#storelocation_id").val(),
-                name = $("#edit-collapse input#storelocation_name").val(),
-                selectedentity = $('select#entity_name').select2('data')[0];
+            var product_id = $("#edit-collapse input#product_id").val(),
+                product_specificity = $("#edit-collapse input#product_specificity").val(),
+                casnumber = $('select#casnumber').select2('data')[0];
+                name_ = $('select#name').select2('data')[0];
                 data = {};
                 $.extend(data, {
-                    "storelocation_id": id,
-                    "storelocation_name": name,
-                    "entity.entity_id": selectedentity.id,
-                    "entity.entity_name": selectedentity.text,
+                    "product_id": product_id,
+                    "product_specificity": product_specificity,
+                    "casnumber.casnumber_id": casnumber.id,
+                    "casnumber.casnumber_label": casnumber.text,
+                    "name.name_id": name_.id,
+                    "name.name_label": name_.text,
                 });
                 $.ajax({
-                    url: "/storelocations/" + id,
+                    url: "/products/" + product_id,
                     method: "PUT",
                     dataType: 'json',
                     data: data,
@@ -187,14 +190,8 @@ block contentjs
                     $('#edit-collapse').collapse('hide');
                     var $table = $('#table');
                     var index = $('input#index').val();
-                    $table.bootstrapTable('updateRow', {
-                        index: index,
-                        row: {
-                            "storelocation_name": name,
-                            "entity.entity_name": selectedentity.text,
-                        }
-                    });
-                    displayMessage("store location " + name + " updated", "success");
+                    $table.bootstrapTable('refresh');
+                    displayMessage("product " + name_.text + " updated", "success");
                 }).fail(function(jqXHR, textStatus, errorThrown) {
                     handleHTTPError(jqXHR.statusText, jqXHR.status)
                 });  

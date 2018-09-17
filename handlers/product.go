@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/gorilla/schema"
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/constants"
 	"github.com/tbellembois/gochimitheque/models"
@@ -301,6 +302,63 @@ func (env *Env) CreateProductHandler(w http.ResponseWriter, r *http.Request) *mo
 
 // UpdateProductHandler updates the product from the request form
 func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+	vars := mux.Vars(r)
+	var (
+		id  int
+		err error
+		p   models.Product
+	)
+
+	if err := r.ParseForm(); err != nil {
+		return &models.AppError{
+			Error:   err,
+			Message: "form parsing error",
+			Code:    http.StatusBadRequest}
+	}
+
+	// if a new name is entered (ie instead of selecting an existing name)
+	// r.Form["name.name_id"] == r.Form["name.name_label"]
+	// then modifying the name_id to prevent a form decoding error
+	if r.PostForm["name.name_id"][0] == r.PostForm["name.name_label"][0] {
+		r.PostForm.Set("name.name_id", "-1")
+	}
+	// idem for casnumber
+	if r.PostForm["casnumber.casnumber_id"][0] == r.PostForm["casnumber.casnumber_label"][0] {
+		r.PostForm.Set("casnumber.casnumber_id", "-1")
+	}
+
+	var decoder = schema.NewDecoder()
+	if err := decoder.Decode(&p, r.PostForm); err != nil {
+		return &models.AppError{
+			Error:   err,
+			Message: "form decoding error",
+			Code:    http.StatusBadRequest}
+	}
+	log.WithFields(log.Fields{"p": p}).Debug("UpdateProductHandler")
+
+	if id, err = strconv.Atoi(vars["id"]); err != nil {
+		return &models.AppError{
+			Error:   err,
+			Message: "id atoi conversion",
+			Code:    http.StatusInternalServerError}
+	}
+
+	updatedp, _ := env.DB.GetProduct(id)
+	updatedp.CasNumber = p.CasNumber
+	updatedp.Name = p.Name
+	updatedp.ProductSpecificity = p.ProductSpecificity
+	log.WithFields(log.Fields{"updatedp": updatedp}).Debug("UpdateProductHandler")
+
+	if err := env.DB.UpdateProduct(updatedp); err != nil {
+		return &models.AppError{
+			Error:   err,
+			Message: "update product error",
+			Code:    http.StatusInternalServerError}
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(updatedp)
 
 	return nil
 }

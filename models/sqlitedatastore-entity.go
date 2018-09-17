@@ -145,6 +145,7 @@ func (db *SQLiteDataStore) CreateEntity(e Entity) (error, int) {
 		res    sql.Result
 		lastid int64
 	)
+	// FIXME: use a transaction here
 	sqlr = `INSERT INTO entity(entity_name, entity_description) VALUES (?, ?)`
 	if res, db.err = db.Exec(sqlr, e.EntityName, e.EntityDescription); db.err != nil {
 		return db.err, 0
@@ -198,6 +199,7 @@ func (db *SQLiteDataStore) UpdateEntity(e Entity) error {
 	log.WithFields(log.Fields{"e": e}).Debug("UpdateEntity")
 
 	// updating the entity
+	// FIXME: use a transaction here
 	sqlr = `UPDATE entity SET entity_name = ?, entity_description = ?
 	WHERE entity_id = ?`
 	if _, db.err = db.Exec(sqlr, e.EntityName, e.EntityDescription, e.EntityID); db.err != nil {
