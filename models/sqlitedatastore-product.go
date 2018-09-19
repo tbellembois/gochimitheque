@@ -212,6 +212,18 @@ func (db *SQLiteDataStore) GetProduct(id int) (Product, error) {
 	if db.err = db.Get(&product, sqlr, id); db.err != nil {
 		return Product{}, db.err
 	}
+
+	//
+	// getting symbols
+	//
+	sqlr = `SELECT symbol_id, symbol_label, symbol_image FROM symbol
+	JOIN productsymbols ON productsymbols.productsymbols_symbol_id = symbol.symbol_id
+	JOIN product ON productsymbols.productsymbols_product_id = product.product_id
+	WHERE product.product_id = ?`
+	if db.err = db.Select(&product.Symbols, sqlr, product.ProductID); db.err != nil {
+		return product, db.err
+	}
+
 	log.WithFields(log.Fields{"ID": id, "product": product}).Debug("GetProduct")
 	return product, nil
 }

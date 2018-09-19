@@ -8,6 +8,12 @@ mixin inlinecheckbox
         input(class='form-check-input {{$class}}' id='{{$id}}' type='checkbox' value='{{$value}}' title='{{$id}}')
         label.form-check-label(for='{{$id}}') {{$label}}
 
+mixin inlineimgcheckbox
+    .form-check.form-check-inline
+        input(class='form-check-input {{$class}}' id='{{$id}}' type='checkbox' value='{{$value}}' title='{{$id}}')
+        label.form-check-label(for='{{$id}}')
+            img(src='data:{{$img}}' alt='{{$title}}' title='{{$title}}')
+
 mixin select
     .col-sm-10
         label.col-sm-2.col-form-label(for='{{$name}}') {{$label}}
