@@ -192,6 +192,77 @@ func (env *Env) GetProductsNamesHandler(w http.ResponseWriter, r *http.Request) 
 	return nil
 }
 
+// GetProductsSymbolsHandler returns a json list of the symbols matching the search criteria
+func (env *Env) GetProductsSymbolsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+	log.Debug("GetProductsSymbolsHandler")
+
+	var (
+		search string
+		order  string
+		offset uint64
+		limit  uint64
+		err    error
+	)
+
+	if s, ok := r.URL.Query()["search"]; !ok {
+		search = ""
+	} else {
+		search = s[0]
+	}
+	if o, ok := r.URL.Query()["order"]; !ok {
+		order = "asc"
+	} else {
+		order = o[0]
+	}
+	if o, ok := r.URL.Query()["offset"]; !ok {
+		offset = 0
+	} else {
+		var of int
+		if of, err = strconv.Atoi(o[0]); err != nil {
+			return &models.AppError{
+				Error:   err,
+				Code:    http.StatusInternalServerError,
+				Message: "offset atoi conversion",
+			}
+		}
+		offset = uint64(of)
+	}
+	if l, ok := r.URL.Query()["limit"]; !ok {
+		limit = constants.MaxUint64
+	} else {
+		var lm int
+		if lm, err = strconv.Atoi(l[0]); err != nil {
+			return &models.AppError{
+				Error:   err,
+				Code:    http.StatusInternalServerError,
+				Message: "limit atoi conversion",
+			}
+		}
+		limit = uint64(lm)
+	}
+
+	// retrieving the logged user id from request context
+	c := containerFromRequestContext(r)
+	symbols, count, err := env.DB.GetProductsSymbols(models.GetCommonParameters{LoggedPersonID: c.PersonID, Search: search, Order: order, Offset: offset, Limit: limit})
+	if err != nil {
+		return &models.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the symbols",
+		}
+	}
+
+	type resp struct {
+		Rows  []models.Symbol `json:"rows"`
+		Total int             `json:"total"`
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resp{Rows: symbols, Total: count})
+	return nil
+}
+
 // GetProductsHandler returns a json list of the products matching the search criteria
 func (env *Env) GetProductsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	log.Debug("GetProductsHandler")
@@ -347,6 +418,7 @@ func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *mo
 	updatedp.CasNumber = p.CasNumber
 	updatedp.Name = p.Name
 	updatedp.ProductSpecificity = p.ProductSpecificity
+	updatedp.Symbols = p.Symbols
 	log.WithFields(log.Fields{"updatedp": updatedp}).Debug("UpdateProductHandler")
 
 	if err := env.DB.UpdateProduct(updatedp); err != nil {

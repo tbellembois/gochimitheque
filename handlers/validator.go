@@ -114,7 +114,7 @@ func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request
 			return &models.AppError{
 				Error:   err,
 				Code:    http.StatusBadRequest,
-				Message: "error looking for entity by name",
+				Message: "error looking if entity name exist",
 			}
 		}
 	}
@@ -122,6 +122,37 @@ func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request
 	log.WithFields(log.Fields{"vars": vars, "res": res}).Debug("ValidateEntityNameHandler")
 	if res {
 		resp = "entity with this name already present"
+	} else {
+		resp = "true"
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resp)
+	return nil
+}
+
+// ValidateProductNameHandler checks that a product with the name does not already exist
+func (env *Env) ValidateProductNameHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+	vars := mux.Vars(r)
+	var (
+		err  error
+		res  bool
+		resp string
+	)
+
+	// querying the database
+	if res, err = env.DB.IsProductWithName(vars["name"]); err != nil {
+		return &models.AppError{
+			Error:   err,
+			Code:    http.StatusBadRequest,
+			Message: "error looking if product name exist",
+		}
+	}
+
+	log.WithFields(log.Fields{"res": res}).Debug("ValidateProductNameHandler")
+	if res {
+		resp = "product with this name already present"
 	} else {
 		resp = "true"
 	}
