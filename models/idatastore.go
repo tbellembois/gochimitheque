@@ -44,10 +44,12 @@ type Datastore interface {
 	GetProducts(GetProductsParameters) ([]Product, int, error)
 	GetProductsCasNumbers(GetCommonParameters) ([]CasNumber, int, error)
 	GetProductsNames(GetCommonParameters) ([]Name, int, error)
+	GetProductsSymbols(GetCommonParameters) ([]Symbol, int, error)
 	GetProduct(id int) (Product, error)
 	DeleteProduct(id int) error
 	CreateProduct(p Product) (error, int)
 	UpdateProduct(p Product) error
+	IsProductWithName(name string) (bool, error)
 
 	// store locations
 	GetStoreLocations(GetStoreLocationsParameters) ([]StoreLocation, int, error)

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"database/sql"
+
 	"github.com/jmoiron/sqlx"
 
 	sq "github.com/Masterminds/squirrel"
@@ -292,21 +293,21 @@ func (db *SQLiteDataStore) IsEntityEmpty(id int) (bool, error) {
 // IsEntityWithName returns true is the entity "name" exists
 func (db *SQLiteDataStore) IsEntityWithName(name string) (bool, error) {
 	var (
-		res   bool
-		count int
-		sqlr  string
+		res bool
+		// count int
+		// sqlr  string
 	)
 
-	sqlr = "SELECT count(*) from entity WHERE entity.entity_name = ?"
-	if db.err = db.Get(&count, sqlr, name); db.err != nil {
-		return false, db.err
-	}
-	log.WithFields(log.Fields{"name": name, "count": count}).Debug("HasEntityWithName")
-	if count == 0 {
-		res = false
-	} else {
-		res = true
-	}
+	// sqlr = "SELECT count(*) from entity WHERE entity.entity_name = ?"
+	// if db.err = db.Get(&count, sqlr, name); db.err != nil {
+	// 	return false, db.err
+	// }
+	// log.WithFields(log.Fields{"name": name, "count": count}).Debug("HasEntityWithName")
+	// if count == 0 {
+	// 	res = false
+	// } else {
+	// 	res = true
+	// }
 	return res, nil
 }
 

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"database/sql"
+
 	"github.com/jmoiron/sqlx"
 
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
@@ -108,6 +109,55 @@ func (db *SQLiteDataStore) GetProductsNames(p GetCommonParameters) ([]Name, int,
 
 	log.WithFields(log.Fields{"names": names}).Debug("GetProductsNames")
 	return names, count, nil
+}
+
+func (db *SQLiteDataStore) GetProductsSymbols(p GetCommonParameters) ([]Symbol, int, error) {
+	var (
+		symbols                            []Symbol
+		count                              int
+		precreq, presreq, comreq, postsreq strings.Builder
+		cnstmt                             *sqlx.NamedStmt
+		snstmt                             *sqlx.NamedStmt
+	)
+
+	precreq.WriteString(" SELECT count(DISTINCT symbol.symbol_id)")
+	presreq.WriteString(" SELECT symbol_id, symbol_label, symbol_image")
+
+	comreq.WriteString(" FROM symbol")
+	comreq.WriteString(" WHERE symbol_label LIKE :search")
+	postsreq.WriteString(" ORDER BY symbol_label  " + p.Order)
+
+	// limit
+	if p.Limit != constants.MaxUint64 {
+		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
+	}
+
+	// building count and select statements
+	if cnstmt, db.err = db.PrepareNamed(precreq.String() + comreq.String()); db.err != nil {
+		return nil, 0, db.err
+	}
+	if snstmt, db.err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); db.err != nil {
+		return nil, 0, db.err
+	}
+
+	// building argument map
+	m := map[string]interface{}{
+		"search": fmt.Sprint("%", p.Search, "%"),
+		"order":  p.Order,
+		"limit":  p.Limit,
+		"offset": p.Offset}
+
+	// select
+	if db.err = snstmt.Select(&symbols, m); db.err != nil {
+		return nil, 0, db.err
+	}
+	// count
+	if db.err = cnstmt.Get(&count, m); db.err != nil {
+		return nil, 0, db.err
+	}
+
+	log.WithFields(log.Fields{"symbols": symbols}).Debug("GetProductsSymbols")
+	return symbols, count, nil
 }
 
 func (db *SQLiteDataStore) GetProducts(p GetProductsParameters) ([]Product, int, error) {
@@ -277,6 +327,20 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 		// updating the product NameID (NameLabel already set)
 		p.Name.NameID = int(lastid)
 	}
+	// deleting symbols
+	sqlr = `DELETE FROM productsymbols WHERE productsymbols.productsymbols_product_id = (?)`
+	if res, db.err = tx.Exec(sqlr, p.ProductID); db.err != nil {
+		tx.Rollback()
+		return db.err
+	}
+	// adding new ones
+	for _, sym := range p.Symbols {
+		sqlr = `INSERT INTO productsymbols (productsymbols_product_id, productsymbols_symbol_id) VALUES (?,?)`
+		if res, db.err = tx.Exec(sqlr, p.ProductID, sym.SymbolID); db.err != nil {
+			tx.Rollback()
+			return db.err
+		}
+	}
 
 	// finally updating the product
 	sqlr = `UPDATE product SET product_specificity = ?, casnumber = ?, name = ?
@@ -293,4 +357,25 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	}
 
 	return nil
+}
+
+// IsProductWithName returns true is the product "name" exists
+func (db *SQLiteDataStore) IsProductWithName(name string) (bool, error) {
+	var (
+		res   bool
+		count int
+		sqlr  string
+	)
+
+	sqlr = "SELECT count(*) from entity WHERE entity.entity_name = ?"
+	if db.err = db.Get(&count, sqlr, name); db.err != nil {
+		return false, db.err
+	}
+	log.WithFields(log.Fields{"name": name, "count": count}).Debug("HasEntityWithName")
+	if count == 0 {
+		res = false
+	} else {
+		res = true
+	}
+	return res, nil
 }

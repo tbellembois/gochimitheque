@@ -241,6 +241,7 @@ func main() {
 	r.Handle("/{item:products}", securechain.Then(env.AppMiddleware(env.GetProductsHandler))).Methods("GET")
 	r.Handle("/{item:products}/casnumbers", securechain.Then(env.AppMiddleware(env.GetProductsCasNumbersHandler))).Methods("GET")
 	r.Handle("/{item:products}/names", securechain.Then(env.AppMiddleware(env.GetProductsNamesHandler))).Methods("GET")
+	r.Handle("/{item:products}/symbols", securechain.Then(env.AppMiddleware(env.GetProductsSymbolsHandler))).Methods("GET")
 	r.Handle("/{item:products}/{id}", securechain.Then(env.AppMiddleware(env.GetProductHandler))).Methods("GET")
 	r.Handle("/{item:products}/{id}", securechain.Then(env.AppMiddleware(env.UpdateProductHandler))).Methods("PUT")
 	r.Handle("/{item:products}", securechain.Then(env.AppMiddleware(env.CreateProductHandler))).Methods("POST")
@@ -253,9 +254,11 @@ func main() {
 	r.Handle("/f/{item:products}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT")
 	r.Handle("/f/{item:products}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("POST")
 	r.Handle("/f/{item:products}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE")
-	// validator
+	// validators
 	r.Handle("/validate/entity/{id}/name/{name}", commonChain.Then(env.AppMiddleware(env.ValidateEntityNameHandler))).Methods("GET")
 	r.Handle("/validate/person/{id}/email/{email}", commonChain.Then(env.AppMiddleware(env.ValidatePersonEmailHandler))).Methods("GET")
+	//r.Handle("/validate/product/{id}/casnumber/{casnumber}", commonChain.Then(env.AppMiddleware(env.ValidateProductCasNumberHandler))).Methods("GET")
+	r.Handle("/validate/product/{id}/name/{name}", commonChain.Then(env.AppMiddleware(env.ValidateProductNameHandler))).Methods("GET")
 	// permissions checker
 	r.Handle("/haspermission/{personid}/{perm}/{item}/{itemid}", commonChain.Then(env.AppMiddleware(env.HasPermissionHandler))).Methods("GET")
 
