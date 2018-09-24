@@ -85,20 +85,29 @@ block contentjs
             //
             // update form validation
             //
-            //- $( "#product-update" ).validate({
-            //-     errorClass: "alert alert-danger",
-            //-     rules: {
-            //-         name: {
-            //-             required: true,
-            //-             remote: {
-            //-                 url: "",
-            //-                 beforeSend: function(jqXhr, settings) {
-            //-                     settings.url = "/validate/storelocation/" + $("form#product-update input#storelocation_id").val() + "/name/" + $("form#product-update input#storelocation_name").val();
-            //-                 },
-            //-             },
-            //-         },
-            //-     },
-            //- });
+            $( "#product-update" ).validate({
+                errorClass: "alert alert-danger",
+                rules: {
+                    name: {
+                        required: true,
+                        remote: {
+                            url: "",
+                            beforeSend: function(jqXhr, settings) {
+                                settings.url = "/validate/product/" + $("form#product-update input#product_id").val() + "/name/" + $("form#product-update input#name").val();
+                            },
+                        },
+                    },
+                    casnumber: {
+                        required: true,
+                        remote: {
+                            url: "",
+                            beforeSend: function(jqXhr, settings) {
+                                settings.url = "/validate/product/" + $("form#product-update input#product_id").val() + "/casnumber/" + $("form#product-update input#casnumber").val();
+                            },
+                        },
+                    },
+                },
+            });
 
             //
             // casnumber select2
