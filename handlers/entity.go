@@ -65,7 +65,7 @@ func (env *Env) GetEntitiesHandler(w http.ResponseWriter, r *http.Request) *mode
 	if s, ok := r.URL.Query()["search"]; !ok {
 		search = ""
 	} else {
-		search = s[0]
+		search = "%" + s[0] + "%"
 	}
 	if o, ok := r.URL.Query()["order"]; !ok {
 		order = "asc"

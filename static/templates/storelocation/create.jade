@@ -20,44 +20,44 @@ block contentjs
             // create form validation
             //
             $( "#storelocation-create" ).validate({
-            // ignore required to validate select2
-            ignore: "",
-            errorClass: "alert alert-danger",
-            rules: {
-                storelocation_name: {
-                    required: true,
-                    remote: {
-                        url: "",
-                        beforeSend: function(jqXhr, settings) {
-                            settings.url = "/validate/storelocation/-1/name/" + $("input#storelocation_name").val();
+                // ignore required to validate select2
+                ignore: "",
+                errorClass: "alert alert-danger",
+                rules: {
+                    storelocation_name: {
+                        required: true,
+                        remote: {
+                            url: "",
+                            beforeSend: function(jqXhr, settings) {
+                                settings.url = "/validate/storelocation/-1/name/" + $("input#storelocation_name").val();
+                            },
                         },
                     },
+                    entity: {
+                        required: true,
+                    },
                 },
-                entity: {
-                    required: true,
-                },
-            },
             });
 
             //
             // entity select2
             //
             $('select#entity').select2({
-            ajax: {
-                url: '/entities',
-                dataType: 'json',
-                processResults: function (data) {
-                // replacing email by text expected by select2
-                var newdata = $.map(data.rows, function (obj) {
-                    obj.text = obj.text || obj.entity_name;
-                    obj.id = obj.id || obj.entity_id;
-                    return obj;
-                });
-                return {
-                    results: newdata
-                };
+                ajax: {
+                    url: '/entities',
+                    dataType: 'json',
+                    processResults: function (data) {
+                    // replacing email by text expected by select2
+                    var newdata = $.map(data.rows, function (obj) {
+                        obj.text = obj.text || obj.entity_name;
+                        obj.id = obj.id || obj.entity_id;
+                        return obj;
+                    });
+                    return {
+                        results: newdata
+                    };
+                    }
                 }
-            }
             });
         });
 

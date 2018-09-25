@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"strings"
 
 	"database/sql"
@@ -24,7 +23,8 @@ func (db *SQLiteDataStore) GetEntities(p GetEntitiesParameters) ([]Entity, int, 
 		cnstmt                                  *sqlx.NamedStmt
 		snstmt                                  *sqlx.NamedStmt
 	)
-	log.WithFields(log.Fields{"search": p.Search, "order": p.Order, "offset": p.Offset, "limit": p.Limit}).Debug("GetEntities")
+	// TODO: setup p default values here or elsewhere
+	log.WithFields(log.Fields{"search": p.Search, "order": p.Order, "offset": p.Offset, "limit": p.Limit, "personid": p.LoggedPersonID}).Debug("GetEntities")
 
 	precreq.WriteString(" SELECT count(DISTINCT e.entity_id)")
 	presreq.WriteString(" SELECT e.entity_id, e.entity_name, e.entity_description")
@@ -55,10 +55,10 @@ func (db *SQLiteDataStore) GetEntities(p GetEntitiesParameters) ([]Entity, int, 
 	if snstmt, db.err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); db.err != nil {
 		return nil, 0, db.err
 	}
-
+	log.Debug(precreq.String() + comreq.String())
 	// building argument map
 	m := map[string]interface{}{
-		"search":   fmt.Sprint("%", p.Search, "%"),
+		"search":   p.Search,
 		"personid": p.LoggedPersonID,
 		"order":    p.Order,
 		"limit":    p.Limit,
@@ -89,6 +89,7 @@ func (db *SQLiteDataStore) GetEntities(p GetEntitiesParameters) ([]Entity, int, 
 		}
 	}
 
+	log.WithFields(log.Fields{"entities": entities, "count": count}).Debug("GetEntities")
 	return entities, count, nil
 }
 
@@ -277,66 +278,15 @@ func (db *SQLiteDataStore) IsEntityEmpty(id int) (bool, error) {
 		sqlr  string
 	)
 
-	sqlr = "SELECT count(*) from personentities WHERE personentities.entity_id = ?"
+	sqlr = "SELECT count(*) from personentities WHERE personentities.personentities_entity_id = ?"
 	if db.err = db.Get(&count, sqlr, id); db.err != nil {
 		return false, db.err
 	}
 	log.WithFields(log.Fields{"id": id, "count": count}).Debug("IsEntityEmpty")
 	if count == 0 {
-		res = false
-	} else {
 		res = true
-	}
-	return res, nil
-}
-
-// IsEntityWithName returns true is the entity "name" exists
-func (db *SQLiteDataStore) IsEntityWithName(name string) (bool, error) {
-	var (
-		res bool
-		// count int
-		// sqlr  string
-	)
-
-	// sqlr = "SELECT count(*) from entity WHERE entity.entity_name = ?"
-	// if db.err = db.Get(&count, sqlr, name); db.err != nil {
-	// 	return false, db.err
-	// }
-	// log.WithFields(log.Fields{"name": name, "count": count}).Debug("HasEntityWithName")
-	// if count == 0 {
-	// 	res = false
-	// } else {
-	// 	res = true
-	// }
-	return res, nil
-}
-
-// IsEntityWithNameExcept returns true is the entity "name" exists ignoring the "except" names
-func (db *SQLiteDataStore) IsEntityWithNameExcept(name string, except ...string) (bool, error) {
-	var (
-		res   bool
-		count int
-		sqlr  sq.SelectBuilder
-		w     sq.And
-	)
-
-	w = append(w, sq.Eq{"entity.entity_name": name})
-	for _, e := range except {
-		w = append(w, sq.NotEq{"entity.entity_name": e})
-	}
-
-	sqlr = sq.Select("count(*)").From("entity").Where(w)
-	sql, args, _ := sqlr.ToSql()
-	log.WithFields(log.Fields{"sql": sql, "args": args}).Debug("HasEntityWithNameExcept")
-
-	if db.err = db.Get(&count, sql, args...); db.err != nil {
-		return false, db.err
-	}
-	log.WithFields(log.Fields{"name": name, "count": count}).Debug("HasEntityWithNameExcept")
-	if count == 0 {
-		res = false
 	} else {
-		res = true
+		res = false
 	}
 	return res, nil
 }

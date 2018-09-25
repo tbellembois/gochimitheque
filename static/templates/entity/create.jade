@@ -26,16 +26,15 @@ block contentjs
             errorClass: "alert alert-danger",
             rules: {
                 entity_name: {
-                required: true,
-                remote: {
-                    url: "",
-                    beforeSend: function(jqXhr, settings) {
-                        settings.url = "/validate/entity/-1/name/" + $("input#entity_name").val();
+                    required: true,
+                    remote: {
+                        url: "/validate/entity/-1/name/",
+                        type: "post",
                     },
-                },
                 },
             },
             });
+
 
             //
             // managers select2

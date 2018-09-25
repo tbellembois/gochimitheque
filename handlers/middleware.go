@@ -207,7 +207,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 						http.Error(w, e.Error(), http.StatusInternalServerError)
 					}
 					if !m {
-						http.Error(w, "can not delete a manager", http.StatusForbidden)
+						http.Error(w, "can not delete a non empty entity", http.StatusForbidden)
 					}
 				}
 			}

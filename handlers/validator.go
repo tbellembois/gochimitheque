@@ -76,12 +76,16 @@ func (env *Env) ValidatePersonEmailHandler(w http.ResponseWriter, r *http.Reques
 func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	vars := mux.Vars(r)
 	var (
-		err       error
-		res       bool
-		resp      string
-		entity    models.Entity
-		entity_id int
+		err         error
+		res         bool
+		resp        string
+		entity_name string
+		entity      models.Entity
+		entity_id   int
 	)
+
+	// retrieving the logged user id from request context
+	c := containerFromRequestContext(r)
 
 	// converting the id
 	if entity_id, err = strconv.Atoi(vars["id"]); err != nil {
@@ -91,15 +95,29 @@ func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request
 			Code:    http.StatusInternalServerError}
 	}
 
-	if entity_id == -1 {
-		// querying the database
-		if res, err = env.DB.IsEntityWithName(vars["name"]); err != nil {
-			return &models.AppError{
-				Error:   err,
-				Code:    http.StatusBadRequest,
-				Message: "error looking for entity by name",
-			}
+	// getting the name
+	if err = r.ParseForm(); err != nil {
+		return &models.AppError{
+			Error:   err,
+			Message: "form parsing",
+			Code:    http.StatusInternalServerError}
+	}
+	entity_name = r.Form.Get("entity_name")
+
+	// getting the entities matching the name
+	entities, count, err := env.DB.GetEntities(models.GetEntitiesParameters{GetCommonParameters: models.GetCommonParameters{LoggedPersonID: c.PersonID, Search: entity_name, Order: "asc", Offset: 0, Limit: 1}})
+	if err != nil {
+		return &models.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the entities",
 		}
+	}
+
+	if count == 0 {
+		res = false
+	} else if entity_id == -1 {
+		res = (count == 1)
 	} else {
 		// getting the entity
 		if entity, err = env.DB.GetEntity(entity_id); err != nil {
@@ -109,14 +127,7 @@ func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request
 				Message: "error looking for entity by name",
 			}
 		}
-		// querying the database
-		if res, err = env.DB.IsEntityWithNameExcept(vars["name"], entity.EntityName); err != nil {
-			return &models.AppError{
-				Error:   err,
-				Code:    http.StatusBadRequest,
-				Message: "error looking if entity name exist",
-			}
-		}
+		res = (entity.EntityID != entities[0].EntityID)
 	}
 
 	log.WithFields(log.Fields{"vars": vars, "res": res}).Debug("ValidateEntityNameHandler")
@@ -134,29 +145,16 @@ func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request
 
 // ValidateProductNameHandler checks that a product with the name does not already exist
 func (env *Env) ValidateProductNameHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	vars := mux.Vars(r)
-	var (
-		err  error
-		res  bool
-		resp string
-	)
+	resp := "bad name"
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resp)
+	return nil
+}
 
-	// querying the database
-	if res, err = env.DB.IsProductWithName(vars["name"]); err != nil {
-		return &models.AppError{
-			Error:   err,
-			Code:    http.StatusBadRequest,
-			Message: "error looking if product name exist",
-		}
-	}
-
-	log.WithFields(log.Fields{"res": res}).Debug("ValidateProductNameHandler")
-	if res {
-		resp = "product with this name already present"
-	} else {
-		resp = "true"
-	}
-
+// ValidateProductCasNumberHandler checks that a product with the cas number does not already exist
+func (env *Env) ValidateProductCasNumberHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+	resp := "bad cas"
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp)

@@ -63,18 +63,24 @@ block contentjs
             // update form validation
             //
             $( "#entity-update" ).validate({
-                errorClass: "alert alert-danger",
-                rules: {
-                    entity_name: {
-                        required: true,
-                        remote: {
-                            url: "",
-                            beforeSend: function(jqXhr, settings) {
-                                settings.url = "/validate/entity/" + $("form#entity-update input#entity_id").val() + "/name/" + $("form#entity-update input#entity_name").val();
-                            },
+            errorClass: "alert alert-danger",
+            rules: {
+                entity_name: {
+                    required: true,
+                    remote: {
+                        url: "/validate/entity/-1/name/",
+                        type: "post",
+                        beforeSend: function(jqXhr, settings) {
+                            settings.url = "/validate/entity/" + $("form#entity-update input#entity_id").val() + "/name/";
+                        },
+                        entity_name: {
+                             name: function() {
+                                return $("form#entity-update input#entity_name").val();
+                            }
                         },
                     },
                 },
+            },
             });
 
             //
