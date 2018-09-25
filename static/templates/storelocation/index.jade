@@ -61,6 +61,8 @@ block contentjs
             // update form validation
             //
             $( "#storelocation-update" ).validate({
+                // ignore required to validate select2
+                ignore: "",
                 errorClass: "alert alert-danger",
                 rules: {
                     storelocation_name: {

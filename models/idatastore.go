@@ -67,8 +67,6 @@ type Datastore interface {
 	CreateEntity(e Entity) (error, int)
 	UpdateEntity(e Entity) error
 	IsEntityEmpty(id int) (bool, error)
-	IsEntityWithName(name string) (bool, error)
-	IsEntityWithNameExcept(string, ...string) (bool, error)
 
 	// people
 	GetPeople(GetPeopleParameters) ([]Person, int, error)

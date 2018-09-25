@@ -69,14 +69,22 @@ block contentjs
             // update form validation
             //
             $( "#product-update" ).validate({
+                // ignore required to validate select2
+                ignore: "",
                 errorClass: "alert alert-danger",
                 rules: {
                     name: {
                         required: true,
                         remote: {
                             url: "",
+                            type: "post",
                             beforeSend: function(jqXhr, settings) {
-                                settings.url = "/validate/product/" + $("form#product-update input#product_id").val() + "/name/" + $('select#name').select2('data')[0].text;
+                                settings.url = "/validate/product/" + $("form#product-update input#product_id").val() + "/name/";
+                            },
+                            data: {
+                                name: function() {
+                                    return $('select#name').select2('data')[0].text;
+                                }
                             },
                         },
                     },
@@ -84,8 +92,14 @@ block contentjs
                         required: true,
                         remote: {
                             url: "",
+                            type: "post",
                             beforeSend: function(jqXhr, settings) {
-                                settings.url = "/validate/product/" + $("form#product-update input#product_id").val() + "/casnumber/" + $('select#casnumber').select2('data')[0].text;
+                                settings.url = "/validate/product/" + $("form#product-update input#product_id").val() + "/casnumber/";
+                            },
+                            data: {
+                                casnumber: function() {
+                                    return $('select#casnumber').select2('data')[0].text;
+                                }
                             },
                         },
                     },
@@ -128,6 +142,8 @@ block contentjs
                         };
                     }
                 }
+            }).on("change", function (e) {
+                $(this).valid(); // FIXME: see https://github.com/select2/select2/issues/3901
             });
 
             //
@@ -160,12 +176,14 @@ block contentjs
                         // getting the number of loaded select elements
                         selectnbitems = $("ul#select2-name-results li").length + 10;
 
-                         return {
+                        return {
                             results: newdata,
                             pagination: {more: selectnbitems<data.total}
                         };
                     }
                 }
+            }).on("change", function (e) {
+                $(this).valid(); // FIXME: see https://github.com/select2/select2/issues/3901
             });
 
             //

@@ -255,10 +255,10 @@ func main() {
 	r.Handle("/f/{item:products}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("POST")
 	r.Handle("/f/{item:products}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE")
 	// validators
-	r.Handle("/validate/entity/{id}/name/{name}", commonChain.Then(env.AppMiddleware(env.ValidateEntityNameHandler))).Methods("GET")
-	r.Handle("/validate/person/{id}/email/{email}", commonChain.Then(env.AppMiddleware(env.ValidatePersonEmailHandler))).Methods("GET")
-	//r.Handle("/validate/product/{id}/casnumber/{casnumber}", commonChain.Then(env.AppMiddleware(env.ValidateProductCasNumberHandler))).Methods("GET")
-	r.Handle("/validate/product/{id}/name/{name}", commonChain.Then(env.AppMiddleware(env.ValidateProductNameHandler))).Methods("GET")
+	r.Handle("/validate/entity/{id}/name/", securechain.Then(env.AppMiddleware(env.ValidateEntityNameHandler))).Methods("POST")
+	r.Handle("/validate/person/{id}/email/", securechain.Then(env.AppMiddleware(env.ValidatePersonEmailHandler))).Methods("POST")
+	r.Handle("/validate/product/{id}/casnumber/", securechain.Then(env.AppMiddleware(env.ValidateProductCasNumberHandler))).Methods("POST")
+	r.Handle("/validate/product/{id}/name/", securechain.Then(env.AppMiddleware(env.ValidateProductNameHandler))).Methods("POST")
 	// permissions checker
 	r.Handle("/haspermission/{personid}/{perm}/{item}/{itemid}", commonChain.Then(env.AppMiddleware(env.HasPermissionHandler))).Methods("GET")
 
