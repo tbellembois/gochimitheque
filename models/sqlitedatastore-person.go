@@ -2,7 +2,6 @@ package models
 
 import (
 	"database/sql"
-	"fmt"
 	"strings"
 
 	"github.com/jmoiron/sqlx"
@@ -24,10 +23,10 @@ func (db *SQLiteDataStore) GetPeople(p GetPeopleParameters) ([]Person, int, erro
 		cnstmt                             *sqlx.NamedStmt
 		snstmt                             *sqlx.NamedStmt
 	)
-	log.WithFields(log.Fields{"entityid": p.EntityID, "search": p.Search, "order": p.Order, "offset": p.Offset, "limit": p.Limit}).Debug("GetPeople")
+	log.WithFields(log.Fields{"entityid": p.EntityID, "search": p.CP.Search, "order": p.CP.Order, "offset": p.CP.Offset, "limit": p.CP.Limit}).Debug("GetPeople")
 
 	// is the logged user an admin?
-	if isadmin, db.err = db.IsPersonAdmin(p.LoggedPersonID); db.err != nil {
+	if isadmin, db.err = db.IsPersonAdmin(p.CP.LoggedPersonID); db.err != nil {
 		return nil, 0, db.err
 	}
 
@@ -56,10 +55,10 @@ func (db *SQLiteDataStore) GetPeople(p GetPeopleParameters) ([]Person, int, erro
 	}
 	comreq.WriteString(" WHERE p.person_email LIKE :search")
 	postsreq.WriteString(" GROUP BY p.person_id")
-	postsreq.WriteString(" ORDER BY p.person_email " + p.Order)
+	postsreq.WriteString(" ORDER BY p.person_email " + p.CP.Order)
 
 	// limit
-	if p.Limit != constants.MaxUint64 {
+	if p.CP.Limit != constants.MaxUint64 {
 		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
 	}
 
@@ -73,12 +72,12 @@ func (db *SQLiteDataStore) GetPeople(p GetPeopleParameters) ([]Person, int, erro
 
 	// building argument map
 	m := map[string]interface{}{
-		"search":   fmt.Sprint("%", p.Search, "%"),
-		"personid": p.LoggedPersonID,
+		"search":   p.CP.Search,
+		"personid": p.CP.LoggedPersonID,
 		"entityid": p.EntityID,
-		"order":    p.Order,
-		"limit":    p.Limit,
-		"offset":   p.Offset}
+		"order":    p.CP.Order,
+		"limit":    p.CP.Limit,
+		"offset":   p.CP.Offset}
 
 	// select
 	if db.err = snstmt.Select(&people, m); db.err != nil {

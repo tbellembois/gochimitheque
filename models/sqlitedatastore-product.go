@@ -13,7 +13,8 @@ import (
 	"github.com/tbellembois/gochimitheque/constants"
 )
 
-func (db *SQLiteDataStore) GetProductsCasNumbers(p GetCommonParameters) ([]CasNumber, int, error) {
+// GetProductsCasNumbers return the cas numbers matching the search criteria
+func (db *SQLiteDataStore) GetProductsCasNumbers(p getCommonParameters) ([]CasNumber, int, error) {
 	var (
 		casnumbers                         []CasNumber
 		count                              int
@@ -62,7 +63,8 @@ func (db *SQLiteDataStore) GetProductsCasNumbers(p GetCommonParameters) ([]CasNu
 	return casnumbers, count, nil
 }
 
-func (db *SQLiteDataStore) GetProductsNames(p GetCommonParameters) ([]Name, int, error) {
+// GetProductsNames return the names matching the search criteria
+func (db *SQLiteDataStore) GetProductsNames(p getCommonParameters) ([]Name, int, error) {
 	var (
 		names                              []Name
 		count                              int
@@ -111,7 +113,8 @@ func (db *SQLiteDataStore) GetProductsNames(p GetCommonParameters) ([]Name, int,
 	return names, count, nil
 }
 
-func (db *SQLiteDataStore) GetProductsSymbols(p GetCommonParameters) ([]Symbol, int, error) {
+// GetProductsSymbols return the symbols matching the search criteria
+func (db *SQLiteDataStore) GetProductsSymbols(p getCommonParameters) ([]Symbol, int, error) {
 	var (
 		symbols                            []Symbol
 		count                              int
@@ -160,6 +163,7 @@ func (db *SQLiteDataStore) GetProductsSymbols(p GetCommonParameters) ([]Symbol, 
 	return symbols, count, nil
 }
 
+// GetProducts return the products matching the search criteria
 func (db *SQLiteDataStore) GetProducts(p GetProductsParameters) ([]Product, int, error) {
 	var (
 		products                                []Product
@@ -168,7 +172,7 @@ func (db *SQLiteDataStore) GetProducts(p GetProductsParameters) ([]Product, int,
 		cnstmt                                  *sqlx.NamedStmt
 		snstmt                                  *sqlx.NamedStmt
 	)
-	log.WithFields(log.Fields{"search": p.Search, "order": p.Order, "offset": p.Offset, "limit": p.Limit}).Debug("GetProducts")
+	log.WithFields(log.Fields{"search": p.CP.Search, "order": p.CP.Order, "offset": p.CP.Offset, "limit": p.CP.Limit}).Debug("GetProducts")
 
 	precreq.WriteString(" SELECT count(DISTINCT product.product_id)")
 	presreq.WriteString(` SELECT product.product_id, 
@@ -192,10 +196,10 @@ func (db *SQLiteDataStore) GetProducts(p GetProductsParameters) ([]Product, int,
 	`)
 	comreq.WriteString(" WHERE name.name_label LIKE :search")
 	postsreq.WriteString(" GROUP BY product.product_id")
-	postsreq.WriteString(" ORDER BY name.name_label " + p.Order)
+	postsreq.WriteString(" ORDER BY name.name_label " + p.CP.Order)
 
 	// limit
-	if p.Limit != constants.MaxUint64 {
+	if p.CP.Limit != constants.MaxUint64 {
 		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
 	}
 
@@ -209,12 +213,12 @@ func (db *SQLiteDataStore) GetProducts(p GetProductsParameters) ([]Product, int,
 
 	// building argument map
 	m := map[string]interface{}{
-		"search":   fmt.Sprint("%", p.Search, "%"),
-		"personid": p.LoggedPersonID,
+		"search":   p.CP.Search,
+		"personid": p.CP.LoggedPersonID,
 		"entityid": p.EntityID,
-		"order":    p.Order,
-		"limit":    p.Limit,
-		"offset":   p.Offset}
+		"order":    p.CP.Order,
+		"limit":    p.CP.Limit,
+		"offset":   p.CP.Offset}
 
 	// select
 	if db.err = snstmt.Select(&products, m); db.err != nil {

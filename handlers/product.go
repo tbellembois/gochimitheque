@@ -8,7 +8,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	log "github.com/sirupsen/logrus"
-	"github.com/tbellembois/gochimitheque/constants"
 	"github.com/tbellembois/gochimitheque/models"
 )
 
@@ -55,53 +54,18 @@ func (env *Env) GetProductsCasNumbersHandler(w http.ResponseWriter, r *http.Requ
 	log.Debug("GetProductsCasNumbersHandler")
 
 	var (
-		search string
-		order  string
-		offset uint64
-		limit  uint64
-		err    error
+		err error
 	)
-
-	if s, ok := r.URL.Query()["search"]; !ok {
-		search = ""
-	} else {
-		search = s[0]
-	}
-	if o, ok := r.URL.Query()["order"]; !ok {
-		order = "asc"
-	} else {
-		order = o[0]
-	}
-	if o, ok := r.URL.Query()["offset"]; !ok {
-		offset = 0
-	} else {
-		var of int
-		if of, err = strconv.Atoi(o[0]); err != nil {
-			return &models.AppError{
-				Error:   err,
-				Code:    http.StatusInternalServerError,
-				Message: "offset atoi conversion",
-			}
-		}
-		offset = uint64(of)
-	}
-	if l, ok := r.URL.Query()["limit"]; !ok {
-		limit = constants.MaxUint64
-	} else {
-		var lm int
-		if lm, err = strconv.Atoi(l[0]); err != nil {
-			return &models.AppError{
-				Error:   err,
-				Code:    http.StatusInternalServerError,
-				Message: "limit atoi conversion",
-			}
-		}
-		limit = uint64(lm)
-	}
 
 	// retrieving the logged user id from request context
 	c := containerFromRequestContext(r)
-	casnumbers, count, err := env.DB.GetProductsCasNumbers(models.GetCommonParameters{LoggedPersonID: c.PersonID, Search: search, Order: order, Offset: offset, Limit: limit})
+
+	// init db request parameters
+	// FIXME: handle errors
+	cp, _ := models.NewGetCommonParametersFromRequest(r)
+	cp.LoggedPersonID = c.PersonID
+
+	casnumbers, count, err := env.DB.GetProductsCasNumbers(cp)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -126,53 +90,18 @@ func (env *Env) GetProductsNamesHandler(w http.ResponseWriter, r *http.Request) 
 	log.Debug("GetProductsNamesHandler")
 
 	var (
-		search string
-		order  string
-		offset uint64
-		limit  uint64
-		err    error
+		err error
 	)
-
-	if s, ok := r.URL.Query()["search"]; !ok {
-		search = ""
-	} else {
-		search = s[0]
-	}
-	if o, ok := r.URL.Query()["order"]; !ok {
-		order = "asc"
-	} else {
-		order = o[0]
-	}
-	if o, ok := r.URL.Query()["offset"]; !ok {
-		offset = 0
-	} else {
-		var of int
-		if of, err = strconv.Atoi(o[0]); err != nil {
-			return &models.AppError{
-				Error:   err,
-				Code:    http.StatusInternalServerError,
-				Message: "offset atoi conversion",
-			}
-		}
-		offset = uint64(of)
-	}
-	if l, ok := r.URL.Query()["limit"]; !ok {
-		limit = constants.MaxUint64
-	} else {
-		var lm int
-		if lm, err = strconv.Atoi(l[0]); err != nil {
-			return &models.AppError{
-				Error:   err,
-				Code:    http.StatusInternalServerError,
-				Message: "limit atoi conversion",
-			}
-		}
-		limit = uint64(lm)
-	}
 
 	// retrieving the logged user id from request context
 	c := containerFromRequestContext(r)
-	names, count, err := env.DB.GetProductsNames(models.GetCommonParameters{LoggedPersonID: c.PersonID, Search: search, Order: order, Offset: offset, Limit: limit})
+
+	// init db request parameters
+	// FIXME: handle errors
+	cp, _ := models.NewGetCommonParametersFromRequest(r)
+	cp.LoggedPersonID = c.PersonID
+
+	names, count, err := env.DB.GetProductsNames(cp)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -197,53 +126,18 @@ func (env *Env) GetProductsSymbolsHandler(w http.ResponseWriter, r *http.Request
 	log.Debug("GetProductsSymbolsHandler")
 
 	var (
-		search string
-		order  string
-		offset uint64
-		limit  uint64
-		err    error
+		err error
 	)
-
-	if s, ok := r.URL.Query()["search"]; !ok {
-		search = ""
-	} else {
-		search = s[0]
-	}
-	if o, ok := r.URL.Query()["order"]; !ok {
-		order = "asc"
-	} else {
-		order = o[0]
-	}
-	if o, ok := r.URL.Query()["offset"]; !ok {
-		offset = 0
-	} else {
-		var of int
-		if of, err = strconv.Atoi(o[0]); err != nil {
-			return &models.AppError{
-				Error:   err,
-				Code:    http.StatusInternalServerError,
-				Message: "offset atoi conversion",
-			}
-		}
-		offset = uint64(of)
-	}
-	if l, ok := r.URL.Query()["limit"]; !ok {
-		limit = constants.MaxUint64
-	} else {
-		var lm int
-		if lm, err = strconv.Atoi(l[0]); err != nil {
-			return &models.AppError{
-				Error:   err,
-				Code:    http.StatusInternalServerError,
-				Message: "limit atoi conversion",
-			}
-		}
-		limit = uint64(lm)
-	}
 
 	// retrieving the logged user id from request context
 	c := containerFromRequestContext(r)
-	symbols, count, err := env.DB.GetProductsSymbols(models.GetCommonParameters{LoggedPersonID: c.PersonID, Search: search, Order: order, Offset: offset, Limit: limit})
+
+	// init db request parameters
+	// FIXME: handle errors
+	cp, _ := models.NewGetCommonParametersFromRequest(r)
+	cp.LoggedPersonID = c.PersonID
+
+	symbols, count, err := env.DB.GetProductsSymbols(cp)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -268,53 +162,18 @@ func (env *Env) GetProductsHandler(w http.ResponseWriter, r *http.Request) *mode
 	log.Debug("GetProductsHandler")
 
 	var (
-		search string
-		order  string
-		offset uint64
-		limit  uint64
-		err    error
+		err error
 	)
-
-	if s, ok := r.URL.Query()["search"]; !ok {
-		search = ""
-	} else {
-		search = s[0]
-	}
-	if o, ok := r.URL.Query()["order"]; !ok {
-		order = "asc"
-	} else {
-		order = o[0]
-	}
-	if o, ok := r.URL.Query()["offset"]; !ok {
-		offset = 0
-	} else {
-		var of int
-		if of, err = strconv.Atoi(o[0]); err != nil {
-			return &models.AppError{
-				Error:   err,
-				Code:    http.StatusInternalServerError,
-				Message: "offset atoi conversion",
-			}
-		}
-		offset = uint64(of)
-	}
-	if l, ok := r.URL.Query()["limit"]; !ok {
-		limit = constants.MaxUint64
-	} else {
-		var lm int
-		if lm, err = strconv.Atoi(l[0]); err != nil {
-			return &models.AppError{
-				Error:   err,
-				Code:    http.StatusInternalServerError,
-				Message: "limit atoi conversion",
-			}
-		}
-		limit = uint64(lm)
-	}
 
 	// retrieving the logged user id from request context
 	c := containerFromRequestContext(r)
-	products, count, err := env.DB.GetProducts(models.GetProductsParameters{GetCommonParameters: models.GetCommonParameters{LoggedPersonID: c.PersonID, Search: search, Order: order, Offset: offset, Limit: limit}})
+
+	// init db request parameters
+	// FIXME: handle errors
+	cp, _ := models.NewGetCommonParametersFromRequest(r)
+	cp.LoggedPersonID = c.PersonID
+
+	products, count, err := env.DB.GetProducts(models.GetProductsParameters{CP: cp})
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
