@@ -1,9 +1,17 @@
 package models
 
-// GetCommonParameters contains the common parameters
+import (
+	"net/http"
+	"strconv"
+
+	"github.com/tbellembois/gochimitheque/constants"
+	"github.com/tbellembois/gopicluster/models"
+)
+
+// getCommonParameters contains the common parameters
 // passed to the database Get* functions returning multiple values
 // such as GetStoreLocations, GetEntities...
-type GetCommonParameters struct {
+type getCommonParameters struct {
 	LoggedPersonID int
 	Search         string
 	Order          string
@@ -11,26 +19,76 @@ type GetCommonParameters struct {
 	Limit          uint64
 }
 
+// NewGetCommonParameters returns a getCommonParameters struct
+// with default values
+func NewGetCommonParameters() getCommonParameters {
+	return getCommonParameters{
+		LoggedPersonID: 0,
+		Search:         "%%",
+		Order:          "asc",
+		Offset:         0,
+		Limit:          constants.MaxUint64,
+	}
+}
+
+// NewGetCommonParametersFromRequest returns a getCommonParameters struct
+// with values in the request r except LoggedPersonID
+func NewGetCommonParametersFromRequest(r *http.Request) (getCommonParameters, *models.AppError) {
+	var err error
+
+	cp := getCommonParameters{}
+
+	if s, ok := r.URL.Query()["search"]; ok {
+		cp.Search = "%" + s[0] + "%"
+	}
+	if o, ok := r.URL.Query()["order"]; ok {
+		cp.Order = o[0]
+	}
+	if o, ok := r.URL.Query()["offset"]; ok {
+		var of int
+		if of, err = strconv.Atoi(o[0]); err != nil {
+			return getCommonParameters{}, &models.AppError{
+				Error:   err,
+				Code:    http.StatusInternalServerError,
+				Message: "offset atoi conversion",
+			}
+		}
+		cp.Offset = uint64(of)
+	}
+	if l, ok := r.URL.Query()["limit"]; ok {
+		var lm int
+		if lm, err = strconv.Atoi(l[0]); err != nil {
+			return getCommonParameters{}, &models.AppError{
+				Error:   err,
+				Code:    http.StatusInternalServerError,
+				Message: "limit atoi conversion",
+			}
+		}
+		cp.Limit = uint64(lm)
+	}
+	return cp, nil
+}
+
 // GetPeopleParameters contains the parameters of the GetPeople function
 type GetPeopleParameters struct {
-	GetCommonParameters
+	CP       getCommonParameters
 	EntityID int
 }
 
 // GetEntitiesParameters contains the parameters of the GetEntities function
 type GetEntitiesParameters struct {
-	GetCommonParameters
+	CP getCommonParameters
 }
 
 // GetStoreLocationsParameters contains the parameters of the GetStoreLocations function
 type GetStoreLocationsParameters struct {
-	GetCommonParameters
+	CP       getCommonParameters
 	EntityID int
 }
 
 // GetProductsParameters contains the parameters of the GetProducts function
 type GetProductsParameters struct {
-	GetCommonParameters
+	CP       getCommonParameters
 	EntityID int
 }
 
@@ -42,9 +100,9 @@ type Datastore interface {
 
 	// products
 	GetProducts(GetProductsParameters) ([]Product, int, error)
-	GetProductsCasNumbers(GetCommonParameters) ([]CasNumber, int, error)
-	GetProductsNames(GetCommonParameters) ([]Name, int, error)
-	GetProductsSymbols(GetCommonParameters) ([]Symbol, int, error)
+	GetProductsCasNumbers(getCommonParameters) ([]CasNumber, int, error)
+	GetProductsNames(getCommonParameters) ([]Name, int, error)
+	GetProductsSymbols(getCommonParameters) ([]Symbol, int, error)
 	GetProduct(id int) (Product, error)
 	DeleteProduct(id int) error
 	CreateProduct(p Product) (error, int)

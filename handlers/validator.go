@@ -72,20 +72,24 @@ func (env *Env) ValidatePersonEmailHandler(w http.ResponseWriter, r *http.Reques
 }
 
 // ValidateEntityNameHandler checks that the entity name does not already exist
-// if an id is given is the request the validator ignore the name of the entity with this id
+// if an id != -1 is given is the request the validator ignore the name of the entity with this id
 func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	vars := mux.Vars(r)
 	var (
-		err         error
-		res         bool
-		resp        string
-		entity_name string
-		entity      models.Entity
-		entity_id   int
+		err       error
+		res       bool
+		resp      string
+		entity    models.Entity
+		entity_id int
 	)
 
 	// retrieving the logged user id from request context
 	c := containerFromRequestContext(r)
+
+	// init db request parameters
+	// FIXME: handle errors
+	cp, _ := models.NewGetCommonParametersFromRequest(r)
+	cp.LoggedPersonID = c.PersonID
 
 	// converting the id
 	if entity_id, err = strconv.Atoi(vars["id"]); err != nil {
@@ -102,10 +106,10 @@ func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request
 			Message: "form parsing",
 			Code:    http.StatusInternalServerError}
 	}
-	entity_name = r.Form.Get("entity_name")
+	cp.Search = r.Form.Get("entity_name")
 
 	// getting the entities matching the name
-	entities, count, err := env.DB.GetEntities(models.GetEntitiesParameters{GetCommonParameters: models.GetCommonParameters{LoggedPersonID: c.PersonID, Search: entity_name, Order: "asc", Offset: 0, Limit: 1}})
+	entities, count, err := env.DB.GetEntities(models.GetEntitiesParameters{CP: cp})
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -124,7 +128,7 @@ func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request
 			return &models.AppError{
 				Error:   err,
 				Code:    http.StatusBadRequest,
-				Message: "error looking for entity by name",
+				Message: "error looking for entity by id",
 			}
 		}
 		res = (entity.EntityID != entities[0].EntityID)

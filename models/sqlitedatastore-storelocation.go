@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"strings"
 
 	"database/sql"
@@ -23,7 +22,7 @@ func (db *SQLiteDataStore) GetStoreLocations(p GetStoreLocationsParameters) ([]S
 		cnstmt                             *sqlx.NamedStmt
 		snstmt                             *sqlx.NamedStmt
 	)
-	log.WithFields(log.Fields{"search": p.Search, "order": p.Order, "offset": p.Offset, "limit": p.Limit}).Debug("GetStoreLocations")
+	log.WithFields(log.Fields{"search": p.CP.Search, "order": p.CP.Order, "offset": p.CP.Offset, "limit": p.CP.Limit}).Debug("GetStoreLocations")
 
 	precreq.WriteString(" SELECT count(DISTINCT s.storelocation_id)")
 	presreq.WriteString(` SELECT s.storelocation_id, s.storelocation_name, 
@@ -45,10 +44,10 @@ func (db *SQLiteDataStore) GetStoreLocations(p GetStoreLocationsParameters) ([]S
 		comreq.WriteString(" AND s.entity = :entityid")
 	}
 	postsreq.WriteString(" GROUP BY s.storelocation_id")
-	postsreq.WriteString(" ORDER BY s.storelocation_name " + p.Order)
+	postsreq.WriteString(" ORDER BY s.storelocation_name " + p.CP.Order)
 
 	// limit
-	if p.Limit != constants.MaxUint64 {
+	if p.CP.Limit != constants.MaxUint64 {
 		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
 	}
 
@@ -62,12 +61,12 @@ func (db *SQLiteDataStore) GetStoreLocations(p GetStoreLocationsParameters) ([]S
 	log.Debug(presreq.String() + comreq.String() + postsreq.String())
 	// building argument map
 	m := map[string]interface{}{
-		"search":   fmt.Sprint("%", p.Search, "%"),
-		"personid": p.LoggedPersonID,
+		"search":   p.CP.Search,
+		"personid": p.CP.LoggedPersonID,
 		"entityid": p.EntityID,
-		"order":    p.Order,
-		"limit":    p.Limit,
-		"offset":   p.Offset}
+		"order":    p.CP.Order,
+		"limit":    p.CP.Limit,
+		"offset":   p.CP.Offset}
 
 	// select
 	if db.err = snstmt.Select(&storelocations, m); db.err != nil {

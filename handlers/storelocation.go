@@ -8,7 +8,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	log "github.com/sirupsen/logrus"
-	"github.com/tbellembois/gochimitheque/constants"
 	"github.com/tbellembois/gochimitheque/models"
 )
 
@@ -55,13 +54,17 @@ func (env *Env) GetStoreLocationsHandler(w http.ResponseWriter, r *http.Request)
 	log.Debug("GetStoreLocationsHandler")
 
 	var (
-		search   string
-		order    string
-		offset   uint64
-		limit    uint64
 		entityid int
 		err      error
 	)
+
+	// retrieving the logged user id from request context
+	c := containerFromRequestContext(r)
+
+	// init db request parameters
+	// FIXME: handle errors
+	cp, _ := models.NewGetCommonParametersFromRequest(r)
+	cp.LoggedPersonID = c.PersonID
 
 	if e, ok := r.URL.Query()["entityid"]; !ok {
 		entityid = -1
@@ -74,46 +77,8 @@ func (env *Env) GetStoreLocationsHandler(w http.ResponseWriter, r *http.Request)
 			}
 		}
 	}
-	if s, ok := r.URL.Query()["search"]; !ok {
-		search = ""
-	} else {
-		search = s[0]
-	}
-	if o, ok := r.URL.Query()["order"]; !ok {
-		order = "asc"
-	} else {
-		order = o[0]
-	}
-	if o, ok := r.URL.Query()["offset"]; !ok {
-		offset = 0
-	} else {
-		var of int
-		if of, err = strconv.Atoi(o[0]); err != nil {
-			return &models.AppError{
-				Error:   err,
-				Code:    http.StatusInternalServerError,
-				Message: "offset atoi conversion",
-			}
-		}
-		offset = uint64(of)
-	}
-	if l, ok := r.URL.Query()["limit"]; !ok {
-		limit = constants.MaxUint64
-	} else {
-		var lm int
-		if lm, err = strconv.Atoi(l[0]); err != nil {
-			return &models.AppError{
-				Error:   err,
-				Code:    http.StatusInternalServerError,
-				Message: "limit atoi conversion",
-			}
-		}
-		limit = uint64(lm)
-	}
 
-	// retrieving the logged user id from request context
-	c := containerFromRequestContext(r)
-	storelocations, count, err := env.DB.GetStoreLocations(models.GetStoreLocationsParameters{GetCommonParameters: models.GetCommonParameters{LoggedPersonID: c.PersonID, Search: search, Order: order, Offset: offset, Limit: limit}, EntityID: entityid})
+	storelocations, count, err := env.DB.GetStoreLocations(models.GetStoreLocationsParameters{CP: cp, EntityID: entityid})
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
