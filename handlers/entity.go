@@ -64,7 +64,7 @@ func (env *Env) GetEntitiesHandler(w http.ResponseWriter, r *http.Request) *mode
 
 	// init db request parameters
 	// FIXME: handle errors
-	cp, _ := models.NewGetCommonParametersFromRequest(r)
+	cp, _ := models.NewSelectParametersFromRequest(r)
 	cp.LoggedPersonID = c.PersonID
 
 	if entities, count, err = env.DB.GetEntities(models.GetEntitiesParameters{CP: cp}); err != nil {

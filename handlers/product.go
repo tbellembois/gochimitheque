@@ -62,7 +62,7 @@ func (env *Env) GetProductsCasNumbersHandler(w http.ResponseWriter, r *http.Requ
 
 	// init db request parameters
 	// FIXME: handle errors
-	cp, _ := models.NewGetCommonParametersFromRequest(r)
+	cp, _ := models.NewSelectParametersFromRequest(r)
 	cp.LoggedPersonID = c.PersonID
 
 	casnumbers, count, err := env.DB.GetProductsCasNumbers(cp)
@@ -98,7 +98,7 @@ func (env *Env) GetProductsNamesHandler(w http.ResponseWriter, r *http.Request) 
 
 	// init db request parameters
 	// FIXME: handle errors
-	cp, _ := models.NewGetCommonParametersFromRequest(r)
+	cp, _ := models.NewSelectParametersFromRequest(r)
 	cp.LoggedPersonID = c.PersonID
 
 	names, count, err := env.DB.GetProductsNames(cp)
@@ -134,7 +134,7 @@ func (env *Env) GetProductsSymbolsHandler(w http.ResponseWriter, r *http.Request
 
 	// init db request parameters
 	// FIXME: handle errors
-	cp, _ := models.NewGetCommonParametersFromRequest(r)
+	cp, _ := models.NewSelectParametersFromRequest(r)
 	cp.LoggedPersonID = c.PersonID
 
 	symbols, count, err := env.DB.GetProductsSymbols(cp)
@@ -170,7 +170,7 @@ func (env *Env) GetProductsHandler(w http.ResponseWriter, r *http.Request) *mode
 
 	// init db request parameters
 	// FIXME: handle errors
-	cp, _ := models.NewGetCommonParametersFromRequest(r)
+	cp, _ := models.NewSelectParametersFromRequest(r)
 	cp.LoggedPersonID = c.PersonID
 
 	products, count, err := env.DB.GetProducts(models.GetProductsParameters{CP: cp})

@@ -26,12 +26,6 @@ block contentjs
                 rules: {
                     storelocation_name: {
                         required: true,
-                        remote: {
-                            url: "",
-                            beforeSend: function(jqXhr, settings) {
-                                settings.url = "/validate/storelocation/-1/name/" + $("input#storelocation_name").val();
-                            },
-                        },
                     },
                     entity: {
                         required: true,

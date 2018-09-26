@@ -14,7 +14,7 @@ import (
 )
 
 // GetProductsCasNumbers return the cas numbers matching the search criteria
-func (db *SQLiteDataStore) GetProductsCasNumbers(p getCommonParameters) ([]CasNumber, int, error) {
+func (db *SQLiteDataStore) GetProductsCasNumbers(p selectParameters) ([]CasNumber, int, error) {
 	var (
 		casnumbers                         []CasNumber
 		count                              int
@@ -64,7 +64,7 @@ func (db *SQLiteDataStore) GetProductsCasNumbers(p getCommonParameters) ([]CasNu
 }
 
 // GetProductsNames return the names matching the search criteria
-func (db *SQLiteDataStore) GetProductsNames(p getCommonParameters) ([]Name, int, error) {
+func (db *SQLiteDataStore) GetProductsNames(p selectParameters) ([]Name, int, error) {
 	var (
 		names                              []Name
 		count                              int
@@ -114,7 +114,7 @@ func (db *SQLiteDataStore) GetProductsNames(p getCommonParameters) ([]Name, int,
 }
 
 // GetProductsSymbols return the symbols matching the search criteria
-func (db *SQLiteDataStore) GetProductsSymbols(p getCommonParameters) ([]Symbol, int, error) {
+func (db *SQLiteDataStore) GetProductsSymbols(p selectParameters) ([]Symbol, int, error) {
 	var (
 		symbols                            []Symbol
 		count                              int
@@ -361,25 +361,4 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	}
 
 	return nil
-}
-
-// IsProductWithName returns true is the product "name" exists
-func (db *SQLiteDataStore) IsProductWithName(name string) (bool, error) {
-	var (
-		res   bool
-		count int
-		sqlr  string
-	)
-
-	sqlr = "SELECT count(*) from entity WHERE entity.entity_name = ?"
-	if db.err = db.Get(&count, sqlr, name); db.err != nil {
-		return false, db.err
-	}
-	log.WithFields(log.Fields{"name": name, "count": count}).Debug("HasEntityWithName")
-	if count == 0 {
-		res = false
-	} else {
-		res = true
-	}
-	return res, nil
 }

@@ -8,10 +8,10 @@ import (
 	"github.com/tbellembois/gopicluster/models"
 )
 
-// getCommonParameters contains the common parameters
+// selectParameters contains the common parameters
 // passed to the database Get* functions returning multiple values
 // such as GetStoreLocations, GetEntities...
-type getCommonParameters struct {
+type selectParameters struct {
 	LoggedPersonID int
 	Search         string
 	Order          string
@@ -19,10 +19,10 @@ type getCommonParameters struct {
 	Limit          uint64
 }
 
-// NewGetCommonParameters returns a getCommonParameters struct
+// NewSelectParameters returns a getCommonParameters struct
 // with default values
-func NewGetCommonParameters() getCommonParameters {
-	return getCommonParameters{
+func NewSelectParameters() selectParameters {
+	return selectParameters{
 		LoggedPersonID: 0,
 		Search:         "%%",
 		Order:          "asc",
@@ -31,12 +31,12 @@ func NewGetCommonParameters() getCommonParameters {
 	}
 }
 
-// NewGetCommonParametersFromRequest returns a getCommonParameters struct
+// NewSelectParametersFromRequest returns a getCommonParameters struct
 // with values in the request r except LoggedPersonID
-func NewGetCommonParametersFromRequest(r *http.Request) (getCommonParameters, *models.AppError) {
+func NewSelectParametersFromRequest(r *http.Request) (selectParameters, *models.AppError) {
 	var err error
 
-	cp := getCommonParameters{}
+	cp := NewSelectParameters()
 
 	if s, ok := r.URL.Query()["search"]; ok {
 		cp.Search = "%" + s[0] + "%"
@@ -47,7 +47,7 @@ func NewGetCommonParametersFromRequest(r *http.Request) (getCommonParameters, *m
 	if o, ok := r.URL.Query()["offset"]; ok {
 		var of int
 		if of, err = strconv.Atoi(o[0]); err != nil {
-			return getCommonParameters{}, &models.AppError{
+			return selectParameters{}, &models.AppError{
 				Error:   err,
 				Code:    http.StatusInternalServerError,
 				Message: "offset atoi conversion",
@@ -58,7 +58,7 @@ func NewGetCommonParametersFromRequest(r *http.Request) (getCommonParameters, *m
 	if l, ok := r.URL.Query()["limit"]; ok {
 		var lm int
 		if lm, err = strconv.Atoi(l[0]); err != nil {
-			return getCommonParameters{}, &models.AppError{
+			return selectParameters{}, &models.AppError{
 				Error:   err,
 				Code:    http.StatusInternalServerError,
 				Message: "limit atoi conversion",
@@ -71,24 +71,24 @@ func NewGetCommonParametersFromRequest(r *http.Request) (getCommonParameters, *m
 
 // GetPeopleParameters contains the parameters of the GetPeople function
 type GetPeopleParameters struct {
-	CP       getCommonParameters
+	CP       selectParameters
 	EntityID int
 }
 
 // GetEntitiesParameters contains the parameters of the GetEntities function
 type GetEntitiesParameters struct {
-	CP getCommonParameters
+	CP selectParameters
 }
 
 // GetStoreLocationsParameters contains the parameters of the GetStoreLocations function
 type GetStoreLocationsParameters struct {
-	CP       getCommonParameters
+	CP       selectParameters
 	EntityID int
 }
 
 // GetProductsParameters contains the parameters of the GetProducts function
 type GetProductsParameters struct {
-	CP       getCommonParameters
+	CP       selectParameters
 	EntityID int
 }
 
@@ -100,14 +100,13 @@ type Datastore interface {
 
 	// products
 	GetProducts(GetProductsParameters) ([]Product, int, error)
-	GetProductsCasNumbers(getCommonParameters) ([]CasNumber, int, error)
-	GetProductsNames(getCommonParameters) ([]Name, int, error)
-	GetProductsSymbols(getCommonParameters) ([]Symbol, int, error)
+	GetProductsCasNumbers(selectParameters) ([]CasNumber, int, error)
+	GetProductsNames(selectParameters) ([]Name, int, error)
+	GetProductsSymbols(selectParameters) ([]Symbol, int, error)
 	GetProduct(id int) (Product, error)
 	DeleteProduct(id int) error
 	CreateProduct(p Product) (error, int)
 	UpdateProduct(p Product) error
-	IsProductWithName(name string) (bool, error)
 
 	// store locations
 	GetStoreLocations(GetStoreLocationsParameters) ([]StoreLocation, int, error)
@@ -140,6 +139,4 @@ type Datastore interface {
 	DeletePerson(id int) error
 	IsPersonAdmin(id int) (bool, error)
 	IsPersonManager(id int) (bool, error)
-	IsPersonWithEmail(email string) (bool, error)
-	IsPersonWithEmailExcept(string, ...string) (bool, error)
 }

@@ -115,13 +115,14 @@ block contentjs
         $( "#person-update" ).validate({
             errorClass: "alert alert-danger",
             rules: {
-                email: {
+                person_email: {
                     required: true,
                     email: true,
                     remote: {
                         url: "",
+                        type: "post",
                         beforeSend: function(jqXhr, settings) {
-                            settings.url = "/validate/person/" + $("form#person-update input#person_id").val() + "/email/" + $("form#person-update input#person_email").val();
+                            settings.url = "/validate/person/" + $("form#person-update input#person_id").val() + "/email/";
                         },
                     },
                 },

@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/models"
+	"github.com/tbellembois/gochimitheque/utils"
 )
 
 // ValidatePersonEmailHandler checks that the person email does not already exist
@@ -22,6 +23,14 @@ func (env *Env) ValidatePersonEmailHandler(w http.ResponseWriter, r *http.Reques
 		person_id int
 	)
 
+	// retrieving the logged user id from request context
+	c := containerFromRequestContext(r)
+
+	// init db request parameters
+	// FIXME: handle errors
+	cp, _ := models.NewSelectParametersFromRequest(r)
+	cp.LoggedPersonID = c.PersonID
+
 	// converting the id
 	if person_id, err = strconv.Atoi(vars["id"]); err != nil {
 		return &models.AppError{
@@ -30,15 +39,29 @@ func (env *Env) ValidatePersonEmailHandler(w http.ResponseWriter, r *http.Reques
 			Code:    http.StatusInternalServerError}
 	}
 
-	if person_id == -1 {
-		// querying the database
-		if res, err = env.DB.IsPersonWithEmail(vars["email"]); err != nil {
-			return &models.AppError{
-				Error:   err,
-				Code:    http.StatusBadRequest,
-				Message: "error looking for person by email",
-			}
+	// getting the email
+	if err = r.ParseForm(); err != nil {
+		return &models.AppError{
+			Error:   err,
+			Message: "form parsing",
+			Code:    http.StatusInternalServerError}
+	}
+	cp.Search = r.Form.Get("person_email")
+
+	// getting the people matching the email
+	people, count, err := env.DB.GetPeople(models.GetPeopleParameters{CP: cp, EntityID: -1})
+	if err != nil {
+		return &models.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the people",
 		}
+	}
+
+	if count == 0 {
+		res = false
+	} else if person_id == -1 {
+		res = (count == 1)
 	} else {
 		// getting the person
 		if person, err = env.DB.GetPerson(person_id); err != nil {
@@ -48,14 +71,7 @@ func (env *Env) ValidatePersonEmailHandler(w http.ResponseWriter, r *http.Reques
 				Message: "error looking for person by email",
 			}
 		}
-		// querying the database
-		if res, err = env.DB.IsPersonWithEmailExcept(vars["email"], person.PersonEmail); err != nil {
-			return &models.AppError{
-				Error:   err,
-				Code:    http.StatusBadRequest,
-				Message: "error looking for person by email",
-			}
-		}
+		res = (person.PersonID != people[0].PersonID)
 	}
 
 	log.WithFields(log.Fields{"vars": vars, "res": res}).Debug("ValidatePersonEmailHandler")
@@ -88,7 +104,7 @@ func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request
 
 	// init db request parameters
 	// FIXME: handle errors
-	cp, _ := models.NewGetCommonParametersFromRequest(r)
+	cp, _ := models.NewSelectParametersFromRequest(r)
 	cp.LoggedPersonID = c.PersonID
 
 	// converting the id
@@ -158,7 +174,27 @@ func (env *Env) ValidateProductNameHandler(w http.ResponseWriter, r *http.Reques
 
 // ValidateProductCasNumberHandler checks that a product with the cas number does not already exist
 func (env *Env) ValidateProductCasNumberHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	resp := "bad cas"
+	var (
+		err  error
+		resp string
+	)
+
+	// getting the cas number
+	if err = r.ParseForm(); err != nil {
+		return &models.AppError{
+			Error:   err,
+			Message: "form parsing",
+			Code:    http.StatusInternalServerError}
+	}
+	// validating it
+	v := utils.IsCasNumber(r.Form.Get("casnumber"))
+
+	if v {
+		resp = "true"
+	} else {
+		resp = "invalid cas number"
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp)

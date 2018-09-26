@@ -73,11 +73,6 @@ block contentjs
                         beforeSend: function(jqXhr, settings) {
                             settings.url = "/validate/entity/" + $("form#entity-update input#entity_id").val() + "/name/";
                         },
-                        entity_name: {
-                             name: function() {
-                                return $("form#entity-update input#entity_name").val();
-                            }
-                        },
                     },
                 },
             },
