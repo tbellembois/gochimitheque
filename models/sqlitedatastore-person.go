@@ -6,7 +6,6 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
-	sq "github.com/Masterminds/squirrel"
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/constants"
@@ -61,7 +60,7 @@ func (db *SQLiteDataStore) GetPeople(p GetPeopleParameters) ([]Person, int, erro
 	if p.CP.Limit != constants.MaxUint64 {
 		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
 	}
-
+	log.Debug(presreq.String() + comreq.String() + postsreq.String())
 	// building count and select statements
 	if cnstmt, db.err = db.PrepareNamed(precreq.String() + comreq.String()); db.err != nil {
 		return nil, 0, db.err
@@ -72,9 +71,9 @@ func (db *SQLiteDataStore) GetPeople(p GetPeopleParameters) ([]Person, int, erro
 
 	// building argument map
 	m := map[string]interface{}{
+		"entityid": p.EntityID,
 		"search":   p.CP.Search,
 		"personid": p.CP.LoggedPersonID,
-		"entityid": p.EntityID,
 		"order":    p.CP.Order,
 		"limit":    p.CP.Limit,
 		"offset":   p.CP.Offset}
@@ -528,57 +527,6 @@ func (db *SQLiteDataStore) IsPersonManager(id int) (bool, error) {
 		return false, db.err
 	}
 	log.WithFields(log.Fields{"id": id, "count": count}).Debug("IsPersonManager")
-	if count == 0 {
-		res = false
-	} else {
-		res = true
-	}
-	return res, nil
-}
-
-// IsPersonWithEmail returns true is the person with email "email" exists
-func (db *SQLiteDataStore) IsPersonWithEmail(email string) (bool, error) {
-	var (
-		res   bool
-		count int
-		sqlr  string
-	)
-
-	sqlr = "SELECT count(*) from person WHERE person.person_email = ?"
-	if db.err = db.Get(&count, sqlr, email); db.err != nil {
-		return false, db.err
-	}
-	log.WithFields(log.Fields{"email": email, "count": count}).Debug("IsPersonWithEmail")
-	if count == 0 {
-		res = false
-	} else {
-		res = true
-	}
-	return res, nil
-}
-
-// IsPersonWithEmailExcept returns true is the person with email "email" exists ignoring the "except" emails
-func (db *SQLiteDataStore) IsPersonWithEmailExcept(email string, except ...string) (bool, error) {
-	var (
-		res   bool
-		count int
-		sqlr  sq.SelectBuilder
-		w     sq.And
-	)
-
-	w = append(w, sq.Eq{"person.person_email": email})
-	for _, e := range except {
-		w = append(w, sq.NotEq{"person.person_email": e})
-	}
-
-	sqlr = sq.Select("count(*)").From("person").Where(w)
-	sql, args, _ := sqlr.ToSql()
-	log.WithFields(log.Fields{"sql": sql, "args": args}).Debug("IsPersonWithEmailExcept")
-
-	if db.err = db.Get(&count, sql, args...); db.err != nil {
-		return false, db.err
-	}
-	log.WithFields(log.Fields{"email": email, "count": count}).Debug("IsPersonWithEmailExcept")
 	if count == 0 {
 		res = false
 	} else {

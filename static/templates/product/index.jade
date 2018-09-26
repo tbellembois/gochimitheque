@@ -73,21 +73,21 @@ block contentjs
                 ignore: "",
                 errorClass: "alert alert-danger",
                 rules: {
-                    name: {
-                        required: true,
-                        remote: {
-                            url: "",
-                            type: "post",
-                            beforeSend: function(jqXhr, settings) {
-                                settings.url = "/validate/product/" + $("form#product-update input#product_id").val() + "/name/";
-                            },
-                            data: {
-                                name: function() {
-                                    return $('select#name').select2('data')[0].text;
-                                }
-                            },
-                        },
-                    },
+                    //- name: {
+                    //-     required: true,
+                    //-     remote: {
+                    //-         url: "",
+                    //-         type: "post",
+                    //-         beforeSend: function(jqXhr, settings) {
+                    //-             settings.url = "/validate/product/" + $("form#product-update input#product_id").val() + "/name/";
+                    //-         },
+                    //-         data: {
+                    //-             name: function() {
+                    //-                 return $('select#name').select2('data')[0].text;
+                    //-             }
+                    //-         },
+                    //-     },
+                    //- },
                     casnumber: {
                         required: true,
                         remote: {

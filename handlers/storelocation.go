@@ -63,7 +63,7 @@ func (env *Env) GetStoreLocationsHandler(w http.ResponseWriter, r *http.Request)
 
 	// init db request parameters
 	// FIXME: handle errors
-	cp, _ := models.NewGetCommonParametersFromRequest(r)
+	cp, _ := models.NewSelectParametersFromRequest(r)
 	cp.LoggedPersonID = c.PersonID
 
 	if e, ok := r.URL.Query()["entityid"]; !ok {

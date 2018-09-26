@@ -67,12 +67,9 @@ block contentjs
                 rules: {
                     storelocation_name: {
                         required: true,
-                        remote: {
-                            url: "",
-                            beforeSend: function(jqXhr, settings) {
-                                settings.url = "/validate/storelocation/" + $("form#storelocation-update input#storelocation_id").val() + "/name/" + $("form#storelocation-update input#storelocation_name").val();
-                            },
-                        },
+                    },
+                    entity: {
+                        required: true,
                     },
                 },
             });

@@ -53,12 +53,13 @@ block contentjs
         $( "#person-create" ).validate({
         errorClass: "alert alert-danger",
         rules: {
-            email: {
+            person_email: {
                 required: true,
                 remote: {
                     url: "",
+                    type: "post",
                     beforeSend: function(jqXhr, settings) {
-                        settings.url = "/validate/person/-1/email/" + $("input#email").val();
+                        settings.url = "/validate/person/-1/email/";
                     },
                 },
             },
