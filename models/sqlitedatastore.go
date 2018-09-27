@@ -3,9 +3,11 @@ package models
 import (
 	"fmt"
 
+	"bufio"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
 	log "github.com/sirupsen/logrus"
+	"os"
 )
 
 const (
@@ -142,18 +144,44 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 			return db.err
 		}
 
-		// generating random values
-		for i := 1; i <= 100; i++ {
-			n := fmt.Sprintf("name %d", i)
-			if _, db.err = db.Exec(`INSERT INTO name ("name_label") VALUES ("` + n + `");`); db.err != nil {
-				return db.err
-			}
-			c := fmt.Sprintf("%d-%d-%d", i, i, i)
-			if _, db.err = db.Exec(`INSERT INTO casnumber ("casnumber_label") VALUES ("` + c + `");`); db.err != nil {
+		// inserting sample values
+		// FIXME: remove this before release
+		scas, _ := os.Open("sample_cas.txt")
+		sname, _ := os.Open("sample_name.txt")
+		defer scas.Close()
+		defer sname.Close()
+
+		scanner := bufio.NewScanner(scas)
+		scanner.Split(bufio.ScanLines)
+		for scanner.Scan() {
+			log.Debug(scanner.Text())
+			if _, db.err = db.Exec(`INSERT OR IGNORE INTO casnumber ("casnumber_label") VALUES ("` + scanner.Text() + `");`); db.err != nil {
 				return db.err
 			}
 		}
 
+		scanner = bufio.NewScanner(sname)
+		scanner.Split(bufio.ScanLines)
+		for scanner.Scan() {
+			log.Debug(scanner.Text())
+			if _, db.err = db.Exec(`INSERT OR IGNORE INTO name ("name_label") VALUES ("` + scanner.Text() + `");`); db.err != nil {
+				return db.err
+			}
+		}
+
+		// for i := 1; i <= 100; i++ {
+		// 	n := fmt.Sprintf("name %d", i)
+		// 	if _, db.err = db.Exec(`INSERT INTO name ("name_label") VALUES ("` + n + `");`); db.err != nil {
+		// 		return db.err
+		// 	}
+		// 	c := fmt.Sprintf("%d-%d-%d", i, i, i)
+		// 	if _, db.err = db.Exec(`INSERT INTO casnumber ("casnumber_label") VALUES ("` + c + `");`); db.err != nil {
+		// 		return db.err
+		// 	}
+		// }
+
+		// inserting sample products
+		// attention: values are wrongs, just for devel purposes
 		for i := 1; i <= 100; i++ {
 			ins := fmt.Sprintf("(\"spec%d\", \"%d\", \"%d\")", i, i, i)
 			if _, db.err = db.Exec(`INSERT INTO product ("product_specificity", "casnumber", "name") VALUES ` + ins + `;`); db.err != nil {
