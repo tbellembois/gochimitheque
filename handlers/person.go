@@ -63,7 +63,7 @@ func (env *Env) GetPeopleHandler(w http.ResponseWriter, r *http.Request) *models
 
 	// init db request parameters
 	// FIXME: handle errors
-	cp, _ := models.NewSelectParametersFromRequest(r)
+	cp, _ := models.Newdbselectparam(r)
 	cp.LoggedPersonID = c.PersonID
 
 	if e, ok := r.URL.Query()["entityid"]; !ok {

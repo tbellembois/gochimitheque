@@ -55,8 +55,10 @@ func (env *Env) GetEntitiesHandler(w http.ResponseWriter, r *http.Request) *mode
 
 	var (
 		err      error
+		aerr     *models.AppError
 		entities []models.Entity
 		count    int
+		dspe     models.DbselectparamEntity
 	)
 
 	// retrieving the logged user id from request context
@@ -64,8 +66,11 @@ func (env *Env) GetEntitiesHandler(w http.ResponseWriter, r *http.Request) *mode
 
 	// init db request parameters
 	// FIXME: handle errors
-	cp, _ := models.NewSelectParametersFromRequest(r)
-	cp.LoggedPersonID = c.PersonID
+	if dspe, aerr = models.NewdbselectparamEntity(r); err != nil {
+		return aerr
+	}
+
+	//dspe\.LoggedPersonID = c.PersonID
 
 	if entities, count, err = env.DB.GetEntities(models.GetEntitiesParameters{CP: cp}); err != nil {
 		return &models.AppError{

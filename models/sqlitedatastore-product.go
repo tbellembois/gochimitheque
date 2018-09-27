@@ -14,7 +14,7 @@ import (
 )
 
 // GetProductsCasNumbers return the cas numbers matching the search criteria
-func (db *SQLiteDataStore) GetProductsCasNumbers(p selectParameters) ([]CasNumber, int, error) {
+func (db *SQLiteDataStore) GetProductsCasNumbers(p dbselectparam) ([]CasNumber, int, error) {
 	var (
 		casnumbers                         []CasNumber
 		count                              int
@@ -64,7 +64,7 @@ func (db *SQLiteDataStore) GetProductsCasNumbers(p selectParameters) ([]CasNumbe
 }
 
 // GetProductsNames return the names matching the search criteria
-func (db *SQLiteDataStore) GetProductsNames(p selectParameters) ([]Name, int, error) {
+func (db *SQLiteDataStore) GetProductsNames(p dbselectparam) ([]Name, int, error) {
 	var (
 		names                              []Name
 		count                              int
@@ -114,7 +114,7 @@ func (db *SQLiteDataStore) GetProductsNames(p selectParameters) ([]Name, int, er
 }
 
 // GetProductsSymbols return the symbols matching the search criteria
-func (db *SQLiteDataStore) GetProductsSymbols(p selectParameters) ([]Symbol, int, error) {
+func (db *SQLiteDataStore) GetProductsSymbols(p dbselectparam) ([]Symbol, int, error) {
 	var (
 		symbols                            []Symbol
 		count                              int
@@ -164,7 +164,7 @@ func (db *SQLiteDataStore) GetProductsSymbols(p selectParameters) ([]Symbol, int
 }
 
 // GetProducts return the products matching the search criteria
-func (db *SQLiteDataStore) GetProducts(p GetProductsParameters) ([]Product, int, error) {
+func (db *SQLiteDataStore) GetProducts(p dbselectparamProduct) ([]Product, int, error) {
 	var (
 		products                                []Product
 		count                                   int
@@ -172,13 +172,16 @@ func (db *SQLiteDataStore) GetProducts(p GetProductsParameters) ([]Product, int,
 		cnstmt                                  *sqlx.NamedStmt
 		snstmt                                  *sqlx.NamedStmt
 	)
-	log.WithFields(log.Fields{"search": p.CP.Search, "order": p.CP.Order, "offset": p.CP.Offset, "limit": p.CP.Limit}).Debug("GetProducts")
+	log.WithFields(log.Fields{"p": p}).Debug("GetProducts")
 
+	// pre request: select or count
 	precreq.WriteString(" SELECT count(DISTINCT product.product_id)")
 	presreq.WriteString(` SELECT product.product_id, 
 	product.product_specificity, 
 	name.name_label AS "name.name_label",
 	casnumber.casnumber_label AS "casnumber.casnumber_label"`)
+
+	// common parts
 	comreq.WriteString(" FROM product")
 	// get name
 	comreq.WriteString(" JOIN name ON product.name = name.name_id")
@@ -195,11 +198,13 @@ func (db *SQLiteDataStore) GetProducts(p GetProductsParameters) ([]Product, int,
 	(perm.person = :personid and perm.permission_item_name = "products" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
 	`)
 	comreq.WriteString(" WHERE name.name_label LIKE :search")
+
+	// post select request
 	postsreq.WriteString(" GROUP BY product.product_id")
-	postsreq.WriteString(" ORDER BY name.name_label " + p.CP.Order)
+	postsreq.WriteString(" ORDER BY name.name_label " + p.Order)
 
 	// limit
-	if p.CP.Limit != constants.MaxUint64 {
+	if p.Limit != constants.MaxUint64 {
 		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
 	}
 
@@ -213,12 +218,12 @@ func (db *SQLiteDataStore) GetProducts(p GetProductsParameters) ([]Product, int,
 
 	// building argument map
 	m := map[string]interface{}{
-		"search":   p.CP.Search,
-		"personid": p.CP.LoggedPersonID,
-		"entityid": p.EntityID,
-		"order":    p.CP.Order,
-		"limit":    p.CP.Limit,
-		"offset":   p.CP.Offset}
+		"search":   p.Search,
+		"personid": p.LoggedPersonID,
+		"entityid": p.Entity,
+		"order":    p.Order,
+		"limit":    p.Limit,
+		"offset":   p.Offset}
 
 	// select
 	if db.err = snstmt.Select(&products, m); db.err != nil {

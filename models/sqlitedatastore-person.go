@@ -13,7 +13,7 @@ import (
 
 // GetPeople returns the people matching the search criteria
 // order, offset and limit are passed to the sql request
-func (db *SQLiteDataStore) GetPeople(p GetPeopleParameters) ([]Person, int, error) {
+func (db *SQLiteDataStore) GetPeople(p dbselectparamPerson) ([]Person, int, error) {
 	var (
 		people                             []Person
 		isadmin                            bool
@@ -22,10 +22,10 @@ func (db *SQLiteDataStore) GetPeople(p GetPeopleParameters) ([]Person, int, erro
 		cnstmt                             *sqlx.NamedStmt
 		snstmt                             *sqlx.NamedStmt
 	)
-	log.WithFields(log.Fields{"entityid": p.EntityID, "search": p.CP.Search, "order": p.CP.Order, "offset": p.CP.Offset, "limit": p.CP.Limit}).Debug("GetPeople")
+	log.WithFields(log.Fields{"entityid": p.EntityID, "search": p.Search, "order": p.Order, "offset": p.Offset, "limit": p.Limit}).Debug("GetPeople")
 
 	// is the logged user an admin?
-	if isadmin, db.err = db.IsPersonAdmin(p.CP.LoggedPersonID); db.err != nil {
+	if isadmin, db.err = db.IsPersonAdmin(p.LoggedPersonID); db.err != nil {
 		return nil, 0, db.err
 	}
 
@@ -54,10 +54,10 @@ func (db *SQLiteDataStore) GetPeople(p GetPeopleParameters) ([]Person, int, erro
 	}
 	comreq.WriteString(" WHERE p.person_email LIKE :search")
 	postsreq.WriteString(" GROUP BY p.person_id")
-	postsreq.WriteString(" ORDER BY p.person_email " + p.CP.Order)
+	postsreq.WriteString(" ORDER BY p.person_email " + p.Order)
 
 	// limit
-	if p.CP.Limit != constants.MaxUint64 {
+	if p.Limit != constants.MaxUint64 {
 		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
 	}
 	log.Debug(presreq.String() + comreq.String() + postsreq.String())
@@ -72,11 +72,11 @@ func (db *SQLiteDataStore) GetPeople(p GetPeopleParameters) ([]Person, int, erro
 	// building argument map
 	m := map[string]interface{}{
 		"entityid": p.EntityID,
-		"search":   p.CP.Search,
-		"personid": p.CP.LoggedPersonID,
-		"order":    p.CP.Order,
-		"limit":    p.CP.Limit,
-		"offset":   p.CP.Offset}
+		"search":   p.Search,
+		"personid": p.LoggedPersonID,
+		"order":    p.Order,
+		"limit":    p.Limit,
+		"offset":   p.Offset}
 
 	// select
 	if db.err = snstmt.Select(&people, m); db.err != nil {

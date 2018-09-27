@@ -29,14 +29,14 @@ block content
                 input#product_id(type='hidden', name='product_id', value='')
 
                 .form-group.row
-                    | {{$label := "specificity"}} {{$name := "product_specificity"}}
-                    +inputtext
+                    | {{$label := "name"}} {{$name := "name"}}
+                    +select
                 .form-group.row
                     | {{$label := "cas number"}} {{$name := "casnumber"}}
                     +select
                 .form-group.row
-                    | {{$label := "name"}} {{$name := "name"}}
-                    +select
+                    | {{$label := "specificity"}} {{$name := "product_specificity"}}
+                    +inputtext
                 .form-group.row
                     | {{$label := "symbol(s)"}} {{$name := "symbols"}}
                     +selectmultiple
@@ -73,21 +73,9 @@ block contentjs
                 ignore: "",
                 errorClass: "alert alert-danger",
                 rules: {
-                    //- name: {
-                    //-     required: true,
-                    //-     remote: {
-                    //-         url: "",
-                    //-         type: "post",
-                    //-         beforeSend: function(jqXhr, settings) {
-                    //-             settings.url = "/validate/product/" + $("form#product-update input#product_id").val() + "/name/";
-                    //-         },
-                    //-         data: {
-                    //-             name: function() {
-                    //-                 return $('select#name').select2('data')[0].text;
-                    //-             }
-                    //-         },
-                    //-     },
-                    //- },
+                    name: {
+                        required: true,
+                    },
                     casnumber: {
                         required: true,
                         remote: {
@@ -99,7 +87,10 @@ block contentjs
                             data: {
                                 casnumber: function() {
                                     return $('select#casnumber').select2('data')[0].text;
-                                }
+                                },
+                                product_specificity:  function() {
+                                    return $('#product_specificity').val();
+                                },
                             },
                         },
                     },
