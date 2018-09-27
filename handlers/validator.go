@@ -28,7 +28,7 @@ func (env *Env) ValidatePersonEmailHandler(w http.ResponseWriter, r *http.Reques
 
 	// init db request parameters
 	// FIXME: handle errors
-	cp, _ := models.NewSelectParametersFromRequest(r)
+	cp, _ := models.Newdbselectparam(r)
 	cp.LoggedPersonID = c.PersonID
 
 	// converting the id
@@ -104,7 +104,7 @@ func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request
 
 	// init db request parameters
 	// FIXME: handle errors
-	cp, _ := models.NewSelectParametersFromRequest(r)
+	cp, _ := models.Newdbselectparam(r)
 	cp.LoggedPersonID = c.PersonID
 
 	// converting the id
@@ -163,16 +163,19 @@ func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request
 	return nil
 }
 
-// ValidateProductNameHandler checks that a product with the name does not already exist
+// ValidateProductNameHandler checks that the product name is valid
+// FIXME: not used yet
 func (env *Env) ValidateProductNameHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	resp := "bad name"
+	resp := "true"
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp)
 	return nil
 }
 
-// ValidateProductCasNumberHandler checks that a product with the cas number does not already exist
+// ValidateProductCasNumberHandler checks that:
+// - the cas number is valid
+// - a product with the cas number and specificity does not already exist
 func (env *Env) ValidateProductCasNumberHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	var (
 		err  error
@@ -194,6 +197,8 @@ func (env *Env) ValidateProductCasNumberHandler(w http.ResponseWriter, r *http.R
 	} else {
 		resp = "invalid cas number"
 	}
+
+	// TODO: check pair cas/specificity
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)

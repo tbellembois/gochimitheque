@@ -14,7 +14,7 @@ import (
 
 // GetStoreLocations returns the store locations matching the search criteria
 // order, offset and limit are passed to the sql request
-func (db *SQLiteDataStore) GetStoreLocations(p GetStoreLocationsParameters) ([]StoreLocation, int, error) {
+func (db *SQLiteDataStore) GetStoreLocations(p dbselectparamStoreLocation) ([]StoreLocation, int, error) {
 	var (
 		storelocations                     []StoreLocation
 		count                              int
@@ -22,7 +22,7 @@ func (db *SQLiteDataStore) GetStoreLocations(p GetStoreLocationsParameters) ([]S
 		cnstmt                             *sqlx.NamedStmt
 		snstmt                             *sqlx.NamedStmt
 	)
-	log.WithFields(log.Fields{"search": p.CP.Search, "order": p.CP.Order, "offset": p.CP.Offset, "limit": p.CP.Limit}).Debug("GetStoreLocations")
+	log.WithFields(log.Fields{"search": p.Search, "order": p.Order, "offset": p.Offset, "limit": p.Limit}).Debug("GetStoreLocations")
 
 	precreq.WriteString(" SELECT count(DISTINCT s.storelocation_id)")
 	presreq.WriteString(` SELECT s.storelocation_id, s.storelocation_name, 
@@ -44,10 +44,10 @@ func (db *SQLiteDataStore) GetStoreLocations(p GetStoreLocationsParameters) ([]S
 		comreq.WriteString(" AND s.entity = :entityid")
 	}
 	postsreq.WriteString(" GROUP BY s.storelocation_id")
-	postsreq.WriteString(" ORDER BY s.storelocation_name " + p.CP.Order)
+	postsreq.WriteString(" ORDER BY s.storelocation_name " + p.Order)
 
 	// limit
-	if p.CP.Limit != constants.MaxUint64 {
+	if p.Limit != constants.MaxUint64 {
 		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
 	}
 
@@ -61,12 +61,12 @@ func (db *SQLiteDataStore) GetStoreLocations(p GetStoreLocationsParameters) ([]S
 	log.Debug(presreq.String() + comreq.String() + postsreq.String())
 	// building argument map
 	m := map[string]interface{}{
-		"search":   p.CP.Search,
-		"personid": p.CP.LoggedPersonID,
+		"search":   p.Search,
+		"personid": p.LoggedPersonID,
 		"entityid": p.EntityID,
-		"order":    p.CP.Order,
-		"limit":    p.CP.Limit,
-		"offset":   p.CP.Offset}
+		"order":    p.Order,
+		"limit":    p.Limit,
+		"offset":   p.Offset}
 
 	// select
 	if db.err = snstmt.Select(&storelocations, m); db.err != nil {

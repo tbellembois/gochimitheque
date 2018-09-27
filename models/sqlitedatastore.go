@@ -169,17 +169,6 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 			}
 		}
 
-		// for i := 1; i <= 100; i++ {
-		// 	n := fmt.Sprintf("name %d", i)
-		// 	if _, db.err = db.Exec(`INSERT INTO name ("name_label") VALUES ("` + n + `");`); db.err != nil {
-		// 		return db.err
-		// 	}
-		// 	c := fmt.Sprintf("%d-%d-%d", i, i, i)
-		// 	if _, db.err = db.Exec(`INSERT INTO casnumber ("casnumber_label") VALUES ("` + c + `");`); db.err != nil {
-		// 		return db.err
-		// 	}
-		// }
-
 		// inserting sample products
 		// attention: values are wrongs, just for devel purposes
 		for i := 1; i <= 100; i++ {
