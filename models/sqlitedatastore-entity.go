@@ -41,7 +41,7 @@ func (db *SQLiteDataStore) GetEntities(p helpers.DbselectparamEntity) ([]Entity,
 	`)
 	comreq.WriteString(" WHERE e.entity_name LIKE :search")
 	postsreq.WriteString(" GROUP BY e.entity_id")
-	postsreq.WriteString(" ORDER BY e.entity_name " + p.GetOrder())
+	postsreq.WriteString(" ORDER BY " + p.GetOrderBy() + " " + p.GetOrder())
 
 	// limit
 	if p.GetLimit() != constants.MaxUint64 {

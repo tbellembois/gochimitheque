@@ -55,7 +55,7 @@ func (db *SQLiteDataStore) GetPeople(p helpers.DbselectparamPerson) ([]Person, i
 	}
 	comreq.WriteString(" WHERE p.person_email LIKE :search")
 	postsreq.WriteString(" GROUP BY p.person_id")
-	postsreq.WriteString(" ORDER BY p.person_email " + p.GetOrder())
+	postsreq.WriteString(" ORDER BY " + p.GetOrderBy() + " " + p.GetOrder())
 
 	// limit
 	if p.GetLimit() != constants.MaxUint64 {

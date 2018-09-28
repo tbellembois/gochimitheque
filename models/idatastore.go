@@ -20,6 +20,9 @@ type Datastore interface {
 	CreateProduct(p Product) (error, int)
 	UpdateProduct(p Product) error
 
+	// storages
+	GetStorages(helpers.DbselectparamStorage) ([]Storage, int, error)
+
 	// store locations
 	GetStoreLocations(helpers.DbselectparamStoreLocation) ([]StoreLocation, int, error)
 	GetStoreLocation(id int) (StoreLocation, error)

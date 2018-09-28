@@ -3,6 +3,7 @@ package models
 import (
 	"github.com/tbellembois/gochimitheque/helpers"
 	"net/http"
+	"time"
 )
 
 // AppHandlerFunc is an HandlerFunc returning an AppError
@@ -30,6 +31,16 @@ type Person struct {
 	PersonPassword string       `db:"person_password" json:"person_password" schema:"person_password"`
 	Permissions    []Permission `db:"-" schema:"permissions"`
 	Entities       []Entity     `db:"-" schema:"entities"`
+}
+
+// Storage is a product storage in a store location
+type Storage struct {
+	StorageID     int       `db:"storage_id" json:"storage_id" schema:"storage_id"`
+	CreationDate  time.Time `db:"storage_creationdate" json:"storage_creationdate" schema:"storage_creationdate"`
+	Comment       string    `db:"storage_comment" json:"storage_comment" schema:"storage_comment"`
+	Person        `db:"person" json:"person" schema:"person"`
+	Product       `db:"product" json:"product" schema:"product"`
+	StoreLocation `db:"storelocation" json:"storelocation" schema:"storelocation"`
 }
 
 // Permission represent who is able to do what on something

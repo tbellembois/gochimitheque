@@ -204,7 +204,7 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 
 	// post select request
 	postsreq.WriteString(" GROUP BY product.product_id")
-	postsreq.WriteString(" ORDER BY name.name_label " + p.GetOrder())
+	postsreq.WriteString(" ORDER BY " + p.GetOrderBy() + " " + p.GetOrder())
 
 	// limit
 	if p.GetLimit() != constants.MaxUint64 {

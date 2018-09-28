@@ -1,0 +1,106 @@
+extends static/templates/base.jade
+
+block content
+
+    .row
+        .col-sm-12
+            button.btn.btn-primary(type="button" onclick="location.href='/v/products';") product view
+
+    #accordion
+        #list-collapse.collapse.show(data-parent='#accordion')
+            header.row
+                .col-sm-12
+                    table#table(data-toggle='table', 
+                                data-striped='true', 
+                                data-search='true', 
+                                data-side-pagination='server', 
+                                data-page-list="[10, 20, 50, 100]",
+                                data-pagination='true', 
+                                data-ajax='getData', 
+                                data-query-params='queryParams',
+                                data-sort-name='name.name_label',
+                                data-detail-view="true",
+                                data-detail-formatter="detailFormatter")
+                        thead
+                            tr
+                                th(data-field='storage_id') ID
+                                th(data-field='storage_creationdate' data-sortable='true') creation date
+                                th(data-field='product.name.name_label' data-sortable='false') product name
+                                th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') actions
+
+        #edit-collapse.collapse(data-parent='#accordion')
+            form#storage-update
+                input#index(type='hidden', name='index', value='')
+                input#product_id(type='hidden', name='storage_id', value='')
+
+            button#save.btn.btn-primary(type='button', onclick='saveStorage()') save changes
+            button.btn.btn-secondary(type='button', onclick='closeEdit();') close
+
+block contentjs
+    script.
+        //
+        // close buttons actions
+        //
+        function closeEdit() { $("#list-collapse").collapse("show"); $("#edit-collapse").collapse("hide"); }
+        
+        var URLValues = new Map();
+
+        // initializing query parameters map
+        {{ range $key, $value := .URLValues }}
+            URLValues.set({{ $key }}, {{ $value }});
+        {{ end }}
+        
+        $( document ).ready(function() {           
+
+            // populating search input if needed
+            if (URLValues.has("search")) {
+                $('#table').bootstrapTable('resetSearch', URLValues.get("search")[0]);
+            }
+
+        });
+
+        //
+        // table data loading
+        //
+        function queryParams(params) {
+            if (URLValues.has("entityid")) {
+                params["entityid"] = URLValues.get("entityid")[0];
+            }
+            if (URLValues.has("productid")) {
+                params["productid"] = URLValues.get("productid")[0];
+            }
+            return params;
+        }
+        function getData(params) {
+            $.ajax({
+                url: "/storages",
+                method: "GET",
+                dataType: "JSON",
+                data: params.data,
+            }).done(function(data, textStatus, jqXHR) {
+                params.success({
+                    rows: data.rows,
+                    total: data.total,
+                });
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                params.error(jqXHR.statusText);                
+                handleHTTPError(jqXHR.statusText, jqXHR.status);
+            });
+        }
+
+        //
+        // table detail formatter
+        //
+        //- function detailFormatter(index, row) {
+        //-     var html = [];
+        //-     console.log(row);
+        //-     html.push("<p><b>name</b>: " + row["name"]["name_label"] + "</p>")
+        //-     html.push("<p><b>specificity</b>: " + row["product_specificity"] + "</p>")
+        //-     html.push("<p><b>cas</b>: " + row["casnumber"]["casnumber_label"] + "</p>")
+        //-     html.push("<p>")
+        //-     $.each(row["symbols"], function (key, value) {
+        //-         html.push("<img src='data:" + value["symbol_image"] + "' alt='" + value["symbol_label"] + "' title='" + value["symbol_label"] + "'/>");
+        //-     });
+        //-     html.push("</p>")
+        //-     return html.join('');
+        //- }
