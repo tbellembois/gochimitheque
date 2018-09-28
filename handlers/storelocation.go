@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	log "github.com/sirupsen/logrus"
+	"github.com/tbellembois/gochimitheque/helpers"
 	"github.com/tbellembois/gochimitheque/models"
 )
 
@@ -16,12 +17,12 @@ import (
 */
 
 // VGetStoreLocationsHandler handles the store location list page
-func (env *Env) VGetStoreLocationsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) VGetStoreLocationsHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 
-	c := containerFromRequestContext(r)
+	c := helpers.ContainerFromRequestContext(r)
 
 	if e := env.Templates["storelocationindex"].Execute(w, c); e != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   e,
 			Code:    http.StatusInternalServerError,
 			Message: "error executing template base",
@@ -31,12 +32,12 @@ func (env *Env) VGetStoreLocationsHandler(w http.ResponseWriter, r *http.Request
 }
 
 // VCreateStoreLocationHandler handles the store location creation page
-func (env *Env) VCreateStoreLocationHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) VCreateStoreLocationHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 
-	c := containerFromRequestContext(r)
+	c := helpers.ContainerFromRequestContext(r)
 
 	if e := env.Templates["storelocationcreate"].Execute(w, c); e != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   e,
 			Code:    http.StatusInternalServerError,
 			Message: "error executing template base",
@@ -50,37 +51,42 @@ func (env *Env) VCreateStoreLocationHandler(w http.ResponseWriter, r *http.Reque
 */
 
 // GetStoreLocationsHandler returns a json list of the store locations matching the search criteria
-func (env *Env) GetStoreLocationsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) GetStoreLocationsHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	log.Debug("GetStoreLocationsHandler")
 
 	var (
-		entityid int
 		err      error
+		aerr     *helpers.AppError
+		dspsl    helpers.DbselectparamStoreLocation
+		entityid int
 	)
 
 	// retrieving the logged user id from request context
-	c := containerFromRequestContext(r)
+	c := helpers.ContainerFromRequestContext(r)
 
 	// init db request parameters
-	// FIXME: handle errors
-	cp, _ := models.Newdbselectparam(r)
-	cp.LoggedPersonID = c.PersonID
+	if dspsl, aerr = helpers.NewdbselectparamStoreLocation(r); err != nil {
+		return aerr
+	}
+	dspsl.SetLoggedPersonID(c.PersonID)
 
 	if e, ok := r.URL.Query()["entityid"]; !ok {
 		entityid = -1
 	} else {
 		if entityid, err = strconv.Atoi(e[0]); err != nil {
-			return &models.AppError{
+			return &helpers.AppError{
 				Error:   err,
 				Code:    http.StatusInternalServerError,
 				Message: "entityid atoi conversion",
 			}
 		}
 	}
+	dspsl.SetEntity(entityid)
+	log.Debug(dspsl)
 
-	storelocations, count, err := env.DB.GetStoreLocations(models.GetStoreLocationsParameters{CP: cp, EntityID: entityid})
+	storelocations, count, err := env.DB.GetStoreLocations(dspsl)
 	if err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Code:    http.StatusInternalServerError,
 			Message: "error getting the store locations",
@@ -99,7 +105,7 @@ func (env *Env) GetStoreLocationsHandler(w http.ResponseWriter, r *http.Request)
 }
 
 // GetStoreLocationHandler returns a json of the store location with the requested id
-func (env *Env) GetStoreLocationHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) GetStoreLocationHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	vars := mux.Vars(r)
 	var (
 		id  int
@@ -107,7 +113,7 @@ func (env *Env) GetStoreLocationHandler(w http.ResponseWriter, r *http.Request) 
 	)
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Message: "id atoi conversion",
 			Code:    http.StatusInternalServerError}
@@ -115,7 +121,7 @@ func (env *Env) GetStoreLocationHandler(w http.ResponseWriter, r *http.Request) 
 
 	storelocation, err := env.DB.GetStoreLocation(id)
 	if err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Code:    http.StatusInternalServerError,
 			Message: "error getting the store location",
@@ -130,13 +136,13 @@ func (env *Env) GetStoreLocationHandler(w http.ResponseWriter, r *http.Request) 
 }
 
 // CreateStoreLocationHandler creates the store location from the request form
-func (env *Env) CreateStoreLocationHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) CreateStoreLocationHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	log.Debug("CreateStoreLocationHandler")
 	var (
 		sl models.StoreLocation
 	)
 	if err := r.ParseForm(); err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Message: "form parsing error",
 			Code:    http.StatusBadRequest}
@@ -144,7 +150,7 @@ func (env *Env) CreateStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 
 	var decoder = schema.NewDecoder()
 	if err := decoder.Decode(&sl, r.PostForm); err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Message: "form decoding error",
 			Code:    http.StatusBadRequest}
@@ -152,7 +158,7 @@ func (env *Env) CreateStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 	log.WithFields(log.Fields{"sl": sl}).Debug("CreateStoreLocationHandler")
 
 	if err, _ := env.DB.CreateStoreLocation(sl); err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Message: "create store location error",
 			Code:    http.StatusInternalServerError}
@@ -165,7 +171,7 @@ func (env *Env) CreateStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 }
 
 // UpdateStoreLocationHandler updates the store location from the request form
-func (env *Env) UpdateStoreLocationHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) UpdateStoreLocationHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	vars := mux.Vars(r)
 	var (
 		id  int
@@ -173,14 +179,14 @@ func (env *Env) UpdateStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 		sl  models.StoreLocation
 	)
 	if err := r.ParseForm(); err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Message: "form parsing error",
 			Code:    http.StatusBadRequest}
 	}
 	var decoder = schema.NewDecoder()
 	if err := decoder.Decode(&sl, r.PostForm); err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Message: "form decoding error",
 			Code:    http.StatusBadRequest}
@@ -188,7 +194,7 @@ func (env *Env) UpdateStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 	log.WithFields(log.Fields{"sl": sl}).Debug("UpdateStoreLocationHandler")
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Message: "id atoi conversion",
 			Code:    http.StatusInternalServerError}
@@ -200,7 +206,7 @@ func (env *Env) UpdateStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 	log.WithFields(log.Fields{"updatedsl": updatedsl}).Debug("UpdateStoreLocationHandler")
 
 	if err := env.DB.UpdateStoreLocation(updatedsl); err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Message: "update store location error",
 			Code:    http.StatusInternalServerError}
@@ -213,7 +219,7 @@ func (env *Env) UpdateStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 }
 
 // DeleteStoreLocationHandler deletes the store location with the requested id
-func (env *Env) DeleteStoreLocationHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) DeleteStoreLocationHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	vars := mux.Vars(r)
 	var (
 		id  int
@@ -221,7 +227,7 @@ func (env *Env) DeleteStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 	)
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Message: "id atoi conversion",
 			Code:    http.StatusInternalServerError}

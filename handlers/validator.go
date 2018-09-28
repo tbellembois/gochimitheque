@@ -7,33 +7,37 @@ import (
 
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
+	"github.com/tbellembois/gochimitheque/helpers"
 	"github.com/tbellembois/gochimitheque/models"
 	"github.com/tbellembois/gochimitheque/utils"
 )
 
 // ValidatePersonEmailHandler checks that the person email does not already exist
 // if an id is given is the request the validator ignore the email of the person with this id
-func (env *Env) ValidatePersonEmailHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) ValidatePersonEmailHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	vars := mux.Vars(r)
 	var (
 		err       error
+		aerr      *helpers.AppError
 		res       bool
 		resp      string
 		person    models.Person
 		person_id int
+		dspp      helpers.DbselectparamPerson
 	)
 
 	// retrieving the logged user id from request context
-	c := containerFromRequestContext(r)
+	c := helpers.ContainerFromRequestContext(r)
 
 	// init db request parameters
-	// FIXME: handle errors
-	cp, _ := models.Newdbselectparam(r)
-	cp.LoggedPersonID = c.PersonID
+	if dspp, aerr = helpers.NewdbselectparamPerson(r); err != nil {
+		return aerr
+	}
+	dspp.SetLoggedPersonID(c.PersonID)
 
 	// converting the id
 	if person_id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Message: "id atoi conversion",
 			Code:    http.StatusInternalServerError}
@@ -41,17 +45,17 @@ func (env *Env) ValidatePersonEmailHandler(w http.ResponseWriter, r *http.Reques
 
 	// getting the email
 	if err = r.ParseForm(); err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Message: "form parsing",
 			Code:    http.StatusInternalServerError}
 	}
-	cp.Search = r.Form.Get("person_email")
+	dspp.SetSearch(r.Form.Get("person_email"))
 
 	// getting the people matching the email
-	people, count, err := env.DB.GetPeople(models.GetPeopleParameters{CP: cp, EntityID: -1})
+	people, count, err := env.DB.GetPeople(dspp)
 	if err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Code:    http.StatusInternalServerError,
 			Message: "error getting the people",
@@ -65,7 +69,7 @@ func (env *Env) ValidatePersonEmailHandler(w http.ResponseWriter, r *http.Reques
 	} else {
 		// getting the person
 		if person, err = env.DB.GetPerson(person_id); err != nil {
-			return &models.AppError{
+			return &helpers.AppError{
 				Error:   err,
 				Code:    http.StatusBadRequest,
 				Message: "error looking for person by email",
@@ -89,27 +93,30 @@ func (env *Env) ValidatePersonEmailHandler(w http.ResponseWriter, r *http.Reques
 
 // ValidateEntityNameHandler checks that the entity name does not already exist
 // if an id != -1 is given is the request the validator ignore the name of the entity with this id
-func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	vars := mux.Vars(r)
 	var (
 		err       error
+		aerr      *helpers.AppError
 		res       bool
 		resp      string
 		entity    models.Entity
 		entity_id int
+		dspe      helpers.DbselectparamEntity
 	)
 
 	// retrieving the logged user id from request context
-	c := containerFromRequestContext(r)
+	c := helpers.ContainerFromRequestContext(r)
 
 	// init db request parameters
-	// FIXME: handle errors
-	cp, _ := models.Newdbselectparam(r)
-	cp.LoggedPersonID = c.PersonID
+	if dspe, aerr = helpers.NewdbselectparamEntity(r); err != nil {
+		return aerr
+	}
+	dspe.SetLoggedPersonID(c.PersonID)
 
 	// converting the id
 	if entity_id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Message: "id atoi conversion",
 			Code:    http.StatusInternalServerError}
@@ -117,17 +124,17 @@ func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request
 
 	// getting the name
 	if err = r.ParseForm(); err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Message: "form parsing",
 			Code:    http.StatusInternalServerError}
 	}
-	cp.Search = r.Form.Get("entity_name")
+	dspe.SetSearch(r.Form.Get("entity_name"))
 
 	// getting the entities matching the name
-	entities, count, err := env.DB.GetEntities(models.GetEntitiesParameters{CP: cp})
+	entities, count, err := env.DB.GetEntities(dspe)
 	if err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Code:    http.StatusInternalServerError,
 			Message: "error getting the entities",
@@ -141,7 +148,7 @@ func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request
 	} else {
 		// getting the entity
 		if entity, err = env.DB.GetEntity(entity_id); err != nil {
-			return &models.AppError{
+			return &helpers.AppError{
 				Error:   err,
 				Code:    http.StatusBadRequest,
 				Message: "error looking for entity by id",
@@ -165,7 +172,7 @@ func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request
 
 // ValidateProductNameHandler checks that the product name is valid
 // FIXME: not used yet
-func (env *Env) ValidateProductNameHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) ValidateProductNameHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	resp := "true"
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
@@ -176,7 +183,7 @@ func (env *Env) ValidateProductNameHandler(w http.ResponseWriter, r *http.Reques
 // ValidateProductCasNumberHandler checks that:
 // - the cas number is valid
 // - a product with the cas number and specificity does not already exist
-func (env *Env) ValidateProductCasNumberHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) ValidateProductCasNumberHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	var (
 		err  error
 		resp string
@@ -184,7 +191,7 @@ func (env *Env) ValidateProductCasNumberHandler(w http.ResponseWriter, r *http.R
 
 	// getting the cas number
 	if err = r.ParseForm(); err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Message: "form parsing",
 			Code:    http.StatusInternalServerError}

@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"strings"
 
 	"database/sql"
@@ -11,10 +10,11 @@ import (
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/constants"
+	"github.com/tbellembois/gochimitheque/helpers"
 )
 
 // GetProductsCasNumbers return the cas numbers matching the search criteria
-func (db *SQLiteDataStore) GetProductsCasNumbers(p dbselectparam) ([]CasNumber, int, error) {
+func (db *SQLiteDataStore) GetProductsCasNumbers(p helpers.Dbselectparam) ([]CasNumber, int, error) {
 	var (
 		casnumbers                         []CasNumber
 		count                              int
@@ -28,10 +28,10 @@ func (db *SQLiteDataStore) GetProductsCasNumbers(p dbselectparam) ([]CasNumber, 
 
 	comreq.WriteString(" FROM casnumber")
 	comreq.WriteString(" WHERE casnumber_label LIKE :search")
-	postsreq.WriteString(" ORDER BY casnumber_label  " + p.Order)
+	postsreq.WriteString(" ORDER BY casnumber_label  " + p.GetOrder())
 
 	// limit
-	if p.Limit != constants.MaxUint64 {
+	if p.GetLimit() != constants.MaxUint64 {
 		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
 	}
 
@@ -45,10 +45,11 @@ func (db *SQLiteDataStore) GetProductsCasNumbers(p dbselectparam) ([]CasNumber, 
 
 	// building argument map
 	m := map[string]interface{}{
-		"search": fmt.Sprint("%", p.Search, "%"),
-		"order":  p.Order,
-		"limit":  p.Limit,
-		"offset": p.Offset}
+		"search": p.GetSearch(),
+		"order":  p.GetOrder(),
+		"limit":  p.GetLimit(),
+		"offset": p.GetOffset(),
+	}
 
 	// select
 	if db.err = snstmt.Select(&casnumbers, m); db.err != nil {
@@ -64,7 +65,7 @@ func (db *SQLiteDataStore) GetProductsCasNumbers(p dbselectparam) ([]CasNumber, 
 }
 
 // GetProductsNames return the names matching the search criteria
-func (db *SQLiteDataStore) GetProductsNames(p dbselectparam) ([]Name, int, error) {
+func (db *SQLiteDataStore) GetProductsNames(p helpers.Dbselectparam) ([]Name, int, error) {
 	var (
 		names                              []Name
 		count                              int
@@ -78,10 +79,10 @@ func (db *SQLiteDataStore) GetProductsNames(p dbselectparam) ([]Name, int, error
 
 	comreq.WriteString(" FROM name")
 	comreq.WriteString(" WHERE name_label LIKE :search")
-	postsreq.WriteString(" ORDER BY name_label  " + p.Order)
+	postsreq.WriteString(" ORDER BY name_label  " + p.GetOrder())
 
 	// limit
-	if p.Limit != constants.MaxUint64 {
+	if p.GetLimit() != constants.MaxUint64 {
 		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
 	}
 
@@ -95,10 +96,11 @@ func (db *SQLiteDataStore) GetProductsNames(p dbselectparam) ([]Name, int, error
 
 	// building argument map
 	m := map[string]interface{}{
-		"search": fmt.Sprint("%", p.Search, "%"),
-		"order":  p.Order,
-		"limit":  p.Limit,
-		"offset": p.Offset}
+		"search": p.GetSearch(),
+		"order":  p.GetOrder(),
+		"limit":  p.GetLimit(),
+		"offset": p.GetOffset(),
+	}
 
 	// select
 	if db.err = snstmt.Select(&names, m); db.err != nil {
@@ -114,7 +116,7 @@ func (db *SQLiteDataStore) GetProductsNames(p dbselectparam) ([]Name, int, error
 }
 
 // GetProductsSymbols return the symbols matching the search criteria
-func (db *SQLiteDataStore) GetProductsSymbols(p dbselectparam) ([]Symbol, int, error) {
+func (db *SQLiteDataStore) GetProductsSymbols(p helpers.Dbselectparam) ([]Symbol, int, error) {
 	var (
 		symbols                            []Symbol
 		count                              int
@@ -128,10 +130,10 @@ func (db *SQLiteDataStore) GetProductsSymbols(p dbselectparam) ([]Symbol, int, e
 
 	comreq.WriteString(" FROM symbol")
 	comreq.WriteString(" WHERE symbol_label LIKE :search")
-	postsreq.WriteString(" ORDER BY symbol_label  " + p.Order)
+	postsreq.WriteString(" ORDER BY symbol_label  " + p.GetOrder())
 
 	// limit
-	if p.Limit != constants.MaxUint64 {
+	if p.GetLimit() != constants.MaxUint64 {
 		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
 	}
 
@@ -145,10 +147,11 @@ func (db *SQLiteDataStore) GetProductsSymbols(p dbselectparam) ([]Symbol, int, e
 
 	// building argument map
 	m := map[string]interface{}{
-		"search": fmt.Sprint("%", p.Search, "%"),
-		"order":  p.Order,
-		"limit":  p.Limit,
-		"offset": p.Offset}
+		"search": p.GetSearch(),
+		"order":  p.GetOrder(),
+		"limit":  p.GetLimit(),
+		"offset": p.GetOffset(),
+	}
 
 	// select
 	if db.err = snstmt.Select(&symbols, m); db.err != nil {
@@ -164,7 +167,7 @@ func (db *SQLiteDataStore) GetProductsSymbols(p dbselectparam) ([]Symbol, int, e
 }
 
 // GetProducts return the products matching the search criteria
-func (db *SQLiteDataStore) GetProducts(p dbselectparamProduct) ([]Product, int, error) {
+func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Product, int, error) {
 	var (
 		products                                []Product
 		count                                   int
@@ -201,10 +204,10 @@ func (db *SQLiteDataStore) GetProducts(p dbselectparamProduct) ([]Product, int, 
 
 	// post select request
 	postsreq.WriteString(" GROUP BY product.product_id")
-	postsreq.WriteString(" ORDER BY name.name_label " + p.Order)
+	postsreq.WriteString(" ORDER BY name.name_label " + p.GetOrder())
 
 	// limit
-	if p.Limit != constants.MaxUint64 {
+	if p.GetLimit() != constants.MaxUint64 {
 		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
 	}
 
@@ -218,12 +221,13 @@ func (db *SQLiteDataStore) GetProducts(p dbselectparamProduct) ([]Product, int, 
 
 	// building argument map
 	m := map[string]interface{}{
-		"search":   p.Search,
-		"personid": p.LoggedPersonID,
-		"entityid": p.Entity,
-		"order":    p.Order,
-		"limit":    p.Limit,
-		"offset":   p.Offset}
+		"search":   p.GetSearch(),
+		"personid": p.GetLoggedPersonID(),
+		"order":    p.GetOrder(),
+		"limit":    p.GetLimit(),
+		"offset":   p.GetOffset(),
+		"entityid": p.GetEntity(),
+	}
 
 	// select
 	if db.err = snstmt.Select(&products, m); db.err != nil {

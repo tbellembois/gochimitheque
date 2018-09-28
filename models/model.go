@@ -1,26 +1,12 @@
 package models
 
 import (
+	"github.com/tbellembois/gochimitheque/helpers"
 	"net/http"
-	"net/url"
 )
 
 // AppHandlerFunc is an HandlerFunc returning an AppError
-type AppHandlerFunc func(http.ResponseWriter, *http.Request) *AppError
-
-// AppError is the error type returned by the custom handlers
-type AppError struct {
-	Error   error
-	Message string
-	Code    int
-}
-
-// ViewContainer is a struct passed to the view
-type ViewContainer struct {
-	PersonEmail string
-	PersonID    int
-	URLValues   url.Values
-}
+type AppHandlerFunc func(http.ResponseWriter, *http.Request) *helpers.AppError
 
 // StoreLocation is where products are stored in entities
 type StoreLocation struct {

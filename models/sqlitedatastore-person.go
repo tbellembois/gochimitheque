@@ -9,11 +9,12 @@ import (
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/constants"
+	"github.com/tbellembois/gochimitheque/helpers"
 )
 
 // GetPeople returns the people matching the search criteria
 // order, offset and limit are passed to the sql request
-func (db *SQLiteDataStore) GetPeople(p dbselectparamPerson) ([]Person, int, error) {
+func (db *SQLiteDataStore) GetPeople(p helpers.DbselectparamPerson) ([]Person, int, error) {
 	var (
 		people                             []Person
 		isadmin                            bool
@@ -22,10 +23,10 @@ func (db *SQLiteDataStore) GetPeople(p dbselectparamPerson) ([]Person, int, erro
 		cnstmt                             *sqlx.NamedStmt
 		snstmt                             *sqlx.NamedStmt
 	)
-	log.WithFields(log.Fields{"entityid": p.EntityID, "search": p.Search, "order": p.Order, "offset": p.Offset, "limit": p.Limit}).Debug("GetPeople")
+	log.WithFields(log.Fields{"p": p}).Debug("GetPeople")
 
 	// is the logged user an admin?
-	if isadmin, db.err = db.IsPersonAdmin(p.LoggedPersonID); db.err != nil {
+	if isadmin, db.err = db.IsPersonAdmin(p.GetLoggedPersonID()); db.err != nil {
 		return nil, 0, db.err
 	}
 
@@ -36,7 +37,7 @@ func (db *SQLiteDataStore) GetPeople(p dbselectparamPerson) ([]Person, int, erro
 	presreq.WriteString("SELECT p.person_id, p.person_email")
 	comreq.WriteString(" FROM person AS p, entity AS e")
 	comreq.WriteString(" JOIN personentities ON personentities.personentities_person_id = p.person_id")
-	if p.EntityID != -1 {
+	if p.GetEntity() != -1 {
 		comreq.WriteString(" JOIN entity ON personentities.personentities_entity_id = :entityid")
 	} else {
 		comreq.WriteString(" JOIN entity ON personentities.personentities_entity_id = e.entity_id")
@@ -54,10 +55,10 @@ func (db *SQLiteDataStore) GetPeople(p dbselectparamPerson) ([]Person, int, erro
 	}
 	comreq.WriteString(" WHERE p.person_email LIKE :search")
 	postsreq.WriteString(" GROUP BY p.person_id")
-	postsreq.WriteString(" ORDER BY p.person_email " + p.Order)
+	postsreq.WriteString(" ORDER BY p.person_email " + p.GetOrder())
 
 	// limit
-	if p.Limit != constants.MaxUint64 {
+	if p.GetLimit() != constants.MaxUint64 {
 		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
 	}
 	log.Debug(presreq.String() + comreq.String() + postsreq.String())
@@ -71,12 +72,13 @@ func (db *SQLiteDataStore) GetPeople(p dbselectparamPerson) ([]Person, int, erro
 
 	// building argument map
 	m := map[string]interface{}{
-		"entityid": p.EntityID,
-		"search":   p.Search,
-		"personid": p.LoggedPersonID,
-		"order":    p.Order,
-		"limit":    p.Limit,
-		"offset":   p.Offset}
+		"entityid": p.GetEntity(),
+		"search":   p.GetSearch(),
+		"personid": p.GetLoggedPersonID(),
+		"order":    p.GetOrder(),
+		"limit":    p.GetLimit(),
+		"offset":   p.GetOffset(),
+	}
 
 	// select
 	if db.err = snstmt.Select(&people, m); db.err != nil {

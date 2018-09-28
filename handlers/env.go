@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"net/http"
 
+	"github.com/tbellembois/gochimitheque/helpers"
 	"github.com/tbellembois/gochimitheque/models"
 )
 
@@ -15,25 +16,9 @@ type Env struct {
 }
 
 // FakeHandler returns true
-func (env *Env) FakeHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) FakeHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode("true")
 	return nil
-}
-
-// containerFromRequestContext returns a ViewContainer from the request context
-// initialized in the AuthenticateMiddleware and AuthorizeMiddleware middlewares
-func containerFromRequestContext(r *http.Request) models.ViewContainer {
-	// getting the request context
-	var (
-		container models.ViewContainer
-	)
-	ctx := r.Context()
-	ctxcontainer := ctx.Value("container")
-	if ctxcontainer != nil {
-		container = ctxcontainer.(models.ViewContainer)
-	}
-	container.URLValues = r.URL.Query()
-	return container
 }

@@ -11,11 +11,12 @@ import (
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/constants"
+	"github.com/tbellembois/gochimitheque/helpers"
 )
 
 // GetEntities returns the entities matching the search criteria
 // order, offset and limit are passed to the sql request
-func (db *SQLiteDataStore) GetEntities(p dbselectparamEntity) ([]Entity, int, error) {
+func (db *SQLiteDataStore) GetEntities(p helpers.DbselectparamEntity) ([]Entity, int, error) {
 	var (
 		entities                                []Entity
 		count                                   int
@@ -23,8 +24,7 @@ func (db *SQLiteDataStore) GetEntities(p dbselectparamEntity) ([]Entity, int, er
 		cnstmt                                  *sqlx.NamedStmt
 		snstmt                                  *sqlx.NamedStmt
 	)
-	// TODO: setup p default values here or elsewhere
-	log.WithFields(log.Fields{"search": p.Search, "order": p.Order, "offset": p.Offset, "limit": p.Limit, "personid": p.LoggedPersonID}).Debug("GetEntities")
+	log.WithFields(log.Fields{"p": p}).Debug("GetEntities")
 
 	precreq.WriteString(" SELECT count(DISTINCT e.entity_id)")
 	presreq.WriteString(" SELECT e.entity_id, e.entity_name, e.entity_description")
@@ -41,10 +41,10 @@ func (db *SQLiteDataStore) GetEntities(p dbselectparamEntity) ([]Entity, int, er
 	`)
 	comreq.WriteString(" WHERE e.entity_name LIKE :search")
 	postsreq.WriteString(" GROUP BY e.entity_id")
-	postsreq.WriteString(" ORDER BY e.entity_name " + p.Order)
+	postsreq.WriteString(" ORDER BY e.entity_name " + p.GetOrder())
 
 	// limit
-	if p.Limit != constants.MaxUint64 {
+	if p.GetLimit() != constants.MaxUint64 {
 		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
 	}
 
@@ -58,11 +58,12 @@ func (db *SQLiteDataStore) GetEntities(p dbselectparamEntity) ([]Entity, int, er
 
 	// building argument map
 	m := map[string]interface{}{
-		"search":   p.Search,
-		"personid": p.LoggedPersonID,
-		"order":    p.Order,
-		"limit":    p.Limit,
-		"offset":   p.Offset}
+		"search":   p.GetSearch(),
+		"personid": p.GetLoggedPersonID(),
+		"order":    p.GetOrder(),
+		"limit":    p.GetLimit(),
+		"offset":   p.GetOffset(),
+	}
 
 	// select
 	if db.err = snstmt.Select(&entities, m); db.err != nil {
