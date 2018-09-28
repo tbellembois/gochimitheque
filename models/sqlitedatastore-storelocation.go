@@ -27,25 +27,25 @@ func (db *SQLiteDataStore) GetStoreLocations(p helpers.DbselectparamStoreLocatio
 
 	precreq.WriteString(" SELECT count(DISTINCT s.storelocation_id)")
 	presreq.WriteString(` SELECT s.storelocation_id, s.storelocation_name, 
-	e.entity_id AS "entity.entity_id", 
-	e.entity_name AS "entity.entity_name"`)
+	entity.entity_id AS "entity.entity_id", 
+	entity.entity_name AS "entity.entity_name"`)
 	comreq.WriteString(" FROM storelocation AS s")
-	comreq.WriteString(" JOIN entity AS e ON s.entity = e.entity_id")
+	comreq.WriteString(" JOIN entity ON s.entity = entity.entity_id")
 	comreq.WriteString(` JOIN permission AS perm ON
-	(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
+	(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = entity.entity_id) OR
 	(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
 	(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
-	(perm.person = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
+	(perm.person = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = entity.entity_id) OR
 	(perm.person = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
 	(perm.person = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
-	(perm.person = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
+	(perm.person = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = entity.entity_id)
 	`)
 	comreq.WriteString(" WHERE s.storelocation_name LIKE :search")
 	if p.GetEntity() != -1 {
 		comreq.WriteString(" AND s.entity = :entityid")
 	}
 	postsreq.WriteString(" GROUP BY s.storelocation_id")
-	postsreq.WriteString(" ORDER BY s.storelocation_name " + p.GetOrder())
+	postsreq.WriteString(" ORDER BY " + p.GetOrderBy() + " " + p.GetOrder())
 
 	// limit
 	if p.GetLimit() != constants.MaxUint64 {

@@ -8,6 +8,7 @@ import (
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
 	log "github.com/sirupsen/logrus"
 	"os"
+	"time"
 )
 
 const (
@@ -67,6 +68,16 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		storelocation_name string NOT NULL,
 		entity integer NOT NULL,
 		FOREIGN KEY(entity) references entity(entity_id));
+	CREATE TABLE IF NOT EXISTS storage (
+			storage_id integer PRIMARY KEY,
+			storage_creationdate datetime NOT NULL,
+			storage_comment string,
+			person integer NOT NULL,
+			product integer NOT NULL,
+			storelocation integer NOT NULL,
+			FOREIGN KEY(person) references person(person_id),
+			FOREIGN KEY(product) references product(product_id),
+			FOREIGN KEY(storelocation) references storelocation(storelocation_id));
 	CREATE TABLE IF NOT EXISTS permission (
 		permission_id integer PRIMARY KEY,
 		person integer NOT NULL,
@@ -246,6 +257,20 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		db.CreatePerson(p8)
 		db.CreatePerson(p9)
 		db.CreatePerson(p10)
+
+		// inserting sample storages
+		// attention: values are wrongs, just for devel purposes
+		for i := 1; i <= 500; i++ {
+			comment := fmt.Sprintf("(\"comment%d\", \"%d\", \"%d\")", i, i, i)
+			datetime := time.Now()
+			person := i%9 + 1
+			product := i%99 + 1
+			storelocation := i%5 + 1
+			log.Debug(fmt.Sprintf("comment: %s datetime: %d person: %d product: %d storelocation: %d", comment, datetime, person, product, storelocation))
+			if _, db.err = db.Exec(`INSERT INTO storage ("storage_creationdate", "storage_comment", "person", "product", "storelocation") VALUES (?,?,?,?,?);`, datetime, comment, person, product, storelocation); db.err != nil {
+				return db.err
+			}
+		}
 	}
 	return nil
 }

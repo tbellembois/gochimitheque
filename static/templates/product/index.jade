@@ -1,6 +1,11 @@
 extends static/templates/base.jade
 
 block content
+
+    .row
+        .col-sm-12
+            button.btn.btn-primary(type="button" onclick="location.href='/v/storages';") storage view
+
     #accordion
         #list-collapse.collapse.show(data-parent='#accordion')
             header.row
@@ -13,7 +18,7 @@ block content
                                 data-pagination='true', 
                                 data-ajax='getData', 
                                 data-query-params='queryParams',
-                                data-sort-name='name_label',
+                                data-sort-name='name.name_label',
                                 data-detail-view="true",
                                 data-detail-formatter="detailFormatter")
                         thead

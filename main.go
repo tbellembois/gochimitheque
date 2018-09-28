@@ -167,6 +167,15 @@ func main() {
 	if err != nil {
 		log.Fatal("productcreatetmpl parse:" + e.Error())
 	}
+	// storage
+	storageindextmpl, e := jade.ParseFile("static/templates/storage/index.jade")
+	if e != nil {
+		log.Fatal("storageindextmpl jade:" + e.Error())
+	}
+	env.Templates["storageindex"], err = template.New("storageindex").Funcs(funcMap).Parse(storageindextmpl)
+	if err != nil {
+		log.Fatal("storageindextmpl parse:" + e.Error())
+	}
 
 	// router definition
 	r := mux.NewRouter()
@@ -254,6 +263,10 @@ func main() {
 	r.Handle("/f/{item:products}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT")
 	r.Handle("/f/{item:products}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("POST")
 	r.Handle("/f/{item:products}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE")
+	// storages
+	r.Handle("/{view:v}/{item:storages}", securechain.Then(env.AppMiddleware(env.VGetStoragesHandler))).Methods("GET")
+	r.Handle("/{item:storages}", securechain.Then(env.AppMiddleware(env.GetStoragesHandler))).Methods("GET")
+
 	// validators
 	r.Handle("/validate/entity/{id}/name/", securechain.Then(env.AppMiddleware(env.ValidateEntityNameHandler))).Methods("POST")
 	r.Handle("/validate/person/{id}/email/", securechain.Then(env.AppMiddleware(env.ValidatePersonEmailHandler))).Methods("POST")
