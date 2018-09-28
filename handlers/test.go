@@ -1,16 +1,16 @@
 package handlers
 
 import (
-	"github.com/tbellembois/gochimitheque/models"
+	"github.com/tbellembois/gochimitheque/helpers"
 	"net/http"
 )
 
-func (env *Env) VTestHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) VTestHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 
-	c := containerFromRequestContext(r)
+	c := helpers.ContainerFromRequestContext(r)
 
 	if e := env.Templates["test"].Execute(w, c); e != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   e,
 			Code:    http.StatusInternalServerError,
 			Message: "error executing template base",

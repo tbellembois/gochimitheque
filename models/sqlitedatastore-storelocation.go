@@ -10,11 +10,12 @@ import (
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/constants"
+	"github.com/tbellembois/gochimitheque/helpers"
 )
 
 // GetStoreLocations returns the store locations matching the search criteria
 // order, offset and limit are passed to the sql request
-func (db *SQLiteDataStore) GetStoreLocations(p dbselectparamStoreLocation) ([]StoreLocation, int, error) {
+func (db *SQLiteDataStore) GetStoreLocations(p helpers.DbselectparamStoreLocation) ([]StoreLocation, int, error) {
 	var (
 		storelocations                     []StoreLocation
 		count                              int
@@ -22,7 +23,7 @@ func (db *SQLiteDataStore) GetStoreLocations(p dbselectparamStoreLocation) ([]St
 		cnstmt                             *sqlx.NamedStmt
 		snstmt                             *sqlx.NamedStmt
 	)
-	log.WithFields(log.Fields{"search": p.Search, "order": p.Order, "offset": p.Offset, "limit": p.Limit}).Debug("GetStoreLocations")
+	log.WithFields(log.Fields{"p": p}).Debug("GetStoreLocations")
 
 	precreq.WriteString(" SELECT count(DISTINCT s.storelocation_id)")
 	presreq.WriteString(` SELECT s.storelocation_id, s.storelocation_name, 
@@ -40,14 +41,14 @@ func (db *SQLiteDataStore) GetStoreLocations(p dbselectparamStoreLocation) ([]St
 	(perm.person = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
 	`)
 	comreq.WriteString(" WHERE s.storelocation_name LIKE :search")
-	if p.EntityID != -1 {
+	if p.GetEntity() != -1 {
 		comreq.WriteString(" AND s.entity = :entityid")
 	}
 	postsreq.WriteString(" GROUP BY s.storelocation_id")
-	postsreq.WriteString(" ORDER BY s.storelocation_name " + p.Order)
+	postsreq.WriteString(" ORDER BY s.storelocation_name " + p.GetOrder())
 
 	// limit
-	if p.Limit != constants.MaxUint64 {
+	if p.GetLimit() != constants.MaxUint64 {
 		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
 	}
 
@@ -61,12 +62,13 @@ func (db *SQLiteDataStore) GetStoreLocations(p dbselectparamStoreLocation) ([]St
 	log.Debug(presreq.String() + comreq.String() + postsreq.String())
 	// building argument map
 	m := map[string]interface{}{
-		"search":   p.Search,
-		"personid": p.LoggedPersonID,
-		"entityid": p.EntityID,
-		"order":    p.Order,
-		"limit":    p.Limit,
-		"offset":   p.Offset}
+		"search":   p.GetSearch(),
+		"personid": p.GetLoggedPersonID(),
+		"order":    p.GetOrder(),
+		"limit":    p.GetLimit(),
+		"offset":   p.GetOffset(),
+		"entityid": p.GetEntity(),
+	}
 
 	// select
 	if db.err = snstmt.Select(&storelocations, m); db.err != nil {

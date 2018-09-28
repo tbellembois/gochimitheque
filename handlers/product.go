@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	log "github.com/sirupsen/logrus"
+	"github.com/tbellembois/gochimitheque/helpers"
 	"github.com/tbellembois/gochimitheque/models"
 )
 
@@ -16,12 +17,12 @@ import (
 */
 
 // VGetproductsHandler handles the store location list page
-func (env *Env) VGetProductsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) VGetProductsHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 
-	c := containerFromRequestContext(r)
+	c := helpers.ContainerFromRequestContext(r)
 
 	if e := env.Templates["productindex"].Execute(w, c); e != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   e,
 			Code:    http.StatusInternalServerError,
 			Message: "error executing template base",
@@ -31,12 +32,12 @@ func (env *Env) VGetProductsHandler(w http.ResponseWriter, r *http.Request) *mod
 }
 
 // VCreateProductHandler handles the store location creation page
-func (env *Env) VCreateProductHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) VCreateProductHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 
-	c := containerFromRequestContext(r)
+	c := helpers.ContainerFromRequestContext(r)
 
 	if e := env.Templates["productcreate"].Execute(w, c); e != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   e,
 			Code:    http.StatusInternalServerError,
 			Message: "error executing template base",
@@ -50,24 +51,27 @@ func (env *Env) VCreateProductHandler(w http.ResponseWriter, r *http.Request) *m
 */
 
 // GetProductsCasNumbersHandler returns a json list of the cas numbers matching the search criteria
-func (env *Env) GetProductsCasNumbersHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) GetProductsCasNumbersHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	log.Debug("GetProductsCasNumbersHandler")
 
 	var (
-		err error
+		err  error
+		aerr *helpers.AppError
+		dsp  helpers.Dbselectparam
 	)
 
 	// retrieving the logged user id from request context
-	c := containerFromRequestContext(r)
+	c := helpers.ContainerFromRequestContext(r)
 
 	// init db request parameters
-	// FIXME: handle errors
-	cp, _ := models.Newdbselectparam(r)
-	cp.LoggedPersonID = c.PersonID
+	if dsp, aerr = helpers.Newdbselectparam(r); err != nil {
+		return aerr
+	}
+	dsp.SetLoggedPersonID(c.PersonID)
 
-	casnumbers, count, err := env.DB.GetProductsCasNumbers(cp)
+	casnumbers, count, err := env.DB.GetProductsCasNumbers(dsp)
 	if err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Code:    http.StatusInternalServerError,
 			Message: "error getting the cas numbers",
@@ -86,24 +90,27 @@ func (env *Env) GetProductsCasNumbersHandler(w http.ResponseWriter, r *http.Requ
 }
 
 // GetProductsNamesHandler returns a json list of the names matching the search criteria
-func (env *Env) GetProductsNamesHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) GetProductsNamesHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	log.Debug("GetProductsNamesHandler")
 
 	var (
-		err error
+		err  error
+		aerr *helpers.AppError
+		dsp  helpers.Dbselectparam
 	)
 
 	// retrieving the logged user id from request context
-	c := containerFromRequestContext(r)
+	c := helpers.ContainerFromRequestContext(r)
 
 	// init db request parameters
-	// FIXME: handle errors
-	cp, _ := models.Newdbselectparam(r)
-	cp.LoggedPersonID = c.PersonID
+	if dsp, aerr = helpers.Newdbselectparam(r); err != nil {
+		return aerr
+	}
+	dsp.SetLoggedPersonID(c.PersonID)
 
-	names, count, err := env.DB.GetProductsNames(cp)
+	names, count, err := env.DB.GetProductsNames(dsp)
 	if err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Code:    http.StatusInternalServerError,
 			Message: "error getting the cas numbers",
@@ -122,24 +129,27 @@ func (env *Env) GetProductsNamesHandler(w http.ResponseWriter, r *http.Request) 
 }
 
 // GetProductsSymbolsHandler returns a json list of the symbols matching the search criteria
-func (env *Env) GetProductsSymbolsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) GetProductsSymbolsHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	log.Debug("GetProductsSymbolsHandler")
 
 	var (
-		err error
+		err  error
+		aerr *helpers.AppError
+		dsp  helpers.Dbselectparam
 	)
 
 	// retrieving the logged user id from request context
-	c := containerFromRequestContext(r)
+	c := helpers.ContainerFromRequestContext(r)
 
 	// init db request parameters
-	// FIXME: handle errors
-	cp, _ := models.Newdbselectparam(r)
-	cp.LoggedPersonID = c.PersonID
+	if dsp, aerr = helpers.Newdbselectparam(r); err != nil {
+		return aerr
+	}
+	dsp.SetLoggedPersonID(c.PersonID)
 
-	symbols, count, err := env.DB.GetProductsSymbols(cp)
+	symbols, count, err := env.DB.GetProductsSymbols(dsp)
 	if err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Code:    http.StatusInternalServerError,
 			Message: "error getting the symbols",
@@ -158,25 +168,27 @@ func (env *Env) GetProductsSymbolsHandler(w http.ResponseWriter, r *http.Request
 }
 
 // GetProductsHandler returns a json list of the products matching the search criteria
-func (env *Env) GetProductsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) GetProductsHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	log.Debug("GetProductsHandler")
 
 	var (
-		err error
+		err  error
+		aerr *helpers.AppError
+		dspp helpers.DbselectparamProduct
 	)
 
 	// retrieving the logged user id from request context
-	c := containerFromRequestContext(r)
+	c := helpers.ContainerFromRequestContext(r)
 
 	// init db request parameters
-	// FIXME: handle errors
-	cp, _ := models.Newdbselectparam(r)
+	if dspp, aerr = helpers.NewdbselectparamProduct(r); err != nil {
+		return aerr
+	}
+	dspp.SetLoggedPersonID(c.PersonID)
 
-	cp.LoggedPersonID = c.PersonID
-
-	products, count, err := env.DB.GetProducts(models.GetProductsParameters{CP: cp})
+	products, count, err := env.DB.GetProducts(dspp)
 	if err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Code:    http.StatusInternalServerError,
 			Message: "error getting the products",
@@ -195,7 +207,7 @@ func (env *Env) GetProductsHandler(w http.ResponseWriter, r *http.Request) *mode
 }
 
 // GetProductHandler returns a json of the product with the requested id
-func (env *Env) GetProductHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) GetProductHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	vars := mux.Vars(r)
 	var (
 		id  int
@@ -203,7 +215,7 @@ func (env *Env) GetProductHandler(w http.ResponseWriter, r *http.Request) *model
 	)
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Message: "id atoi conversion",
 			Code:    http.StatusInternalServerError}
@@ -211,7 +223,7 @@ func (env *Env) GetProductHandler(w http.ResponseWriter, r *http.Request) *model
 
 	product, err := env.DB.GetProduct(id)
 	if err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Code:    http.StatusInternalServerError,
 			Message: "error getting the store location",
@@ -226,13 +238,13 @@ func (env *Env) GetProductHandler(w http.ResponseWriter, r *http.Request) *model
 }
 
 // CreateProductHandler creates the product from the request form
-func (env *Env) CreateProductHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) CreateProductHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 
 	return nil
 }
 
 // UpdateProductHandler updates the product from the request form
-func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	vars := mux.Vars(r)
 	var (
 		id  int
@@ -241,7 +253,7 @@ func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *mo
 	)
 
 	if err := r.ParseForm(); err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Message: "form parsing error",
 			Code:    http.StatusBadRequest}
@@ -260,7 +272,7 @@ func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *mo
 
 	var decoder = schema.NewDecoder()
 	if err := decoder.Decode(&p, r.PostForm); err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Message: "form decoding error",
 			Code:    http.StatusBadRequest}
@@ -268,7 +280,7 @@ func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *mo
 	log.WithFields(log.Fields{"p": p}).Debug("UpdateProductHandler")
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Message: "id atoi conversion",
 			Code:    http.StatusInternalServerError}
@@ -282,7 +294,7 @@ func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *mo
 	log.WithFields(log.Fields{"updatedp": updatedp}).Debug("UpdateProductHandler")
 
 	if err := env.DB.UpdateProduct(updatedp); err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Message: "update product error",
 			Code:    http.StatusInternalServerError}
@@ -296,7 +308,7 @@ func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *mo
 }
 
 // DeleteProductHandler deletes the store location with the requested id
-func (env *Env) DeleteProductHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) DeleteProductHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	vars := mux.Vars(r)
 	var (
 		id  int
@@ -304,7 +316,7 @@ func (env *Env) DeleteProductHandler(w http.ResponseWriter, r *http.Request) *mo
 	)
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Message: "id atoi conversion",
 			Code:    http.StatusInternalServerError}

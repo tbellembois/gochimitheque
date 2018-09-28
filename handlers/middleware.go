@@ -10,6 +10,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
+	"github.com/tbellembois/gochimitheque/helpers"
 	"github.com/tbellembois/gochimitheque/models"
 )
 
@@ -112,7 +113,7 @@ func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 		// 	http.Error(w, "can not get logged user permissions", http.StatusBadRequest)
 		// }
 
-		ctx := context.WithValue(r.Context(), "container", models.ViewContainer{PersonEmail: person.PersonEmail, PersonID: person.PersonID})
+		ctx := context.WithValue(r.Context(), "container", helpers.ViewContainer{PersonEmail: person.PersonEmail, PersonID: person.PersonID})
 
 		h.ServeHTTP(w, r.WithContext(ctx))
 	})
@@ -133,7 +134,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 		// extracting the logged user email from context
 		ctx := r.Context()
 		ctxcontainer := ctx.Value("container")
-		container := ctxcontainer.(models.ViewContainer)
+		container := ctxcontainer.(helpers.ViewContainer)
 		personid = container.PersonID
 		personemail = container.PersonEmail
 		// should not be necessary

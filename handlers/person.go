@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	log "github.com/sirupsen/logrus"
+	"github.com/tbellembois/gochimitheque/helpers"
 	"github.com/tbellembois/gochimitheque/models"
 )
 
@@ -16,12 +17,12 @@ import (
 */
 
 // VCreatePersonHandler handles the person creation page
-func (env *Env) VCreatePersonHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) VCreatePersonHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 
-	c := containerFromRequestContext(r)
+	c := helpers.ContainerFromRequestContext(r)
 
 	if e := env.Templates["personcreate"].Execute(w, c); e != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   e,
 			Code:    http.StatusInternalServerError,
 			Message: "error executing template base",
@@ -31,12 +32,12 @@ func (env *Env) VCreatePersonHandler(w http.ResponseWriter, r *http.Request) *mo
 }
 
 // VGetPeopleHandler handles the people list page
-func (env *Env) VGetPeopleHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) VGetPeopleHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 
-	c := containerFromRequestContext(r)
+	c := helpers.ContainerFromRequestContext(r)
 
 	if e := env.Templates["personindex"].Execute(w, c); e != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   e,
 			Code:    http.StatusInternalServerError,
 			Message: "error executing template base",
@@ -50,37 +51,41 @@ func (env *Env) VGetPeopleHandler(w http.ResponseWriter, r *http.Request) *model
 */
 
 // GetPeopleHandler returns a json list of the people matching the search criteria
-func (env *Env) GetPeopleHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) GetPeopleHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	log.Debug("GetPeopleHandler")
 
 	var (
-		entityid int
 		err      error
+		aerr     *helpers.AppError
+		dspp     helpers.DbselectparamPerson
+		entityid int
 	)
 
 	// retrieving the logged user id from request context
-	c := containerFromRequestContext(r)
+	c := helpers.ContainerFromRequestContext(r)
 
 	// init db request parameters
-	// FIXME: handle errors
-	cp, _ := models.Newdbselectparam(r)
-	cp.LoggedPersonID = c.PersonID
+	if dspp, aerr = helpers.NewdbselectparamPerson(r); err != nil {
+		return aerr
+	}
+	dspp.SetLoggedPersonID(c.PersonID)
 
 	if e, ok := r.URL.Query()["entityid"]; !ok {
 		entityid = -1
 	} else {
 		if entityid, err = strconv.Atoi(e[0]); err != nil {
-			return &models.AppError{
+			return &helpers.AppError{
 				Error:   err,
 				Code:    http.StatusInternalServerError,
 				Message: "entityid atoi conversion",
 			}
 		}
 	}
+	dspp.SetEntity(entityid)
 
-	people, count, err := env.DB.GetPeople(models.GetPeopleParameters{CP: cp, EntityID: entityid})
+	people, count, err := env.DB.GetPeople(dspp)
 	if err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Code:    http.StatusInternalServerError,
 			Message: "error getting the people",
@@ -99,7 +104,7 @@ func (env *Env) GetPeopleHandler(w http.ResponseWriter, r *http.Request) *models
 }
 
 // GetPersonHandler returns a json of the person with the requested id
-func (env *Env) GetPersonHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) GetPersonHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	vars := mux.Vars(r)
 	var (
 		id  int
@@ -107,7 +112,7 @@ func (env *Env) GetPersonHandler(w http.ResponseWriter, r *http.Request) *models
 	)
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Message: "id atoi conversion",
 			Code:    http.StatusInternalServerError}
@@ -123,7 +128,7 @@ func (env *Env) GetPersonHandler(w http.ResponseWriter, r *http.Request) *models
 }
 
 // GetPersonManageEntitiesHandler returns a json of the entities the person with the requested id is manager of
-func (env *Env) GetPersonManageEntitiesHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) GetPersonManageEntitiesHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	vars := mux.Vars(r)
 	var (
 		id  int
@@ -131,7 +136,7 @@ func (env *Env) GetPersonManageEntitiesHandler(w http.ResponseWriter, r *http.Re
 	)
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Message: "id atoi conversion",
 			Code:    http.StatusInternalServerError}
@@ -139,7 +144,7 @@ func (env *Env) GetPersonManageEntitiesHandler(w http.ResponseWriter, r *http.Re
 
 	entities, err := env.DB.GetPersonManageEntities(id)
 	if err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Code:    http.StatusInternalServerError,
 			Message: "error getting the entities",
@@ -153,7 +158,7 @@ func (env *Env) GetPersonManageEntitiesHandler(w http.ResponseWriter, r *http.Re
 }
 
 // GetPersonEntitiesHandler returns a json of the entities of the person with the requested id
-func (env *Env) GetPersonEntitiesHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) GetPersonEntitiesHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	vars := mux.Vars(r)
 	var (
 		id  int
@@ -161,17 +166,17 @@ func (env *Env) GetPersonEntitiesHandler(w http.ResponseWriter, r *http.Request)
 	)
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Message: "id atoi conversion",
 			Code:    http.StatusInternalServerError}
 	}
 
 	// retrieving the logged user id from request context
-	c := containerFromRequestContext(r)
+	c := helpers.ContainerFromRequestContext(r)
 	entities, err := env.DB.GetPersonEntities(c.PersonID, id)
 	if err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Code:    http.StatusInternalServerError,
 			Message: "error getting the entities",
@@ -185,7 +190,7 @@ func (env *Env) GetPersonEntitiesHandler(w http.ResponseWriter, r *http.Request)
 }
 
 // GetPersonPermissionsHandler returns a json of the permissions of the person with the requested id
-func (env *Env) GetPersonPermissionsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) GetPersonPermissionsHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	vars := mux.Vars(r)
 	var (
 		id  int
@@ -193,7 +198,7 @@ func (env *Env) GetPersonPermissionsHandler(w http.ResponseWriter, r *http.Reque
 	)
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Message: "id atoi conversion",
 			Code:    http.StatusInternalServerError}
@@ -201,7 +206,7 @@ func (env *Env) GetPersonPermissionsHandler(w http.ResponseWriter, r *http.Reque
 
 	permissions, err := env.DB.GetPersonPermissions(id)
 	if err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Code:    http.StatusInternalServerError,
 			Message: "error getting the entities",
@@ -215,19 +220,19 @@ func (env *Env) GetPersonPermissionsHandler(w http.ResponseWriter, r *http.Reque
 }
 
 // CreatePersonHandler creates the person from the request form
-func (env *Env) CreatePersonHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) CreatePersonHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	var (
 		p models.Person
 	)
 	if err := r.ParseForm(); err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Message: "form parsing error",
 			Code:    http.StatusBadRequest}
 	}
 	var decoder = schema.NewDecoder()
 	if err := decoder.Decode(&p, r.PostForm); err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Message: "form decoding error",
 			Code:    http.StatusBadRequest}
@@ -238,7 +243,7 @@ func (env *Env) CreatePersonHandler(w http.ResponseWriter, r *http.Request) *mod
 	p.PersonPassword = "TODO"
 
 	if err, _ := env.DB.CreatePerson(p); err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Message: "create person error",
 			Code:    http.StatusInternalServerError}
@@ -251,7 +256,7 @@ func (env *Env) CreatePersonHandler(w http.ResponseWriter, r *http.Request) *mod
 }
 
 // UpdatePersonHandler updates the person from the request form
-func (env *Env) UpdatePersonHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) UpdatePersonHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	vars := mux.Vars(r)
 	var (
 		id  int
@@ -259,14 +264,14 @@ func (env *Env) UpdatePersonHandler(w http.ResponseWriter, r *http.Request) *mod
 		p   models.Person
 	)
 	if err := r.ParseForm(); err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Message: "form parsing error",
 			Code:    http.StatusBadRequest}
 	}
 	var decoder = schema.NewDecoder()
 	if err := decoder.Decode(&p, r.PostForm); err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Message: "form decoding error",
 			Code:    http.StatusBadRequest}
@@ -274,7 +279,7 @@ func (env *Env) UpdatePersonHandler(w http.ResponseWriter, r *http.Request) *mod
 	log.WithFields(log.Fields{"p": p}).Debug("UpdatePersonHandler")
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Message: "id atoi conversion",
 			Code:    http.StatusInternalServerError}
@@ -287,7 +292,7 @@ func (env *Env) UpdatePersonHandler(w http.ResponseWriter, r *http.Request) *mod
 	log.WithFields(log.Fields{"updatedp": updatedp}).Debug("UpdatePersonHandler")
 
 	if err := env.DB.UpdatePerson(updatedp); err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Message: "update person error",
 			Code:    http.StatusInternalServerError}
@@ -300,7 +305,7 @@ func (env *Env) UpdatePersonHandler(w http.ResponseWriter, r *http.Request) *mod
 }
 
 // DeletePersonHandler deletes the person with the requested id
-func (env *Env) DeletePersonHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) DeletePersonHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	vars := mux.Vars(r)
 	var (
 		id  int
@@ -308,7 +313,7 @@ func (env *Env) DeletePersonHandler(w http.ResponseWriter, r *http.Request) *mod
 	)
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
+		return &helpers.AppError{
 			Error:   err,
 			Message: "id atoi conversion",
 			Code:    http.StatusInternalServerError}
