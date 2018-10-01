@@ -4,7 +4,7 @@ block content
 
     .row
         .col-sm-12
-            button.btn.btn-primary(type="button" onclick="location.href='/v/storages';") storage view
+            button.btn.btn-dark(type="button" onclick="location.href='/v/storages';") switch to storage view
 
     #accordion
         #list-collapse.collapse.show(data-parent='#accordion')
@@ -256,8 +256,8 @@ block contentjs
         // table data loading
         //
         function queryParams(params) {
-            if (URLValues.has("entityid")) {
-                params["entityid"] = URLValues.get("entityid")[0];
+            if (URLValues.has("entity")) {
+                params["entity"] = URLValues.get("entity")[0];
             }
             return params;
         }
@@ -313,20 +313,26 @@ block contentjs
         //
         function operateFormatter(value, row, index) {
             // show action buttons if permitted
-            slid = row.product_id
-            hasPermission2("/f/products/" + slid, "PUT", slid).done(function(){
+            pid = row.product_id
+            hasPermission2("/f/products/" + pid, "GET", pid).done(function(){
+                    $("#storages"+this.itemId).fadeIn();
+            })
+            hasPermission2("/f/products/" + pid, "PUT", pid).done(function(){
                     $("#edit"+this.itemId).fadeIn();
             })
-            hasPermission2("/f/products/" + slid, "DELETE", slid).done(function(){
+            hasPermission2("/f/products/" + pid, "DELETE", pid).done(function(){
                     $("#delete"+this.itemId).fadeIn();
             })
 
             // buttons are hidden by default
             var actions = [
-            '<button id="edit' + slid + '" class="edit btn btn-secondary" style="display: none;" title="edit" type="button">',
+            '<button id="storages' + pid + '" class="storages btn btn-secondary" style="display: none;" title="storages" type="button">',
+                '<i class="fas fa-box"></i>',
+            '</button>',
+            '<button id="edit' + pid + '" class="edit btn btn-secondary" style="display: none;" title="edit" type="button">',
                 '<i class="fas fa-edit"></i>',
             '</button>',
-            '<button id="delete' + slid + '" class="delete btn btn-secondary" style="display: none;" title="delete" type="button">',
+            '<button id="delete' + pid + '" class="delete btn btn-secondary" style="display: none;" title="delete" type="button">',
                 '<i class="fas fa-trash-alt"></i>',
             '</button>'];
 
@@ -372,6 +378,9 @@ block contentjs
             $('#list-collapse').collapse('hide');
         }
         window.operateEvents = {
+            'click .storages': function (e, value, row, index) {
+                window.location.href = "/v/storages?product=" + row['product_id'];
+            },
             'click .edit': function (e, value, row, index) {
                 operateEdit(e, value, row, index)
             },
@@ -383,10 +392,10 @@ block contentjs
                 // ask for confirmation and then delete
                 $(this).confirmation("show").on( "confirmed.bs.confirmation", function() {
                     $.ajax({
-                        url: "/storelocations/" + row['storelocation_id'],
+                        url: "/products/" + row['product_id'],
                         method: "DELETE",
                     }).done(function(data, textStatus, jqXHR) {
-                        displayMessage("store location deleted", "success");
+                        displayMessage("product deleted", "success");
                         var $table = $('#table');
                         $table.bootstrapTable('refresh');
                     }).fail(function(jqXHR, textStatus, errorThrown) {

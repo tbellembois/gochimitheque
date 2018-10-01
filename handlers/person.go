@@ -55,33 +55,15 @@ func (env *Env) GetPeopleHandler(w http.ResponseWriter, r *http.Request) *helper
 	log.Debug("GetPeopleHandler")
 
 	var (
-		err      error
-		aerr     *helpers.AppError
-		dspp     helpers.DbselectparamPerson
-		entityid int
+		err  error
+		aerr *helpers.AppError
+		dspp helpers.DbselectparamPerson
 	)
-
-	// retrieving the logged user id from request context
-	c := helpers.ContainerFromRequestContext(r)
 
 	// init db request parameters
 	if dspp, aerr = helpers.NewdbselectparamPerson(r); err != nil {
 		return aerr
 	}
-	dspp.SetLoggedPersonID(c.PersonID)
-
-	if e, ok := r.URL.Query()["entityid"]; !ok {
-		entityid = -1
-	} else {
-		if entityid, err = strconv.Atoi(e[0]); err != nil {
-			return &helpers.AppError{
-				Error:   err,
-				Code:    http.StatusInternalServerError,
-				Message: "entityid atoi conversion",
-			}
-		}
-	}
-	dspp.SetEntity(entityid)
 
 	people, count, err := env.DB.GetPeople(dspp)
 	if err != nil {

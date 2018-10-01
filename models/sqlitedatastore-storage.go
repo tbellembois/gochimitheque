@@ -24,7 +24,7 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 	// pre request: select or count
 	precreq.WriteString(" SELECT count(DISTINCT storage.storage_id)")
 	presreq.WriteString(` SELECT storage.storage_id,
-		storage.storage_creationdate,
+		storage.storage_creationdate AS "storage_creationdate",
 		storage.storage_comment,
 		person.person_email AS "person.person_email", 
 		product.product_id AS "product.product_id",
@@ -53,6 +53,9 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 		(perm.person = :personid and perm.permission_item_name = "storages" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
 		`)
 	comreq.WriteString(" WHERE storage.storage_id LIKE :search")
+	if p.GetProduct() != -1 {
+		comreq.WriteString(" AND product.product_id = :product")
+	}
 
 	// post select request
 	postsreq.WriteString(" GROUP BY storage.storage_id")
@@ -73,13 +76,13 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 
 	// building argument map
 	m := map[string]interface{}{
-		"search":    p.GetSearch(),
-		"personid":  p.GetLoggedPersonID(),
-		"order":     p.GetOrder(),
-		"limit":     p.GetLimit(),
-		"offset":    p.GetOffset(),
-		"entityid":  p.GetEntity(),
-		"productid": p.GetProduct(),
+		"search":   p.GetSearch(),
+		"personid": p.GetLoggedPersonID(),
+		"order":    p.GetOrder(),
+		"limit":    p.GetLimit(),
+		"offset":   p.GetOffset(),
+		"entity":   p.GetEntity(),
+		"product":  p.GetProduct(),
 	}
 
 	// select
@@ -92,4 +95,63 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 	}
 
 	return storages, count, nil
+}
+
+// GetStorage returns the storage with id "id"
+func (db *SQLiteDataStore) GetStorage(id int) (Storage, error) {
+	var (
+		storage Storage
+		sqlr    string
+	)
+	log.WithFields(log.Fields{"id": id}).Debug("GetStorage")
+
+	sqlr = `SELECT storage.storage_id, storage.storage_creationdate, storage.storage_comment,
+	person.person_email AS "person.person_email",
+	name.name_label AS "product.name.name_label",
+	casnumber.casnumber_label AS "product.casnumber.casnumber_label",
+	storelocation.storelocation_id AS "storelocation.storelocation_id",
+	storelocation.storelocation_name AS "storelocation.storelocation_name"
+	FROM storage
+	JOIN storelocation ON storage.storelocation = storelocation.storelocation_id
+	JOIN person ON storage.person = person.person_id
+	JOIN product ON storage.product = product.product_id
+	JOIN casnumber ON product.casnumber = casnumber.casnumber_id
+	JOIN name ON product.name = name.name_id
+	WHERE storage.storage_id = ?`
+	if db.err = db.Get(&storage, sqlr, id); db.err != nil {
+		return Storage{}, db.err
+	}
+	log.WithFields(log.Fields{"ID": id, "storage": storage}).Debug("GetStorage")
+	return storage, nil
+}
+
+func (db *SQLiteDataStore) DeleteStorage(id int) error {
+	var (
+		sqlr string
+	)
+	sqlr = `DELETE FROM storage 
+	WHERE storage_id = ?`
+	if _, db.err = db.Exec(sqlr, id); db.err != nil {
+		return db.err
+	}
+	return nil
+}
+
+func (db *SQLiteDataStore) CreateStorage(s Storage) (error, int) {
+	return nil, 1
+}
+func (db *SQLiteDataStore) UpdateStorage(s Storage) error {
+
+	var (
+		sqlr string
+	)
+
+	// updating the storage - product not supposed to be changed
+	sqlr = `UPDATE storage SET storage_comment = ?, person = ?, storelocation = ?
+	WHERE storage_id = ?`
+	if _, db.err = db.Exec(sqlr, s.Comment, s.PersonID, s.StoreLocationID, s.StorageID); db.err != nil {
+		return db.err
+	}
+
+	return nil
 }

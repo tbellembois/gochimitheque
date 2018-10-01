@@ -2,10 +2,14 @@ package handlers
 
 import (
 	"encoding/json"
+	"net/http"
+	"strconv"
+
+	"github.com/gorilla/mux"
+	"github.com/gorilla/schema"
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/helpers"
 	"github.com/tbellembois/gochimitheque/models"
-	"net/http"
 )
 
 /*
@@ -63,5 +67,112 @@ func (env *Env) GetStoragesHandler(w http.ResponseWriter, r *http.Request) *help
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp{Rows: storages, Total: count})
+	return nil
+}
+
+// GetStorageHandler returns a json of the entity with the requested id
+func (env *Env) GetStorageHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	vars := mux.Vars(r)
+	var (
+		id  int
+		err error
+	)
+
+	if id, err = strconv.Atoi(vars["id"]); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "id atoi conversion",
+			Code:    http.StatusInternalServerError}
+	}
+
+	storage, err := env.DB.GetStorage(id)
+	if err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the storage",
+		}
+	}
+	log.WithFields(log.Fields{"storage": storage}).Debug("GetStorageHandler")
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(storage)
+	return nil
+}
+
+// UpdateStorageHandler updates the storage from the request form
+func (env *Env) UpdateStorageHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	vars := mux.Vars(r)
+	var (
+		id  int
+		err error
+		s   models.Storage
+	)
+	if err := r.ParseForm(); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "form parsing error",
+			Code:    http.StatusBadRequest}
+	}
+	var decoder = schema.NewDecoder()
+	if err := decoder.Decode(&s, r.PostForm); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "form decoding error",
+			Code:    http.StatusBadRequest}
+	}
+	log.WithFields(log.Fields{"s": s}).Debug("UpdateStorageHandler")
+
+	if id, err = strconv.Atoi(vars["id"]); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "id atoi conversion",
+			Code:    http.StatusInternalServerError}
+	}
+
+	// retrieving the logged user id from request context
+	c := helpers.ContainerFromRequestContext(r)
+
+	updateds, _ := env.DB.GetStorage(id)
+	updateds.Comment = s.Comment
+	updateds.StoreLocation = s.StoreLocation
+	updateds.PersonID = c.PersonID
+	log.WithFields(log.Fields{"updateds": updateds}).Debug("UpdateStorageHandler")
+
+	if err := env.DB.UpdateStorage(updateds); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "update storage error",
+			Code:    http.StatusInternalServerError}
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(updateds)
+	return nil
+}
+
+// DeleteStorageHandler deletes the storage with the requested id
+func (env *Env) DeleteStorageHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	vars := mux.Vars(r)
+	var (
+		id  int
+		err error
+	)
+
+	if id, err = strconv.Atoi(vars["id"]); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "id atoi conversion",
+			Code:    http.StatusInternalServerError}
+	}
+
+	env.DB.DeleteStorage(id)
+	return nil
+}
+
+// CreateStorageHandler creates the storage from the request form
+func (env *Env) CreateStorageHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	return nil
 }

@@ -38,7 +38,7 @@ func (db *SQLiteDataStore) GetPeople(p helpers.DbselectparamPerson) ([]Person, i
 	comreq.WriteString(" FROM person AS p, entity AS e")
 	comreq.WriteString(" JOIN personentities ON personentities.personentities_person_id = p.person_id")
 	if p.GetEntity() != -1 {
-		comreq.WriteString(" JOIN entity ON personentities.personentities_entity_id = :entityid")
+		comreq.WriteString(" JOIN entity ON personentities.personentities_entity_id = :entity")
 	} else {
 		comreq.WriteString(" JOIN entity ON personentities.personentities_entity_id = e.entity_id")
 	}
@@ -72,7 +72,7 @@ func (db *SQLiteDataStore) GetPeople(p helpers.DbselectparamPerson) ([]Person, i
 
 	// building argument map
 	m := map[string]interface{}{
-		"entityid": p.GetEntity(),
+		"entity":   p.GetEntity(),
 		"search":   p.GetSearch(),
 		"personid": p.GetLoggedPersonID(),
 		"order":    p.GetOrder(),
