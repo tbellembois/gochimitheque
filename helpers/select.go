@@ -1,10 +1,10 @@
 package helpers
 
 import (
+	"fmt"
+	"github.com/tbellembois/gochimitheque/constants"
 	"net/http"
 	"strconv"
-
-	"github.com/tbellembois/gochimitheque/constants"
 )
 
 // dbselectparam contains the common parameters
@@ -249,33 +249,26 @@ func NewdbselectparamProduct(r *http.Request) (*dbselectparamProduct, *AppError)
 		dspp dbselectparamProduct
 	)
 
-	// returning default values if no request
-	if r == nil {
-		if dsp, aerr = Newdbselectparam(nil); aerr != nil {
-			return nil, aerr
-		}
-		dspp.dbselectparam = *dsp
-		dspp.Entity = -1
-		dspp.OrderBy = "product_id"
-		return &dspp, nil
-	}
-
-	// or populating with request values
-	if dsp, aerr = Newdbselectparam(r); err != nil {
+	// init defaults
+	dspp.Entity = -1
+	if dsp, aerr = Newdbselectparam(r); aerr != nil {
 		return nil, aerr
 	}
 	dspp.dbselectparam = *dsp
+	dspp.OrderBy = "product_id"
 
-	if entityid, ok := r.URL.Query()["entity"]; ok {
-		var eid int
-		if eid, err = strconv.Atoi(entityid[0]); err != nil {
-			return nil, &AppError{
-				Error:   err,
-				Code:    http.StatusInternalServerError,
-				Message: "limit atoi conversion",
+	if r != nil {
+		if entityid, ok := r.URL.Query()["entity"]; ok {
+			var eid int
+			if eid, err = strconv.Atoi(entityid[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "limit atoi conversion",
+				}
 			}
+			dspp.Entity = eid
 		}
-		dspp.Entity = eid
 	}
 	return &dspp, nil
 
@@ -292,45 +285,38 @@ func NewdbselectparamStorage(r *http.Request) (*dbselectparamStorage, *AppError)
 		dsps dbselectparamStorage
 	)
 
-	// returning default values if no request
-	if r == nil {
-		if dsp, aerr = Newdbselectparam(nil); aerr != nil {
-			return nil, aerr
-		}
-		dsps.dbselectparam = *dsp
-		dsps.Entity = -1
-		dsps.Product = -1
-		dsps.OrderBy = "storage_id"
-		return &dsps, nil
-	}
-
-	// or populating with request values
-	if dsp, aerr = Newdbselectparam(r); err != nil {
+	// init defaults
+	dsps.Entity = -1
+	dsps.Product = -1
+	if dsp, aerr = Newdbselectparam(r); aerr != nil {
 		return nil, aerr
 	}
 	dsps.dbselectparam = *dsp
+	dsps.OrderBy = "storage_id"
 
-	if entityid, ok := r.URL.Query()["entity"]; ok {
-		var eid int
-		if eid, err = strconv.Atoi(entityid[0]); err != nil {
-			return nil, &AppError{
-				Error:   err,
-				Code:    http.StatusInternalServerError,
-				Message: "limit atoi conversion",
+	if r != nil {
+		if entityid, ok := r.URL.Query()["entity"]; ok {
+			var eid int
+			if eid, err = strconv.Atoi(entityid[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "limit atoi conversion",
+				}
 			}
+			dsps.Entity = eid
 		}
-		dsps.Entity = eid
-	}
-	if productid, ok := r.URL.Query()["product"]; ok {
-		var pid int
-		if pid, err = strconv.Atoi(productid[0]); err != nil {
-			return nil, &AppError{
-				Error:   err,
-				Code:    http.StatusInternalServerError,
-				Message: "limit atoi conversion",
+		if productid, ok := r.URL.Query()["product"]; ok {
+			var pid int
+			if pid, err = strconv.Atoi(productid[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "limit atoi conversion",
+				}
 			}
+			dsps.Product = pid
 		}
-		dsps.Product = pid
 	}
 	return &dsps, nil
 
@@ -347,33 +333,26 @@ func NewdbselectparamStoreLocation(r *http.Request) (*dbselectparamStoreLocation
 		dspsl dbselectparamStoreLocation
 	)
 
-	// returning default values if no request
-	if r == nil {
-		if dsp, aerr = Newdbselectparam(nil); aerr != nil {
-			return nil, aerr
-		}
-		dspsl.dbselectparam = *dsp
-		dspsl.Entity = -1
-		dspsl.OrderBy = "storelocation_id"
-		return &dspsl, nil
-	}
-
-	// or populating with request values
-	if dsp, aerr = Newdbselectparam(r); err != nil {
+	// init defaults
+	dspsl.Entity = -1
+	if dsp, aerr = Newdbselectparam(r); aerr != nil {
 		return nil, aerr
 	}
 	dspsl.dbselectparam = *dsp
+	dspsl.OrderBy = "storelocation_id"
 
-	if entityid, ok := r.URL.Query()["entity"]; ok {
-		var eid int
-		if eid, err = strconv.Atoi(entityid[0]); err != nil {
-			return nil, &AppError{
-				Error:   err,
-				Code:    http.StatusInternalServerError,
-				Message: "limit atoi conversion",
+	if r != nil {
+		if entityid, ok := r.URL.Query()["entity"]; ok {
+			var eid int
+			if eid, err = strconv.Atoi(entityid[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "limit atoi conversion",
+				}
 			}
+			dspsl.Entity = eid
 		}
-		dspsl.Entity = eid
 	}
 	return &dspsl, nil
 
@@ -390,33 +369,27 @@ func NewdbselectparamPerson(r *http.Request) (*dbselectparamPerson, *AppError) {
 		dspp dbselectparamPerson
 	)
 
-	// returning default values if no request
-	if r == nil {
-		if dsp, aerr = Newdbselectparam(nil); aerr != nil {
-			return nil, aerr
-		}
-		dspp.dbselectparam = *dsp
-		dspp.Entity = -1
-		dspp.OrderBy = "person_id"
-		return &dspp, nil
-	}
-
-	// or populating with request values
-	if dsp, aerr = Newdbselectparam(r); err != nil {
+	// init defaults
+	dspp.Entity = -1
+	if dsp, aerr = Newdbselectparam(r); aerr != nil {
 		return nil, aerr
 	}
 	dspp.dbselectparam = *dsp
+	dspp.OrderBy = "person_id"
 
-	if entityid, ok := r.URL.Query()["entity"]; ok {
-		var eid int
-		if eid, err = strconv.Atoi(entityid[0]); err != nil {
-			return nil, &AppError{
-				Error:   err,
-				Code:    http.StatusInternalServerError,
-				Message: "limit atoi conversion",
+	fmt.Println(dspp)
+	if r != nil {
+		if entityid, ok := r.URL.Query()["entity"]; ok {
+			var eid int
+			if eid, err = strconv.Atoi(entityid[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "limit atoi conversion",
+				}
 			}
+			dspp.Entity = eid
 		}
-		dspp.Entity = eid
 	}
 	return &dspp, nil
 
@@ -427,27 +400,18 @@ func NewdbselectparamPerson(r *http.Request) (*dbselectparamPerson, *AppError) {
 func NewdbselectparamEntity(r *http.Request) (*dbselectparamEntity, *AppError) {
 
 	var (
-		err  error
 		aerr *AppError
 		dsp  *dbselectparam
 		dspe dbselectparamEntity
 	)
 
-	// returning default values if no request
-	if r == nil {
-		if dsp, aerr = Newdbselectparam(nil); aerr != nil {
-			return nil, aerr
-		}
-		dspe.dbselectparam = *dsp
-		dspe.OrderBy = "entity_id"
-		return &dspe, nil
-	}
-
-	// or populating with request values
-	if dsp, aerr = Newdbselectparam(r); err != nil {
+	// init defaults
+	if dsp, aerr = Newdbselectparam(r); aerr != nil {
 		return nil, aerr
 	}
 	dspe.dbselectparam = *dsp
+	dspe.OrderBy = "entity_id"
+
 	return &dspe, nil
 
 }

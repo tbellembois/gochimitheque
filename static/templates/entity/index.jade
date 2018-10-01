@@ -64,18 +64,18 @@ block contentjs
             //
             $( "#entity-update" ).validate({
             errorClass: "alert alert-danger",
-            rules: {
-                entity_name: {
-                    required: true,
-                    remote: {
-                        url: "/validate/entity/-1/name/",
-                        type: "post",
-                        beforeSend: function(jqXhr, settings) {
-                            settings.url = "/validate/entity/" + $("form#entity-update input#entity_id").val() + "/name/";
+                rules: {
+                    entity_name: {
+                        required: true,
+                        remote: {
+                            url: "/validate/entity/-1/name/",
+                            type: "post",
+                            beforeSend: function(jqXhr, settings) {
+                                settings.url = "/validate/entity/" + $("form#entity-update input#entity_id").val() + "/name/";
+                            },
                         },
                     },
                 },
-            },
             });
 
             //
@@ -257,10 +257,10 @@ block contentjs
         }
         window.operateEvents = {
             'click .storelocations': function (e, value, row, index) {
-                window.location.href = "/v/storelocations?entityid=" + row['entity_id'];
+                window.location.href = "/v/storelocations?entity=" + row['entity_id'];
             },
             'click .members': function (e, value, row, index) {
-                window.location.href = "/v/people?entityid=" + row['entity_id'];
+                window.location.href = "/v/people?entity=" + row['entity_id'];
             },
             'click .edit': function (e, value, row, index) {
                 operateEdit(e, value, row, index)

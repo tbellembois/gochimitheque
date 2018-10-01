@@ -143,8 +143,8 @@ block contentjs
         // table data loading
         //
         function queryParams(params) {
-            if (URLValues.has("entityid")) {
-                params["entityid"] = URLValues.get("entityid")[0];
+            if (URLValues.has("entity")) {
+                params["entity"] = URLValues.get("entity")[0];
             }
             return params;
         }

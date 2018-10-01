@@ -69,15 +69,15 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		entity integer NOT NULL,
 		FOREIGN KEY(entity) references entity(entity_id));
 	CREATE TABLE IF NOT EXISTS storage (
-			storage_id integer PRIMARY KEY,
-			storage_creationdate datetime NOT NULL,
-			storage_comment string,
-			person integer NOT NULL,
-			product integer NOT NULL,
-			storelocation integer NOT NULL,
-			FOREIGN KEY(person) references person(person_id),
-			FOREIGN KEY(product) references product(product_id),
-			FOREIGN KEY(storelocation) references storelocation(storelocation_id));
+		storage_id integer PRIMARY KEY,
+		storage_creationdate datetime NOT NULL,
+		storage_comment string,
+		person integer NOT NULL,
+		product integer NOT NULL,
+		storelocation integer NOT NULL,
+		FOREIGN KEY(person) references person(person_id),
+		FOREIGN KEY(product) references product(product_id),
+		FOREIGN KEY(storelocation) references storelocation(storelocation_id));
 	CREATE TABLE IF NOT EXISTS permission (
 		permission_id integer PRIMARY KEY,
 		person integer NOT NULL,

@@ -55,34 +55,15 @@ func (env *Env) GetStoreLocationsHandler(w http.ResponseWriter, r *http.Request)
 	log.Debug("GetStoreLocationsHandler")
 
 	var (
-		err      error
-		aerr     *helpers.AppError
-		dspsl    helpers.DbselectparamStoreLocation
-		entityid int
+		err   error
+		aerr  *helpers.AppError
+		dspsl helpers.DbselectparamStoreLocation
 	)
-
-	// retrieving the logged user id from request context
-	c := helpers.ContainerFromRequestContext(r)
 
 	// init db request parameters
 	if dspsl, aerr = helpers.NewdbselectparamStoreLocation(r); err != nil {
 		return aerr
 	}
-	dspsl.SetLoggedPersonID(c.PersonID)
-
-	if e, ok := r.URL.Query()["entityid"]; !ok {
-		entityid = -1
-	} else {
-		if entityid, err = strconv.Atoi(e[0]); err != nil {
-			return &helpers.AppError{
-				Error:   err,
-				Code:    http.StatusInternalServerError,
-				Message: "entityid atoi conversion",
-			}
-		}
-	}
-	dspsl.SetEntity(entityid)
-	log.Debug(dspsl)
 
 	storelocations, count, err := env.DB.GetStoreLocations(dspsl)
 	if err != nil {

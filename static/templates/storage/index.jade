@@ -3,8 +3,12 @@ extends static/templates/base.jade
 block content
 
     .row
-        .col-sm-12
-            button.btn.btn-primary(type="button" onclick="location.href='/v/products';") product view
+        .col-sm-4
+            button.btn.btn-dark(type="button" onclick="location.href='/v/products';") switch to product view
+        .col-sm-4
+            #filter-product
+        .col-sm-4
+            #filter-entity
 
     #accordion
         #list-collapse.collapse.show(data-parent='#accordion')
@@ -24,14 +28,22 @@ block content
                         thead
                             tr
                                 th(data-field='storage_id') ID
-                                th(data-field='storage_creationdate' data-sortable='true') creation date
-                                th(data-field='product.name.name_label' data-sortable='false') product name
+                                th(data-field='storage_creationdate' data-formatter='dateFormatter' data-sortable='true') creation date
+                                th(data-field='product.name.name_label') product
+                                th(data-field='storelocation.storelocation_name' data-sortable='true') store location
                                 th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') actions
 
         #edit-collapse.collapse(data-parent='#accordion')
             form#storage-update
                 input#index(type='hidden', name='index', value='')
-                input#product_id(type='hidden', name='storage_id', value='')
+                input#storage_id(type='hidden', name='storage_id', value='')
+
+                .form-group.row
+                    | {{$label := "store location"}} {{$name := "storelocation"}}
+                    +select
+                .form-group.row
+                    | {{$label := "comment"}} {{$name := "storage_comment"}}
+                    +inputtext
 
             button#save.btn.btn-primary(type='button', onclick='saveStorage()') save changes
             button.btn.btn-secondary(type='button', onclick='closeEdit();') close
@@ -60,14 +72,35 @@ block contentjs
         });
 
         //
+        // update form validation
+        //
+        $( "#storage-update" ).validate({
+            errorClass: "alert alert-danger",
+            rules: {
+                storelocation: {
+                    required: true,
+                },
+            },
+        });
+
+        //
         // table data loading
         //
         function queryParams(params) {
-            if (URLValues.has("entityid")) {
-                params["entityid"] = URLValues.get("entityid")[0];
+            if (URLValues.has("entity")) {
+                params["entity"] = URLValues.get("entity")[0];
+                displayFilterEntity(params["entity"]);
             }
-            if (URLValues.has("productid")) {
-                params["productid"] = URLValues.get("productid")[0];
+            if (URLValues.has("product")) {
+                params["product"] = URLValues.get("product")[0];
+                $.ajax({
+                    url: "/products/" + params["product"],
+                    method: "GET",
+                }).done(function(data, textStatus, jqXHR) {
+                   $("#filter-product").html("<div class='card'><div class='card-body'>" + data.name.name_label + " (" + data.casnumber.casnumber_label + ")</div></div>")
+                }).fail(function(jqXHR, textStatus, errorThrown) {
+                    handleHTTPError(jqXHR.statusText, jqXHR.status)
+                });
             }
             return params;
         }
@@ -89,18 +122,176 @@ block contentjs
         }
 
         //
+        // store location select2
+        //
+        $('select#storelocation').select2({
+            tags: false,
+            dropdownParent: $('#edit-collapse'),
+            ajax: {
+                url: '/storelocations',
+                    data: function (params) {
+                    var query = {
+                        search: params.term,
+                        page: params.page || 1,
+                        offset: params.page*10 || 0,
+                        limit: 10
+                    }
+
+                    // Query parameters will be ?search=[term]&page=[page]
+                    return query;
+                },
+                dataType: 'json',
+                processResults: function (data) {
+                    // replacing name by text expected by select2
+                    var newdata = $.map(data.rows, function (obj) {
+                        obj.text = obj.text || obj.storelocation_name;
+                        obj.id = obj.id || obj.storelocation_id;
+                        return obj;
+                    });
+                    // getting the number of loaded select elements
+                    selectnbitems = $("ul#select2-storelocation-results li").length + 10;
+
+                    return {
+                        results: newdata,
+                        pagination: {more: selectnbitems<data.total}
+                    };
+                }
+            }
+        }).on("change", function (e) {
+            $(this).valid(); // FIXME: see https://github.com/select2/select2/issues/3901
+        });
+
+        //
+        // save storage callback
+        //
+        function saveStorage() {
+            var form = $("#storage-update");
+            if (! form.valid()) {
+                return;
+            };
+
+            var storage_id = $("#edit-collapse input#storage_id").val(),
+                storage_comment = $("#edit-collapse input#storage_comment").val(),
+                storelocation = $('select#storelocation').select2('data')[0];
+                data = {};
+                $.extend(data, {
+                    "storage_id": storage_id,
+                    "storage_comment": storage_comment,
+                    "storelocation.storelocation_id": storelocation.id,
+                });
+                $.ajax({
+                    url: "/storages/" + storage_id,
+                    method: "PUT",
+                    dataType: 'json',
+                    data: data,
+                }).done(function(data, textStatus, jqXHR) {
+                    $('#list-collapse').collapse('show');
+                    $('#edit-collapse').collapse('hide');
+                    var $table = $('#table');
+                    var index = $('input#index').val();
+                    $table.bootstrapTable('refresh');
+                    displayMessage("storage " + storage_id + " updated", "success");
+                }).fail(function(jqXHR, textStatus, errorThrown) {
+                    handleHTTPError(jqXHR.statusText, jqXHR.status)
+                });  
+        }
+
+        //
         // table detail formatter
         //
-        //- function detailFormatter(index, row) {
-        //-     var html = [];
-        //-     console.log(row);
-        //-     html.push("<p><b>name</b>: " + row["name"]["name_label"] + "</p>")
-        //-     html.push("<p><b>specificity</b>: " + row["product_specificity"] + "</p>")
-        //-     html.push("<p><b>cas</b>: " + row["casnumber"]["casnumber_label"] + "</p>")
-        //-     html.push("<p>")
-        //-     $.each(row["symbols"], function (key, value) {
-        //-         html.push("<img src='data:" + value["symbol_image"] + "' alt='" + value["symbol_label"] + "' title='" + value["symbol_label"] + "'/>");
-        //-     });
-        //-     html.push("</p>")
-        //-     return html.join('');
-        //- }
+        function detailFormatter(index, row) {
+            var html = [];
+            console.log(row);
+            html.push("<p><b>product</b>: " + row["product"]["name"]["name_label"] + "</p>")
+            html.push("<p><b>store location</b>: " + row["storelocation"]["storelocation_name"] + "</p>")
+            html.push("<p><b>created at</b>: " + row["storage_creationdate"] + "</p>")
+            html.push("<p><b>by</b>: " + row["person"]["person_email"] + "</p>")
+            html.push("<p><b>comment</b>: " + row["storage_comment"] + "</p>")
+            return html.join('');
+        }
+        //
+        // date formatter
+        //
+        function dateFormatter(value, row, index, field) {
+            date = new Date(value);
+            return date.toLocaleString();
+        }
+
+        //
+        // table items actions
+        //
+        function operateFormatter(value, row, index) {
+            // show action buttons if permitted
+            sid = row.storage_id
+            hasPermission2("/f/storages/" + sid, "PUT", sid).done(function(){
+                    $("#edit"+this.itemId).fadeIn();
+            })
+            hasPermission2("/f/storages/" + sid, "DELETE", sid).done(function(){
+                    $("#delete"+this.itemId).fadeIn();
+            })
+
+            // buttons are hidden by default
+            var actions = [
+            '<button id="edit' + sid + '" class="edit btn btn-secondary" style="display: none;" title="edit" type="button">',
+                '<i class="fas fa-edit"></i>',
+            '</button>',
+            '<button id="delete' + sid + '" class="delete btn btn-secondary" style="display: none;" title="delete" type="button">',
+                '<i class="fas fa-trash-alt"></i>',
+            '</button>'];
+
+            return actions.join('&nbsp;')    
+        }
+
+        // items actions callback
+        function operateEdit(e, value, row, index) {
+            // clearing selections
+            $('select#storelocation').val(null).trigger('change');
+            $('select#storelocation').find('option').remove();
+            
+            // getting the storage
+            $.ajax({
+                url: "/storages/" + row['storage_id'],
+                method: "GET",
+            }).done(function(data, textStatus, jqXHR) {
+                // flattening response data
+                fdata = flatten(data);
+                // autofilling form
+                $("#edit-collapse").autofill( fdata, {"findbyname": false } );
+                // setting index hidden input
+                $("input#index").val(index);
+                // select2 is not autofilled - we need a special operation
+                var newOption = new Option(data.storelocation.storelocation_name, data.storelocation.storelocation_id, true, true);
+                $('select#storelocation').append(newOption).trigger('change');
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                handleHTTPError(jqXHR.statusText, jqXHR.status)
+            });
+
+            // finally collapsing the view
+            $('#edit-collapse').collapse('show');
+            $('#list-collapse').collapse('hide');
+        }
+        window.operateEvents = {
+            'click .edit': function (e, value, row, index) {
+                operateEdit(e, value, row, index)
+            },
+            'click .delete': function (e, value, row, index) {
+                // hiding possible previous confirmation button
+                $(this).confirmation("show").off( "confirmed.bs.confirmation");
+                $(this).confirmation("show").off( "canceled.bs.confirmation");
+                
+                // ask for confirmation and then delete
+                $(this).confirmation("show").on( "confirmed.bs.confirmation", function() {
+                    $.ajax({
+                        url: "/storages/" + row['storage_id'],
+                        method: "DELETE",
+                    }).done(function(data, textStatus, jqXHR) {
+                        displayMessage("storage deleted", "success");
+                        var $table = $('#table');
+                        $table.bootstrapTable('refresh');
+                    }).fail(function(jqXHR, textStatus, errorThrown) {
+                        handleHTTPError(jqXHR.statusText, jqXHR.status)
+                    });
+                }).on( "canceled.bs.confirmation", function() {
+                });
+            }
+        };

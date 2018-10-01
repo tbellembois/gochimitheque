@@ -60,14 +60,10 @@ func (env *Env) GetProductsCasNumbersHandler(w http.ResponseWriter, r *http.Requ
 		dsp  helpers.Dbselectparam
 	)
 
-	// retrieving the logged user id from request context
-	c := helpers.ContainerFromRequestContext(r)
-
 	// init db request parameters
 	if dsp, aerr = helpers.Newdbselectparam(r); err != nil {
 		return aerr
 	}
-	dsp.SetLoggedPersonID(c.PersonID)
 
 	casnumbers, count, err := env.DB.GetProductsCasNumbers(dsp)
 	if err != nil {
@@ -99,14 +95,10 @@ func (env *Env) GetProductsNamesHandler(w http.ResponseWriter, r *http.Request) 
 		dsp  helpers.Dbselectparam
 	)
 
-	// retrieving the logged user id from request context
-	c := helpers.ContainerFromRequestContext(r)
-
 	// init db request parameters
 	if dsp, aerr = helpers.Newdbselectparam(r); err != nil {
 		return aerr
 	}
-	dsp.SetLoggedPersonID(c.PersonID)
 
 	names, count, err := env.DB.GetProductsNames(dsp)
 	if err != nil {
@@ -138,14 +130,10 @@ func (env *Env) GetProductsSymbolsHandler(w http.ResponseWriter, r *http.Request
 		dsp  helpers.Dbselectparam
 	)
 
-	// retrieving the logged user id from request context
-	c := helpers.ContainerFromRequestContext(r)
-
 	// init db request parameters
 	if dsp, aerr = helpers.Newdbselectparam(r); err != nil {
 		return aerr
 	}
-	dsp.SetLoggedPersonID(c.PersonID)
 
 	symbols, count, err := env.DB.GetProductsSymbols(dsp)
 	if err != nil {
@@ -177,14 +165,10 @@ func (env *Env) GetProductsHandler(w http.ResponseWriter, r *http.Request) *help
 		dspp helpers.DbselectparamProduct
 	)
 
-	// retrieving the logged user id from request context
-	c := helpers.ContainerFromRequestContext(r)
-
 	// init db request parameters
 	if dspp, aerr = helpers.NewdbselectparamProduct(r); err != nil {
 		return aerr
 	}
-	dspp.SetLoggedPersonID(c.PersonID)
 
 	products, count, err := env.DB.GetProducts(dspp)
 	if err != nil {
