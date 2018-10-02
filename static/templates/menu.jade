@@ -16,6 +16,10 @@ nav.navbar.navbar-expand-lg.navbar-light.bg-light
             li.nav-item
                 a(href="/login").nav-link login
 
+            if HasPermission .PersonID "w" "products" -2
+                li.nav-item
+                    a(href="/vc/products").nav-link create product card
+
             if HasPermission .PersonID "r" "entities" -2
                 li.nav-item.dropdown
                     a(href="#", title="entities").nav-link.dropdown-toggle#navbarDropdown(

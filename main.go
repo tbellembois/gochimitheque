@@ -176,6 +176,14 @@ func main() {
 	if err != nil {
 		log.Fatal("storageindextmpl parse:" + e.Error())
 	}
+	storagecreatetmpl, e := jade.ParseFile("static/templates/storage/create.jade")
+	if e != nil {
+		log.Fatal("storagecreatetmpl jade:" + e.Error())
+	}
+	env.Templates["storagecreate"], err = template.New("storagecreate").Funcs(funcMap).Parse(storagecreatetmpl)
+	if err != nil {
+		log.Fatal("storagecreatetmpl parse:" + e.Error())
+	}
 
 	// router definition
 	r := mux.NewRouter()
@@ -265,6 +273,7 @@ func main() {
 	r.Handle("/f/{item:products}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE")
 	// storages
 	r.Handle("/{view:v}/{item:storages}", securechain.Then(env.AppMiddleware(env.VGetStoragesHandler))).Methods("GET")
+	r.Handle("/{view:vc}/{item:storages}", securechain.Then(env.AppMiddleware(env.VCreateStorageHandler))).Methods("GET")
 	r.Handle("/{item:storages}", securechain.Then(env.AppMiddleware(env.GetStoragesHandler))).Methods("GET")
 	r.Handle("/{item:storages}/{id}", securechain.Then(env.AppMiddleware(env.GetStorageHandler))).Methods("GET")
 	r.Handle("/{item:storages}/{id}", securechain.Then(env.AppMiddleware(env.UpdateStorageHandler))).Methods("PUT")
@@ -281,8 +290,6 @@ func main() {
 	r.Handle("/validate/person/{id}/email/", securechain.Then(env.AppMiddleware(env.ValidatePersonEmailHandler))).Methods("POST")
 	r.Handle("/validate/product/{id}/casnumber/", securechain.Then(env.AppMiddleware(env.ValidateProductCasNumberHandler))).Methods("POST")
 	r.Handle("/validate/product/{id}/name/", securechain.Then(env.AppMiddleware(env.ValidateProductNameHandler))).Methods("POST")
-	// permissions checker
-	r.Handle("/haspermission/{personid}/{perm}/{item}/{itemid}", commonChain.Then(env.AppMiddleware(env.HasPermissionHandler))).Methods("GET")
 
 	// rice boxes
 	webfontsBox := rice.MustFindBox("static/webfonts")

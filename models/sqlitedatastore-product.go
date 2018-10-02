@@ -201,6 +201,9 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	(perm.person = :personid and perm.permission_item_name = "products" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
 	`)
 	comreq.WriteString(" WHERE name.name_label LIKE :search")
+	if p.GetProduct() != -1 {
+		comreq.WriteString(" AND product.product_id = :product")
+	}
 
 	// post select request
 	postsreq.WriteString(" GROUP BY product.product_id")
@@ -211,6 +214,8 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
 	}
 
+	log.Debug(presreq.String() + comreq.String() + postsreq.String())
+	log.Debug(p.GetSearch())
 	// building count and select statements
 	if cnstmt, db.err = db.PrepareNamed(precreq.String() + comreq.String()); db.err != nil {
 		return nil, 0, db.err
@@ -226,7 +231,8 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 		"order":    p.GetOrder(),
 		"limit":    p.GetLimit(),
 		"offset":   p.GetOffset(),
-		"entityid": p.GetEntity(),
+		"entity":   p.GetEntity(),
+		"product":  p.GetProduct(),
 	}
 
 	// select
@@ -292,11 +298,94 @@ func (db *SQLiteDataStore) GetProduct(id int) (Product, error) {
 }
 
 func (db *SQLiteDataStore) DeleteProduct(id int) error {
+	var (
+		sqlr string
+	)
+	sqlr = `DELETE FROM product 
+	WHERE product_id = ?`
+	if _, db.err = db.Exec(sqlr, id); db.err != nil {
+		return db.err
+	}
 	return nil
 }
+
 func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
-	return nil, 1
+	var (
+		lastid int64
+		tx     *sql.Tx
+		sqlr   string
+		res    sql.Result
+	)
+
+	// beginning transaction
+	if tx, db.err = db.Begin(); db.err != nil {
+		return db.err, 0
+	}
+
+	// if CasNumberID = -1 then it is a new cas
+	if p.CasNumber.CasNumberID == -1 {
+		sqlr = `INSERT INTO casnumber (casnumber_label) VALUES (?)`
+		if res, db.err = tx.Exec(sqlr, p.CasNumberLabel); db.err != nil {
+			tx.Rollback()
+			return db.err, 0
+		}
+		// getting the last inserted id
+		if lastid, db.err = res.LastInsertId(); db.err != nil {
+			tx.Rollback()
+			return db.err, 0
+		}
+		// updating the product CasNumberID (CasNumberLabel already set)
+		p.CasNumber.CasNumberID = int(lastid)
+	}
+	// if NameID = -1 then it is a new name
+	if p.Name.NameID == -1 {
+		sqlr = `INSERT INTO name (name_label) VALUES (?)`
+		if res, db.err = tx.Exec(sqlr, p.NameLabel); db.err != nil {
+			tx.Rollback()
+			return db.err, 0
+		}
+		// getting the last inserted id
+		if lastid, db.err = res.LastInsertId(); db.err != nil {
+			tx.Rollback()
+			return db.err, 0
+		}
+		// updating the product NameID (NameLabel already set)
+		p.Name.NameID = int(lastid)
+	}
+
+	// finally adding the product
+	sqlr = `INSERT INTO product(product_specificity, casnumber, name) VALUES (?, ?, ?)`
+	if res, db.err = tx.Exec(sqlr, p.ProductSpecificity, p.CasNumber.CasNumberID, p.Name.NameID); db.err != nil {
+		tx.Rollback()
+		return db.err, 0
+	}
+
+	// getting the last inserted id
+	if lastid, db.err = res.LastInsertId(); db.err != nil {
+		tx.Rollback()
+		return db.err, 0
+	}
+	p.ProductID = int(lastid)
+	log.WithFields(log.Fields{"p": p}).Debug("CreateProduct")
+
+	// adding symbols
+	for _, sym := range p.Symbols {
+		sqlr = `INSERT INTO productsymbols (productsymbols_product_id, productsymbols_symbol_id) VALUES (?,?)`
+		if res, db.err = tx.Exec(sqlr, p.ProductID, sym.SymbolID); db.err != nil {
+			tx.Rollback()
+			return db.err, 0
+		}
+	}
+
+	// committing changes
+	if db.err = tx.Commit(); db.err != nil {
+		tx.Rollback()
+		return db.err, 0
+	}
+
+	return nil, p.ProductID
 }
+
 func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	var (
 		lastid int64

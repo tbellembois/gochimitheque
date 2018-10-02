@@ -16,7 +16,7 @@ block content
                                 data-sort-name='storelocation_name')
                         thead
                             tr
-                                th(data-field='storelocation_id') ID
+                                th(data-field='storelocation_id' data-sortable='true') ID
                                 th(data-field='storelocation_name' data-sortable='true') name
                                 th(data-field='entity.entity_name' data-sortable='true') entity
                                 th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') actions
@@ -171,10 +171,10 @@ block contentjs
         function operateFormatter(value, row, index) {
             // show action buttons if permitted
             slid = row.storelocation_id
-            hasPermission2("/f/storelocations/" + slid, "PUT", slid).done(function(){
+            hasPermission("/f/storelocations/" + slid, "PUT", slid).done(function(){
                     $("#edit"+this.itemId).fadeIn();
             })
-            hasPermission2("/f/storelocations/" + slid, "DELETE", slid).done(function(){
+            hasPermission("/f/storelocations/" + slid, "DELETE", slid).done(function(){
                     $("#delete"+this.itemId).fadeIn();
             })
 

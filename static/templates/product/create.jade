@@ -12,25 +12,195 @@ block content
             | {{$label := "specificity"}} {{$name := "product_specificity"}}
             +inputtext
         .form-group.row
-            | {{$label := "sgh01"}} {{$id := "sgh01"}} {{$class := ""}} {{$value := "sgh01"}} {{$title := "sgh01"}} {{$img := "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAInSURBVFiFzdi9b45RGMfxz11KNalS0napgVaE0HhLxEtpVEIQxKAbiUhMJCoisTyriYTBLCZGsRCrP8JkkLB4iVlyDL1EU9refZ7raZ3kJPfrub75/a7zWpVSpJSqaoBSGintlVJarzQKJWojo81sqDS4XKUSlcu3LwkuFyoRLh8qCa49UAlw6VDoRUercOlK4T7WtapcNlQHHmfYmgm1CVO4MOPZBow31V4SVDde4i22xrMeXEfVVK5myB4gh/AQVwPqSljbEe/XYVfd9lOgIvAt3AnAS1iBczgV168wVTdOClSAPcMwzmIg4EbRP+u7behZKF6r9q3BTTzFC1wLO49iD/owHioex2nswGpsnC9uU1BYhUE8R8EH3As1DuIYtmAnDsT9SZwPJScxMp8o9RKRtQHSFUk8jBHcxpPIr95QqC+svIxHGKiVDrM4VqpRSik/qqoaxTecwSe8CUWO4Dve4W6o9xFf8Bl9VVV1RgfoDLXfl1J+LhR0bp+nVRjGZoxhLw7jRNhzIwAKXmMCD/AVDVxsRq3ayY/1GEK/6RF+u+k5cTAUGJoxVk1ionaPnjf568HtD6h9GJunY3RjN7qahfobrEYP9Xv0brUuaoCt+VO7oeYGaydcS5N4u+BSlj3ZcKkLxSy4tiytW4Vr62ak2SBLsn1bbLAl3fDWDbosRwQLBV/WQ5W5IP6LY6h/w6VA5YAl2jez1lrBLlhKaaiqP9cJ5Rf+De5Q3HyidwAAAABJRU5ErkJggg=="}}
-            +inlineimgcheckbox
-            | {{$label := "sgh02"}} {{$id := "sgh02"}} {{$class := ""}} {{$value := "sgh02"}}
-            +inlinecheckbox
-            | {{$label := "sgh03"}} {{$id := "sgh03"}} {{$class := ""}} {{$value := "sgh03"}}
-            +inlinecheckbox
-            | {{$label := "sgh04"}} {{$id := "sgh04"}} {{$class := ""}} {{$value := "sgh04"}}
-            +inlinecheckbox
-            | {{$label := "sgh05"}} {{$id := "sgh05"}} {{$class := ""}} {{$value := "sgh05"}}
-            +inlinecheckbox
-            | {{$label := "sgh06"}} {{$id := "sgh06"}} {{$class := ""}} {{$value := "sgh06"}}
-            +inlinecheckbox
-            | {{$label := "sgh07"}} {{$id := "sgh07"}} {{$class := ""}} {{$value := "sgh07"}}
-            +inlinecheckbox
-            | {{$label := "sgh08"}} {{$id := "sgh08"}} {{$class := ""}} {{$value := "sgh08"}}
-            +inlinecheckbox
-            | {{$label := "sgh09"}} {{$id := "sgh09"}} {{$class := ""}} {{$value := "sgh09"}}
-            +inlinecheckbox
-
+            | {{$label := "symbol(s)"}} {{$name := "symbols"}}
+            +selectmultiple
 
     button#save.btn.btn-primary(type='button', onclick='saveProduct()') save changes
 
+block contentjs
+    script.
+
+        $( document ).ready(function() {
+        
+            //
+            // update form validation
+            //
+            $( "#product-create" ).validate({
+                // ignore required to validate select2
+                ignore: "",
+                errorClass: "alert alert-danger",
+                rules: {
+                    name: {
+                        required: true,
+                    },
+                    casnumber: {
+                        required: true,
+                        remote: {
+                            url: "",
+                            type: "post",
+                            beforeSend: function(jqXhr, settings) {
+                                settings.url = "/validate/product/-1/casnumber/";
+                            },
+                            data: {
+                                casnumber: function() {
+                                    return $('select#casnumber').select2('data')[0].text;
+                                },
+                                product_specificity:  function() {
+                                    return $('#product_specificity').val();
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+        
+            //
+            // casnumber select2
+            //
+            $('select#casnumber').select2({
+                tags: true,
+                ajax: {
+                    url: '/products/casnumbers',
+                        data: function (params) {
+                        var query = {
+                            search: params.term,
+                            page: params.page || 1,
+                            offset: params.page*10 || 0,
+                            limit: 10
+                        }
+
+                        // Query parameters will be ?search=[term]&page=[page]
+                        return query;
+                    },
+                    dataType: 'json',
+                    processResults: function (data) {
+                        // replacing name by text expected by select2
+                        var newdata = $.map(data.rows, function (obj) {
+                            obj.text = obj.text || obj.casnumber_label;
+                            obj.id = obj.id || obj.casnumber_id;
+                            return obj;
+                        });
+                        // getting the number of loaded select elements
+                        selectnbitems = $("ul#select2-casnumber-results li").length + 10;
+
+                        return {
+                            results: newdata,
+                            pagination: {more: selectnbitems<data.total}
+                        };
+                    }
+                }
+            }).on("change", function (e) {
+                $(this).valid(); // FIXME: see https://github.com/select2/select2/issues/3901
+            });
+
+            //
+            // name select2
+            //
+            $('select#name').select2({
+                tags: true,
+                ajax: {
+                    url: '/products/names',
+                        data: function (params) {
+                        var query = {
+                            search: params.term,
+                            page: params.page || 1,
+                            offset: params.page*10 || 0,
+                            limit: 10
+                        }
+
+                        // Query parameters will be ?search=[term]&page=[page]
+                        return query;
+                    },
+                    dataType: 'json',
+                    processResults: function (data) {
+                        // replacing name by text expected by select2
+                        var newdata = $.map(data.rows, function (obj) {
+                            obj.text = obj.text || obj.name_label;
+                            obj.id = obj.id || obj.name_id;
+                            return obj;
+                        });
+                        // getting the number of loaded select elements
+                        selectnbitems = $("ul#select2-name-results li").length + 10;
+
+                        return {
+                            results: newdata,
+                            pagination: {more: selectnbitems<data.total}
+                        };
+                    }
+                }
+            }).on("change", function (e) {
+                $(this).valid(); // FIXME: see https://github.com/select2/select2/issues/3901
+            });
+
+            //
+            // symbols select2
+            //
+            $('select#symbols').select2({
+                tags: true,
+                templateResult: formatSymbol,
+                ajax: {
+                    url: '/products/symbols',
+                    dataType: 'json',
+                    processResults: function (data) {
+                        // replacing name by text expected by select2
+                        var newdata = $.map(data.rows, function (obj) {
+                            obj.text = obj.text || obj.symbol_label;
+                            obj.id = obj.id || obj.symbol_id;
+                            return obj;
+                        });
+                         return {
+                            results: newdata,
+                        };
+                    }
+                }
+            });
+
+        });
+
+        //
+        // symbols select2 formatter
+        //
+        function formatSymbol (symbol) {
+            if (!symbol.symbol_id) {
+                return symbol.symbol_label;
+            }
+            var s = $(
+                '<span><img src="data:' + symbol.symbol_image + '" title="' + symbol.symbol_label + '" /> ' + symbol.symbol_label + '</span>'
+            );
+            return s;
+        };
+
+        function saveProduct() {
+            var form = $("#product-create");
+            if (! form.valid()) {
+                return;
+            };
+
+            var product_specificity = $("input#product_specificity").val(),
+                casnumber = $('select#casnumber').select2('data')[0];
+                name_ = $('select#name').select2('data')[0];
+                symbols = $('select#symbols').select2('data');
+                data = {};
+                $.each(symbols, function( index, s ) {
+                    data["symbols." + index +".symbol_id"] = s.id;
+                    data["symbols." + index +".symbol_label"] = s.text;
+                });
+                $.extend(data, {
+                    "product_specificity": product_specificity,
+                    "casnumber.casnumber_id": casnumber.id,
+                    "casnumber.casnumber_label": casnumber.text,
+                    "name.name_id": name_.id,
+                    "name.name_label": name_.text,
+                });
+                $.ajax({
+                    url: "/products",
+                    method: "POST",
+                    dataType: 'json',
+                    data: data,
+                }).done(function(data, textStatus, jqXHR) {
+                    displayMessage("product " + data.name.name_label + " created", "success");
+                    setTimeout(function(){ window.location = "/v/products?product="+data.product_id; }, 1000);
+                }).fail(function(jqXHR, textStatus, errorThrown) {
+                    handleHTTPError(jqXHR.statusText, jqXHR.status)
+                });  
+        }

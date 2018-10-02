@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
@@ -22,6 +23,21 @@ func (env *Env) VGetStoragesHandler(w http.ResponseWriter, r *http.Request) *hel
 	c := helpers.ContainerFromRequestContext(r)
 
 	if e := env.Templates["storageindex"].Execute(w, c); e != nil {
+		return &helpers.AppError{
+			Error:   e,
+			Code:    http.StatusInternalServerError,
+			Message: "error executing template base",
+		}
+	}
+	return nil
+}
+
+// VCreateStorageHandler handles the storage creation page
+func (env *Env) VCreateStorageHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+
+	c := helpers.ContainerFromRequestContext(r)
+
+	if e := env.Templates["storagecreate"].Execute(w, c); e != nil {
 		return &helpers.AppError{
 			Error:   e,
 			Code:    http.StatusInternalServerError,
@@ -135,7 +151,7 @@ func (env *Env) UpdateStorageHandler(w http.ResponseWriter, r *http.Request) *he
 	c := helpers.ContainerFromRequestContext(r)
 
 	updateds, _ := env.DB.GetStorage(id)
-	updateds.Comment = s.Comment
+	updateds.StorageComment = s.StorageComment
 	updateds.StoreLocation = s.StoreLocation
 	updateds.PersonID = c.PersonID
 	log.WithFields(log.Fields{"updateds": updateds}).Debug("UpdateStorageHandler")
@@ -174,5 +190,40 @@ func (env *Env) DeleteStorageHandler(w http.ResponseWriter, r *http.Request) *he
 
 // CreateStorageHandler creates the storage from the request form
 func (env *Env) CreateStorageHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	log.Debug("CreateStorageHandler")
+	var (
+		s models.Storage
+	)
+	if err := r.ParseForm(); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "form parsing error",
+			Code:    http.StatusBadRequest}
+	}
+
+	// retrieving the logged user id from request context
+	c := helpers.ContainerFromRequestContext(r)
+
+	var decoder = schema.NewDecoder()
+	if err := decoder.Decode(&s, r.PostForm); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "form decoding error",
+			Code:    http.StatusBadRequest}
+	}
+	s.StorageCreationDate = time.Now()
+	s.PersonID = c.PersonID
+	log.WithFields(log.Fields{"s": s}).Debug("CreateStorageHandler")
+
+	if err, _ := env.DB.CreateStorage(s); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "create storage error",
+			Code:    http.StatusInternalServerError}
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(s)
 	return nil
 }

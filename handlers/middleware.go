@@ -200,6 +200,8 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 				// TODO: we can not delete a non empty store location
 			case "products":
 				// TODO: we can not delete a stored product
+			case "storages":
+
 			case "entities":
 				// we can not delete a non empty entity
 				if r.Method == "DELETE" {
@@ -212,6 +214,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 					}
 				}
 			}
+
 			perm = "w"
 		default:
 			log.Debug("unsupported http verb")
