@@ -1,7 +1,6 @@
 package helpers
 
 import (
-	"fmt"
 	"github.com/tbellembois/gochimitheque/constants"
 	"net/http"
 	"strconv"
@@ -34,12 +33,15 @@ type dbselectparam struct {
 type DbselectparamProduct interface {
 	Dbselectparam
 	SetEntity(int)
+	SetProduct(int)
 
 	GetEntity() int
+	GetProduct() int
 }
 type dbselectparamProduct struct {
 	dbselectparam
 	Entity    int // id
+	Product   int // id
 	CasNumber int // id
 }
 
@@ -158,6 +160,14 @@ func (d dbselectparamProduct) GetEntity() int {
 	return d.Entity
 }
 
+func (d *dbselectparamProduct) SetProduct(i int) {
+	d.Product = i
+}
+
+func (d dbselectparamProduct) GetProduct() int {
+	return d.Product
+}
+
 //
 // dbselectparamStorage functions
 //
@@ -251,13 +261,18 @@ func NewdbselectparamProduct(r *http.Request) (*dbselectparamProduct, *AppError)
 
 	// init defaults
 	dspp.Entity = -1
+	dspp.Product = -1
 	if dsp, aerr = Newdbselectparam(r); aerr != nil {
 		return nil, aerr
 	}
 	dspp.dbselectparam = *dsp
-	dspp.OrderBy = "product_id"
 
 	if r != nil {
+		if o, ok := r.URL.Query()["sort"]; ok {
+			dspp.OrderBy = o[0]
+		} else {
+			dspp.OrderBy = "product_id"
+		}
 		if entityid, ok := r.URL.Query()["entity"]; ok {
 			var eid int
 			if eid, err = strconv.Atoi(entityid[0]); err != nil {
@@ -268,6 +283,17 @@ func NewdbselectparamProduct(r *http.Request) (*dbselectparamProduct, *AppError)
 				}
 			}
 			dspp.Entity = eid
+		}
+		if productid, ok := r.URL.Query()["product"]; ok {
+			var pid int
+			if pid, err = strconv.Atoi(productid[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "limit atoi conversion",
+				}
+			}
+			dspp.Product = pid
 		}
 	}
 	return &dspp, nil
@@ -292,9 +318,18 @@ func NewdbselectparamStorage(r *http.Request) (*dbselectparamStorage, *AppError)
 		return nil, aerr
 	}
 	dsps.dbselectparam = *dsp
-	dsps.OrderBy = "storage_id"
 
 	if r != nil {
+		if o, ok := r.URL.Query()["sort"]; ok {
+			switch o[0] {
+			case "product.name.name_label":
+				dsps.OrderBy = "name.name_label"
+			default:
+				dsps.OrderBy = o[0]
+			}
+		} else {
+			dsps.OrderBy = "storage_id"
+		}
 		if entityid, ok := r.URL.Query()["entity"]; ok {
 			var eid int
 			if eid, err = strconv.Atoi(entityid[0]); err != nil {
@@ -339,9 +374,13 @@ func NewdbselectparamStoreLocation(r *http.Request) (*dbselectparamStoreLocation
 		return nil, aerr
 	}
 	dspsl.dbselectparam = *dsp
-	dspsl.OrderBy = "storelocation_id"
 
 	if r != nil {
+		if o, ok := r.URL.Query()["sort"]; ok {
+			dspsl.OrderBy = o[0]
+		} else {
+			dspsl.OrderBy = "storelocation_id"
+		}
 		if entityid, ok := r.URL.Query()["entity"]; ok {
 			var eid int
 			if eid, err = strconv.Atoi(entityid[0]); err != nil {
@@ -375,10 +414,13 @@ func NewdbselectparamPerson(r *http.Request) (*dbselectparamPerson, *AppError) {
 		return nil, aerr
 	}
 	dspp.dbselectparam = *dsp
-	dspp.OrderBy = "person_id"
 
-	fmt.Println(dspp)
 	if r != nil {
+		if o, ok := r.URL.Query()["sort"]; ok {
+			dspp.OrderBy = o[0]
+		} else {
+			dspp.OrderBy = "person_id"
+		}
 		if entityid, ok := r.URL.Query()["entity"]; ok {
 			var eid int
 			if eid, err = strconv.Atoi(entityid[0]); err != nil {

@@ -1,0 +1,128 @@
+extends static/templates/base.jade
+
+block content
+
+    .row
+        .col-sm-4.offset-sm-4
+            #filter-product
+
+    form#storage-create
+        input#index(type='hidden', name='index', value='')
+        input#product_id(type='hidden', name='product_id', value='')
+
+        .form-group.row
+            | {{$label := "store location"}} {{$name := "storelocation"}}
+            +select
+        .form-group.row
+            | {{$label := "comment"}} {{$name := "storage_comment"}}
+            +inputtext
+    
+    button#save.btn.btn-primary(type='button', onclick='saveStorage()') save changes
+
+block contentjs
+    script.
+
+       $( document ).ready(function() {           
+
+            //
+            // retrieving product
+            //
+            var urlParams = new URLSearchParams(window.location.search);
+            p = urlParams.get("product");
+            if (p === null) {
+                window.location.replace("/v/products");
+            }
+            // getting the product
+            $.ajax({
+                url: "/products/" + p,
+                method: "GET",
+            }).done(function(data, textStatus, jqXHR) {
+                $("input#product_id").val(p);
+                $("#filter-product").html("<div class='card'><div class='card-body'>" + data.name.name_label + " (" + data.casnumber.casnumber_label + ")</div></div>")
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                handleHTTPError(jqXHR.statusText, jqXHR.status)
+            });
+
+            //
+            // update form validation
+            //
+            $( "#storage-create" ).validate({
+                errorClass: "alert alert-danger",
+                rules: {
+                    storelocation: {
+                        required: true,
+                    },
+                },
+            });
+
+            //
+            // store location select2
+            //
+            $('select#storelocation').select2({
+                tags: false,
+                ajax: {
+                    url: '/storelocations',
+                        data: function (params) {
+                        var query = {
+                            search: params.term,
+                            page: params.page || 1,
+                            offset: params.page*10 || 0,
+                            limit: 10
+                        }
+
+                        // Query parameters will be ?search=[term]&page=[page]
+                        return query;
+                    },
+                    dataType: 'json',
+                    processResults: function (data) {
+                        // replacing name by text expected by select2
+                        var newdata = $.map(data.rows, function (obj) {
+                            obj.text = obj.text || obj.storelocation_name;
+                            obj.id = obj.id || obj.storelocation_id;
+                            return obj;
+                        });
+                        // getting the number of loaded select elements
+                        selectnbitems = $("ul#select2-storelocation-results li").length + 10;
+
+                        return {
+                            results: newdata,
+                            pagination: {more: selectnbitems<data.total}
+                        };
+                    }
+                }
+            }).on("change", function (e) {
+                $(this).valid(); // FIXME: see https://github.com/select2/select2/issues/3901
+            });
+
+        });
+
+        //
+        // save storage callback
+        //
+        function saveStorage() {
+            var form = $("#storage-create");
+            if (! form.valid()) {
+                return;
+            };
+
+            var storage_comment = $("input#storage_comment").val(),
+                storelocation = $('select#storelocation').select2('data')[0],
+                product_id = $("input#product_id").val();
+                data = {};
+                $.extend(data, {
+                    "product.product_id": product_id,
+                    "storage_comment": storage_comment,
+                    "storelocation.storelocation_id": storelocation.id,
+                });
+                $.ajax({
+                    url: "/storages",
+                    method: "POST",
+                    dataType: 'json',
+                    data: data,
+                }).done(function(data, textStatus, jqXHR) {
+                    displayMessage("storage created", "success");
+                    setTimeout(function(){ window.location = "/v/storages?product="+product_id; }, 1000);
+                }).fail(function(jqXHR, textStatus, errorThrown) {
+                    handleHTTPError(jqXHR.statusText, jqXHR.status)
+                });  
+        }

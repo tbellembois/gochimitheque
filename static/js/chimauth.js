@@ -1,6 +1,6 @@
 // handle HTTP errors
 function handleHTTPError(msgText, msgStatus) {
-    console.log(msgStatus);
+    //console.log(msgStatus);
     switch(msgStatus) {
     case 401:
         displayMessage(msgText, "danger");
@@ -32,7 +32,7 @@ function getToken() {
             person_password: password
         }
     }).done(function(token) {
-        console.log(token);
+        //console.log(token);
         // store in web storage
         //window.localStorage.setItem('token', token);
         window.location.replace("/v/entities");
@@ -51,16 +51,7 @@ function readCookie(name) {
     return null;
 }
 
-// returns true if the person with personId has the permission "perm" on the item "item" with item id "itemId"
-function hasPermission(personId, perm, item, itemId) {
-    return $.ajax({
-        url: "/haspermission/" + personId + "/" + perm + "/" + item + "/" + itemId,
-        itemId: itemId,
-        method: 'GET',
-    });
-}
-
-function hasPermission2(url, method, itemId) {
+function hasPermission(url, method, itemId) {
     return $.ajax({
         url: url,
         itemId: itemId,

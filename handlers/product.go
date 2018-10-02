@@ -223,7 +223,52 @@ func (env *Env) GetProductHandler(w http.ResponseWriter, r *http.Request) *helpe
 
 // CreateProductHandler creates the product from the request form
 func (env *Env) CreateProductHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	log.Debug("CreateProductHandler")
+	var (
+		p models.Product
+	)
+	if err := r.ParseForm(); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "form parsing error",
+			Code:    http.StatusBadRequest}
+	}
 
+	// if a new name is entered (ie instead of selecting an existing name)
+	// r.Form["name.name_id"] == r.Form["name.name_label"]
+	// then modifying the name_id to prevent a form decoding error
+	if r.PostForm["name.name_id"][0] == r.PostForm["name.name_label"][0] {
+		r.PostForm.Set("name.name_id", "-1")
+	}
+	// idem for casnumber
+	if r.PostForm["casnumber.casnumber_id"][0] == r.PostForm["casnumber.casnumber_label"][0] {
+		r.PostForm.Set("casnumber.casnumber_id", "-1")
+	}
+
+	// retrieving the logged user id from request context
+	//c := helpers.ContainerFromRequestContext(r)
+
+	var decoder = schema.NewDecoder()
+	if err := decoder.Decode(&p, r.PostForm); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "form decoding error",
+			Code:    http.StatusBadRequest}
+	}
+	// p.ProductCreationDate = time.Now()
+	// p.PersonID = p.PersonID
+	log.WithFields(log.Fields{"p": p}).Debug("CreateProductHandler")
+
+	if err, _ := env.DB.CreateProduct(p); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "create product error",
+			Code:    http.StatusInternalServerError}
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(p)
 	return nil
 }
 

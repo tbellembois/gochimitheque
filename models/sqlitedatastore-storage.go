@@ -3,6 +3,8 @@ package models
 import (
 	"strings"
 
+	"database/sql"
+
 	"github.com/jmoiron/sqlx"
 
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
@@ -138,7 +140,24 @@ func (db *SQLiteDataStore) DeleteStorage(id int) error {
 }
 
 func (db *SQLiteDataStore) CreateStorage(s Storage) (error, int) {
-	return nil, 1
+
+	var (
+		sqlr   string
+		res    sql.Result
+		lastid int64
+	)
+	// FIXME: use a transaction here
+	sqlr = `INSERT INTO storage(storage_creationdate, storage_comment, person, product, storelocation) VALUES (?, ?, ?, ?, ?)`
+	if res, db.err = db.Exec(sqlr, s.StorageCreationDate, s.StorageComment, s.PersonID, s.ProductID, s.StoreLocationID); db.err != nil {
+		return db.err, 0
+	}
+
+	// getting the last inserted id
+	if lastid, db.err = res.LastInsertId(); db.err != nil {
+		return db.err, 0
+	}
+
+	return nil, int(lastid)
 }
 func (db *SQLiteDataStore) UpdateStorage(s Storage) error {
 
@@ -149,7 +168,7 @@ func (db *SQLiteDataStore) UpdateStorage(s Storage) error {
 	// updating the storage - product not supposed to be changed
 	sqlr = `UPDATE storage SET storage_comment = ?, person = ?, storelocation = ?
 	WHERE storage_id = ?`
-	if _, db.err = db.Exec(sqlr, s.Comment, s.PersonID, s.StoreLocationID, s.StorageID); db.err != nil {
+	if _, db.err = db.Exec(sqlr, s.StorageComment, s.PersonID, s.StoreLocationID, s.StorageID); db.err != nil {
 		return db.err
 	}
 

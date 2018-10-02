@@ -23,7 +23,7 @@ block content
                                 data-detail-formatter="detailFormatter")
                         thead
                             tr
-                                th(data-field='product_id') ID
+                                th(data-field='product_id' data-sortable='true') ID
                                 th(data-field='name.name_label' data-sortable='true') name
                                 th(data-field='product_specificity' data-sortable='false') specificity
                                 th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') actions
@@ -259,6 +259,9 @@ block contentjs
             if (URLValues.has("entity")) {
                 params["entity"] = URLValues.get("entity")[0];
             }
+            if (URLValues.has("product")) {
+                params["product"] = URLValues.get("product")[0];
+            }
             return params;
         }
         function getData(params) {
@@ -283,7 +286,6 @@ block contentjs
         //
         function detailFormatter(index, row) {
             var html = [];
-            console.log(row);
             html.push("<p><b>name</b>: " + row["name"]["name_label"] + "</p>")
             html.push("<p><b>specificity</b>: " + row["product_specificity"] + "</p>")
             html.push("<p><b>cas</b>: " + row["casnumber"]["casnumber_label"] + "</p>")
@@ -314,20 +316,27 @@ block contentjs
         function operateFormatter(value, row, index) {
             // show action buttons if permitted
             pid = row.product_id
-            hasPermission2("/f/products/" + pid, "GET", pid).done(function(){
+            // FIXME: perms
+            hasPermission("/f/storages", "POST", pid).done(function(){
+                    $("#store"+this.itemId).fadeIn();
+            })
+            hasPermission("/f/storages/" + pid, "GET", pid).done(function(){
                     $("#storages"+this.itemId).fadeIn();
             })
-            hasPermission2("/f/products/" + pid, "PUT", pid).done(function(){
+            hasPermission("/f/products/" + pid, "PUT", pid).done(function(){
                     $("#edit"+this.itemId).fadeIn();
             })
-            hasPermission2("/f/products/" + pid, "DELETE", pid).done(function(){
+            hasPermission("/f/products/" + pid, "DELETE", pid).done(function(){
                     $("#delete"+this.itemId).fadeIn();
             })
 
             // buttons are hidden by default
             var actions = [
+            '<button id="store' + pid + '" class="store btn btn-secondary" style="display: none;" title="store" type="button">',
+                '<i class="fas fa-box-open"></i>',
+            '</button>',
             '<button id="storages' + pid + '" class="storages btn btn-secondary" style="display: none;" title="storages" type="button">',
-                '<i class="fas fa-box"></i>',
+                '<i class="fas fa-boxes"></i>',
             '</button>',
             '<button id="edit' + pid + '" class="edit btn btn-secondary" style="display: none;" title="edit" type="button">',
                 '<i class="fas fa-edit"></i>',
@@ -378,6 +387,9 @@ block contentjs
             $('#list-collapse').collapse('hide');
         }
         window.operateEvents = {
+            'click .store': function (e, value, row, index) {
+                window.location.href = "/vc/storages?product=" + row['product_id'];
+            },
             'click .storages': function (e, value, row, index) {
                 window.location.href = "/v/storages?product=" + row['product_id'];
             },

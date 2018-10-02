@@ -27,9 +27,9 @@ block content
                                 data-detail-formatter="detailFormatter")
                         thead
                             tr
-                                th(data-field='storage_id') ID
+                                th(data-field='storage_id' data-sortable='true') ID
                                 th(data-field='storage_creationdate' data-formatter='dateFormatter' data-sortable='true') creation date
-                                th(data-field='product.name.name_label') product
+                                th(data-field='product.name.name_label' data-sortable='true') product
                                 th(data-field='storelocation.storelocation_name' data-sortable='true') store location
                                 th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') actions
 
@@ -69,18 +69,58 @@ block contentjs
                 $('#table').bootstrapTable('resetSearch', URLValues.get("search")[0]);
             }
 
-        });
-
-        //
-        // update form validation
-        //
-        $( "#storage-update" ).validate({
-            errorClass: "alert alert-danger",
-            rules: {
-                storelocation: {
-                    required: true,
+            //
+            // update form validation
+            //
+            $( "#storage-update" ).validate({
+                errorClass: "alert alert-danger",
+                rules: {
+                    storelocation: {
+                        required: true,
+                    },
                 },
-            },
+            });
+
+            //
+            // store location select2
+            //
+            $('select#storelocation').select2({
+                tags: false,
+                dropdownParent: $('#edit-collapse'),
+                ajax: {
+                    url: '/storelocations',
+                        data: function (params) {
+                        var query = {
+                            search: params.term,
+                            page: params.page || 1,
+                            offset: params.page*10 || 0,
+                            limit: 10
+                        }
+
+                        // Query parameters will be ?search=[term]&page=[page]
+                        return query;
+                    },
+                    dataType: 'json',
+                    processResults: function (data) {
+                        // replacing name by text expected by select2
+                        var newdata = $.map(data.rows, function (obj) {
+                            obj.text = obj.text || obj.storelocation_name;
+                            obj.id = obj.id || obj.storelocation_id;
+                            return obj;
+                        });
+                        // getting the number of loaded select elements
+                        selectnbitems = $("ul#select2-storelocation-results li").length + 10;
+
+                        return {
+                            results: newdata,
+                            pagination: {more: selectnbitems<data.total}
+                        };
+                    }
+                }
+            }).on("change", function (e) {
+                $(this).valid(); // FIXME: see https://github.com/select2/select2/issues/3901
+            });
+
         });
 
         //
@@ -122,46 +162,6 @@ block contentjs
         }
 
         //
-        // store location select2
-        //
-        $('select#storelocation').select2({
-            tags: false,
-            dropdownParent: $('#edit-collapse'),
-            ajax: {
-                url: '/storelocations',
-                    data: function (params) {
-                    var query = {
-                        search: params.term,
-                        page: params.page || 1,
-                        offset: params.page*10 || 0,
-                        limit: 10
-                    }
-
-                    // Query parameters will be ?search=[term]&page=[page]
-                    return query;
-                },
-                dataType: 'json',
-                processResults: function (data) {
-                    // replacing name by text expected by select2
-                    var newdata = $.map(data.rows, function (obj) {
-                        obj.text = obj.text || obj.storelocation_name;
-                        obj.id = obj.id || obj.storelocation_id;
-                        return obj;
-                    });
-                    // getting the number of loaded select elements
-                    selectnbitems = $("ul#select2-storelocation-results li").length + 10;
-
-                    return {
-                        results: newdata,
-                        pagination: {more: selectnbitems<data.total}
-                    };
-                }
-            }
-        }).on("change", function (e) {
-            $(this).valid(); // FIXME: see https://github.com/select2/select2/issues/3901
-        });
-
-        //
         // save storage callback
         //
         function saveStorage() {
@@ -201,7 +201,6 @@ block contentjs
         //
         function detailFormatter(index, row) {
             var html = [];
-            console.log(row);
             html.push("<p><b>product</b>: " + row["product"]["name"]["name_label"] + "</p>")
             html.push("<p><b>store location</b>: " + row["storelocation"]["storelocation_name"] + "</p>")
             html.push("<p><b>created at</b>: " + row["storage_creationdate"] + "</p>")
@@ -223,10 +222,10 @@ block contentjs
         function operateFormatter(value, row, index) {
             // show action buttons if permitted
             sid = row.storage_id
-            hasPermission2("/f/storages/" + sid, "PUT", sid).done(function(){
+            hasPermission("/f/storages/" + sid, "PUT", sid).done(function(){
                     $("#edit"+this.itemId).fadeIn();
             })
-            hasPermission2("/f/storages/" + sid, "DELETE", sid).done(function(){
+            hasPermission("/f/storages/" + sid, "DELETE", sid).done(function(){
                     $("#delete"+this.itemId).fadeIn();
             })
 

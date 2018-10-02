@@ -35,12 +35,12 @@ type Person struct {
 
 // Storage is a product storage in a store location
 type Storage struct {
-	StorageID     int       `db:"storage_id" json:"storage_id" schema:"storage_id"`
-	CreationDate  time.Time `db:"storage_creationdate" json:"storage_creationdate" schema:"storage_creationdate"`
-	Comment       string    `db:"storage_comment" json:"storage_comment" schema:"storage_comment"`
-	Person        `db:"person" json:"person" schema:"person"`
-	Product       `db:"product" json:"product" schema:"product"`
-	StoreLocation `db:"storelocation" json:"storelocation" schema:"storelocation"`
+	StorageID           int       `db:"storage_id" json:"storage_id" schema:"storage_id"`
+	StorageCreationDate time.Time `db:"storage_creationdate" json:"storage_creationdate" schema:"storage_creationdate"`
+	StorageComment      string    `db:"storage_comment" json:"storage_comment" schema:"storage_comment"`
+	Person              `db:"person" json:"person" schema:"person"`
+	Product             `db:"product" json:"product" schema:"product"`
+	StoreLocation       `db:"storelocation" json:"storelocation" schema:"storelocation"`
 }
 
 // Permission represent who is able to do what on something
