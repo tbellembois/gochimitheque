@@ -131,6 +131,10 @@ func (env *Env) UpdateStorageHandler(w http.ResponseWriter, r *http.Request) *he
 			Message: "form parsing error",
 			Code:    http.StatusBadRequest}
 	}
+
+	// retrieving the logged user id from request context
+	c := helpers.ContainerFromRequestContext(r)
+
 	var decoder = schema.NewDecoder()
 	if err := decoder.Decode(&s, r.PostForm); err != nil {
 		return &helpers.AppError{
@@ -146,10 +150,6 @@ func (env *Env) UpdateStorageHandler(w http.ResponseWriter, r *http.Request) *he
 			Message: "id atoi conversion",
 			Code:    http.StatusInternalServerError}
 	}
-
-	// retrieving the logged user id from request context
-	c := helpers.ContainerFromRequestContext(r)
-
 	updateds, _ := env.DB.GetStorage(id)
 	updateds.StorageComment = s.StorageComment
 	updateds.StoreLocation = s.StoreLocation

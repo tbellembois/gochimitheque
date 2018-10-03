@@ -37,7 +37,16 @@ block content
                     | {{$label := "name"}} {{$name := "name"}}
                     +select
                 .form-group.row
+                    | {{$label := "synonym(s)"}} {{$name := "synonyms"}}
+                    +selectmultiple
+                .form-group.row
+                    | {{$label := "empirical formula"}} {{$name := "empiricalformula"}}
+                    +select
+                .form-group.row
                     | {{$label := "cas number"}} {{$name := "casnumber"}}
+                    +select
+                .form-group.row
+                    | {{$label := "ce number"}} {{$name := "cenumber"}}
                     +select
                 .form-group.row
                     | {{$label := "specificity"}} {{$name := "product_specificity"}}
@@ -99,6 +108,21 @@ block contentjs
                             },
                         },
                     },
+                    cenumber: {
+                        required: true,
+                        remote: {
+                            url: "",
+                            type: "post",
+                            beforeSend: function(jqXhr, settings) {
+                                settings.url = "/validate/product/" + $("form#product-update input#product_id").val() + "/cenumber/";
+                            },
+                            data: {
+                                cenumber: function() {
+                                    return $('select#cenumber').select2('data')[0].text;
+                                },
+                            },
+                        },
+                    },
                 },
             });
 
@@ -131,6 +155,46 @@ block contentjs
                         });
                         // getting the number of loaded select elements
                         selectnbitems = $("ul#select2-casnumber-results li").length + 10;
+
+                        return {
+                            results: newdata,
+                            pagination: {more: selectnbitems<data.total}
+                        };
+                    }
+                }
+            }).on("change", function (e) {
+                $(this).valid(); // FIXME: see https://github.com/select2/select2/issues/3901
+            });
+
+            //
+            // cenumber select2
+            //
+            $('select#cenumber').select2({
+                tags: true,
+                dropdownParent: $('#edit-collapse'),
+                ajax: {
+                    url: '/products/cenumbers',
+                        data: function (params) {
+                        var query = {
+                            search: params.term,
+                            page: params.page || 1,
+                            offset: params.page*10 || 0,
+                            limit: 10
+                        }
+
+                        // Query parameters will be ?search=[term]&page=[page]
+                        return query;
+                    },
+                    dataType: 'json',
+                    processResults: function (data) {
+                        // replacing name by text expected by select2
+                        var newdata = $.map(data.rows, function (obj) {
+                            obj.text = obj.text || obj.cenumber_label;
+                            obj.id = obj.id || obj.cenumber_id;
+                            return obj;
+                        });
+                        // getting the number of loaded select elements
+                        selectnbitems = $("ul#select2-cenumber-results li").length + 10;
 
                         return {
                             results: newdata,
@@ -183,6 +247,69 @@ block contentjs
             });
 
             //
+            // empirical formula select2
+            //
+            $('select#empiricalformula').select2({
+                tags: true,
+                dropdownParent: $('#edit-collapse'),
+                ajax: {
+                    url: '/products/empiricalformula',
+                        data: function (params) {
+                        var query = {
+                            search: params.term,
+                            page: params.page || 1,
+                            offset: params.page*10 || 0,
+                            limit: 10
+                        }
+
+                        // Query parameters will be ?search=[term]&page=[page]
+                        return query;
+                    },
+                    dataType: 'json',
+                    processResults: function (data) {
+                        // replacing name by text expected by select2
+                        var newdata = $.map(data.rows, function (obj) {
+                            obj.text = obj.text || obj.name_label;
+                            obj.id = obj.id || obj.name_id;
+                            return obj;
+                        });
+                        // getting the number of loaded select elements
+                        selectnbitems = $("ul#select2-empiricalformula-results li").length + 10;
+
+                        return {
+                            results: newdata,
+                            pagination: {more: selectnbitems<data.total}
+                        };
+                    }
+                }
+            }).on("change", function (e) {
+                $(this).valid(); // FIXME: see https://github.com/select2/select2/issues/3901
+            });
+
+            //
+            // synonyms select2
+            //
+            $('select#synonyms').select2({
+                tags: true,
+                dropdownParent: $('#edit-collapse'),
+                ajax: {
+                    url: '/products/synonyms',
+                    dataType: 'json',
+                    processResults: function (data) {
+                        // replacing name by text expected by select2
+                        var newdata = $.map(data.rows, function (obj) {
+                            obj.text = obj.text || obj.symbol_label;
+                            obj.id = obj.id || obj.symbol_id;
+                            return obj;
+                        });
+                         return {
+                            results: newdata,
+                        };
+                    }
+                }
+            });
+
+            //
             // symbols select2
             //
             $('select#symbols').select2({
@@ -220,18 +347,29 @@ block contentjs
             var product_id = $("#edit-collapse input#product_id").val(),
                 product_specificity = $("#edit-collapse input#product_specificity").val(),
                 casnumber = $('select#casnumber').select2('data')[0];
+                cenumber = $('select#cenumber').select2('data')[0];
+                empiricalformula = $('select#empiricalformula').select2('data')[0];
                 name_ = $('select#name').select2('data')[0];
+                synonyms = $('select#synonyms').select2('data');
                 symbols = $('select#symbols').select2('data');
                 data = {};
                 $.each(symbols, function( index, s ) {
                     data["symbols." + index +".symbol_id"] = s.id;
                     data["symbols." + index +".symbol_label"] = s.text;
                 });
+                $.each(synonyms, function( index, s ) {
+                    data["synonyms." + index +".name_id"] = s.id;
+                    data["synonyms." + index +".name_label"] = s.text;
+                });
                 $.extend(data, {
                     "product_id": product_id,
                     "product_specificity": product_specificity,
                     "casnumber.casnumber_id": casnumber.id,
                     "casnumber.casnumber_label": casnumber.text,
+                    "cenumber.casnumber_id": casnumber.id,
+                    "cenumber.casnumber_label": casnumber.text,
+                    "empiricalformula.empiricalformula_id": casnumber.id,
+                    "empiricalformula.empiricalformula_label": casnumber.text,
                     "name.name_id": name_.id,
                     "name.name_label": name_.text,
                 });
@@ -286,9 +424,15 @@ block contentjs
         //
         function detailFormatter(index, row) {
             var html = [];
+            html.push("<p><b>creator</b>: " + row["person"]["person_email"] + "</p>")
             html.push("<p><b>name</b>: " + row["name"]["name_label"] + "</p>")
+            $.each(row["synonyms"], function (key, value) {
+                html.push("<p>" + value["name_label"] + "</p>");
+            });
+            html.push("<p><b>empirical formula</b>: " + row["empiricalformula"]["empiricalformula_label"] + "</p>")
             html.push("<p><b>specificity</b>: " + row["product_specificity"] + "</p>")
             html.push("<p><b>cas</b>: " + row["casnumber"]["casnumber_label"] + "</p>")
+            html.push("<p><b>ce</b>: " + row["cenumber"]["cenumber_label"]["String"] + "</p>")
             html.push("<p>")
             $.each(row["symbols"], function (key, value) {
                 html.push("<img src='data:" + value["symbol_image"] + "' alt='" + value["symbol_label"] + "' title='" + value["symbol_label"] + "'/>");
@@ -353,10 +497,16 @@ block contentjs
             // clearing selections
             $('select#casnumber').val(null).trigger('change');
             $('select#casnumber').find('option').remove();
+            $('select#cenumber').val(null).trigger('change');
+            $('select#cenumber').find('option').remove();
             $('select#name').val(null).trigger('change');
             $('select#name').find('option').remove();
             $('select#symbols').val(null).trigger('change');
             $('select#symbols').find('option').remove();
+            $('select#synonyms').val(null).trigger('change');
+            $('select#synonyms').find('option').remove();
+            $('select#empiricalformula').val(null).trigger('change');
+            $('select#empiricalformula').find('option').remove();
 
             // getting the product
             $.ajax({
@@ -372,11 +522,19 @@ block contentjs
                 // select2 is not autofilled - we need a special operation
                 var newOption = new Option(data.casnumber.casnumber_label, data.casnumber.casnumber_id, true, true);
                 $('select#casnumber').append(newOption).trigger('change');
+                var newOption = new Option(data.cenumber.cenumber_label, data.cenumber.cenumber_id, true, true);
+                $('select#cenumber').append(newOption).trigger('change');
+                var newOption = new Option(data.empiricalformula.empiricalformula_label, data.empiricalformula.empiricalformula_id, true, true);
+                $('select#empiricalformula').append(newOption).trigger('change');
                 var newOption = new Option(data.name.name_label, data.name.name_id, true, true);
                 $('select#name').append(newOption).trigger('change');
                 for(var i in data.symbols) {
                    var newOption = new Option(data.symbols[i].symbol_label, data.symbols[i].symbol_id, true, true);
                    $('select#symbols').append(newOption).trigger('change');
+                }
+                for(var i in data.synonyms) {
+                   var newOption = new Option(data.synonyms[i].name_label, data.synonyms[i].name_id, true, true);
+                   $('select#synonyms').append(newOption).trigger('change');
                 }
             }).fail(function(jqXHR, textStatus, errorThrown) {
                 handleHTTPError(jqXHR.statusText, jqXHR.status)

@@ -64,6 +64,57 @@ func (db *SQLiteDataStore) GetProductsCasNumbers(p helpers.Dbselectparam) ([]Cas
 	return casnumbers, count, nil
 }
 
+// GetProductsCeNumbers return the cas numbers matching the search criteria
+func (db *SQLiteDataStore) GetProductsCeNumbers(p helpers.Dbselectparam) ([]CeNumber, int, error) {
+	var (
+		cenumbers                          []CeNumber
+		count                              int
+		precreq, presreq, comreq, postsreq strings.Builder
+		cnstmt                             *sqlx.NamedStmt
+		snstmt                             *sqlx.NamedStmt
+	)
+
+	precreq.WriteString(" SELECT count(DISTINCT cenumber.cenumber_id)")
+	presreq.WriteString(" SELECT cenumber_id, cenumber_label")
+
+	comreq.WriteString(" FROM cenumber")
+	comreq.WriteString(" WHERE cenumber_label LIKE :search")
+	postsreq.WriteString(" ORDER BY cenumber_label  " + p.GetOrder())
+
+	// limit
+	if p.GetLimit() != constants.MaxUint64 {
+		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
+	}
+
+	// building count and select statements
+	if cnstmt, db.err = db.PrepareNamed(precreq.String() + comreq.String()); db.err != nil {
+		return nil, 0, db.err
+	}
+	if snstmt, db.err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); db.err != nil {
+		return nil, 0, db.err
+	}
+
+	// building argument map
+	m := map[string]interface{}{
+		"search": p.GetSearch(),
+		"order":  p.GetOrder(),
+		"limit":  p.GetLimit(),
+		"offset": p.GetOffset(),
+	}
+
+	// select
+	if db.err = snstmt.Select(&cenumbers, m); db.err != nil {
+		return nil, 0, db.err
+	}
+	// count
+	if db.err = cnstmt.Get(&count, m); db.err != nil {
+		return nil, 0, db.err
+	}
+
+	log.WithFields(log.Fields{"cenumbers": cenumbers}).Debug("GetProductsCeNumbers")
+	return cenumbers, count, nil
+}
+
 // GetProductsNames return the names matching the search criteria
 func (db *SQLiteDataStore) GetProductsNames(p helpers.Dbselectparam) ([]Name, int, error) {
 	var (
@@ -181,7 +232,15 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	precreq.WriteString(" SELECT count(DISTINCT product.product_id)")
 	presreq.WriteString(` SELECT product.product_id, 
 	product.product_specificity, 
+	empiricalformula.empiricalformula_id AS "empiricalformula.empiricalformula_id",
+	empiricalformula.empiricalformula_label AS "empiricalformula.empiricalformula_label",
+	person.person_id AS "person.person_id",
+	person.person_email AS "person.person_email",
+	name.name_id AS "name.name_id",
 	name.name_label AS "name.name_label",
+	cenumber.cenumber_id AS "cenumber.cenumber_id",
+	cenumber.cenumber_label AS "cenumber.cenumber_label",
+	casnumber.casnumber_id AS "casnumber.casnumber_id",
 	casnumber.casnumber_label AS "casnumber.casnumber_label"`)
 
 	// common parts
@@ -190,6 +249,12 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	comreq.WriteString(" JOIN name ON product.name = name.name_id")
 	// get casnumber
 	comreq.WriteString(" JOIN casnumber ON product.casnumber = casnumber.casnumber_id")
+	// get cenumber
+	comreq.WriteString(" LEFT JOIN cenumber ON product.cenumber = cenumber.cenumber_id")
+	// get person
+	comreq.WriteString(" JOIN person ON product.person = person.person_id")
+	// get empirical formula
+	comreq.WriteString(" JOIN empiricalformula ON product.empiricalformula = empiricalformula.empiricalformula_id")
 	// filter by permissions
 	comreq.WriteString(` JOIN permission AS perm, entity as e ON
 	(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
@@ -214,8 +279,6 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
 	}
 
-	log.Debug(presreq.String() + comreq.String() + postsreq.String())
-	log.Debug(p.GetSearch())
 	// building count and select statements
 	if cnstmt, db.err = db.PrepareNamed(precreq.String() + comreq.String()); db.err != nil {
 		return nil, 0, db.err
@@ -260,6 +323,22 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 		}
 	}
 
+	//
+	// getting synonyms
+	//
+	for i, p := range products {
+		// note: do not modify p but products[i] instead
+		req.Reset()
+		req.WriteString("SELECT name_id, name_label FROM name")
+		req.WriteString(" JOIN productsynonyms ON productsynonyms.productsynonyms_name_id = name.name_id")
+		req.WriteString(" JOIN product ON productsynonyms.productsynonyms_product_id = product.product_id")
+		req.WriteString(" WHERE product.product_id = ?")
+
+		if db.err = db.Select(&products[i].Synonyms, req.String(), p.ProductID); db.err != nil {
+			return nil, 0, db.err
+		}
+	}
+
 	return products, count, nil
 }
 
@@ -269,15 +348,25 @@ func (db *SQLiteDataStore) GetProduct(id int) (Product, error) {
 		sqlr    string
 	)
 
-	sqlr = `SELECT p.product_id, p.product_specificity, 
-	casnumber.casnumber_id AS "casnumber.casnumber_id",
-	casnumber.casnumber_label AS "casnumber.casnumber_label",
+	sqlr = `SELECT product_id, 
+	product_specificity, 
+	empiricalformula.empiricalformula_id AS "empiricalformula.empiricalformula_id",
+	empiricalformula.empiricalformula_label AS "empiricalformula.empiricalformula_label",
+	person.person_id AS "person.person_id",
+	person.person_email AS "person.person_email",
 	name.name_id AS "name.name_id",
-	name.name_label AS "name.name_label"
-	FROM product AS p
-	JOIN casnumber ON p.casnumber = casnumber.casnumber_id
-	JOIN name ON p.name = name.name_id
-	WHERE p.product_id = ?`
+	name.name_label AS "name.name_label",
+	cenumber.cenumber_id AS "cenumber.cenumber_id",
+	cenumber.cenumber_label AS "cenumber.cenumber_label",
+	casnumber.casnumber_id AS "casnumber.casnumber_id",
+	casnumber.casnumber_label AS "casnumber.casnumber_label"
+	FROM product
+	JOIN name ON product.name = name.name_id
+	JOIN casnumber ON product.casnumber = casnumber.casnumber_id
+	LEFT JOIN cenumber ON product.cenumber = cenumber.cenumber_id
+	JOIN person ON product.person = person.person_id
+	JOIN empiricalformula ON product.empiricalformula = empiricalformula.empiricalformula_id
+	WHERE product_id = ?`
 	if db.err = db.Get(&product, sqlr, id); db.err != nil {
 		return Product{}, db.err
 	}
@@ -293,6 +382,17 @@ func (db *SQLiteDataStore) GetProduct(id int) (Product, error) {
 		return product, db.err
 	}
 
+	//
+	// getting synonyms
+	//
+	sqlr = `SELECT name_id, name_label FROM name
+	JOIN productsynonyms ON productsynonyms.productsynonyms_name_id = name.name_id
+	JOIN product ON productsynonyms.productsynonyms_product_id = product.product_id
+	WHERE product.product_id = ?`
+	if db.err = db.Select(&product.Synonyms, sqlr, product.ProductID); db.err != nil {
+		return product, db.err
+	}
+
 	log.WithFields(log.Fields{"ID": id, "product": product}).Debug("GetProduct")
 	return product, nil
 }
@@ -301,6 +401,7 @@ func (db *SQLiteDataStore) DeleteProduct(id int) error {
 	var (
 		sqlr string
 	)
+	// TODO: synonyms, symbols
 	sqlr = `DELETE FROM product 
 	WHERE product_id = ?`
 	if _, db.err = db.Exec(sqlr, id); db.err != nil {
@@ -337,6 +438,21 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 		// updating the product CasNumberID (CasNumberLabel already set)
 		p.CasNumber.CasNumberID = int(lastid)
 	}
+	// if CeNumberID = -1 then it is a new ce
+	if v, err := p.CeNumber.CeNumberID.Value(); err == nil && v == -1 {
+		sqlr = `INSERT INTO cenumber (cenumber_label) VALUES (?)`
+		if res, db.err = tx.Exec(sqlr, p.CeNumberLabel); db.err != nil {
+			tx.Rollback()
+			return db.err, 0
+		}
+		// getting the last inserted id
+		if lastid, db.err = res.LastInsertId(); db.err != nil {
+			tx.Rollback()
+			return db.err, 0
+		}
+		// updating the product CeNumberID (CeNumberLabel already set)
+		p.CeNumber.CeNumberID = sql.NullInt64{Int64: lastid}
+	}
 	// if NameID = -1 then it is a new name
 	if p.Name.NameID == -1 {
 		sqlr = `INSERT INTO name (name_label) VALUES (?)`
@@ -351,6 +467,21 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 		}
 		// updating the product NameID (NameLabel already set)
 		p.Name.NameID = int(lastid)
+	}
+	// if EmpiricalFormulaID = -1 then it is a new empirical formula
+	if p.EmpiricalFormula.EmpiricalFormulaID == -1 {
+		sqlr = `INSERT INTO empiricalformula (empiricalformula_label) VALUES (?)`
+		if res, db.err = tx.Exec(sqlr, p.EmpiricalFormulaLabel); db.err != nil {
+			tx.Rollback()
+			return db.err, 0
+		}
+		// getting the last inserted id
+		if lastid, db.err = res.LastInsertId(); db.err != nil {
+			tx.Rollback()
+			return db.err, 0
+		}
+		// updating the product EmpiricalFormulaID (EmpiricalFormulaLabel already set)
+		p.EmpiricalFormula.EmpiricalFormulaID = int(lastid)
 	}
 
 	// finally adding the product
@@ -372,6 +503,27 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 	for _, sym := range p.Symbols {
 		sqlr = `INSERT INTO productsymbols (productsymbols_product_id, productsymbols_symbol_id) VALUES (?,?)`
 		if res, db.err = tx.Exec(sqlr, p.ProductID, sym.SymbolID); db.err != nil {
+			tx.Rollback()
+			return db.err, 0
+		}
+	}
+	// adding synonyms
+	for _, syn := range p.Synonyms {
+		if syn.NameID == -1 {
+			sqlr = `INSERT INTO name (name_label) VALUES (?)`
+			if res, db.err = tx.Exec(sqlr, syn.NameLabel); db.err != nil {
+				tx.Rollback()
+				return db.err, 0
+			}
+			// getting the last inserted id
+			if lastid, db.err = res.LastInsertId(); db.err != nil {
+				tx.Rollback()
+				return db.err, 0
+			}
+			syn.NameID = int(lastid)
+		}
+		sqlr = `INSERT INTO productsynonyms (productsynonyms_product_id, productsynonyms_name_id) VALUES (?,?)`
+		if res, db.err = tx.Exec(sqlr, p.ProductID, syn.NameID); db.err != nil {
 			tx.Rollback()
 			return db.err, 0
 		}
@@ -414,6 +566,21 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 		// updating the product CasNumberID (CasNumberLabel already set)
 		p.CasNumber.CasNumberID = int(lastid)
 	}
+	// if CeNumberID = -1 then it is a new ce
+	if v, err := p.CeNumber.CeNumberID.Value(); err == nil && v == -1 {
+		sqlr = `INSERT INTO cenumber (cenumber_label) VALUES (?)`
+		if res, db.err = tx.Exec(sqlr, p.CeNumberLabel); db.err != nil {
+			tx.Rollback()
+			return db.err
+		}
+		// getting the last inserted id
+		if lastid, db.err = res.LastInsertId(); db.err != nil {
+			tx.Rollback()
+			return db.err
+		}
+		// updating the product CeNumberID (CeNumberLabel already set)
+		p.CeNumber.CeNumberID = sql.NullInt64{Int64: lastid}
+	}
 	// if NameID = -1 then it is a new name
 	if p.Name.NameID == -1 {
 		sqlr = `INSERT INTO name (name_label) VALUES (?)`
@@ -429,6 +596,22 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 		// updating the product NameID (NameLabel already set)
 		p.Name.NameID = int(lastid)
 	}
+	// if EmpiricalFormulaID = -1 then it is a new empirical formula
+	if p.EmpiricalFormula.EmpiricalFormulaID == -1 {
+		sqlr = `INSERT INTO empiricalformula (empiricalformula_label) VALUES (?)`
+		if res, db.err = tx.Exec(sqlr, p.EmpiricalFormulaLabel); db.err != nil {
+			tx.Rollback()
+			return db.err
+		}
+		// getting the last inserted id
+		if lastid, db.err = res.LastInsertId(); db.err != nil {
+			tx.Rollback()
+			return db.err
+		}
+		// updating the product EmpiricalFormulaID (EmpiricalFormulaLabel already set)
+		p.EmpiricalFormula.EmpiricalFormulaID = int(lastid)
+	}
+
 	// deleting symbols
 	sqlr = `DELETE FROM productsymbols WHERE productsymbols.productsymbols_product_id = (?)`
 	if res, db.err = tx.Exec(sqlr, p.ProductID); db.err != nil {
@@ -439,6 +622,34 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	for _, sym := range p.Symbols {
 		sqlr = `INSERT INTO productsymbols (productsymbols_product_id, productsymbols_symbol_id) VALUES (?,?)`
 		if res, db.err = tx.Exec(sqlr, p.ProductID, sym.SymbolID); db.err != nil {
+			tx.Rollback()
+			return db.err
+		}
+	}
+
+	// deleting synonyms
+	sqlr = `DELETE FROM productsynonyms WHERE productsynonyms.productsynonyms_product_id = (?)`
+	if res, db.err = tx.Exec(sqlr, p.ProductID); db.err != nil {
+		tx.Rollback()
+		return db.err
+	}
+	// adding new ones
+	for _, syn := range p.Synonyms {
+		if syn.NameID == -1 {
+			sqlr = `INSERT INTO name (name_label) VALUES (?)`
+			if res, db.err = tx.Exec(sqlr, syn.NameLabel); db.err != nil {
+				tx.Rollback()
+				return db.err
+			}
+			// getting the last inserted id
+			if lastid, db.err = res.LastInsertId(); db.err != nil {
+				tx.Rollback()
+				return db.err
+			}
+			syn.NameID = int(lastid)
+		}
+		sqlr = `INSERT INTO productsynonyms (productsynonyms_product_id, productsynonyms_name_id) VALUES (?,?)`
+		if res, db.err = tx.Exec(sqlr, p.ProductID, syn.NameID); db.err != nil {
 			tx.Rollback()
 			return db.err
 		}
