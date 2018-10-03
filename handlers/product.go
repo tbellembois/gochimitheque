@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
-	"github.com/gorilla/schema"
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/helpers"
 	"github.com/tbellembois/gochimitheque/models"
@@ -85,6 +84,76 @@ func (env *Env) GetProductsCasNumbersHandler(w http.ResponseWriter, r *http.Requ
 	return nil
 }
 
+// GetProductsCeNumbersHandler returns a json list of the ce numbers matching the search criteria
+func (env *Env) GetProductsCeNumbersHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	log.Debug("GetProductsCeNumbersHandler")
+
+	var (
+		err  error
+		aerr *helpers.AppError
+		dsp  helpers.Dbselectparam
+	)
+
+	// init db request parameters
+	if dsp, aerr = helpers.Newdbselectparam(r); err != nil {
+		return aerr
+	}
+
+	cenumbers, count, err := env.DB.GetProductsCeNumbers(dsp)
+	if err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the ce numbers",
+		}
+	}
+
+	type resp struct {
+		Rows  []models.CeNumber `json:"rows"`
+		Total int               `json:"total"`
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resp{Rows: cenumbers, Total: count})
+	return nil
+}
+
+// GetProductsEmpiricalFormulasHandler returns a json list of the empirical formulas matching the search criteria
+func (env *Env) GetProductsEmpiricalFormulasHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	log.Debug("GetProductsEmpiricalFormulasHandler")
+
+	var (
+		err  error
+		aerr *helpers.AppError
+		dsp  helpers.Dbselectparam
+	)
+
+	// init db request parameters
+	if dsp, aerr = helpers.Newdbselectparam(r); err != nil {
+		return aerr
+	}
+
+	eformulas, count, err := env.DB.GetProductsEmpiricalFormulas(dsp)
+	if err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the empirical formulas",
+		}
+	}
+
+	type resp struct {
+		Rows  []models.EmpiricalFormula `json:"rows"`
+		Total int                       `json:"total"`
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resp{Rows: eformulas, Total: count})
+	return nil
+}
+
 // GetProductsNamesHandler returns a json list of the names matching the search criteria
 func (env *Env) GetProductsNamesHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	log.Debug("GetProductsNamesHandler")
@@ -152,6 +221,41 @@ func (env *Env) GetProductsSymbolsHandler(w http.ResponseWriter, r *http.Request
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp{Rows: symbols, Total: count})
+	return nil
+}
+
+// GetProductsSynonymsHandler returns a json list of the symbols matching the search criteria
+func (env *Env) GetProductsSynonymsHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	log.Debug("GetProductsSynonymsHandler")
+
+	var (
+		err  error
+		aerr *helpers.AppError
+		dsp  helpers.Dbselectparam
+	)
+
+	// init db request parameters
+	if dsp, aerr = helpers.Newdbselectparam(r); err != nil {
+		return aerr
+	}
+
+	synonyms, count, err := env.DB.GetProductsNames(dsp)
+	if err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the synonyms",
+		}
+	}
+
+	type resp struct {
+		Rows  []models.Name `json:"rows"`
+		Total int           `json:"total"`
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resp{Rows: synonyms, Total: count})
 	return nil
 }
 
@@ -257,8 +361,7 @@ func (env *Env) CreateProductHandler(w http.ResponseWriter, r *http.Request) *he
 	}
 	// FIXME: synonyms
 
-	var decoder = schema.NewDecoder()
-	if err := decoder.Decode(&p, r.PostForm); err != nil {
+	if err := Decoder.Decode(&p, r.PostForm); err != nil {
 		return &helpers.AppError{
 			Error:   err,
 			Message: "form decoding error",
@@ -320,8 +423,7 @@ func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *he
 	}
 	// FIXME: synonyms
 
-	var decoder = schema.NewDecoder()
-	if err := decoder.Decode(&p, r.PostForm); err != nil {
+	if err := Decoder.Decode(&p, r.PostForm); err != nil {
 		return &helpers.AppError{
 			Error:   err,
 			Message: "form decoding error",
@@ -340,9 +442,12 @@ func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *he
 
 	updatedp, _ := env.DB.GetProduct(id)
 	updatedp.CasNumber = p.CasNumber
+	updatedp.CeNumber = p.CeNumber
+	updatedp.EmpiricalFormula = p.EmpiricalFormula
 	updatedp.Name = p.Name
 	updatedp.ProductSpecificity = p.ProductSpecificity
 	updatedp.Symbols = p.Symbols
+	updatedp.Synonyms = p.Synonyms
 	log.WithFields(log.Fields{"updatedp": updatedp}).Debug("UpdateProductHandler")
 
 	if err := env.DB.UpdateProduct(updatedp); err != nil {

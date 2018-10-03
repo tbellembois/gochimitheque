@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
-	"github.com/gorilla/schema"
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/helpers"
 	"github.com/tbellembois/gochimitheque/models"
@@ -166,8 +165,7 @@ func (env *Env) CreateEntityHandler(w http.ResponseWriter, r *http.Request) *hel
 			Code:    http.StatusBadRequest}
 	}
 
-	var decoder = schema.NewDecoder()
-	if err := decoder.Decode(&e, r.PostForm); err != nil {
+	if err := Decoder.Decode(&e, r.PostForm); err != nil {
 		return &helpers.AppError{
 			Error:   err,
 			Message: "form decoding error",
@@ -202,8 +200,7 @@ func (env *Env) UpdateEntityHandler(w http.ResponseWriter, r *http.Request) *hel
 			Message: "form parsing error",
 			Code:    http.StatusBadRequest}
 	}
-	var decoder = schema.NewDecoder()
-	if err := decoder.Decode(&e, r.PostForm); err != nil {
+	if err := Decoder.Decode(&e, r.PostForm); err != nil {
 		return &helpers.AppError{
 			Error:   err,
 			Message: "form decoding error",

@@ -115,6 +115,57 @@ func (db *SQLiteDataStore) GetProductsCeNumbers(p helpers.Dbselectparam) ([]CeNu
 	return cenumbers, count, nil
 }
 
+// GetProductsEmpiricalFormulas return the empirical formulas matching the search criteria
+func (db *SQLiteDataStore) GetProductsEmpiricalFormulas(p helpers.Dbselectparam) ([]EmpiricalFormula, int, error) {
+	var (
+		eformulas                          []EmpiricalFormula
+		count                              int
+		precreq, presreq, comreq, postsreq strings.Builder
+		cnstmt                             *sqlx.NamedStmt
+		snstmt                             *sqlx.NamedStmt
+	)
+
+	precreq.WriteString(" SELECT count(DISTINCT empiricalformula.empiricalformula_id)")
+	presreq.WriteString(" SELECT empiricalformula_id, empiricalformula_label")
+
+	comreq.WriteString(" FROM empiricalformula")
+	comreq.WriteString(" WHERE empiricalformula_label LIKE :search")
+	postsreq.WriteString(" ORDER BY empiricalformula_label  " + p.GetOrder())
+
+	// limit
+	if p.GetLimit() != constants.MaxUint64 {
+		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
+	}
+
+	// building count and select statements
+	if cnstmt, db.err = db.PrepareNamed(precreq.String() + comreq.String()); db.err != nil {
+		return nil, 0, db.err
+	}
+	if snstmt, db.err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); db.err != nil {
+		return nil, 0, db.err
+	}
+
+	// building argument map
+	m := map[string]interface{}{
+		"search": p.GetSearch(),
+		"order":  p.GetOrder(),
+		"limit":  p.GetLimit(),
+		"offset": p.GetOffset(),
+	}
+
+	// select
+	if db.err = snstmt.Select(&eformulas, m); db.err != nil {
+		return nil, 0, db.err
+	}
+	// count
+	if db.err = cnstmt.Get(&count, m); db.err != nil {
+		return nil, 0, db.err
+	}
+
+	log.WithFields(log.Fields{"eformulas": eformulas}).Debug("GetProductsEmpiricalFormulas")
+	return eformulas, count, nil
+}
+
 // GetProductsNames return the names matching the search criteria
 func (db *SQLiteDataStore) GetProductsNames(p helpers.Dbselectparam) ([]Name, int, error) {
 	var (
@@ -656,9 +707,9 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	}
 
 	// finally updating the product
-	sqlr = `UPDATE product SET product_specificity = ?, casnumber = ?, name = ?
+	sqlr = `UPDATE product SET product_specificity = ?, casnumber = ?, name = ?, empiricalformula = ?, cenumber = ?
 	WHERE product_id = ?`
-	if _, db.err = tx.Exec(sqlr, p.ProductSpecificity, p.CasNumber.CasNumberID, p.Name.NameID, p.ProductID); db.err != nil {
+	if _, db.err = tx.Exec(sqlr, p.ProductSpecificity, p.CasNumber.CasNumberID, p.Name.NameID, p.ProductID, p.EmpiricalFormulaID, p.CeNumberID); db.err != nil {
 		tx.Rollback()
 		return db.err
 	}
