@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/gorilla/schema"
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/helpers"
 	"github.com/tbellembois/gochimitheque/models"
@@ -135,8 +134,7 @@ func (env *Env) UpdateStorageHandler(w http.ResponseWriter, r *http.Request) *he
 	// retrieving the logged user id from request context
 	c := helpers.ContainerFromRequestContext(r)
 
-	var decoder = schema.NewDecoder()
-	if err := decoder.Decode(&s, r.PostForm); err != nil {
+	if err := Decoder.Decode(&s, r.PostForm); err != nil {
 		return &helpers.AppError{
 			Error:   err,
 			Message: "form decoding error",
@@ -204,8 +202,7 @@ func (env *Env) CreateStorageHandler(w http.ResponseWriter, r *http.Request) *he
 	// retrieving the logged user id from request context
 	c := helpers.ContainerFromRequestContext(r)
 
-	var decoder = schema.NewDecoder()
-	if err := decoder.Decode(&s, r.PostForm); err != nil {
+	if err := Decoder.Decode(&s, r.PostForm); err != nil {
 		return &helpers.AppError{
 			Error:   err,
 			Message: "form decoding error",

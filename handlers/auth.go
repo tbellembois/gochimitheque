@@ -2,19 +2,16 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/gorilla/mux"
-	"github.com/gorilla/schema"
-	log "github.com/sirupsen/logrus"
-	"github.com/tbellembois/gochimitheque/helpers"
-	"github.com/tbellembois/gochimitheque/models"
 	"net/http"
 	"strconv"
 	"time"
-)
 
-// TokenSignKey is the JWT token signing key
-var TokenSignKey = []byte("secret")
+	"github.com/dgrijalva/jwt-go"
+	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
+	"github.com/tbellembois/gochimitheque/helpers"
+	"github.com/tbellembois/gochimitheque/models"
+)
 
 /*
 	views handlers
@@ -55,9 +52,8 @@ func (env *Env) GetTokenHandler(w http.ResponseWriter, r *http.Request) *helpers
 	}
 
 	// decoding the form
-	decoder := schema.NewDecoder()
 	person := new(models.Person)
-	if e = decoder.Decode(person, r.PostForm); e != nil {
+	if e = Decoder.Decode(person, r.PostForm); e != nil {
 		return &helpers.AppError{
 			Code:    http.StatusInternalServerError,
 			Error:   e,
