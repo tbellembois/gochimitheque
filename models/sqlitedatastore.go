@@ -112,20 +112,40 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	CREATE TABLE IF NOT EXISTS casnumber (
 		casnumber_id integer PRIMARY KEY,
 		casnumber_label string NOT NULL UNIQUE);
+	-- products ce numbers
+	CREATE TABLE IF NOT EXISTS cenumber (
+		cenumber_id integer PRIMARY KEY,
+		cenumber_label string NOT NULL UNIQUE);
+	-- products empirical formulas
+	CREATE TABLE IF NOT EXISTS empiricalformula (
+		empiricalformula_id integer PRIMARY KEY,
+		empiricalformula_label string NOT NULL UNIQUE);
 	-- products
 	CREATE TABLE IF NOT EXISTS product (
 		product_id integer PRIMARY KEY,
 		product_specificity string,
 		casnumber integer,
+		cenumber integer,
+		person integer NOT NULL,
+		empiricalformula integer NOT NULL,
 		name integer NOT NULL,
 		FOREIGN KEY(casnumber) references casnumber(casnumber_id),
+		FOREIGN KEY(cenumber) references cenumber(cenumber_id),
+		FOREIGN KEY(person) references person(person_id),
+		FOREIGN KEY(empiricalformula) references empiricalformula(empiricalformula_id),
 		FOREIGN KEY(name) references name(name_id));
 	CREATE TABLE IF NOT EXISTS productsymbols (
 		productsymbols_product_id integer NOT NULL,
 		productsymbols_symbol_id integer NOT NULL,
 		PRIMARY KEY(productsymbols_product_id, productsymbols_symbol_id),
 		FOREIGN KEY(productsymbols_product_id) references product(product_id),
-		FOREIGN KEY(productsymbols_symbol_id) references symbol(symbol_id));`
+		FOREIGN KEY(productsymbols_symbol_id) references symbol(symbol_id));
+	CREATE TABLE IF NOT EXISTS productsynonyms (
+		productsynonyms_product_id integer NOT NULL,
+		productsynonyms_name_id integer NOT NULL,
+		PRIMARY KEY(productsynonyms_product_id, productsynonyms_name_id),
+		FOREIGN KEY(productsynonyms_product_id) references product(product_id),
+		FOREIGN KEY(productsynonyms_name_id) references name(name_id));`
 
 	// values definition
 	values := `INSERT INTO symbol (symbol_label, symbol_image) VALUES 
@@ -159,8 +179,10 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		// FIXME: remove this before release
 		scas, _ := os.Open("sample_cas.txt")
 		sname, _ := os.Open("sample_name.txt")
+		sempiricalformula, _ := os.Open("sample_empiricalformula.txt")
 		defer scas.Close()
 		defer sname.Close()
+		defer sempiricalformula.Close()
 
 		scanner := bufio.NewScanner(scas)
 		scanner.Split(bufio.ScanLines)
@@ -180,15 +202,11 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 			}
 		}
 
-		// inserting sample products
-		// attention: values are wrongs, just for devel purposes
-		for i := 1; i <= 100; i++ {
-			ins := fmt.Sprintf("(\"spec%d\", \"%d\", \"%d\")", i, i, i)
-			if _, db.err = db.Exec(`INSERT INTO product ("product_specificity", "casnumber", "name") VALUES ` + ins + `;`); db.err != nil {
-				return db.err
-			}
-			if _, db.err = db.Exec(`INSERT INTO productsymbols ("productsymbols_product_id", "productsymbols_symbol_id") VALUES 
-			(?, ?), (?, ?), (?, ?), (?, ?);`, i, (i%9)+1, i, ((i+1)%9)+1, i, ((i+2)%9)+1, i, ((i+3)%9)+1); db.err != nil {
+		scanner = bufio.NewScanner(sempiricalformula)
+		scanner.Split(bufio.ScanLines)
+		for scanner.Scan() {
+			log.Debug(scanner.Text())
+			if _, db.err = db.Exec(`INSERT OR IGNORE INTO empiricalformula ("empiricalformula_label") VALUES ("` + scanner.Text() + `");`); db.err != nil {
 				return db.err
 			}
 		}
@@ -257,6 +275,19 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		db.CreatePerson(p8)
 		db.CreatePerson(p9)
 		db.CreatePerson(p10)
+
+		// inserting sample products
+		// attention: values are wrongs, just for devel purposes
+		for i := 1; i <= 100; i++ {
+			ins := fmt.Sprintf("(\"spec%d\", \"%d\", \"%d\", 1, \"%d\")", i, i, i, i)
+			if _, db.err = db.Exec(`INSERT INTO product ("product_specificity", "casnumber", "name", "person", "empiricalformula") VALUES ` + ins + `;`); db.err != nil {
+				return db.err
+			}
+			if _, db.err = db.Exec(`INSERT INTO productsymbols ("productsymbols_product_id", "productsymbols_symbol_id") VALUES 
+			(?, ?), (?, ?), (?, ?), (?, ?);`, i, (i%9)+1, i, ((i+1)%9)+1, i, ((i+2)%9)+1, i, ((i+3)%9)+1); db.err != nil {
+				return db.err
+			}
+		}
 
 		// inserting sample storages
 		// attention: values are wrongs, just for devel purposes

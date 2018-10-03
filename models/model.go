@@ -1,6 +1,7 @@
 package models
 
 import (
+	"database/sql"
 	"github.com/tbellembois/gochimitheque/helpers"
 	"net/http"
 	"time"
@@ -71,11 +72,31 @@ type CasNumber struct {
 	CasNumberLabel string `db:"casnumber_label" json:"casnumber_label" schema:"casnumber_label"`
 }
 
+// CeNumber is a product CE number
+type CeNumber struct {
+	CeNumberID    sql.NullInt64  `db:"cenumber_id" json:"cenumber_id" schema:"cenumber_id"`
+	CeNumberLabel sql.NullString `db:"cenumber_label" json:"cenumber_label" schema:"cenumber_label"`
+}
+
+// EmpiricalFormula is a product empirical formula
+type EmpiricalFormula struct {
+	EmpiricalFormulaID    int    `db:"empiricalformula_id" json:"empiricalformula_id" schema:"empiricalformula_id"`
+	EmpiricalFormulaLabel string `db:"empiricalformula_label" json:"empiricalformula_label" schema:"empiricalformula_label"`
+}
+
 // Product is a chemical product card
 type Product struct {
 	ProductID          int    `db:"product_id" json:"product_id" schema:"product_id"`
 	ProductSpecificity string `db:"product_specificity" json:"product_specificity" schema:"product_specificity"`
-	CasNumber          `db:"casnumber" json:"casnumber" schema:"casnumber"`
-	Name               `db:"name" json:"name" schema:"name"`
-	Symbols            []Symbol `db:"-" schema:"symbols" json:"symbols" schema:"symbols"`
+	//
+	EmpiricalFormula `db:"empiricalformula" json:"empiricalformula" schema:"empiricalformula"`
+	Person           `db:"person" json:"person" schema:"person"`
+	CasNumber        `db:"casnumber" json:"casnumber" schema:"casnumber"`
+	CeNumber         `db:"cenumber" json:"cenumber" schema:"cenumber"`
+	//
+	Name `db:"name" json:"name" schema:"name"`
+	//
+	Synonyms []Name `db:"-" schema:"synonyms" json:"synonyms" schema:"synonyms"`
+	//
+	Symbols []Symbol `db:"-" schema:"symbols" json:"symbols" schema:"symbols"`
 }

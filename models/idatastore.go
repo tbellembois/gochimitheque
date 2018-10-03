@@ -13,6 +13,7 @@ type Datastore interface {
 	// products
 	GetProducts(helpers.DbselectparamProduct) ([]Product, int, error)
 	GetProductsCasNumbers(helpers.Dbselectparam) ([]CasNumber, int, error)
+	GetProductsCeNumbers(helpers.Dbselectparam) ([]CeNumber, int, error)
 	GetProductsNames(helpers.Dbselectparam) ([]Name, int, error)
 	GetProductsSymbols(helpers.Dbselectparam) ([]Symbol, int, error)
 	GetProduct(id int) (Product, error)
