@@ -170,6 +170,8 @@ block contentjs
             //
             $('select#cenumber').select2({
                 tags: true,
+                allowClear: true,
+                placeholder: "select or enter a CE number",
                 dropdownParent: $('#edit-collapse'),
                 ajax: {
                     url: '/products/cenumbers',
@@ -188,8 +190,8 @@ block contentjs
                     processResults: function (data) {
                         // replacing name by text expected by select2
                         var newdata = $.map(data.rows, function (obj) {
-                            obj.text = obj.text || obj.cenumber_label;
-                            obj.id = obj.id || obj.cenumber_id;
+                            obj.text = obj.text || obj.cenumber_label.String;
+                            obj.id = obj.id || obj.cenumber_id.Int64;
                             return obj;
                         });
                         // getting the number of loaded select elements
@@ -380,8 +382,8 @@ block contentjs
                     "product_specificity": product_specificity,
                     "casnumber.casnumber_id": casnumber.id,
                     "casnumber.casnumber_label": casnumber.text,
-                    "cenumber.cenumber_id": cenumber.id,
-                    "cenumber.cenumber_label": cenumber.text,
+                    "cenumber.cenumber_id": cenumber === undefined ? -2 : cenumber.id,
+                    "cenumber.cenumber_label": cenumber === undefined ? "" : cenumber.text,
                     "empiricalformula.empiricalformula_id": empiricalformula.id,
                     "empiricalformula.empiricalformula_label": empiricalformula.text,
                     "name.name_id": name_.id,
@@ -536,8 +538,10 @@ block contentjs
                 // select2 is not autofilled - we need a special operation
                 var newOption = new Option(data.casnumber.casnumber_label, data.casnumber.casnumber_id, true, true);
                 $('select#casnumber').append(newOption).trigger('change');
-                var newOption = new Option(data.cenumber.cenumber_label.String, data.cenumber.cenumber_id.Int64, true, true);
-                $('select#cenumber').append(newOption).trigger('change');
+                if (data.cenumber.cenumber_id.Valid) {
+                    var newOption = new Option(data.cenumber.cenumber_label.String, data.cenumber.cenumber_id.Int64, true, true);
+                    $('select#cenumber').append(newOption).trigger('change');
+                }
                 var newOption = new Option(data.empiricalformula.empiricalformula_label, data.empiricalformula.empiricalformula_id, true, true);
                 $('select#empiricalformula').append(newOption).trigger('change');
                 var newOption = new Option(data.name.name_label, data.name.name_id, true, true);

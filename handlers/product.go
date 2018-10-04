@@ -443,6 +443,11 @@ func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *he
 	updatedp, _ := env.DB.GetProduct(id)
 	updatedp.CasNumber = p.CasNumber
 	updatedp.CeNumber = p.CeNumber
+	// id=-2 is passed from the view when no ce number is entered
+	// then invalidating the field
+	if updatedp.CeNumberID.Int64 == -2 {
+		updatedp.CeNumberID.Valid = false
+	}
 	updatedp.EmpiricalFormula = p.EmpiricalFormula
 	updatedp.Name = p.Name
 	updatedp.ProductSpecificity = p.ProductSpecificity
