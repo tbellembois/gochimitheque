@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/tbellembois/gochimitheque/helpers"
 	"net/http"
 	"time"
@@ -88,15 +89,34 @@ type EmpiricalFormula struct {
 type Product struct {
 	ProductID          int    `db:"product_id" json:"product_id" schema:"product_id"`
 	ProductSpecificity string `db:"product_specificity" json:"product_specificity" schema:"product_specificity"`
-	//
-	EmpiricalFormula `db:"empiricalformula" json:"empiricalformula" schema:"empiricalformula"`
-	Person           `db:"person" json:"person" schema:"person"`
-	CasNumber        `db:"casnumber" json:"casnumber" schema:"casnumber"`
-	CeNumber         `db:"cenumber" json:"cenumber" schema:"cenumber"`
-	//
-	Name `db:"name" json:"name" schema:"name"`
-	//
-	Synonyms []Name `db:"-" schema:"synonyms" json:"synonyms" schema:"synonyms"`
-	//
-	Symbols []Symbol `db:"-" schema:"symbols" json:"symbols" schema:"symbols"`
+	EmpiricalFormula   `db:"empiricalformula" json:"empiricalformula" schema:"empiricalformula"`
+	Person             `db:"person" json:"person" schema:"person"`
+	CasNumber          `db:"casnumber" json:"casnumber" schema:"casnumber"`
+	CeNumber           `db:"cenumber" json:"cenumber" schema:"cenumber"`
+	Name               `db:"name" json:"name" schema:"name"`
+	Synonyms           []Name   `db:"-" schema:"synonyms" json:"synonyms" schema:"synonyms"`
+	Symbols            []Symbol `db:"-" schema:"symbols" json:"symbols" schema:"symbols"`
+}
+
+func (p Product) String() string {
+	return fmt.Sprintf("ProductID:%d | ProductSpecificity:%s | EmpiricalFormula:%+v | Person:%+v | CasNumber:%s | CeNumber:%s | Name:%s | Synonyms:%+v | Symbols:%+v", p.ProductID, p.ProductSpecificity, p.EmpiricalFormula, p.Person, p.CasNumber, p.CeNumber, p.Name, p.Synonyms, p.Symbols)
+}
+
+func (p Person) String() string {
+	return fmt.Sprintf("PersonEmail: %s", p.PersonEmail)
+}
+
+func (s Symbol) String() string {
+	return fmt.Sprintf("SymbolLabel: %s", s.SymbolLabel)
+}
+
+func (c CasNumber) String() string {
+	return fmt.Sprintf("CasNumberID: %d | CasNumberLabel: %s", c.CasNumberID, c.CasNumberLabel)
+}
+
+func (c CeNumber) String() string {
+	i, _ := c.CeNumberID.Value()
+	v, _ := c.CeNumberLabel.Value()
+	b := c.CeNumberID.Valid
+	return fmt.Sprintf("CeNumberID: %d | CeNumberValid: %t | CeNumberLabel: %s", i, b, v)
 }

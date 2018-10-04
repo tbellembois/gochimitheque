@@ -203,7 +203,7 @@ block contentjs
             var html = [];
             html.push("<p><b>product</b>: " + row["product"]["name"]["name_label"] + "</p>")
             html.push("<p><b>store location</b>: " + row["storelocation"]["storelocation_name"] + "</p>")
-            html.push("<p><b>created at</b>: " + row["storage_creationdate"] + "</p>")
+            html.push("<p><b>created at</b>: " + dateFormatter(row["storage_creationdate"], null, null, null) + "</p>")
             html.push("<p><b>by</b>: " + row["person"]["person_email"] + "</p>")
             html.push("<p><b>comment</b>: " + row["storage_comment"] + "</p>")
             return html.join('');

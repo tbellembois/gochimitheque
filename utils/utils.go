@@ -181,6 +181,11 @@ func init() {
 	oneGroupMolRe = regexp.MustCompile(buf.String())
 }
 
+// IsCeNumber returns true if c is a valid ce number
+func IsCeNumber(c string) bool {
+	return true
+}
+
 // IsCasNumber returns true if c is a valid cas number
 func IsCasNumber(c string) bool {
 

@@ -7,6 +7,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
+	sq "github.com/Masterminds/squirrel"
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/constants"
@@ -591,10 +592,12 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 
 func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	var (
-		lastid int64
-		tx     *sql.Tx
-		sqlr   string
-		res    sql.Result
+		lastid   int64
+		tx       *sql.Tx
+		sqlr     string
+		res      sql.Result
+		sqla     []interface{}
+		ubuilder sq.UpdateBuilder
 	)
 
 	// beginning transaction
@@ -618,7 +621,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 		p.CasNumber.CasNumberID = int(lastid)
 	}
 	// if CeNumberID = -1 then it is a new ce
-	if v, err := p.CeNumber.CeNumberID.Value(); err == nil && v == -1 {
+	if p.CeNumber.CeNumberID.Int64 == -1 {
 		sqlr = `INSERT INTO cenumber (cenumber_label) VALUES (?)`
 		if res, db.err = tx.Exec(sqlr, p.CeNumberLabel); db.err != nil {
 			tx.Rollback()
@@ -630,7 +633,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 			return db.err
 		}
 		// updating the product CeNumberID (CeNumberLabel already set)
-		p.CeNumber.CeNumberID = sql.NullInt64{Int64: lastid}
+		p.CeNumber.CeNumberID = sql.NullInt64{Int64: lastid, Valid: true}
 	}
 	// if NameID = -1 then it is a new name
 	if p.Name.NameID == -1 {
@@ -707,9 +710,25 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	}
 
 	// finally updating the product
-	sqlr = `UPDATE product SET product_specificity = ?, casnumber = ?, name = ?, empiricalformula = ?, cenumber = ?
-	WHERE product_id = ?`
-	if _, db.err = tx.Exec(sqlr, p.ProductSpecificity, p.CasNumber.CasNumberID, p.Name.NameID, p.ProductID, p.EmpiricalFormulaID, p.CeNumberID); db.err != nil {
+	s := make(map[string]interface{})
+	s["product_specificity"] = p.ProductSpecificity
+	s["casnumber"] = p.CasNumberID
+	s["name"] = p.NameID
+	s["empiricalformula"] = p.EmpiricalFormulaID
+	if p.CeNumber.CeNumberID.Valid {
+		s["cenumber"] = p.CeNumberID.Int64
+	} else {
+		s["cenumber"] = nil
+	}
+
+	ubuilder = sq.Update("product").
+		SetMap(s).
+		Where(sq.Eq{"product_id": p.ProductID})
+	if sqlr, sqla, db.err = ubuilder.ToSql(); db.err != nil {
+		tx.Rollback()
+		return db.err
+	}
+	if _, db.err = tx.Exec(sqlr, sqla...); db.err != nil {
 		tx.Rollback()
 		return db.err
 	}

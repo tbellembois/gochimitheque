@@ -212,3 +212,33 @@ func (env *Env) ValidateProductCasNumberHandler(w http.ResponseWriter, r *http.R
 	json.NewEncoder(w).Encode(resp)
 	return nil
 }
+
+// ValidateProductCeNumberHandler checks that:
+// - the ce number is valid
+func (env *Env) ValidateProductCeNumberHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	var (
+		err  error
+		resp string
+	)
+
+	// getting the ce number
+	if err = r.ParseForm(); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "form parsing",
+			Code:    http.StatusInternalServerError}
+	}
+	// validating it
+	v := utils.IsCeNumber(r.Form.Get("cenumber"))
+
+	if v {
+		resp = "true"
+	} else {
+		resp = "invalid ce number"
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resp)
+	return nil
+}
