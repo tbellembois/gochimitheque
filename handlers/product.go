@@ -329,9 +329,10 @@ func (env *Env) GetProductHandler(w http.ResponseWriter, r *http.Request) *helpe
 func (env *Env) CreateProductHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	log.Debug("CreateProductHandler")
 	var (
-		p models.Product
+		p   models.Product
+		err error
 	)
-	if err := r.ParseForm(); err != nil {
+	if err = r.ParseForm(); err != nil {
 		return &helpers.AppError{
 			Error:   err,
 			Message: "form parsing error",
@@ -341,27 +342,7 @@ func (env *Env) CreateProductHandler(w http.ResponseWriter, r *http.Request) *he
 	// retrieving the logged user id from request context
 	c := helpers.ContainerFromRequestContext(r)
 
-	// if a new name is entered (ie instead of selecting an existing name)
-	// r.Form["name.name_id"] == r.Form["name.name_label"]
-	// then modifying the name_id to prevent a form decoding error
-	if r.PostForm["name.name_id"][0] == r.PostForm["name.name_label"][0] {
-		r.PostForm.Set("name.name_id", "-1")
-	}
-	// idem for casnumber
-	if r.PostForm["casnumber.casnumber_id"][0] == r.PostForm["casnumber.casnumber_label"][0] {
-		r.PostForm.Set("casnumber.casnumber_id", "-1")
-	}
-	// idem for cenumber
-	if r.PostForm["cenumber.cenumber_id"][0] == r.PostForm["cenumber.cenumber_label"][0] {
-		r.PostForm.Set("cenumber.cenumber_id", "-1")
-	}
-	// idem for empirical formula
-	if r.PostForm["empiricalformula.empiricalformula_id"][0] == r.PostForm["empiricalformula.empiricalformula_label"][0] {
-		r.PostForm.Set("empiricalformula.empiricalformula_id", "-1")
-	}
-	// FIXME: synonyms
-
-	if err := Decoder.Decode(&p, r.PostForm); err != nil {
+	if err = Decoder.Decode(&p, r.PostForm); err != nil {
 		return &helpers.AppError{
 			Error:   err,
 			Message: "form decoding error",
@@ -371,7 +352,7 @@ func (env *Env) CreateProductHandler(w http.ResponseWriter, r *http.Request) *he
 	p.PersonID = c.PersonID
 	log.WithFields(log.Fields{"p": p}).Debug("CreateProductHandler")
 
-	if err, _ := env.DB.CreateProduct(p); err != nil {
+	if err, p.ProductID = env.DB.CreateProduct(p); err != nil {
 		return &helpers.AppError{
 			Error:   err,
 			Message: "create product error",
@@ -402,26 +383,6 @@ func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *he
 
 	// retrieving the logged user id from request context
 	c := helpers.ContainerFromRequestContext(r)
-
-	// if a new name is entered (ie instead of selecting an existing name)
-	// r.Form["name.name_id"] == r.Form["name.name_label"]
-	// then modifying the name_id to prevent a form decoding error
-	if r.PostForm["name.name_id"][0] == r.PostForm["name.name_label"][0] {
-		r.PostForm.Set("name.name_id", "-1")
-	}
-	// idem for casnumber
-	if r.PostForm["casnumber.casnumber_id"][0] == r.PostForm["casnumber.casnumber_label"][0] {
-		r.PostForm.Set("casnumber.casnumber_id", "-1")
-	}
-	// idem for cenumber
-	if r.PostForm["cenumber.cenumber_id"][0] == r.PostForm["cenumber.cenumber_label"][0] {
-		r.PostForm.Set("cenumber.cenumber_id", "-1")
-	}
-	// idem for empirical formula
-	if r.PostForm["empiricalformula.empiricalformula_id"][0] == r.PostForm["empiricalformula.empiricalformula_label"][0] {
-		r.PostForm.Set("empiricalformula.empiricalformula_id", "-1")
-	}
-	// FIXME: synonyms
 
 	if err := Decoder.Decode(&p, r.PostForm); err != nil {
 		return &helpers.AppError{

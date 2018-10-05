@@ -6,6 +6,8 @@ import (
 	"database/sql"
 
 	"github.com/jmoiron/sqlx"
+	"reflect"
+	"strconv"
 
 	sq "github.com/Masterminds/squirrel"
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
@@ -464,10 +466,12 @@ func (db *SQLiteDataStore) DeleteProduct(id int) error {
 
 func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 	var (
-		lastid int64
-		tx     *sql.Tx
-		sqlr   string
-		res    sql.Result
+		lastid   int64
+		tx       *sql.Tx
+		sqlr     string
+		res      sql.Result
+		sqla     []interface{}
+		ibuilder sq.InsertBuilder
 	)
 
 	// beginning transaction
@@ -536,9 +540,40 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 		p.EmpiricalFormula.EmpiricalFormulaID = int(lastid)
 	}
 
-	// finally adding the product
-	sqlr = `INSERT INTO product(product_specificity, casnumber, name) VALUES (?, ?, ?)`
-	if res, db.err = tx.Exec(sqlr, p.ProductSpecificity, p.CasNumber.CasNumberID, p.Name.NameID); db.err != nil {
+	// finally updating the product
+	s := make(map[string]interface{})
+	s["product_specificity"] = p.ProductSpecificity
+	s["casnumber"] = p.CasNumberID
+	s["name"] = p.NameID
+	s["empiricalformula"] = p.EmpiricalFormulaID
+	s["person"] = p.PersonID
+	if p.CeNumber.CeNumberID.Valid {
+		s["cenumber"] = int(p.CeNumberID.Int64)
+	}
+	// building column names/values
+	col := make([]string, 0, len(s))
+	val := make([]interface{}, 0, len(s))
+	for k, v := range s {
+		col = append(col, k)
+		rt := reflect.TypeOf(v)
+		rv := reflect.ValueOf(v)
+		switch rt.Kind() {
+		case reflect.Int:
+			val = append(val, strconv.Itoa(int(rv.Int())))
+		case reflect.String:
+			val = append(val, rv.String())
+		default:
+			panic("unknown type")
+		}
+	}
+
+	ibuilder = sq.Insert("product").Columns(col...).Values(val...)
+	if sqlr, sqla, db.err = ibuilder.ToSql(); db.err != nil {
+		tx.Rollback()
+		return db.err, 0
+	}
+
+	if res, db.err = tx.Exec(sqlr, sqla...); db.err != nil {
 		tx.Rollback()
 		return db.err, 0
 	}
@@ -715,6 +750,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	s["casnumber"] = p.CasNumberID
 	s["name"] = p.NameID
 	s["empiricalformula"] = p.EmpiricalFormulaID
+	s["person"] = p.PersonID
 	if p.CeNumber.CeNumberID.Valid {
 		s["cenumber"] = p.CeNumberID.Int64
 	} else {

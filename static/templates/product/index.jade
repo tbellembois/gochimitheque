@@ -90,6 +90,9 @@ block contentjs
                     name: {
                         required: true,
                     },
+                    empiricalformula: {
+                        required: true,
+                    },
                     casnumber: {
                         required: true,
                         remote: {
@@ -374,21 +377,25 @@ block contentjs
                     data["symbols." + index +".symbol_label"] = s.text;
                 });
                 $.each(synonyms, function( index, s ) {
-                    data["synonyms." + index +".name_id"] = s.id;
+                    data["synonyms." + index +".name_id"] = s.id == s.text ? -1 : s.id;
                     data["synonyms." + index +".name_label"] = s.text;
                 });
                 $.extend(data, {
                     "product_id": product_id,
                     "product_specificity": product_specificity,
-                    "casnumber.casnumber_id": casnumber.id,
+                    "casnumber.casnumber_id": casnumber.id == casnumber.text ? -1 : casnumber.id,
                     "casnumber.casnumber_label": casnumber.text,
-                    "cenumber.cenumber_id": cenumber === undefined ? -2 : cenumber.id,
-                    "cenumber.cenumber_label": cenumber === undefined ? "" : cenumber.text,
-                    "empiricalformula.empiricalformula_id": empiricalformula.id,
+                    "empiricalformula.empiricalformula_id": empiricalformula.id == empiricalformula.text ? -1 : empiricalformula.id,
                     "empiricalformula.empiricalformula_label": empiricalformula.text,
-                    "name.name_id": name_.id,
+                    "name.name_id": name_.id == name_.text ? -1 : name_.id,
                     "name.name_label": name_.text,
                 });
+                if (cenumber !== undefined) {
+                    $.extend(data, {
+                        "cenumber.cenumber_id": cenumber.id == cenumber.text ? -1 : cenumber.id,
+                        "cenumber.cenumber_label": cenumber === undefined ? "" : cenumber.text,
+                    });                    
+                }
                 $.ajax({
                     url: "/products/" + product_id,
                     method: "PUT",

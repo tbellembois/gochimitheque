@@ -11,6 +11,10 @@ import (
 // AppHandlerFunc is an HandlerFunc returning an AppError
 type AppHandlerFunc func(http.ResponseWriter, *http.Request) *helpers.AppError
 
+type Model interface {
+	GetID() int
+}
+
 // StoreLocation is where products are stored in entities
 type StoreLocation struct {
 	StoreLocationID   int    `db:"storelocation_id" json:"storelocation_id" schema:"storelocation_id"`
@@ -33,6 +37,10 @@ type Person struct {
 	PersonPassword string       `db:"person_password" json:"person_password" schema:"person_password"`
 	Permissions    []Permission `db:"-" schema:"permissions"`
 	Entities       []Entity     `db:"-" schema:"entities"`
+}
+
+func (p Person) GetID() int {
+	return p.PersonID
 }
 
 // Storage is a product storage in a store location
@@ -67,10 +75,18 @@ type Name struct {
 	NameLabel string `db:"name_label" json:"name_label" schema:"name_label"`
 }
 
+func (n Name) GetID() int {
+	return n.NameID
+}
+
 // CasNumber is a product CAS number
 type CasNumber struct {
 	CasNumberID    int    `db:"casnumber_id" json:"casnumber_id" schema:"casnumber_id"`
 	CasNumberLabel string `db:"casnumber_label" json:"casnumber_label" schema:"casnumber_label"`
+}
+
+func (c CasNumber) GetID() int {
+	return c.CasNumberID
 }
 
 // CeNumber is a product CE number
@@ -79,10 +95,21 @@ type CeNumber struct {
 	CeNumberLabel sql.NullString `db:"cenumber_label" json:"cenumber_label" schema:"cenumber_label"`
 }
 
+func (c CeNumber) GetID() int {
+	if c.CeNumberID.Valid {
+		return int(c.CeNumberID.Int64)
+	}
+	return -1
+}
+
 // EmpiricalFormula is a product empirical formula
 type EmpiricalFormula struct {
 	EmpiricalFormulaID    int    `db:"empiricalformula_id" json:"empiricalformula_id" schema:"empiricalformula_id"`
 	EmpiricalFormulaLabel string `db:"empiricalformula_label" json:"empiricalformula_label" schema:"empiricalformula_label"`
+}
+
+func (e EmpiricalFormula) GetID() int {
+	return e.EmpiricalFormulaID
 }
 
 // Product is a chemical product card
@@ -94,8 +121,8 @@ type Product struct {
 	CasNumber          `db:"casnumber" json:"casnumber" schema:"casnumber"`
 	CeNumber           `db:"cenumber" json:"cenumber" schema:"cenumber"`
 	Name               `db:"name" json:"name" schema:"name"`
-	Synonyms           []Name   `db:"-" schema:"synonyms" json:"synonyms" schema:"synonyms"`
-	Symbols            []Symbol `db:"-" schema:"symbols" json:"symbols" schema:"symbols"`
+	Synonyms           []Name   `db:"-" schema:"synonyms" json:"synonyms"`
+	Symbols            []Symbol `db:"-" schema:"symbols" json:"symbols"`
 }
 
 func (p Product) String() string {
