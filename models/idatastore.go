@@ -7,7 +7,6 @@ import (
 // Datastore is an interface to be implemented
 // to store data
 type Datastore interface {
-	FlushErrors() error
 	CreateDatabase() error
 
 	// products

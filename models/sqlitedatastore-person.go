@@ -22,12 +22,13 @@ func (db *SQLiteDataStore) GetPeople(p helpers.DbselectparamPerson) ([]Person, i
 		precreq, presreq, comreq, postsreq strings.Builder
 		cnstmt                             *sqlx.NamedStmt
 		snstmt                             *sqlx.NamedStmt
+		err                                error
 	)
 	log.WithFields(log.Fields{"p": p}).Debug("GetPeople")
 
 	// is the logged user an admin?
-	if isadmin, db.err = db.IsPersonAdmin(p.GetLoggedPersonID()); db.err != nil {
-		return nil, 0, db.err
+	if isadmin, err = db.IsPersonAdmin(p.GetLoggedPersonID()); err != nil {
+		return nil, 0, err
 	}
 
 	// returning all people for admins
@@ -63,11 +64,11 @@ func (db *SQLiteDataStore) GetPeople(p helpers.DbselectparamPerson) ([]Person, i
 	}
 	log.Debug(presreq.String() + comreq.String() + postsreq.String())
 	// building count and select statements
-	if cnstmt, db.err = db.PrepareNamed(precreq.String() + comreq.String()); db.err != nil {
-		return nil, 0, db.err
+	if cnstmt, err = db.PrepareNamed(precreq.String() + comreq.String()); err != nil {
+		return nil, 0, err
 	}
-	if snstmt, db.err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); db.err != nil {
-		return nil, 0, db.err
+	if snstmt, err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); err != nil {
+		return nil, 0, err
 	}
 
 	// building argument map
@@ -81,12 +82,12 @@ func (db *SQLiteDataStore) GetPeople(p helpers.DbselectparamPerson) ([]Person, i
 	}
 
 	// select
-	if db.err = snstmt.Select(&people, m); db.err != nil {
-		return nil, 0, db.err
+	if err = snstmt.Select(&people, m); err != nil {
+		return nil, 0, err
 	}
 	// count
-	if db.err = cnstmt.Get(&count, m); db.err != nil {
-		return nil, 0, db.err
+	if err = cnstmt.Get(&count, m); err != nil {
+		return nil, 0, err
 	}
 
 	log.WithFields(log.Fields{"people": people, "count": count}).Debug("GetPeople")
@@ -98,11 +99,12 @@ func (db *SQLiteDataStore) GetPerson(id int) (Person, error) {
 	var (
 		person Person
 		sqlr   string
+		err    error
 	)
 
 	sqlr = "SELECT person_id, person_email FROM person WHERE person_id = ?"
-	if db.err = db.Get(&person, sqlr, id); db.err != nil {
-		return Person{}, db.err
+	if err = db.Get(&person, sqlr, id); err != nil {
+		return Person{}, err
 	}
 	return person, nil
 }
@@ -112,11 +114,12 @@ func (db *SQLiteDataStore) GetPersonByEmail(email string) (Person, error) {
 	var (
 		person Person
 		sqlr   string
+		err    error
 	)
 
 	sqlr = "SELECT person_id, person_email FROM person WHERE person_email = ?"
-	if db.err = db.Get(&person, sqlr, email); db.err != nil {
-		return Person{}, db.err
+	if err = db.Get(&person, sqlr, email); err != nil {
+		return Person{}, err
 	}
 	return person, nil
 }
@@ -126,13 +129,14 @@ func (db *SQLiteDataStore) GetPersonPermissions(id int) ([]Permission, error) {
 	var (
 		ps   []Permission
 		sqlr string
+		err  error
 	)
 
 	sqlr = `SELECT permission_id, permission_perm_name, permission_item_name, permission_entity_id 
 	FROM permission
 	WHERE person = ?`
-	if db.err = db.Select(&ps, sqlr, id); db.err != nil {
-		return nil, db.err
+	if err = db.Select(&ps, sqlr, id); err != nil {
+		return nil, err
 	}
 	log.WithFields(log.Fields{"personID": id, "ps": ps}).Debug("GetPersonPermissions")
 	return ps, nil
@@ -143,14 +147,15 @@ func (db *SQLiteDataStore) GetPersonManageEntities(id int) ([]Entity, error) {
 	var (
 		es   []Entity
 		sqlr string
+		err  error
 	)
 
 	sqlr = `SELECT entity_id, entity_name, entity_description 
 	FROM entity
 	LEFT JOIN entitypeople ON entitypeople.entitypeople_entity_id = entity.entity_id
 	WHERE entitypeople.entitypeople_person_id = ?`
-	if db.err = db.Select(&es, sqlr, id); db.err != nil {
-		return nil, db.err
+	if err = db.Select(&es, sqlr, id); err != nil {
+		return nil, err
 	}
 	log.WithFields(log.Fields{"personID": id, "es": es}).Debug("GetPersonManageEntities")
 	return es, nil
@@ -163,11 +168,12 @@ func (db *SQLiteDataStore) GetPersonEntities(LoggedPersonID int, id int) ([]Enti
 		isadmin  bool
 		sqlr     strings.Builder
 		sstmt    *sqlx.NamedStmt
+		err      error
 	)
 
 	// is the logged user an admin?
-	if isadmin, db.err = db.IsPersonAdmin(LoggedPersonID); db.err != nil {
-		return nil, db.err
+	if isadmin, err = db.IsPersonAdmin(LoggedPersonID); err != nil {
+		return nil, err
 	}
 
 	sqlr.WriteString("SELECT e.entity_id, e.entity_name, e.entity_description")
@@ -188,16 +194,16 @@ func (db *SQLiteDataStore) GetPersonEntities(LoggedPersonID int, id int) ([]Enti
 	sqlr.WriteString(" ORDER BY e.entity_name ASC")
 
 	// building select statement
-	if sstmt, db.err = db.PrepareNamed(sqlr.String()); db.err != nil {
-		return nil, db.err
+	if sstmt, err = db.PrepareNamed(sqlr.String()); err != nil {
+		return nil, err
 	}
 
 	// building argument map
 	m := map[string]interface{}{
 		"personid": id}
 
-	if db.err = sstmt.Select(&entities, m); db.err != nil {
-		return nil, db.err
+	if err = sstmt.Select(&entities, m); err != nil {
+		return nil, err
 	}
 	return entities, nil
 }
@@ -207,6 +213,7 @@ func (db *SQLiteDataStore) DoesPersonBelongsTo(id int, entities []Entity) (bool,
 	var (
 		sqlr  string
 		count int
+		err   error
 	)
 
 	// extracting entities ids
@@ -219,8 +226,8 @@ func (db *SQLiteDataStore) DoesPersonBelongsTo(id int, entities []Entity) (bool,
 	FROM personentities
 	WHERE personentities_person_id = ? 
 	AND personentities_entity_id IN (?)`
-	if db.err = db.Get(&count, sqlr, id, eids); db.err != nil {
-		return false, db.err
+	if err = db.Get(&count, sqlr, id, eids); err != nil {
+		return false, err
 	}
 	log.WithFields(log.Fields{"personID": id, "count": count}).Debug("DoesPersonBelongsTo")
 	return count > 0, nil
@@ -247,7 +254,7 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 		"itemid": itemid}).Debug("HasPersonPermission")
 
 	// is the user an admin?
-	if isadmin, db.err = db.IsPersonAdmin(id); db.err != nil {
+	if isadmin, err = db.IsPersonAdmin(id); err != nil {
 		return false, err
 	}
 	// if yes return true
@@ -271,6 +278,10 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 				eids = append(eids, i.EntityID)
 			}
 		case "entities":
+			eids = append(eids, itemid)
+		case "storages":
+			eids = append(eids, itemid)
+		case "products":
 			eids = append(eids, itemid)
 		case "storelocations":
 			// retrieving the requested store location entity
@@ -298,12 +309,12 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 		(person = ? AND permission_perm_name = "all" AND permission_item_name = ?) OR
 		(person = ? AND permission_perm_name = ? AND permission_item_name = "all")  OR
 		(person = ? AND permission_perm_name = ? AND permission_item_name = ?)`
-		if db.err = db.Get(&count, sqlr, id, id, item, id, perm, id, perm, item); db.err != nil {
+		if err = db.Get(&count, sqlr, id, id, item, id, perm, id, perm, item); err != nil {
 			switch {
-			case db.err == sql.ErrNoRows:
+			case err == sql.ErrNoRows:
 				return false, nil
 			default:
-				return false, db.err
+				return false, err
 			}
 		}
 	} else if itemid == -1 {
@@ -313,21 +324,21 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 		// ?   | all | -1 => no sense (ex: r permission on entities, store_locations...) we will put the permissions for each item
 		// all | all | -1 => means super admin
 		// ?   | ?   | -1 => (ex: r permission on all entities)
-		if sqlr, sqlargs, db.err = sqlx.In(`SELECT count(*) FROM permission WHERE 
+		if sqlr, sqlargs, err = sqlx.In(`SELECT count(*) FROM permission WHERE 
 		person = ? AND permission_item_name = "all" AND permission_perm_name = "all" OR 
 		person = ? AND permission_item_name = "all" AND permission_perm_name = ? AND permission_entity_id = -1 OR
 		person = ? AND permission_item_name = ? AND permission_perm_name = "all" AND permission_entity_id = -1 OR 
 		person = ? AND permission_item_name = ? AND permission_perm_name = ? AND permission_entity_id = -1
-		`, id, id, perm, id, item, id, item, perm); db.err != nil {
-			return false, db.err
+		`, id, id, perm, id, item, id, item, perm); err != nil {
+			return false, err
 		}
 
-		if db.err = db.Get(&count, sqlr, sqlargs...); db.err != nil {
+		if err = db.Get(&count, sqlr, sqlargs...); err != nil {
 			switch {
-			case db.err == sql.ErrNoRows:
+			case err == sql.ErrNoRows:
 				return false, nil
 			default:
-				return false, db.err
+				return false, err
 			}
 		}
 	} else {
@@ -341,7 +352,7 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 		// all | all | ?  => no sense (ex: all permission on entities, store_locations... with id = 3)
 		// ?   | ?   | -1 => (ex: r permission on all entities)
 		// ?   | ?   | ?  => (ex: r permission on entity 3)
-		if sqlr, sqlargs, db.err = sqlx.In(`SELECT count(*) FROM permission WHERE 
+		if sqlr, sqlargs, err = sqlx.In(`SELECT count(*) FROM permission WHERE 
 		person = ? AND permission_item_name = "all" AND permission_perm_name = "all" OR 
 		person = ? AND permission_item_name = "all" AND permission_perm_name = ? AND permission_entity_id = -1 OR
 		person = ? AND permission_item_name = "all" AND permission_perm_name = ? AND permission_entity_id IN (?) OR
@@ -349,16 +360,16 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 		person = ? AND permission_item_name = ? AND permission_perm_name = "all" AND permission_entity_id = -1 OR 
 		person = ? AND permission_item_name = ? AND permission_perm_name = ? AND permission_entity_id = -1 OR
 		person = ? AND permission_item_name = ? AND permission_perm_name = ? AND permission_entity_id IN (?)
-		`, id, id, perm, id, perm, eids, id, item, eids, id, item, id, item, perm, id, item, perm, eids); db.err != nil {
-			return false, db.err
+		`, id, id, perm, id, perm, eids, id, item, eids, id, item, id, item, perm, id, item, perm, eids); err != nil {
+			return false, err
 		}
 
-		if db.err = db.Get(&count, sqlr, sqlargs...); db.err != nil {
+		if err = db.Get(&count, sqlr, sqlargs...); err != nil {
 			switch {
-			case db.err == sql.ErrNoRows:
+			case err == sql.ErrNoRows:
 				return false, nil
 			default:
-				return false, db.err
+				return false, err
 			}
 		}
 	}
@@ -376,29 +387,30 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 func (db *SQLiteDataStore) DeletePerson(id int) error {
 	var (
 		sqlr string
+		err  error
 	)
 	sqlr = `DELETE FROM personentities 
 	WHERE personentities_person_id = ?`
-	if _, db.err = db.Exec(sqlr, id); db.err != nil {
-		return db.err
+	if _, err = db.Exec(sqlr, id); err != nil {
+		return err
 	}
 
 	sqlr = `DELETE FROM entitypeople 
 	WHERE entitypeople_person_id = ?`
-	if _, db.err = db.Exec(sqlr, id); db.err != nil {
-		return db.err
+	if _, err = db.Exec(sqlr, id); err != nil {
+		return err
 	}
 
 	sqlr = `DELETE FROM permission 
 	WHERE person = ?`
-	if _, db.err = db.Exec(sqlr, id); db.err != nil {
-		return db.err
+	if _, err = db.Exec(sqlr, id); err != nil {
+		return err
 	}
 
 	sqlr = `DELETE FROM person 
 	WHERE person_id = ?`
-	if _, db.err = db.Exec(sqlr, id); db.err != nil {
-		return db.err
+	if _, err = db.Exec(sqlr, id); err != nil {
+		return err
 	}
 	return nil
 }
@@ -409,26 +421,33 @@ func (db *SQLiteDataStore) CreatePerson(p Person) (error, int) {
 		sqlr   string
 		res    sql.Result
 		lastid int64
+		err    error
 	)
 
 	// inserting person
 	// FIXME: use a transaction here
 	sqlr = `INSERT INTO person(person_email, person_password) VALUES (?, ?)`
-	if res, db.err = db.Exec(sqlr, p.PersonEmail, p.PersonPassword); db.err != nil {
-		return db.err, 0
+	if res, err = db.Exec(sqlr, p.PersonEmail, p.PersonPassword); err != nil {
+		return err, 0
 	}
 
 	// getting the last inserted id
-	if lastid, db.err = res.LastInsertId(); db.err != nil {
-		return db.err, 0
+	if lastid, err = res.LastInsertId(); err != nil {
+		return err, 0
 	}
 	p.PersonID = int(lastid)
 
 	// inserting permissions
 	for _, per := range p.Permissions {
 		sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id) VALUES (?, ?, ?, ?)`
-		if _, db.err = db.Exec(sqlr, p.PersonID, per.PermissionPermName, per.PermissionItemName, per.PermissionEntityID); db.err != nil {
-			return db.err, 0
+		if _, err = db.Exec(sqlr, p.PersonID, per.PermissionPermName, per.PermissionItemName, per.PermissionEntityID); err != nil {
+			return err, 0
+		}
+		// adding r permission for w permissions
+		if per.PermissionPermName == "w" {
+			if _, err = db.Exec(sqlr, p.PersonID, "r", per.PermissionItemName, per.PermissionEntityID); err != nil {
+				return err, 0
+			}
 		}
 	}
 
@@ -436,8 +455,8 @@ func (db *SQLiteDataStore) CreatePerson(p Person) (error, int) {
 	for _, e := range p.Entities {
 		sqlr = `INSERT INTO personentities(personentities_person_id, personentities_entity_id) 
 			VALUES (?, ?)`
-		if _, db.err = db.Exec(sqlr, p.PersonID, e.EntityID); db.err != nil {
-			return db.err, 0
+		if _, err = db.Exec(sqlr, p.PersonID, e.EntityID); err != nil {
+			return err, 0
 		}
 	}
 	return nil, p.PersonID
@@ -447,45 +466,50 @@ func (db *SQLiteDataStore) CreatePerson(p Person) (error, int) {
 func (db *SQLiteDataStore) UpdatePerson(p Person) error {
 	var (
 		sqlr string
+		err  error
 	)
 	// updating person
 	// FIXME: use a transaction here
 	sqlr = `UPDATE person SET person_email = ?
 	WHERE person_id = ?`
-	if _, db.err = db.Exec(sqlr, p.PersonEmail, p.PersonID); db.err != nil {
-		return db.err
+	if _, err = db.Exec(sqlr, p.PersonEmail, p.PersonID); err != nil {
+		return err
 	}
 
 	// lazily deleting former entities
 	sqlr = `DELETE FROM personentities 
 	WHERE personentities_person_id = ?`
-	if _, db.err = db.Exec(sqlr, p.PersonID); db.err != nil {
-		return db.err
+	if _, err = db.Exec(sqlr, p.PersonID); err != nil {
+		return err
 	}
 
 	// updating person entities
 	for _, e := range p.Entities {
 		sqlr = `INSERT INTO personentities(personentities_person_id, personentities_entity_id) 
 		VALUES (?, ?)`
-		if _, db.err = db.Exec(sqlr, p.PersonID, e.EntityID); db.err != nil {
-			return db.err
+		if _, err = db.Exec(sqlr, p.PersonID, e.EntityID); err != nil {
+			return err
 		}
 	}
 
 	// lazily deleting former permissions
 	sqlr = `DELETE FROM permission 
 		WHERE person = ?`
-	if _, db.err = db.Exec(sqlr, p.PersonID); db.err != nil {
-		return db.err
+	if _, err = db.Exec(sqlr, p.PersonID); err != nil {
+		return err
 	}
 
 	// updating person permissions
 	for _, perm := range p.Permissions {
 		sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id) 
 		VALUES (?, ?, ?, ?)`
-		if perm.PermissionPermName == "r" || perm.PermissionPermName == "w" || perm.PermissionPermName == "all" {
-			if _, db.err = db.Exec(sqlr, p.PersonID, perm.PermissionPermName, perm.PermissionItemName, perm.PermissionEntityID); db.err != nil {
-				return db.err
+		if _, err = db.Exec(sqlr, p.PersonID, perm.PermissionPermName, perm.PermissionItemName, perm.PermissionEntityID); err != nil {
+			return err
+		}
+		// adding r permission for w permissions
+		if perm.PermissionPermName == "w" {
+			if _, err = db.Exec(sqlr, p.PersonID, "r", perm.PermissionItemName, perm.PermissionEntityID); err != nil {
+				return err
 			}
 		}
 	}
@@ -499,14 +523,15 @@ func (db *SQLiteDataStore) IsPersonAdmin(id int) (bool, error) {
 		res   bool
 		count int
 		sqlr  string
+		err   error
 	)
 	sqlr = `SELECT count(*) from permission WHERE 
 	permission.person = ? AND
 	permission.permission_perm_name = "all" AND
 	permission.permission_item_name = "all" AND
 	permission_entity_id = -1`
-	if db.err = db.Get(&count, sqlr, id); db.err != nil {
-		return false, db.err
+	if err = db.Get(&count, sqlr, id); err != nil {
+		return false, err
 	}
 	log.WithFields(log.Fields{"id": id, "count": count}).Debug("IsPersonAdmin")
 	if count == 0 {
@@ -523,10 +548,11 @@ func (db *SQLiteDataStore) IsPersonManager(id int) (bool, error) {
 		res   bool
 		count int
 		sqlr  string
+		err   error
 	)
 	sqlr = "SELECT count(*) from entitypeople WHERE entitypeople.entitypeople_person_id = ?"
-	if db.err = db.Get(&count, sqlr, id); db.err != nil {
-		return false, db.err
+	if err = db.Get(&count, sqlr, id); err != nil {
+		return false, err
 	}
 	log.WithFields(log.Fields{"id": id, "count": count}).Debug("IsPersonManager")
 	if count == 0 {

@@ -19,7 +19,6 @@ const (
 // to store data in SQLite3
 type SQLiteDataStore struct {
 	*sqlx.DB
-	err error
 }
 
 // NewDBstore returns a database connection to the given dataSourceName
@@ -34,24 +33,18 @@ func NewDBstore(dataSourceName string) (*SQLiteDataStore, error) {
 	if db, err = sqlx.Connect(dbdriver, dataSourceName); err != nil {
 		return &SQLiteDataStore{}, err
 	}
-	return &SQLiteDataStore{db, nil}, nil
-}
-
-// FlushErrors returns the last DB errors and flushes it.
-func (db *SQLiteDataStore) FlushErrors() error {
-	// saving the last thrown error
-	lastError := db.err
-	// resetting the error
-	db.err = nil
-	// returning the last error
-	return lastError
+	return &SQLiteDataStore{db}, nil
 }
 
 // CreateDatabase creates the database tables
 func (db *SQLiteDataStore) CreateDatabase() error {
+	var (
+		err error
+	)
+
 	// activate the foreign keys feature
-	if _, db.err = db.Exec("PRAGMA foreign_keys = ON"); db.err != nil {
-		return db.err
+	if _, err = db.Exec("PRAGMA foreign_keys = ON"); err != nil {
+		return err
 	}
 
 	// schema definition
@@ -160,8 +153,8 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	("sgh09", "image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAI8SURBVFiFzdi7a1VBEMDhb0EjYhFfaCEICopBi4haWUiqqGgQW1OKaBpNIQEVvREi2lhaWCiC/4CSImgv2IgQELSSdKKlMUKEtTgr3jxuPI+9iQMD5+y9u/NjdmbO7IYYoywSQgvE2MqyXoyxudKKxKStHGvmhsoGl9dTGT2Xf/syweWFygiXHyoTXHegMsDVgprjLk5hS4wRenLD1fYUhjGans9jF/rRlwOuMhS2Yz924F0CO4EBjOTyXK0YwUVcwAcEHMJr9OaKudqLYBA/cQx7cT+NB1xrCld5cvLOGA7gqSIRricv7sED9Df1XB1PbcVOXMZnzOA7pvEcg3UTqjNY1QDlKmLSsRX+14NNlXamLlQyeDJBfenw+xmcxQ3cxunSCVYpINmYatUfHUlg3xaN9+MmjqR5uxPkaNltrZbChcFYUi8tmjuOqbIxt25pT7uifMThtvcBPMS84kvwKY2fizE+hhDCBkXGzuBZaUsN4qtPUVQj3uOJIhmGFSXlOO4loEmsr5KhtYIfvRjCUTxS1K8reKnIwAkLt/UHhqqUjUblIkFuxi18TRCv8KsNah5v8UbqRqqVi5JwOKhI/ym8wKzlg3+xzmGyrJ2QjC2U4ox4J72NS2fFEMI27CsdwEtlNsY43Wn9BVIlILNoo494t+CytD254bI2irngutJaN4Xr6mGkrpFVOb5VNbaqB96yRtfkiuBfxtf0UqUTxH9xDbU8XBaoPGAZt69dq3awy0uMLSH8fc4gvwFyuYuihNiCxwAAAABJRU5ErkJggg==");`
 
 	// tables creation
-	if _, db.err = db.Exec(schema); db.err != nil {
-		return db.err
+	if _, err = db.Exec(schema); err != nil {
+		return err
 	}
 
 	// inserting sample values if tables are empty
@@ -171,8 +164,8 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	if c == 0 {
 		log.Debug("populating database")
 
-		if _, db.err = db.Exec(values); db.err != nil {
-			return db.err
+		if _, err = db.Exec(values); err != nil {
+			return err
 		}
 
 		// inserting sample values
@@ -188,8 +181,8 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		scanner.Split(bufio.ScanLines)
 		for scanner.Scan() {
 			log.Debug(scanner.Text())
-			if _, db.err = db.Exec(`INSERT OR IGNORE INTO casnumber ("casnumber_label") VALUES ("` + scanner.Text() + `");`); db.err != nil {
-				return db.err
+			if _, err = db.Exec(`INSERT OR IGNORE INTO casnumber ("casnumber_label") VALUES ("` + scanner.Text() + `");`); err != nil {
+				return err
 			}
 		}
 
@@ -197,8 +190,8 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		scanner.Split(bufio.ScanLines)
 		for scanner.Scan() {
 			log.Debug(scanner.Text())
-			if _, db.err = db.Exec(`INSERT OR IGNORE INTO name ("name_label") VALUES ("` + scanner.Text() + `");`); db.err != nil {
-				return db.err
+			if _, err = db.Exec(`INSERT OR IGNORE INTO name ("name_label") VALUES ("` + scanner.Text() + `");`); err != nil {
+				return err
 			}
 		}
 
@@ -206,8 +199,8 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		scanner.Split(bufio.ScanLines)
 		for scanner.Scan() {
 			log.Debug(scanner.Text())
-			if _, db.err = db.Exec(`INSERT OR IGNORE INTO empiricalformula ("empiricalformula_label") VALUES ("` + scanner.Text() + `");`); db.err != nil {
-				return db.err
+			if _, err = db.Exec(`INSERT OR IGNORE INTO empiricalformula ("empiricalformula_label") VALUES ("` + scanner.Text() + `");`); err != nil {
+				return err
 			}
 		}
 
@@ -280,12 +273,12 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		// attention: values are wrongs, just for devel purposes
 		for i := 1; i <= 100; i++ {
 			ins := fmt.Sprintf("(\"spec%d\", \"%d\", \"%d\", 1, \"%d\")", i, i, i, i)
-			if _, db.err = db.Exec(`INSERT INTO product ("product_specificity", "casnumber", "name", "person", "empiricalformula") VALUES ` + ins + `;`); db.err != nil {
-				return db.err
+			if _, err = db.Exec(`INSERT INTO product ("product_specificity", "casnumber", "name", "person", "empiricalformula") VALUES ` + ins + `;`); err != nil {
+				return err
 			}
-			if _, db.err = db.Exec(`INSERT INTO productsymbols ("productsymbols_product_id", "productsymbols_symbol_id") VALUES 
-			(?, ?), (?, ?), (?, ?), (?, ?);`, i, (i%9)+1, i, ((i+1)%9)+1, i, ((i+2)%9)+1, i, ((i+3)%9)+1); db.err != nil {
-				return db.err
+			if _, err = db.Exec(`INSERT INTO productsymbols ("productsymbols_product_id", "productsymbols_symbol_id") VALUES 
+			(?, ?), (?, ?), (?, ?), (?, ?);`, i, (i%9)+1, i, ((i+1)%9)+1, i, ((i+2)%9)+1, i, ((i+3)%9)+1); err != nil {
+				return err
 			}
 		}
 
@@ -298,8 +291,8 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 			product := i%99 + 1
 			storelocation := i%5 + 1
 			log.Debug(fmt.Sprintf("comment: %s datetime: %d person: %d product: %d storelocation: %d", comment, datetime, person, product, storelocation))
-			if _, db.err = db.Exec(`INSERT INTO storage ("storage_creationdate", "storage_comment", "person", "product", "storelocation") VALUES (?,?,?,?,?);`, datetime, comment, person, product, storelocation); db.err != nil {
-				return db.err
+			if _, err = db.Exec(`INSERT INTO storage ("storage_creationdate", "storage_comment", "person", "product", "storelocation") VALUES (?,?,?,?,?);`, datetime, comment, person, product, storelocation); err != nil {
+				return err
 			}
 		}
 	}

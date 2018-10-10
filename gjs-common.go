@@ -12,8 +12,9 @@ var (
 	document dom.Document
 
 	// database tables
-	permitems = [2]string{
+	permitems = [3]string{
 		"products",
+		"storelocations",
 		"storages"}
 )
 
@@ -40,9 +41,9 @@ func PopulatePermissionWidget(params []*js.Object) {
 		pentityid := p.Get("permission_entity_id").String()
 
 		// println("---")
-		// println(pitemname)
-		// println(ppermname)
-		// println(pentityid)
+		println(pitemname)
+		println(ppermname)
+		println(pentityid)
 
 		switch pitemname {
 		case "products":
@@ -58,12 +59,25 @@ func PopulatePermissionWidget(params []*js.Object) {
 			case "r":
 				if pentityid == "-1" {
 					for _, e := range document.GetElementsByClassName("permrproducts") {
+						// avoid selecting r if w is already selected
+						eid := e.GetAttribute("entity_id")
+						if !document.GetElementByID("permw" + pitemname + eid).(*dom.HTMLInputElement).Checked {
+							e.(*dom.HTMLInputElement).Checked = true
+						}
+					}
+				} else {
+					// avoid selecting r if w is already selected
+					if document.GetElementByID("permw"+pitemname+pentityid).(*dom.HTMLInputElement).Checked == false {
+						document.GetElementByID("permr" + pitemname + pentityid).(*dom.HTMLInputElement).Checked = true
+					}
+				}
+			case "n":
+				if pentityid == "-1" {
+					for _, e := range document.GetElementsByClassName("permnproducts") {
 						e.(*dom.HTMLInputElement).Checked = true
 					}
 				} else {
-					// should never happen
-					// permissions on products are not related to an entity id
-					document.GetElementByID("permr" + pitemname + pentityid).(*dom.HTMLInputElement).Checked = true
+					document.GetElementByID("permn" + pitemname + pentityid).(*dom.HTMLInputElement).Checked = true
 				}
 			}
 		case "storages":
@@ -79,10 +93,43 @@ func PopulatePermissionWidget(params []*js.Object) {
 			case "r":
 				if pentityid == "-1" {
 					for _, e := range document.GetElementsByClassName("permrstorages") {
+						// avoid selecting r if w is already selected
+						eid := e.GetAttribute("entity_id")
+						if !document.GetElementByID("permw" + pitemname + eid).(*dom.HTMLInputElement).Checked {
+							e.(*dom.HTMLInputElement).Checked = true
+						}
+					}
+				} else {
+					// avoid selecting r if w is already selected
+					if document.GetElementByID("permw"+pitemname+pentityid).(*dom.HTMLInputElement).Checked == false {
+						document.GetElementByID("permr" + pitemname + pentityid).(*dom.HTMLInputElement).Checked = true
+					}
+				}
+			}
+		case "storelocations":
+			switch ppermname {
+			case "w", "all":
+				if pentityid == "-1" {
+					for _, e := range document.GetElementsByClassName("permwstorelocations") {
 						e.(*dom.HTMLInputElement).Checked = true
 					}
 				} else {
-					document.GetElementByID("permr" + pitemname + pentityid).(*dom.HTMLInputElement).Checked = true
+					document.GetElementByID("permw" + pitemname + pentityid).(*dom.HTMLInputElement).Checked = true
+				}
+			case "r":
+				if pentityid == "-1" {
+					for _, e := range document.GetElementsByClassName("permrstorelocations") {
+						// avoid selecting r if w is already selected
+						eid := e.GetAttribute("entity_id")
+						if !document.GetElementByID("permw" + pitemname + eid).(*dom.HTMLInputElement).Checked {
+							e.(*dom.HTMLInputElement).Checked = true
+						}
+					}
+				} else {
+					// avoid selecting r if w is already selected
+					if document.GetElementByID("permw"+pitemname+pentityid).(*dom.HTMLInputElement).Checked == false {
+						document.GetElementByID("permr" + pitemname + pentityid).(*dom.HTMLInputElement).Checked = true
+					}
 				}
 			}
 		case "all":
@@ -152,7 +199,7 @@ func BuildPermissionWidget(entityID int, entityName string) *dom.HTMLDivElement 
 
 	widgetdiv.AppendChild(title)
 	for _, i := range permitems {
-		println(i)
+		//println(i)
 		// building main row
 		mainrowdiv := document.CreateElement("div").(*dom.HTMLDivElement)
 		mainrowdiv.SetClass("row")
@@ -205,7 +252,7 @@ func BuildPermissionWidget(entityID int, entityName string) *dom.HTMLDivElement 
 	return widgetdiv
 }
 
-func main2() {
+func main() {
 
 	// exporting functions to be called from other JS files
 	js.Global.Set("global", map[string]interface{}{

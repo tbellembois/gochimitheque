@@ -20,6 +20,7 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 		precreq, presreq, comreq, postsreq strings.Builder
 		cnstmt                             *sqlx.NamedStmt
 		snstmt                             *sqlx.NamedStmt
+		err                                error
 	)
 	log.WithFields(log.Fields{"p": p}).Debug("GetStorages")
 
@@ -31,7 +32,8 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 		person.person_email AS "person.person_email", 
 		product.product_id AS "product.product_id",
 		name.name_label AS "product.name.name_label",	 
-		storelocation.storelocation_name AS "storelocation.storelocation_name"
+		storelocation.storelocation_name AS "storelocation.storelocation_name",
+		entity.entity_id AS "storelocation.entity.entity_id"
 		`)
 
 	// common parts
@@ -44,6 +46,8 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 	comreq.WriteString(" JOIN person ON storage.person = person.person_id")
 	// get store location
 	comreq.WriteString(" JOIN storelocation ON storage.storelocation = storelocation.storelocation_id")
+	// get entity
+	comreq.WriteString(" JOIN entity ON storelocation.entity = entity.entity_id")
 	// filter by permissions
 	comreq.WriteString(` JOIN permission AS perm, entity as e ON
 		(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
@@ -69,11 +73,11 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 	}
 
 	// building count and select statements
-	if cnstmt, db.err = db.PrepareNamed(precreq.String() + comreq.String()); db.err != nil {
-		return nil, 0, db.err
+	if cnstmt, err = db.PrepareNamed(precreq.String() + comreq.String()); err != nil {
+		return nil, 0, err
 	}
-	if snstmt, db.err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); db.err != nil {
-		return nil, 0, db.err
+	if snstmt, err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); err != nil {
+		return nil, 0, err
 	}
 
 	// building argument map
@@ -88,12 +92,12 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 	}
 
 	// select
-	if db.err = snstmt.Select(&storages, m); db.err != nil {
-		return nil, 0, db.err
+	if err = snstmt.Select(&storages, m); err != nil {
+		return nil, 0, err
 	}
 	// count
-	if db.err = cnstmt.Get(&count, m); db.err != nil {
-		return nil, 0, db.err
+	if err = cnstmt.Get(&count, m); err != nil {
+		return nil, 0, err
 	}
 
 	return storages, count, nil
@@ -104,6 +108,7 @@ func (db *SQLiteDataStore) GetStorage(id int) (Storage, error) {
 	var (
 		storage Storage
 		sqlr    string
+		err     error
 	)
 	log.WithFields(log.Fields{"id": id}).Debug("GetStorage")
 
@@ -120,8 +125,8 @@ func (db *SQLiteDataStore) GetStorage(id int) (Storage, error) {
 	JOIN casnumber ON product.casnumber = casnumber.casnumber_id
 	JOIN name ON product.name = name.name_id
 	WHERE storage.storage_id = ?`
-	if db.err = db.Get(&storage, sqlr, id); db.err != nil {
-		return Storage{}, db.err
+	if err = db.Get(&storage, sqlr, id); err != nil {
+		return Storage{}, err
 	}
 	log.WithFields(log.Fields{"ID": id, "storage": storage}).Debug("GetStorage")
 	return storage, nil
@@ -130,11 +135,12 @@ func (db *SQLiteDataStore) GetStorage(id int) (Storage, error) {
 func (db *SQLiteDataStore) DeleteStorage(id int) error {
 	var (
 		sqlr string
+		err  error
 	)
 	sqlr = `DELETE FROM storage 
 	WHERE storage_id = ?`
-	if _, db.err = db.Exec(sqlr, id); db.err != nil {
-		return db.err
+	if _, err = db.Exec(sqlr, id); err != nil {
+		return err
 	}
 	return nil
 }
@@ -145,16 +151,17 @@ func (db *SQLiteDataStore) CreateStorage(s Storage) (error, int) {
 		sqlr   string
 		res    sql.Result
 		lastid int64
+		err    error
 	)
 	// FIXME: use a transaction here
 	sqlr = `INSERT INTO storage(storage_creationdate, storage_comment, person, product, storelocation) VALUES (?, ?, ?, ?, ?)`
-	if res, db.err = db.Exec(sqlr, s.StorageCreationDate, s.StorageComment, s.PersonID, s.ProductID, s.StoreLocationID); db.err != nil {
-		return db.err, 0
+	if res, err = db.Exec(sqlr, s.StorageCreationDate, s.StorageComment, s.PersonID, s.ProductID, s.StoreLocationID); err != nil {
+		return err, 0
 	}
 
 	// getting the last inserted id
-	if lastid, db.err = res.LastInsertId(); db.err != nil {
-		return db.err, 0
+	if lastid, err = res.LastInsertId(); err != nil {
+		return err, 0
 	}
 
 	return nil, int(lastid)
@@ -163,13 +170,14 @@ func (db *SQLiteDataStore) UpdateStorage(s Storage) error {
 
 	var (
 		sqlr string
+		err  error
 	)
 
 	// updating the storage - product not supposed to be changed
 	sqlr = `UPDATE storage SET storage_comment = ?, person = ?, storelocation = ?
 	WHERE storage_id = ?`
-	if _, db.err = db.Exec(sqlr, s.StorageComment, s.PersonID, s.StoreLocationID, s.StorageID); db.err != nil {
-		return db.err
+	if _, err = db.Exec(sqlr, s.StorageComment, s.PersonID, s.StoreLocationID, s.StorageID); err != nil {
+		return err
 	}
 
 	return nil
