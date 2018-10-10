@@ -24,6 +24,7 @@ func (db *SQLiteDataStore) GetProductsCasNumbers(p helpers.Dbselectparam) ([]Cas
 		precreq, presreq, comreq, postsreq strings.Builder
 		cnstmt                             *sqlx.NamedStmt
 		snstmt                             *sqlx.NamedStmt
+		err                                error
 	)
 
 	precreq.WriteString(" SELECT count(DISTINCT casnumber.casnumber_id)")
@@ -39,11 +40,11 @@ func (db *SQLiteDataStore) GetProductsCasNumbers(p helpers.Dbselectparam) ([]Cas
 	}
 
 	// building count and select statements
-	if cnstmt, db.err = db.PrepareNamed(precreq.String() + comreq.String()); db.err != nil {
-		return nil, 0, db.err
+	if cnstmt, err = db.PrepareNamed(precreq.String() + comreq.String()); err != nil {
+		return nil, 0, err
 	}
-	if snstmt, db.err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); db.err != nil {
-		return nil, 0, db.err
+	if snstmt, err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); err != nil {
+		return nil, 0, err
 	}
 
 	// building argument map
@@ -55,12 +56,12 @@ func (db *SQLiteDataStore) GetProductsCasNumbers(p helpers.Dbselectparam) ([]Cas
 	}
 
 	// select
-	if db.err = snstmt.Select(&casnumbers, m); db.err != nil {
-		return nil, 0, db.err
+	if err = snstmt.Select(&casnumbers, m); err != nil {
+		return nil, 0, err
 	}
 	// count
-	if db.err = cnstmt.Get(&count, m); db.err != nil {
-		return nil, 0, db.err
+	if err = cnstmt.Get(&count, m); err != nil {
+		return nil, 0, err
 	}
 
 	log.WithFields(log.Fields{"casnumbers": casnumbers}).Debug("GetProductsCasNumbers")
@@ -75,6 +76,7 @@ func (db *SQLiteDataStore) GetProductsCeNumbers(p helpers.Dbselectparam) ([]CeNu
 		precreq, presreq, comreq, postsreq strings.Builder
 		cnstmt                             *sqlx.NamedStmt
 		snstmt                             *sqlx.NamedStmt
+		err                                error
 	)
 
 	precreq.WriteString(" SELECT count(DISTINCT cenumber.cenumber_id)")
@@ -90,11 +92,11 @@ func (db *SQLiteDataStore) GetProductsCeNumbers(p helpers.Dbselectparam) ([]CeNu
 	}
 
 	// building count and select statements
-	if cnstmt, db.err = db.PrepareNamed(precreq.String() + comreq.String()); db.err != nil {
-		return nil, 0, db.err
+	if cnstmt, err = db.PrepareNamed(precreq.String() + comreq.String()); err != nil {
+		return nil, 0, err
 	}
-	if snstmt, db.err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); db.err != nil {
-		return nil, 0, db.err
+	if snstmt, err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); err != nil {
+		return nil, 0, err
 	}
 
 	// building argument map
@@ -106,12 +108,12 @@ func (db *SQLiteDataStore) GetProductsCeNumbers(p helpers.Dbselectparam) ([]CeNu
 	}
 
 	// select
-	if db.err = snstmt.Select(&cenumbers, m); db.err != nil {
-		return nil, 0, db.err
+	if err = snstmt.Select(&cenumbers, m); err != nil {
+		return nil, 0, err
 	}
 	// count
-	if db.err = cnstmt.Get(&count, m); db.err != nil {
-		return nil, 0, db.err
+	if err = cnstmt.Get(&count, m); err != nil {
+		return nil, 0, err
 	}
 
 	log.WithFields(log.Fields{"cenumbers": cenumbers}).Debug("GetProductsCeNumbers")
@@ -126,6 +128,7 @@ func (db *SQLiteDataStore) GetProductsEmpiricalFormulas(p helpers.Dbselectparam)
 		precreq, presreq, comreq, postsreq strings.Builder
 		cnstmt                             *sqlx.NamedStmt
 		snstmt                             *sqlx.NamedStmt
+		err                                error
 	)
 
 	precreq.WriteString(" SELECT count(DISTINCT empiricalformula.empiricalformula_id)")
@@ -141,11 +144,11 @@ func (db *SQLiteDataStore) GetProductsEmpiricalFormulas(p helpers.Dbselectparam)
 	}
 
 	// building count and select statements
-	if cnstmt, db.err = db.PrepareNamed(precreq.String() + comreq.String()); db.err != nil {
-		return nil, 0, db.err
+	if cnstmt, err = db.PrepareNamed(precreq.String() + comreq.String()); err != nil {
+		return nil, 0, err
 	}
-	if snstmt, db.err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); db.err != nil {
-		return nil, 0, db.err
+	if snstmt, err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); err != nil {
+		return nil, 0, err
 	}
 
 	// building argument map
@@ -157,12 +160,12 @@ func (db *SQLiteDataStore) GetProductsEmpiricalFormulas(p helpers.Dbselectparam)
 	}
 
 	// select
-	if db.err = snstmt.Select(&eformulas, m); db.err != nil {
-		return nil, 0, db.err
+	if err = snstmt.Select(&eformulas, m); err != nil {
+		return nil, 0, err
 	}
 	// count
-	if db.err = cnstmt.Get(&count, m); db.err != nil {
-		return nil, 0, db.err
+	if err = cnstmt.Get(&count, m); err != nil {
+		return nil, 0, err
 	}
 
 	log.WithFields(log.Fields{"eformulas": eformulas}).Debug("GetProductsEmpiricalFormulas")
@@ -177,6 +180,7 @@ func (db *SQLiteDataStore) GetProductsNames(p helpers.Dbselectparam) ([]Name, in
 		precreq, presreq, comreq, postsreq strings.Builder
 		cnstmt                             *sqlx.NamedStmt
 		snstmt                             *sqlx.NamedStmt
+		err                                error
 	)
 
 	precreq.WriteString(" SELECT count(DISTINCT name.name_id)")
@@ -192,11 +196,11 @@ func (db *SQLiteDataStore) GetProductsNames(p helpers.Dbselectparam) ([]Name, in
 	}
 
 	// building count and select statements
-	if cnstmt, db.err = db.PrepareNamed(precreq.String() + comreq.String()); db.err != nil {
-		return nil, 0, db.err
+	if cnstmt, err = db.PrepareNamed(precreq.String() + comreq.String()); err != nil {
+		return nil, 0, err
 	}
-	if snstmt, db.err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); db.err != nil {
-		return nil, 0, db.err
+	if snstmt, err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); err != nil {
+		return nil, 0, err
 	}
 
 	// building argument map
@@ -208,12 +212,12 @@ func (db *SQLiteDataStore) GetProductsNames(p helpers.Dbselectparam) ([]Name, in
 	}
 
 	// select
-	if db.err = snstmt.Select(&names, m); db.err != nil {
-		return nil, 0, db.err
+	if err = snstmt.Select(&names, m); err != nil {
+		return nil, 0, err
 	}
 	// count
-	if db.err = cnstmt.Get(&count, m); db.err != nil {
-		return nil, 0, db.err
+	if err = cnstmt.Get(&count, m); err != nil {
+		return nil, 0, err
 	}
 
 	log.WithFields(log.Fields{"names": names}).Debug("GetProductsNames")
@@ -228,6 +232,7 @@ func (db *SQLiteDataStore) GetProductsSymbols(p helpers.Dbselectparam) ([]Symbol
 		precreq, presreq, comreq, postsreq strings.Builder
 		cnstmt                             *sqlx.NamedStmt
 		snstmt                             *sqlx.NamedStmt
+		err                                error
 	)
 
 	precreq.WriteString(" SELECT count(DISTINCT symbol.symbol_id)")
@@ -243,11 +248,11 @@ func (db *SQLiteDataStore) GetProductsSymbols(p helpers.Dbselectparam) ([]Symbol
 	}
 
 	// building count and select statements
-	if cnstmt, db.err = db.PrepareNamed(precreq.String() + comreq.String()); db.err != nil {
-		return nil, 0, db.err
+	if cnstmt, err = db.PrepareNamed(precreq.String() + comreq.String()); err != nil {
+		return nil, 0, err
 	}
-	if snstmt, db.err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); db.err != nil {
-		return nil, 0, db.err
+	if snstmt, err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); err != nil {
+		return nil, 0, err
 	}
 
 	// building argument map
@@ -259,12 +264,12 @@ func (db *SQLiteDataStore) GetProductsSymbols(p helpers.Dbselectparam) ([]Symbol
 	}
 
 	// select
-	if db.err = snstmt.Select(&symbols, m); db.err != nil {
-		return nil, 0, db.err
+	if err = snstmt.Select(&symbols, m); err != nil {
+		return nil, 0, err
 	}
 	// count
-	if db.err = cnstmt.Get(&count, m); db.err != nil {
-		return nil, 0, db.err
+	if err = cnstmt.Get(&count, m); err != nil {
+		return nil, 0, err
 	}
 
 	log.WithFields(log.Fields{"symbols": symbols}).Debug("GetProductsSymbols")
@@ -279,6 +284,7 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 		req, precreq, presreq, comreq, postsreq strings.Builder
 		cnstmt                                  *sqlx.NamedStmt
 		snstmt                                  *sqlx.NamedStmt
+		err                                     error
 	)
 	log.WithFields(log.Fields{"p": p}).Debug("GetProducts")
 
@@ -334,11 +340,11 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	}
 
 	// building count and select statements
-	if cnstmt, db.err = db.PrepareNamed(precreq.String() + comreq.String()); db.err != nil {
-		return nil, 0, db.err
+	if cnstmt, err = db.PrepareNamed(precreq.String() + comreq.String()); err != nil {
+		return nil, 0, err
 	}
-	if snstmt, db.err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); db.err != nil {
-		return nil, 0, db.err
+	if snstmt, err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); err != nil {
+		return nil, 0, err
 	}
 
 	// building argument map
@@ -353,12 +359,12 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	}
 
 	// select
-	if db.err = snstmt.Select(&products, m); db.err != nil {
-		return nil, 0, db.err
+	if err = snstmt.Select(&products, m); err != nil {
+		return nil, 0, err
 	}
 	// count
-	if db.err = cnstmt.Get(&count, m); db.err != nil {
-		return nil, 0, db.err
+	if err = cnstmt.Get(&count, m); err != nil {
+		return nil, 0, err
 	}
 
 	//
@@ -372,8 +378,8 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 		req.WriteString(" JOIN product ON productsymbols.productsymbols_product_id = product.product_id")
 		req.WriteString(" WHERE product.product_id = ?")
 
-		if db.err = db.Select(&products[i].Symbols, req.String(), p.ProductID); db.err != nil {
-			return nil, 0, db.err
+		if err = db.Select(&products[i].Symbols, req.String(), p.ProductID); err != nil {
+			return nil, 0, err
 		}
 	}
 
@@ -388,8 +394,8 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 		req.WriteString(" JOIN product ON productsynonyms.productsynonyms_product_id = product.product_id")
 		req.WriteString(" WHERE product.product_id = ?")
 
-		if db.err = db.Select(&products[i].Synonyms, req.String(), p.ProductID); db.err != nil {
-			return nil, 0, db.err
+		if err = db.Select(&products[i].Synonyms, req.String(), p.ProductID); err != nil {
+			return nil, 0, err
 		}
 	}
 
@@ -400,6 +406,7 @@ func (db *SQLiteDataStore) GetProduct(id int) (Product, error) {
 	var (
 		product Product
 		sqlr    string
+		err     error
 	)
 
 	sqlr = `SELECT product_id, 
@@ -421,8 +428,8 @@ func (db *SQLiteDataStore) GetProduct(id int) (Product, error) {
 	JOIN person ON product.person = person.person_id
 	JOIN empiricalformula ON product.empiricalformula = empiricalformula.empiricalformula_id
 	WHERE product_id = ?`
-	if db.err = db.Get(&product, sqlr, id); db.err != nil {
-		return Product{}, db.err
+	if err = db.Get(&product, sqlr, id); err != nil {
+		return Product{}, err
 	}
 
 	//
@@ -432,8 +439,8 @@ func (db *SQLiteDataStore) GetProduct(id int) (Product, error) {
 	JOIN productsymbols ON productsymbols.productsymbols_symbol_id = symbol.symbol_id
 	JOIN product ON productsymbols.productsymbols_product_id = product.product_id
 	WHERE product.product_id = ?`
-	if db.err = db.Select(&product.Symbols, sqlr, product.ProductID); db.err != nil {
-		return product, db.err
+	if err = db.Select(&product.Symbols, sqlr, product.ProductID); err != nil {
+		return product, err
 	}
 
 	//
@@ -443,8 +450,8 @@ func (db *SQLiteDataStore) GetProduct(id int) (Product, error) {
 	JOIN productsynonyms ON productsynonyms.productsynonyms_name_id = name.name_id
 	JOIN product ON productsynonyms.productsynonyms_product_id = product.product_id
 	WHERE product.product_id = ?`
-	if db.err = db.Select(&product.Synonyms, sqlr, product.ProductID); db.err != nil {
-		return product, db.err
+	if err = db.Select(&product.Synonyms, sqlr, product.ProductID); err != nil {
+		return product, err
 	}
 
 	log.WithFields(log.Fields{"ID": id, "product": product}).Debug("GetProduct")
@@ -454,12 +461,13 @@ func (db *SQLiteDataStore) GetProduct(id int) (Product, error) {
 func (db *SQLiteDataStore) DeleteProduct(id int) error {
 	var (
 		sqlr string
+		err  error
 	)
 	// TODO: synonyms, symbols
 	sqlr = `DELETE FROM product 
 	WHERE product_id = ?`
-	if _, db.err = db.Exec(sqlr, id); db.err != nil {
-		return db.err
+	if _, err = db.Exec(sqlr, id); err != nil {
+		return err
 	}
 	return nil
 }
@@ -472,24 +480,25 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 		res      sql.Result
 		sqla     []interface{}
 		ibuilder sq.InsertBuilder
+		err      error
 	)
 
 	// beginning transaction
-	if tx, db.err = db.Begin(); db.err != nil {
-		return db.err, 0
+	if tx, err = db.Begin(); err != nil {
+		return err, 0
 	}
 
 	// if CasNumberID = -1 then it is a new cas
 	if p.CasNumber.CasNumberID == -1 {
 		sqlr = `INSERT INTO casnumber (casnumber_label) VALUES (?)`
-		if res, db.err = tx.Exec(sqlr, p.CasNumberLabel); db.err != nil {
+		if res, err = tx.Exec(sqlr, p.CasNumberLabel); err != nil {
 			tx.Rollback()
-			return db.err, 0
+			return err, 0
 		}
 		// getting the last inserted id
-		if lastid, db.err = res.LastInsertId(); db.err != nil {
+		if lastid, err = res.LastInsertId(); err != nil {
 			tx.Rollback()
-			return db.err, 0
+			return err, 0
 		}
 		// updating the product CasNumberID (CasNumberLabel already set)
 		p.CasNumber.CasNumberID = int(lastid)
@@ -497,14 +506,14 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 	// if CeNumberID = -1 then it is a new ce
 	if v, err := p.CeNumber.CeNumberID.Value(); err == nil && v == -1 {
 		sqlr = `INSERT INTO cenumber (cenumber_label) VALUES (?)`
-		if res, db.err = tx.Exec(sqlr, p.CeNumberLabel); db.err != nil {
+		if res, err = tx.Exec(sqlr, p.CeNumberLabel); err != nil {
 			tx.Rollback()
-			return db.err, 0
+			return err, 0
 		}
 		// getting the last inserted id
-		if lastid, db.err = res.LastInsertId(); db.err != nil {
+		if lastid, err = res.LastInsertId(); err != nil {
 			tx.Rollback()
-			return db.err, 0
+			return err, 0
 		}
 		// updating the product CeNumberID (CeNumberLabel already set)
 		p.CeNumber.CeNumberID = sql.NullInt64{Int64: lastid}
@@ -512,14 +521,14 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 	// if NameID = -1 then it is a new name
 	if p.Name.NameID == -1 {
 		sqlr = `INSERT INTO name (name_label) VALUES (?)`
-		if res, db.err = tx.Exec(sqlr, p.NameLabel); db.err != nil {
+		if res, err = tx.Exec(sqlr, p.NameLabel); err != nil {
 			tx.Rollback()
-			return db.err, 0
+			return err, 0
 		}
 		// getting the last inserted id
-		if lastid, db.err = res.LastInsertId(); db.err != nil {
+		if lastid, err = res.LastInsertId(); err != nil {
 			tx.Rollback()
-			return db.err, 0
+			return err, 0
 		}
 		// updating the product NameID (NameLabel already set)
 		p.Name.NameID = int(lastid)
@@ -527,14 +536,14 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 	// if EmpiricalFormulaID = -1 then it is a new empirical formula
 	if p.EmpiricalFormula.EmpiricalFormulaID == -1 {
 		sqlr = `INSERT INTO empiricalformula (empiricalformula_label) VALUES (?)`
-		if res, db.err = tx.Exec(sqlr, p.EmpiricalFormulaLabel); db.err != nil {
+		if res, err = tx.Exec(sqlr, p.EmpiricalFormulaLabel); err != nil {
 			tx.Rollback()
-			return db.err, 0
+			return err, 0
 		}
 		// getting the last inserted id
-		if lastid, db.err = res.LastInsertId(); db.err != nil {
+		if lastid, err = res.LastInsertId(); err != nil {
 			tx.Rollback()
-			return db.err, 0
+			return err, 0
 		}
 		// updating the product EmpiricalFormulaID (EmpiricalFormulaLabel already set)
 		p.EmpiricalFormula.EmpiricalFormulaID = int(lastid)
@@ -568,20 +577,20 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 	}
 
 	ibuilder = sq.Insert("product").Columns(col...).Values(val...)
-	if sqlr, sqla, db.err = ibuilder.ToSql(); db.err != nil {
+	if sqlr, sqla, err = ibuilder.ToSql(); err != nil {
 		tx.Rollback()
-		return db.err, 0
+		return err, 0
 	}
 
-	if res, db.err = tx.Exec(sqlr, sqla...); db.err != nil {
+	if res, err = tx.Exec(sqlr, sqla...); err != nil {
 		tx.Rollback()
-		return db.err, 0
+		return err, 0
 	}
 
 	// getting the last inserted id
-	if lastid, db.err = res.LastInsertId(); db.err != nil {
+	if lastid, err = res.LastInsertId(); err != nil {
 		tx.Rollback()
-		return db.err, 0
+		return err, 0
 	}
 	p.ProductID = int(lastid)
 	log.WithFields(log.Fields{"p": p}).Debug("CreateProduct")
@@ -589,37 +598,37 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 	// adding symbols
 	for _, sym := range p.Symbols {
 		sqlr = `INSERT INTO productsymbols (productsymbols_product_id, productsymbols_symbol_id) VALUES (?,?)`
-		if res, db.err = tx.Exec(sqlr, p.ProductID, sym.SymbolID); db.err != nil {
+		if res, err = tx.Exec(sqlr, p.ProductID, sym.SymbolID); err != nil {
 			tx.Rollback()
-			return db.err, 0
+			return err, 0
 		}
 	}
 	// adding synonyms
 	for _, syn := range p.Synonyms {
 		if syn.NameID == -1 {
 			sqlr = `INSERT INTO name (name_label) VALUES (?)`
-			if res, db.err = tx.Exec(sqlr, syn.NameLabel); db.err != nil {
+			if res, err = tx.Exec(sqlr, syn.NameLabel); err != nil {
 				tx.Rollback()
-				return db.err, 0
+				return err, 0
 			}
 			// getting the last inserted id
-			if lastid, db.err = res.LastInsertId(); db.err != nil {
+			if lastid, err = res.LastInsertId(); err != nil {
 				tx.Rollback()
-				return db.err, 0
+				return err, 0
 			}
 			syn.NameID = int(lastid)
 		}
 		sqlr = `INSERT INTO productsynonyms (productsynonyms_product_id, productsynonyms_name_id) VALUES (?,?)`
-		if res, db.err = tx.Exec(sqlr, p.ProductID, syn.NameID); db.err != nil {
+		if res, err = tx.Exec(sqlr, p.ProductID, syn.NameID); err != nil {
 			tx.Rollback()
-			return db.err, 0
+			return err, 0
 		}
 	}
 
 	// committing changes
-	if db.err = tx.Commit(); db.err != nil {
+	if err = tx.Commit(); err != nil {
 		tx.Rollback()
-		return db.err, 0
+		return err, 0
 	}
 
 	return nil, p.ProductID
@@ -633,24 +642,25 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 		res      sql.Result
 		sqla     []interface{}
 		ubuilder sq.UpdateBuilder
+		err      error
 	)
 
 	// beginning transaction
-	if tx, db.err = db.Begin(); db.err != nil {
-		return db.err
+	if tx, err = db.Begin(); err != nil {
+		return err
 	}
 
 	// if CasNumberID = -1 then it is a new cas
 	if p.CasNumber.CasNumberID == -1 {
 		sqlr = `INSERT INTO casnumber (casnumber_label) VALUES (?)`
-		if res, db.err = tx.Exec(sqlr, p.CasNumberLabel); db.err != nil {
+		if res, err = tx.Exec(sqlr, p.CasNumberLabel); err != nil {
 			tx.Rollback()
-			return db.err
+			return err
 		}
 		// getting the last inserted id
-		if lastid, db.err = res.LastInsertId(); db.err != nil {
+		if lastid, err = res.LastInsertId(); err != nil {
 			tx.Rollback()
-			return db.err
+			return err
 		}
 		// updating the product CasNumberID (CasNumberLabel already set)
 		p.CasNumber.CasNumberID = int(lastid)
@@ -658,14 +668,14 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	// if CeNumberID = -1 then it is a new ce
 	if p.CeNumber.CeNumberID.Int64 == -1 {
 		sqlr = `INSERT INTO cenumber (cenumber_label) VALUES (?)`
-		if res, db.err = tx.Exec(sqlr, p.CeNumberLabel); db.err != nil {
+		if res, err = tx.Exec(sqlr, p.CeNumberLabel); err != nil {
 			tx.Rollback()
-			return db.err
+			return err
 		}
 		// getting the last inserted id
-		if lastid, db.err = res.LastInsertId(); db.err != nil {
+		if lastid, err = res.LastInsertId(); err != nil {
 			tx.Rollback()
-			return db.err
+			return err
 		}
 		// updating the product CeNumberID (CeNumberLabel already set)
 		p.CeNumber.CeNumberID = sql.NullInt64{Int64: lastid, Valid: true}
@@ -673,14 +683,14 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	// if NameID = -1 then it is a new name
 	if p.Name.NameID == -1 {
 		sqlr = `INSERT INTO name (name_label) VALUES (?)`
-		if res, db.err = tx.Exec(sqlr, p.NameLabel); db.err != nil {
+		if res, err = tx.Exec(sqlr, p.NameLabel); err != nil {
 			tx.Rollback()
-			return db.err
+			return err
 		}
 		// getting the last inserted id
-		if lastid, db.err = res.LastInsertId(); db.err != nil {
+		if lastid, err = res.LastInsertId(); err != nil {
 			tx.Rollback()
-			return db.err
+			return err
 		}
 		// updating the product NameID (NameLabel already set)
 		p.Name.NameID = int(lastid)
@@ -688,14 +698,14 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	// if EmpiricalFormulaID = -1 then it is a new empirical formula
 	if p.EmpiricalFormula.EmpiricalFormulaID == -1 {
 		sqlr = `INSERT INTO empiricalformula (empiricalformula_label) VALUES (?)`
-		if res, db.err = tx.Exec(sqlr, p.EmpiricalFormulaLabel); db.err != nil {
+		if res, err = tx.Exec(sqlr, p.EmpiricalFormulaLabel); err != nil {
 			tx.Rollback()
-			return db.err
+			return err
 		}
 		// getting the last inserted id
-		if lastid, db.err = res.LastInsertId(); db.err != nil {
+		if lastid, err = res.LastInsertId(); err != nil {
 			tx.Rollback()
-			return db.err
+			return err
 		}
 		// updating the product EmpiricalFormulaID (EmpiricalFormulaLabel already set)
 		p.EmpiricalFormula.EmpiricalFormulaID = int(lastid)
@@ -703,44 +713,44 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 
 	// deleting symbols
 	sqlr = `DELETE FROM productsymbols WHERE productsymbols.productsymbols_product_id = (?)`
-	if res, db.err = tx.Exec(sqlr, p.ProductID); db.err != nil {
+	if res, err = tx.Exec(sqlr, p.ProductID); err != nil {
 		tx.Rollback()
-		return db.err
+		return err
 	}
 	// adding new ones
 	for _, sym := range p.Symbols {
 		sqlr = `INSERT INTO productsymbols (productsymbols_product_id, productsymbols_symbol_id) VALUES (?,?)`
-		if res, db.err = tx.Exec(sqlr, p.ProductID, sym.SymbolID); db.err != nil {
+		if res, err = tx.Exec(sqlr, p.ProductID, sym.SymbolID); err != nil {
 			tx.Rollback()
-			return db.err
+			return err
 		}
 	}
 
 	// deleting synonyms
 	sqlr = `DELETE FROM productsynonyms WHERE productsynonyms.productsynonyms_product_id = (?)`
-	if res, db.err = tx.Exec(sqlr, p.ProductID); db.err != nil {
+	if res, err = tx.Exec(sqlr, p.ProductID); err != nil {
 		tx.Rollback()
-		return db.err
+		return err
 	}
 	// adding new ones
 	for _, syn := range p.Synonyms {
 		if syn.NameID == -1 {
 			sqlr = `INSERT INTO name (name_label) VALUES (?)`
-			if res, db.err = tx.Exec(sqlr, syn.NameLabel); db.err != nil {
+			if res, err = tx.Exec(sqlr, syn.NameLabel); err != nil {
 				tx.Rollback()
-				return db.err
+				return err
 			}
 			// getting the last inserted id
-			if lastid, db.err = res.LastInsertId(); db.err != nil {
+			if lastid, err = res.LastInsertId(); err != nil {
 				tx.Rollback()
-				return db.err
+				return err
 			}
 			syn.NameID = int(lastid)
 		}
 		sqlr = `INSERT INTO productsynonyms (productsynonyms_product_id, productsynonyms_name_id) VALUES (?,?)`
-		if res, db.err = tx.Exec(sqlr, p.ProductID, syn.NameID); db.err != nil {
+		if res, err = tx.Exec(sqlr, p.ProductID, syn.NameID); err != nil {
 			tx.Rollback()
-			return db.err
+			return err
 		}
 	}
 
@@ -760,19 +770,19 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	ubuilder = sq.Update("product").
 		SetMap(s).
 		Where(sq.Eq{"product_id": p.ProductID})
-	if sqlr, sqla, db.err = ubuilder.ToSql(); db.err != nil {
+	if sqlr, sqla, err = ubuilder.ToSql(); err != nil {
 		tx.Rollback()
-		return db.err
+		return err
 	}
-	if _, db.err = tx.Exec(sqlr, sqla...); db.err != nil {
+	if _, err = tx.Exec(sqlr, sqla...); err != nil {
 		tx.Rollback()
-		return db.err
+		return err
 	}
 
 	// committing changes
-	if db.err = tx.Commit(); db.err != nil {
+	if err = tx.Commit(); err != nil {
 		tx.Rollback()
-		return db.err
+		return err
 	}
 
 	return nil

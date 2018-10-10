@@ -487,13 +487,13 @@ block contentjs
             hasPermission("/f/storages", "POST", pid).done(function(){
                     $("#store"+this.itemId).fadeIn();
             })
-            hasPermission("/f/storages/" + pid, "GET", pid).done(function(){
+            hasPermission("/f/storages/-2", "GET", pid).done(function(){
                     $("#storages"+this.itemId).fadeIn();
             })
-            hasPermission("/f/products/" + pid, "PUT", pid).done(function(){
+            hasPermission("/f/products/-1", "PUT", pid).done(function(){
                     $("#edit"+this.itemId).fadeIn();
             })
-            hasPermission("/f/products/" + pid, "DELETE", pid).done(function(){
+            hasPermission("/f/products/-1", "DELETE", pid).done(function(){
                     $("#delete"+this.itemId).fadeIn();
             })
 

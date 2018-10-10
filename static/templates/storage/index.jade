@@ -31,6 +31,7 @@ block content
                                 th(data-field='storage_creationdate' data-formatter='dateFormatter' data-sortable='true') creation date
                                 th(data-field='product.name.name_label' data-sortable='true') product
                                 th(data-field='storelocation.storelocation_name' data-sortable='true') store location
+                                th(data-field='storelocation.entity.entity_id' data-sortable='true') entity id
                                 th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') actions
 
         #edit-collapse.collapse(data-parent='#accordion')
@@ -222,10 +223,11 @@ block contentjs
         function operateFormatter(value, row, index) {
             // show action buttons if permitted
             sid = row.storage_id
-            hasPermission("/f/storages/" + sid, "PUT", sid).done(function(){
+            eid = row.storelocation.entity.entity_id
+            hasPermission("/f/storages/" + eid, "PUT", sid).done(function(){
                     $("#edit"+this.itemId).fadeIn();
             })
-            hasPermission("/f/storages/" + sid, "DELETE", sid).done(function(){
+            hasPermission("/f/storages/" + eid, "DELETE", sid).done(function(){
                     $("#delete"+this.itemId).fadeIn();
             })
 

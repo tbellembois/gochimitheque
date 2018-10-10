@@ -22,6 +22,7 @@ func (db *SQLiteDataStore) GetStoreLocations(p helpers.DbselectparamStoreLocatio
 		precreq, presreq, comreq, postsreq strings.Builder
 		cnstmt                             *sqlx.NamedStmt
 		snstmt                             *sqlx.NamedStmt
+		err                                error
 	)
 	log.WithFields(log.Fields{"p": p}).Debug("GetStoreLocations")
 
@@ -53,11 +54,11 @@ func (db *SQLiteDataStore) GetStoreLocations(p helpers.DbselectparamStoreLocatio
 	}
 
 	// building count and select statements
-	if cnstmt, db.err = db.PrepareNamed(precreq.String() + comreq.String()); db.err != nil {
-		return nil, 0, db.err
+	if cnstmt, err = db.PrepareNamed(precreq.String() + comreq.String()); err != nil {
+		return nil, 0, err
 	}
-	if snstmt, db.err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); db.err != nil {
-		return nil, 0, db.err
+	if snstmt, err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); err != nil {
+		return nil, 0, err
 	}
 
 	// building argument map
@@ -71,12 +72,12 @@ func (db *SQLiteDataStore) GetStoreLocations(p helpers.DbselectparamStoreLocatio
 	}
 
 	// select
-	if db.err = snstmt.Select(&storelocations, m); db.err != nil {
-		return nil, 0, db.err
+	if err = snstmt.Select(&storelocations, m); err != nil {
+		return nil, 0, err
 	}
 	// count
-	if db.err = cnstmt.Get(&count, m); db.err != nil {
-		return nil, 0, db.err
+	if err = cnstmt.Get(&count, m); err != nil {
+		return nil, 0, err
 	}
 	return storelocations, count, nil
 }
@@ -86,6 +87,7 @@ func (db *SQLiteDataStore) GetStoreLocation(id int) (StoreLocation, error) {
 	var (
 		storelocation StoreLocation
 		sqlr          string
+		err           error
 	)
 
 	sqlr = `SELECT s.storelocation_id, 
@@ -95,8 +97,8 @@ func (db *SQLiteDataStore) GetStoreLocation(id int) (StoreLocation, error) {
 	FROM storelocation AS s
 	JOIN entity ON s.entity = entity.entity_id
 	WHERE s.storelocation_id = ?`
-	if db.err = db.Get(&storelocation, sqlr, id); db.err != nil {
-		return StoreLocation{}, db.err
+	if err = db.Get(&storelocation, sqlr, id); err != nil {
+		return StoreLocation{}, err
 	}
 	log.WithFields(log.Fields{"ID": id, "storelocation": storelocation}).Debug("GetStoreLocation")
 	return storelocation, nil
@@ -107,6 +109,7 @@ func (db *SQLiteDataStore) GetStoreLocationEntity(id int) (Entity, error) {
 	var (
 		entity Entity
 		sqlr   string
+		err    error
 	)
 
 	sqlr = `SELECT 
@@ -115,8 +118,8 @@ func (db *SQLiteDataStore) GetStoreLocationEntity(id int) (Entity, error) {
 	FROM storelocation AS s
 	JOIN entity ON s.entity = entity.entity_id
 	WHERE s.storelocation_id = ?`
-	if db.err = db.Get(&entity, sqlr, id); db.err != nil {
-		return Entity{}, db.err
+	if err = db.Get(&entity, sqlr, id); err != nil {
+		return Entity{}, err
 	}
 	log.WithFields(log.Fields{"ID": id, "entity": entity}).Debug("GetStoreLocationEntity")
 	return entity, nil
@@ -126,11 +129,12 @@ func (db *SQLiteDataStore) GetStoreLocationEntity(id int) (Entity, error) {
 func (db *SQLiteDataStore) DeleteStoreLocation(id int) error {
 	var (
 		sqlr string
+		err  error
 	)
 	sqlr = `DELETE FROM storelocation 
 	WHERE storelocation_id = ?`
-	if _, db.err = db.Exec(sqlr, id); db.err != nil {
-		return db.err
+	if _, err = db.Exec(sqlr, id); err != nil {
+		return err
 	}
 	return nil
 }
@@ -141,15 +145,16 @@ func (db *SQLiteDataStore) CreateStoreLocation(s StoreLocation) (error, int) {
 		sqlr   string
 		res    sql.Result
 		lastid int64
+		err    error
 	)
 	sqlr = `INSERT INTO storelocation(storelocation_name, entity) VALUES (?, ?)`
-	if res, db.err = db.Exec(sqlr, s.StoreLocationName, s.Entity.EntityID); db.err != nil {
-		return db.err, 0
+	if res, err = db.Exec(sqlr, s.StoreLocationName, s.Entity.EntityID); err != nil {
+		return err, 0
 	}
 
 	// getting the last inserted id
-	if lastid, db.err = res.LastInsertId(); db.err != nil {
-		return db.err, 0
+	if lastid, err = res.LastInsertId(); err != nil {
+		return err, 0
 	}
 	s.StoreLocationID = int(lastid)
 
@@ -160,14 +165,15 @@ func (db *SQLiteDataStore) CreateStoreLocation(s StoreLocation) (error, int) {
 func (db *SQLiteDataStore) UpdateStoreLocation(s StoreLocation) error {
 	var (
 		sqlr string
+		err  error
 	)
 	log.WithFields(log.Fields{"s": s}).Debug("UpdateStoreLocation")
 
 	// updating the store location
 	sqlr = `UPDATE storelocation SET storelocation_name = ?, entity = ?
 	WHERE storelocation_id = ?`
-	if _, db.err = db.Exec(sqlr, s.StoreLocationName, s.Entity.EntityID, s.StoreLocationID); db.err != nil {
-		return db.err
+	if _, err = db.Exec(sqlr, s.StoreLocationName, s.Entity.EntityID, s.StoreLocationID); err != nil {
+		return err
 	}
 
 	return nil

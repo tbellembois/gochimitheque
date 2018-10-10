@@ -268,6 +268,13 @@ func (env *Env) UpdatePersonHandler(w http.ResponseWriter, r *http.Request) *hel
 	updatedp.PersonEmail = p.PersonEmail
 	updatedp.Entities = p.Entities
 	updatedp.Permissions = p.Permissions
+
+	// product permissions are not for a given entity
+	for i, p := range updatedp.Permissions {
+		if p.PermissionItemName == "products" {
+			updatedp.Permissions[i].PermissionEntityID = -1
+		}
+	}
 	log.WithFields(log.Fields{"updatedp": updatedp}).Debug("UpdatePersonHandler")
 
 	if err := env.DB.UpdatePerson(updatedp); err != nil {

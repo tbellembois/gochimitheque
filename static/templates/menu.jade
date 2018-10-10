@@ -32,7 +32,7 @@ nav.navbar.navbar-expand-lg.navbar-light.bg-light
                         if HasPermission .PersonID "all" "all" -1
                             a(href="/vc/entities", title="create").dropdown-item create
 
-            if HasPermission .PersonID "r" "entities" -2
+            if HasPermission .PersonID "r" "storelocations" -2
                 li.nav-item.dropdown
                     a(href="#", title="storelocations").nav-link.dropdown-toggle#navbarDropdown(
                         role="button" 
