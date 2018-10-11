@@ -44,6 +44,18 @@ block contentjs
                     },
                     empiricalformula: {
                         required: true,
+                        remote: {
+                            url: "",
+                            type: "post",
+                            beforeSend: function(jqXhr, settings) {
+                                settings.url = "/validate/product/-1/empiricalformula/";
+                            },
+                            data: {
+                                empiricalformula: function() {
+                                    return $('select#empiricalformula').select2('data')[0].text;
+                                },
+                            },
+                        },
                     },
                     casnumber: {
                         required: true,
