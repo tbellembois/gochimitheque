@@ -1,5 +1,8 @@
 package main
 
+//go:generate gopherjs build gopherjs/gjs-common.go -o static/js/gjs-common.js
+//go:generate rice embed-go
+
 import (
 	"flag"
 	"html/template"
@@ -294,6 +297,7 @@ func main() {
 	r.Handle("/validate/product/{id}/casnumber/", securechain.Then(env.AppMiddleware(env.ValidateProductCasNumberHandler))).Methods("POST")
 	r.Handle("/validate/product/{id}/cenumber/", securechain.Then(env.AppMiddleware(env.ValidateProductCeNumberHandler))).Methods("POST")
 	r.Handle("/validate/product/{id}/name/", securechain.Then(env.AppMiddleware(env.ValidateProductNameHandler))).Methods("POST")
+	r.Handle("/validate/product/{id}/empiricalformula/", securechain.Then(env.AppMiddleware(env.ValidateProductEmpiricalFormulaHandler))).Methods("POST")
 
 	// rice boxes
 	webfontsBox := rice.MustFindBox("static/webfonts")

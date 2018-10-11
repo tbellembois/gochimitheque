@@ -180,6 +180,39 @@ func (env *Env) ValidateProductNameHandler(w http.ResponseWriter, r *http.Reques
 	return nil
 }
 
+// ValidateProductEmpiricalFormulaHandler checks that:
+// - the empirical formula is valid
+// and returns the sorted formula
+func (env *Env) ValidateProductEmpiricalFormulaHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	var (
+		err  error
+		resp string
+	)
+
+	// getting the cas number
+	if err = r.ParseForm(); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "form parsing",
+			Code:    http.StatusInternalServerError}
+	}
+	// validating it
+	v := utils.IsCasNumber(r.Form.Get("casnumber"))
+
+	if v {
+		resp = "true"
+	} else {
+		resp = "invalid cas number"
+	}
+
+	// TODO: check pair cas/specificity
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resp)
+	return nil
+}
+
 // ValidateProductCasNumberHandler checks that:
 // - the cas number is valid
 // - a product with the cas number and specificity does not already exist

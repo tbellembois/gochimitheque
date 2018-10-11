@@ -36,10 +36,10 @@ func (db *SQLiteDataStore) GetStoreLocations(p helpers.DbselectparamStoreLocatio
 	(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = entity.entity_id) OR
 	(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
 	(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
-	(perm.person = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = entity.entity_id) OR
-	(perm.person = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
-	(perm.person = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
-	(perm.person = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = entity.entity_id)
+	(perm.person = :personid and perm.permission_item_name = "storelocations" and perm.permission_perm_name = "all" and perm.permission_entity_id = entity.entity_id) OR
+	(perm.person = :personid and perm.permission_item_name = "storelocations" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
+	(perm.person = :personid and perm.permission_item_name = "storelocations" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
+	(perm.person = :personid and perm.permission_item_name = "storelocations" and perm.permission_perm_name = "r" and perm.permission_entity_id = entity.entity_id)
 	`)
 	comreq.WriteString(" WHERE s.storelocation_name LIKE :search")
 	if p.GetEntity() != -1 {
@@ -52,6 +52,8 @@ func (db *SQLiteDataStore) GetStoreLocations(p helpers.DbselectparamStoreLocatio
 	if p.GetLimit() != constants.MaxUint64 {
 		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
 	}
+
+	log.Debug(presreq.String() + comreq.String() + postsreq.String())
 
 	// building count and select statements
 	if cnstmt, err = db.PrepareNamed(precreq.String() + comreq.String()); err != nil {

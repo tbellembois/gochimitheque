@@ -437,20 +437,6 @@ func (db *SQLiteDataStore) CreatePerson(p Person) (error, int) {
 	}
 	p.PersonID = int(lastid)
 
-	// inserting permissions
-	for _, per := range p.Permissions {
-		sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id) VALUES (?, ?, ?, ?)`
-		if _, err = db.Exec(sqlr, p.PersonID, per.PermissionPermName, per.PermissionItemName, per.PermissionEntityID); err != nil {
-			return err, 0
-		}
-		// adding r permission for w permissions
-		if per.PermissionPermName == "w" {
-			if _, err = db.Exec(sqlr, p.PersonID, "r", per.PermissionItemName, per.PermissionEntityID); err != nil {
-				return err, 0
-			}
-		}
-	}
-
 	// inserting entities
 	for _, e := range p.Entities {
 		sqlr = `INSERT INTO personentities(personentities_person_id, personentities_entity_id) 
@@ -459,6 +445,12 @@ func (db *SQLiteDataStore) CreatePerson(p Person) (error, int) {
 			return err, 0
 		}
 	}
+
+	// inserting permissions
+	if err = db.insertPermissions(p); err != nil {
+		return err, 0
+	}
+
 	return nil, p.PersonID
 }
 
@@ -499,19 +491,9 @@ func (db *SQLiteDataStore) UpdatePerson(p Person) error {
 		return err
 	}
 
-	// updating person permissions
-	for _, perm := range p.Permissions {
-		sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id) 
-		VALUES (?, ?, ?, ?)`
-		if _, err = db.Exec(sqlr, p.PersonID, perm.PermissionPermName, perm.PermissionItemName, perm.PermissionEntityID); err != nil {
-			return err
-		}
-		// adding r permission for w permissions
-		if perm.PermissionPermName == "w" {
-			if _, err = db.Exec(sqlr, p.PersonID, "r", perm.PermissionItemName, perm.PermissionEntityID); err != nil {
-				return err
-			}
-		}
+	// inserting permissions
+	if err = db.insertPermissions(p); err != nil {
+		return err
 	}
 
 	return nil
@@ -561,4 +543,36 @@ func (db *SQLiteDataStore) IsPersonManager(id int) (bool, error) {
 		res = true
 	}
 	return res, nil
+}
+
+func (db *SQLiteDataStore) insertPermissions(p Person) error {
+	var (
+		sqlr string
+		err  error
+	)
+	// inserting person permissions
+	for _, perm := range p.Permissions {
+		sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id) 
+		VALUES (?, ?, ?, ?)`
+		if _, err = db.Exec(sqlr, p.PersonID, perm.PermissionPermName, perm.PermissionItemName, perm.PermissionEntityID); err != nil {
+			return err
+		}
+		// adding r permission for w permissions
+		if perm.PermissionPermName == "w" {
+			if _, err = db.Exec(sqlr, p.PersonID, "r", perm.PermissionItemName, perm.PermissionEntityID); err != nil {
+				return err
+			}
+		}
+		// for a r or w permission on a store location
+		// adding r permission on the store location entity
+		// to allow store locations modifications (entity selection)
+		if perm.PermissionItemName == "storelocations" && (perm.PermissionPermName == "w" || perm.PermissionPermName == "r") {
+			sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id) 
+			VALUES (?, ?, ?, ?)`
+			if _, err = db.Exec(sqlr, p.PersonID, "r", "entities", perm.PermissionEntityID); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }

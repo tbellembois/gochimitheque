@@ -3,6 +3,7 @@ package utils
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"regexp"
 	"sort"
@@ -127,6 +128,9 @@ var (
 		"D":  "deuterium",
 	}
 
+	// general formula regex
+	formulaRe *regexp.Regexp
+
 	// basic molecule regex (atoms and numbers only)
 	basicMolRe *regexp.Regexp
 
@@ -142,6 +146,9 @@ func (s atomByLength) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
 func (s atomByLength) Less(i, j int) bool { return len(s[i]) > len(s[j]) }
 
 func init() {
+	// general formula regex
+	formulaRe = regexp.MustCompile("[A-Za-z0-9,\\^]+")
+
 	sortedAtoms := make([]string, 0, len(atoms))
 	for k := range atoms {
 		sortedAtoms = append(sortedAtoms, k)
@@ -436,4 +443,117 @@ func basicAtomCount(f string) map[string]int {
 		}
 	}
 	return c
+}
+
+func SortSimpleFormula(f string) (string, error) {
+	var (
+		// 	hasCatom, hasHatom, hasOtherAtom, hasUpperLowerAtom bool
+		hasCatom, hasHatom          bool
+		upperLowerAtoms, otherAtoms []string
+		// 	lastPart                                            string
+	)
+
+	// removing spaces
+	f = strings.Replace(f, " ", "", -1)
+
+	// checking formula characters
+	if !formulaRe.MatchString(f) {
+		return "", errors.New("invalid characters in formula")
+	}
+
+	// search atoms with and uppercase followed by lowercase letters like Na or Cl
+	// return a list of tuples like:
+	// [[Cl Cl Cl] [Na Na Na] [Cl3 Cl3 Cl]]
+	// for ClNaHCl3
+	// the third member of the tupple is used to detect duplicated atoms
+	ULAtomsRe := regexp.MustCompile("((?:^[0-9]+)?([A-Z][a-wy-z]{1,3})[0-9,]*)")
+	ula := ULAtomsRe.FindAllStringSubmatch(f, -1)
+
+	// detecting wrong UL atoms
+	// counting atoms at the same time and leaving on duplicates
+	atomcount := make(map[string]int)
+	for _, a := range ula {
+		// wrong?
+		if _, ok := atoms[a[2]]; !ok {
+			return "", errors.New("wrong UL atom in formula")
+		}
+		upperLowerAtoms = append(upperLowerAtoms, a[2])
+		// duplicate?
+		if _, ok := atomcount[a[2]]; !ok {
+			atomcount[a[2]] = 0
+		} else {
+			// atom already present !
+			return "", errors.New("duplicate UL atom in formula")
+		}
+		// removing from formula for the next steps
+		f = strings.Replace(f, a[2], "", -1)
+	}
+
+	// here we should have only one uppercase letter (and digits) per atom for the rest of
+	// the formula
+
+	// searching the C atom
+	CAtomRe := regexp.MustCompile("((?:^[0-9]+)?(C)[0-9,]*)")
+	ca := CAtomRe.FindAllStringSubmatch(f, -1)
+	// will return [[C2 C2 C]] for ClNaC2
+	// leaving on duplicated C atom
+	if len(ca) > 1 {
+		return "", errors.New("duplicate C atom in formula")
+	}
+	hasCatom = true
+	// removing from formula for the next steps
+	f = strings.Replace(f, ca[0][0], "", -1)
+
+	// searching the H atom
+	HAtomRe := regexp.MustCompile("((?:^[0-9]+)?(H)[0-9,]*)")
+	ha := HAtomRe.FindAllStringSubmatch(f, -1)
+	// will return [[H2 H2 H]] for ClNaH2
+	// leaving on duplicated C atom
+	if len(ha) > 1 {
+		return "", errors.New("duplicate H atom in formula")
+	}
+	hasHatom = true
+	// removing from formula for the next steps
+	f = strings.Replace(f, ha[0][0], "", -1)
+
+	// searching the other atoms
+	OAtomRe := regexp.MustCompile("((?:^[0-9]+)?([A-Z])[0-9,]*)")
+	oa := OAtomRe.FindAllStringSubmatch(f, -1)
+	// detecting wrong atoms
+	// counting atoms at the same time and leaving on duplicates
+	atomcount = make(map[string]int)
+	for _, a := range oa {
+		// wrong?
+		if _, ok := atoms[a[0]]; !ok {
+			return "", errors.New("wrong UL atom in formula")
+		}
+		otherAtoms = append(otherAtoms, a[0])
+		// duplicate?
+		if _, ok := atomcount[a[0]]; !ok {
+			atomcount[a[0]] = 0
+		} else {
+			// atom already present !
+			return "", errors.New("duplicate other atom in formula")
+		}
+		// removing from formula for the next steps
+		f = strings.Replace(f, a[0], "", -1)
+	}
+
+	// if formula is not emty, this is an error
+	if len(f) != 0 {
+		return "", errors.New("wrong lowercase atoms in formula")
+	}
+
+	// rebuilding the formula
+	newf := ""
+	if hasCatom {
+		newf += ca[0][0]
+	}
+	if hasHatom {
+		newf += ha[0][0]
+	}
+
+	fmt.Println(ca)
+
+	return "", nil
 }

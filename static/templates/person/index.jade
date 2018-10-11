@@ -31,6 +31,19 @@ block content
                 .form-group.row
                     | {{$label := "entity(ies)"}} {{$name := "entities"}}
                     +selectmultiple
+                .form-group.row#permissionsproducts
+                        .col-sm-6
+                            .alert.alert-primary products
+                        .col-sm-6
+                            .form-check.form-check-inline
+                                input.perm.permn.permnproducts#permnproducts-1(name="permproducts-1" value="none" label="_" perm_name="n" item_name="products" entity_id="-1" type="radio")
+                                label.form-check-label(for="permproducts-1") _
+                            .form-check.form-check-inline
+                                input.perm.permr.permrproducts#permrproducts-1(name="permproducts-1" value="none" label="r" perm_name="r" item_name="products" entity_id="-1" type="radio")
+                                label.form-check-label(for="permrproducts-1") r
+                            .form-check.form-check-inline
+                                input.perm.permw.permwproducts#permwproducts-1(name="permproducts-1" value="none" label="w" perm_name="w" item_name="products" entity_id="-1" type="radio")
+                                label.form-check-label(for="permwproducts-1") w                 
                 .form-group.row#permissions
 
             button#save.btn.btn-primary(type='button', onclick='savePerson()') save changes
