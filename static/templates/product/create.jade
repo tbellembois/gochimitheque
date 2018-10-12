@@ -253,7 +253,7 @@ block contentjs
                         // there is a match: removing the first select element
                         // to prevent the user selecting what he has typed
                         if (isExactMatch) {
-
+                            $("ul#select2-empiricalformula-results").find('[aria-selected=true]').remove();
                         }
 
                         return {
