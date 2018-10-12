@@ -61,7 +61,7 @@ func (env *Env) GetStoragesHandler(w http.ResponseWriter, r *http.Request) *help
 	)
 
 	// init db request parameters
-	if dsps, aerr = helpers.NewdbselectparamStorage(r); err != nil {
+	if dsps, aerr = helpers.NewdbselectparamStorage(r, nil); err != nil {
 		return aerr
 	}
 

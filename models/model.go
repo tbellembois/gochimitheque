@@ -81,6 +81,7 @@ type CeNumber struct {
 
 // EmpiricalFormula is a product empirical formula
 type EmpiricalFormula struct {
+	C                     int    `db:"c" json:"c"` // not stored in db but db:"c" set for sqlx
 	EmpiricalFormulaID    int    `db:"empiricalformula_id" json:"empiricalformula_id" schema:"empiricalformula_id"`
 	EmpiricalFormulaLabel string `db:"empiricalformula_label" json:"empiricalformula_label" schema:"empiricalformula_label"`
 }

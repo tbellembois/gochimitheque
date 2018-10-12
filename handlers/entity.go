@@ -65,7 +65,7 @@ func (env *Env) GetEntitiesHandler(w http.ResponseWriter, r *http.Request) *help
 	c := helpers.ContainerFromRequestContext(r)
 
 	// init db request parameters
-	if dspe, aerr = helpers.NewdbselectparamEntity(r); err != nil {
+	if dspe, aerr = helpers.NewdbselectparamEntity(r, nil); err != nil {
 		return aerr
 	}
 	dspe.SetLoggedPersonID(c.PersonID)

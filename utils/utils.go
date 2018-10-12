@@ -445,11 +445,33 @@ func basicAtomCount(f string) map[string]int {
 	return c
 }
 
+func SortEmpiricalFormula(f string) (string, error) {
+	// removing spaces
+	f = strings.Replace(f, " ", "", -1)
+
+	// if the formula is like abc.def.ghi, spliting it
+	splitf := strings.Split(f, ".")
+	if len(splitf) == 1 {
+		return SortSimpleFormula(f)
+	}
+
+	var newf string
+	for _, p := range splitf {
+		if sp, err := SortSimpleFormula(p); err != nil {
+			return "", err
+		} else {
+			newf += "." + sp
+		}
+	}
+
+	return newf, nil
+}
+
 func SortSimpleFormula(f string) (string, error) {
 	var (
 		// 	hasCatom, hasHatom, hasOtherAtom, hasUpperLowerAtom bool
-		hasCatom, hasHatom          bool
-		upperLowerAtoms, otherAtoms []string
+		hasCatom, hasHatom, hasOatom, hasULatom bool
+		upperLowerAtoms, otherAtoms             []string
 		// 	lastPart                                            string
 	)
 
@@ -488,6 +510,9 @@ func SortSimpleFormula(f string) (string, error) {
 		// removing from formula for the next steps
 		f = strings.Replace(f, a[2], "", -1)
 	}
+	if len(upperLowerAtoms) > 0 {
+		hasULatom = true
+	}
 
 	// here we should have only one uppercase letter (and digits) per atom for the rest of
 	// the formula
@@ -500,9 +525,11 @@ func SortSimpleFormula(f string) (string, error) {
 	if len(ca) > 1 {
 		return "", errors.New("duplicate C atom in formula")
 	}
-	hasCatom = true
-	// removing from formula for the next steps
-	f = strings.Replace(f, ca[0][0], "", -1)
+	if len(ca) == 1 {
+		hasCatom = true
+		// removing from formula for the next steps
+		f = strings.Replace(f, ca[0][0], "", -1)
+	}
 
 	// searching the H atom
 	HAtomRe := regexp.MustCompile("((?:^[0-9]+)?(H)[0-9,]*)")
@@ -512,9 +539,11 @@ func SortSimpleFormula(f string) (string, error) {
 	if len(ha) > 1 {
 		return "", errors.New("duplicate H atom in formula")
 	}
-	hasHatom = true
-	// removing from formula for the next steps
-	f = strings.Replace(f, ha[0][0], "", -1)
+	if len(ha) == 1 {
+		hasHatom = true
+		// removing from formula for the next steps
+		f = strings.Replace(f, ha[0][0], "", -1)
+	}
 
 	// searching the other atoms
 	OAtomRe := regexp.MustCompile("((?:^[0-9]+)?([A-Z])[0-9,]*)")
@@ -538,6 +567,9 @@ func SortSimpleFormula(f string) (string, error) {
 		// removing from formula for the next steps
 		f = strings.Replace(f, a[0], "", -1)
 	}
+	if len(oa) > 0 {
+		hasOatom = true
+	}
 
 	// if formula is not emty, this is an error
 	if len(f) != 0 {
@@ -552,8 +584,13 @@ func SortSimpleFormula(f string) (string, error) {
 	if hasHatom {
 		newf += ha[0][0]
 	}
+	if hasOatom || hasULatom {
+		at := append(otherAtoms, upperLowerAtoms...)
+		sort.Strings(at)
+		for _, a := range at {
+			newf += a
+		}
+	}
 
-	fmt.Println(ca)
-
-	return "", nil
+	return newf, nil
 }

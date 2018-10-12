@@ -56,7 +56,7 @@ block contentjs
                                 },
                             },
                         },
-                    },
+                     },
                     casnumber: {
                         required: true,
                         remote: {
@@ -231,6 +231,16 @@ block contentjs
                     },
                     dataType: 'json',
                     processResults: function (data) {
+
+                        isExactMatch=false;
+
+                        // looking for an exact match
+                        $.each(data.rows, function( index, value ) {
+                            if(value.c == 1) {
+                                isExactMatch=true;
+                            }
+                        });
+
                         // replacing name by text expected by select2
                         var newdata = $.map(data.rows, function (obj) {
                             obj.text = obj.text || obj.empiricalformula_label;
@@ -239,6 +249,12 @@ block contentjs
                         });
                         // getting the number of loaded select elements
                         selectnbitems = $("ul#select2-empiricalformula-results li").length + 10;
+
+                        // there is a match: removing the first select element
+                        // to prevent the user selecting what he has typed
+                        if (isExactMatch) {
+
+                        }
 
                         return {
                             results: newdata,

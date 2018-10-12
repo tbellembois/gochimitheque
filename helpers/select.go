@@ -189,7 +189,7 @@ func (d dbselectparamStorage) GetProduct() int {
 
 // Newdbselectparam returns a dbselectparam struct
 // with values populated from the request parameters
-func Newdbselectparam(r *http.Request) (*dbselectparam, *AppError) {
+func Newdbselectparam(r *http.Request, f func(string) (string, error)) (*dbselectparam, *AppError) {
 
 	var err error
 
@@ -214,7 +214,12 @@ func Newdbselectparam(r *http.Request) (*dbselectparam, *AppError) {
 
 	// populating with request values
 	if s, ok := r.URL.Query()["search"]; ok {
-		dsp.Search = "%" + s[0] + "%"
+		if f != nil {
+			fs, _ := f(s[0])
+			dsp.Search = "%" + fs + "%"
+		} else {
+			dsp.Search = "%" + s[0] + "%"
+		}
 	}
 	if o, ok := r.URL.Query()["order"]; ok {
 		dsp.Order = o[0]
@@ -250,7 +255,7 @@ func Newdbselectparam(r *http.Request) (*dbselectparam, *AppError) {
 
 // NewdbselectparamProduct returns a dbselectparamProduct struct
 // with values populated from the request parameters
-func NewdbselectparamProduct(r *http.Request) (*dbselectparamProduct, *AppError) {
+func NewdbselectparamProduct(r *http.Request, f func(string) (string, error)) (*dbselectparamProduct, *AppError) {
 
 	var (
 		err  error
@@ -262,7 +267,7 @@ func NewdbselectparamProduct(r *http.Request) (*dbselectparamProduct, *AppError)
 	// init defaults
 	dspp.Entity = -1
 	dspp.Product = -1
-	if dsp, aerr = Newdbselectparam(r); aerr != nil {
+	if dsp, aerr = Newdbselectparam(r, f); aerr != nil {
 		return nil, aerr
 	}
 	dspp.dbselectparam = *dsp
@@ -302,7 +307,7 @@ func NewdbselectparamProduct(r *http.Request) (*dbselectparamProduct, *AppError)
 
 // NewdbselectparamStorage returns a dbselectparamStorage struct
 // with values populated from the request parameters
-func NewdbselectparamStorage(r *http.Request) (*dbselectparamStorage, *AppError) {
+func NewdbselectparamStorage(r *http.Request, f func(string) (string, error)) (*dbselectparamStorage, *AppError) {
 
 	var (
 		err  error
@@ -314,7 +319,7 @@ func NewdbselectparamStorage(r *http.Request) (*dbselectparamStorage, *AppError)
 	// init defaults
 	dsps.Entity = -1
 	dsps.Product = -1
-	if dsp, aerr = Newdbselectparam(r); aerr != nil {
+	if dsp, aerr = Newdbselectparam(r, f); aerr != nil {
 		return nil, aerr
 	}
 	dsps.dbselectparam = *dsp
@@ -359,7 +364,7 @@ func NewdbselectparamStorage(r *http.Request) (*dbselectparamStorage, *AppError)
 
 // NewdbselectparamStoreLocation returns a dbselectparamStoreLocation struct
 // with values populated from the request parameters
-func NewdbselectparamStoreLocation(r *http.Request) (*dbselectparamStoreLocation, *AppError) {
+func NewdbselectparamStoreLocation(r *http.Request, f func(string) (string, error)) (*dbselectparamStoreLocation, *AppError) {
 
 	var (
 		err   error
@@ -370,7 +375,7 @@ func NewdbselectparamStoreLocation(r *http.Request) (*dbselectparamStoreLocation
 
 	// init defaults
 	dspsl.Entity = -1
-	if dsp, aerr = Newdbselectparam(r); aerr != nil {
+	if dsp, aerr = Newdbselectparam(r, f); aerr != nil {
 		return nil, aerr
 	}
 	dspsl.dbselectparam = *dsp
@@ -399,7 +404,7 @@ func NewdbselectparamStoreLocation(r *http.Request) (*dbselectparamStoreLocation
 
 // NewdbselectparamPerson returns a dbselectparamStorePerson struct
 // with values populated from the request parameters
-func NewdbselectparamPerson(r *http.Request) (*dbselectparamPerson, *AppError) {
+func NewdbselectparamPerson(r *http.Request, f func(string) (string, error)) (*dbselectparamPerson, *AppError) {
 
 	var (
 		err  error
@@ -410,7 +415,7 @@ func NewdbselectparamPerson(r *http.Request) (*dbselectparamPerson, *AppError) {
 
 	// init defaults
 	dspp.Entity = -1
-	if dsp, aerr = Newdbselectparam(r); aerr != nil {
+	if dsp, aerr = Newdbselectparam(r, f); aerr != nil {
 		return nil, aerr
 	}
 	dspp.dbselectparam = *dsp
@@ -439,7 +444,7 @@ func NewdbselectparamPerson(r *http.Request) (*dbselectparamPerson, *AppError) {
 
 // NewdbselectparamEntity returns a dbselectparamEntity struct
 // with values populated from the request parameters
-func NewdbselectparamEntity(r *http.Request) (*dbselectparamEntity, *AppError) {
+func NewdbselectparamEntity(r *http.Request, f func(string) (string, error)) (*dbselectparamEntity, *AppError) {
 
 	var (
 		aerr *AppError
@@ -448,7 +453,7 @@ func NewdbselectparamEntity(r *http.Request) (*dbselectparamEntity, *AppError) {
 	)
 
 	// init defaults
-	if dsp, aerr = Newdbselectparam(r); aerr != nil {
+	if dsp, aerr = Newdbselectparam(r, f); aerr != nil {
 		return nil, aerr
 	}
 	dspe.dbselectparam = *dsp

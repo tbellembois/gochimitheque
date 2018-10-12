@@ -60,7 +60,7 @@ func (env *Env) GetPeopleHandler(w http.ResponseWriter, r *http.Request) *helper
 	)
 
 	// init db request parameters
-	if dspp, aerr = helpers.NewdbselectparamPerson(r); err != nil {
+	if dspp, aerr = helpers.NewdbselectparamPerson(r, nil); err != nil {
 		return aerr
 	}
 

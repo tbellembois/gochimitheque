@@ -30,7 +30,7 @@ func (env *Env) ValidatePersonEmailHandler(w http.ResponseWriter, r *http.Reques
 	c := helpers.ContainerFromRequestContext(r)
 
 	// init db request parameters
-	if dspp, aerr = helpers.NewdbselectparamPerson(r); err != nil {
+	if dspp, aerr = helpers.NewdbselectparamPerson(r, nil); err != nil {
 		return aerr
 	}
 	dspp.SetLoggedPersonID(c.PersonID)
@@ -109,7 +109,7 @@ func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request
 	c := helpers.ContainerFromRequestContext(r)
 
 	// init db request parameters
-	if dspe, aerr = helpers.NewdbselectparamEntity(r); err != nil {
+	if dspe, aerr = helpers.NewdbselectparamEntity(r, nil); err != nil {
 		return aerr
 	}
 	dspe.SetLoggedPersonID(c.PersonID)
@@ -180,16 +180,14 @@ func (env *Env) ValidateProductNameHandler(w http.ResponseWriter, r *http.Reques
 	return nil
 }
 
-// ValidateProductEmpiricalFormulaHandler checks that:
-// - the empirical formula is valid
-// and returns the sorted formula
+// ValidateProductEmpiricalFormulaHandler checks that the product empirical formula is valid
 func (env *Env) ValidateProductEmpiricalFormulaHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	var (
 		err  error
 		resp string
 	)
 
-	// getting the cas number
+	// getting the empirical formula
 	if err = r.ParseForm(); err != nil {
 		return &helpers.AppError{
 			Error:   err,
@@ -197,18 +195,44 @@ func (env *Env) ValidateProductEmpiricalFormulaHandler(w http.ResponseWriter, r 
 			Code:    http.StatusInternalServerError}
 	}
 	// validating it
-	v := utils.IsCasNumber(r.Form.Get("casnumber"))
+	_, err = utils.SortEmpiricalFormula(r.Form.Get("empiricalformula"))
 
-	if v {
-		resp = "true"
+	if err != nil {
+		resp = "invalid empirical formula:" + err.Error()
 	} else {
-		resp = "invalid cas number"
+		resp = "true"
 	}
-
-	// TODO: check pair cas/specificity
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resp)
+	return nil
+}
+
+// FormatProductEmpiricalFormulaHandler returns the sorted formula
+func (env *Env) FormatProductEmpiricalFormulaHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	var (
+		err  error
+		resp string
+	)
+
+	// getting the empirical formula
+	if err = r.ParseForm(); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "form parsing",
+			Code:    http.StatusInternalServerError}
+	}
+	// validating it
+	resp, err = utils.SortEmpiricalFormula(r.Form.Get("empiricalformula"))
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	} else {
+		w.WriteHeader(http.StatusOK)
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	json.NewEncoder(w).Encode(resp)
 	return nil
 }

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"github.com/tbellembois/gochimitheque/utils"
 	"net/http"
 	"strconv"
 
@@ -60,7 +61,7 @@ func (env *Env) GetProductsCasNumbersHandler(w http.ResponseWriter, r *http.Requ
 	)
 
 	// init db request parameters
-	if dsp, aerr = helpers.Newdbselectparam(r); err != nil {
+	if dsp, aerr = helpers.Newdbselectparam(r, nil); err != nil {
 		return aerr
 	}
 
@@ -95,7 +96,7 @@ func (env *Env) GetProductsCeNumbersHandler(w http.ResponseWriter, r *http.Reque
 	)
 
 	// init db request parameters
-	if dsp, aerr = helpers.Newdbselectparam(r); err != nil {
+	if dsp, aerr = helpers.Newdbselectparam(r, nil); err != nil {
 		return aerr
 	}
 
@@ -130,7 +131,7 @@ func (env *Env) GetProductsEmpiricalFormulasHandler(w http.ResponseWriter, r *ht
 	)
 
 	// init db request parameters
-	if dsp, aerr = helpers.Newdbselectparam(r); err != nil {
+	if dsp, aerr = helpers.Newdbselectparam(r, utils.SortEmpiricalFormula); err != nil {
 		return aerr
 	}
 
@@ -165,7 +166,7 @@ func (env *Env) GetProductsNamesHandler(w http.ResponseWriter, r *http.Request) 
 	)
 
 	// init db request parameters
-	if dsp, aerr = helpers.Newdbselectparam(r); err != nil {
+	if dsp, aerr = helpers.Newdbselectparam(r, nil); err != nil {
 		return aerr
 	}
 
@@ -200,7 +201,7 @@ func (env *Env) GetProductsSymbolsHandler(w http.ResponseWriter, r *http.Request
 	)
 
 	// init db request parameters
-	if dsp, aerr = helpers.Newdbselectparam(r); err != nil {
+	if dsp, aerr = helpers.Newdbselectparam(r, nil); err != nil {
 		return aerr
 	}
 
@@ -235,7 +236,7 @@ func (env *Env) GetProductsSynonymsHandler(w http.ResponseWriter, r *http.Reques
 	)
 
 	// init db request parameters
-	if dsp, aerr = helpers.Newdbselectparam(r); err != nil {
+	if dsp, aerr = helpers.Newdbselectparam(r, nil); err != nil {
 		return aerr
 	}
 
@@ -270,7 +271,7 @@ func (env *Env) GetProductsHandler(w http.ResponseWriter, r *http.Request) *help
 	)
 
 	// init db request parameters
-	if dspp, aerr = helpers.NewdbselectparamProduct(r); err != nil {
+	if dspp, aerr = helpers.NewdbselectparamProduct(r, nil); err != nil {
 		return aerr
 	}
 
