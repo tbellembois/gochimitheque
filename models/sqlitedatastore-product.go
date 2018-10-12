@@ -168,6 +168,12 @@ func (db *SQLiteDataStore) GetProductsEmpiricalFormulas(p helpers.Dbselectparam)
 		return nil, 0, err
 	}
 
+	// setting the C attribute for formula matching exactly the search
+	// TODO: search hardcoded
+	if err = db.Select(&eformulas, `SELECT count(*) AS c, empiricalformula_id, empiricalformula_label FROM empiricalformula WHERE empiricalformula_label == ?`, "ClNa"); err != nil {
+		return nil, 0, err
+	}
+
 	log.WithFields(log.Fields{"eformulas": eformulas}).Debug("GetProductsEmpiricalFormulas")
 	return eformulas, count, nil
 }
@@ -521,7 +527,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 	// if NameID = -1 then it is a new name
 	if p.Name.NameID == -1 {
 		sqlr = `INSERT INTO name (name_label) VALUES (?)`
-		if res, err = tx.Exec(sqlr, p.NameLabel); err != nil {
+		if res, err = tx.Exec(sqlr, strings.ToUpper(p.NameLabel)); err != nil {
 			tx.Rollback()
 			return err, 0
 		}
@@ -607,7 +613,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 	for _, syn := range p.Synonyms {
 		if syn.NameID == -1 {
 			sqlr = `INSERT INTO name (name_label) VALUES (?)`
-			if res, err = tx.Exec(sqlr, syn.NameLabel); err != nil {
+			if res, err = tx.Exec(sqlr, strings.ToUpper(syn.NameLabel)); err != nil {
 				tx.Rollback()
 				return err, 0
 			}
@@ -683,7 +689,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	// if NameID = -1 then it is a new name
 	if p.Name.NameID == -1 {
 		sqlr = `INSERT INTO name (name_label) VALUES (?)`
-		if res, err = tx.Exec(sqlr, p.NameLabel); err != nil {
+		if res, err = tx.Exec(sqlr, strings.ToUpper(p.NameLabel)); err != nil {
 			tx.Rollback()
 			return err
 		}
@@ -736,7 +742,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	for _, syn := range p.Synonyms {
 		if syn.NameID == -1 {
 			sqlr = `INSERT INTO name (name_label) VALUES (?)`
-			if res, err = tx.Exec(sqlr, syn.NameLabel); err != nil {
+			if res, err = tx.Exec(sqlr, strings.ToUpper(syn.NameLabel)); err != nil {
 				tx.Rollback()
 				return err
 			}

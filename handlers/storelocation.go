@@ -60,7 +60,7 @@ func (env *Env) GetStoreLocationsHandler(w http.ResponseWriter, r *http.Request)
 	)
 
 	// init db request parameters
-	if dspsl, aerr = helpers.NewdbselectparamStoreLocation(r); err != nil {
+	if dspsl, aerr = helpers.NewdbselectparamStoreLocation(r, nil); err != nil {
 		return aerr
 	}
 

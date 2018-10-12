@@ -21,7 +21,21 @@ func TestSortSimpleFormula(t *testing.T) {
 	if sortedf, err = utils.SortSimpleFormula(f); err != nil {
 		t.Errorf("%s is not a valid formula: %v", f, err)
 	}
-	if f != sortedf {
-		t.Errorf("%s was not sorted", f)
+	if sortedf != "C2ClNa" {
+		t.Errorf("%s was not sorted - output: %s", f, sortedf)
+	}
+}
+
+func TestSortEmpiricalFormula(t *testing.T) {
+	var (
+		sortedf string
+		err     error
+	)
+	f := "NaCl"
+	if sortedf, err = utils.SortEmpiricalFormula(f); err != nil {
+		t.Errorf("%s is not a valid formula: %v", f, err)
+	}
+	if sortedf != "ClNa" {
+		t.Errorf("%s was not sorted - output: %s", f, sortedf)
 	}
 }
