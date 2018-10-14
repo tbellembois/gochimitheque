@@ -2,6 +2,7 @@ extends static/templates/base.jade
 
 block content
     form#product-create
+        input#exactMatchEmpiricalFormula(type="hidden")
         .form-group.row
             | {{$label := "name"}} {{$name := "name"}}
             +select
@@ -216,6 +217,15 @@ block contentjs
             //
             $('select#empiricalformula').select2({
                 tags: true,
+                createTag: function (params) {
+                    if ($("input#exactMatchEmpiricalFormula").val() == true) {
+                        return null
+                    }
+                    return {
+                        id: params.term,
+                        text: params.term,
+                    }
+                },
                 ajax: {
                     url: '/products/empiricalformulas',
                     data: function (params) {
@@ -240,6 +250,13 @@ block contentjs
                                 isExactMatch=true;
                             }
                         });
+                        
+                        // there is a match: setting the input field
+                        if (isExactMatch) {
+                            $("input#exactMatchEmpiricalFormula").val(true);
+                        } else {
+                            $("input#exactMatchEmpiricalFormula").val(false);
+                        }
 
                         // replacing name by text expected by select2
                         var newdata = $.map(data.rows, function (obj) {
@@ -249,12 +266,6 @@ block contentjs
                         });
                         // getting the number of loaded select elements
                         selectnbitems = $("ul#select2-empiricalformula-results li").length + 10;
-
-                        // there is a match: removing the first select element
-                        // to prevent the user selecting what he has typed
-                        if (isExactMatch) {
-                            $("ul#select2-empiricalformula-results").find('[aria-selected=true]').remove();
-                        }
 
                         return {
                             results: newdata,
