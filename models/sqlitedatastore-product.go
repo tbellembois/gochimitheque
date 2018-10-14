@@ -1,15 +1,13 @@
 package models
 
 import (
-	"strings"
-
 	"database/sql"
-
-	"github.com/jmoiron/sqlx"
 	"reflect"
 	"strconv"
+	"strings"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/constants"
@@ -169,9 +167,19 @@ func (db *SQLiteDataStore) GetProductsEmpiricalFormulas(p helpers.Dbselectparam)
 	}
 
 	// setting the C attribute for formula matching exactly the search
-	// TODO: search hardcoded
-	if err = db.Select(&eformulas, `SELECT count(*) AS c, empiricalformula_id, empiricalformula_label FROM empiricalformula WHERE empiricalformula_label == ?`, "ClNa"); err != nil {
+	s := p.GetSearch()
+	s = strings.TrimPrefix(s, "%")
+	s = strings.TrimSuffix(s, "%")
+	var ef EmpiricalFormula
+	r := db.QueryRowx(`SELECT empiricalformula_id, empiricalformula_label FROM empiricalformula WHERE empiricalformula_label == ?`, s)
+	if err = r.StructScan(&ef); err != nil && err != sql.ErrNoRows {
 		return nil, 0, err
+	} else {
+		for i, e := range eformulas {
+			if e.EmpiricalFormulaID == ef.EmpiricalFormulaID {
+				eformulas[i].C = 1
+			}
+		}
 	}
 
 	log.WithFields(log.Fields{"eformulas": eformulas}).Debug("GetProductsEmpiricalFormulas")
