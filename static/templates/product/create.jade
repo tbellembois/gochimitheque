@@ -3,6 +3,10 @@ extends static/templates/base.jade
 block content
     form#product-create
         input#exactMatchEmpiricalFormula(type="hidden")
+        input#exactMatchCasNumber(type="hidden")
+        input#exactMatchCeNumber(type="hidden")
+        input#exactMatchName(type="hidden")
+        input#exactMatchSynonyms(type="hidden")
         .form-group.row
             | {{$label := "name"}} {{$name := "name"}}
             +select
@@ -26,6 +30,8 @@ block content
             +selectmultiple
 
     button#save.btn.btn-primary(type='button', onclick='saveProduct()') save changes
+
+include static/templates/product/commonjs.jade
 
 block contentjs
     script.
@@ -98,9 +104,18 @@ block contentjs
             //
             $('select#casnumber').select2({
                 tags: true,
+                createTag: function (params) {
+                    if ($("input#exactMatchCasNumber").val() == "true") {
+                        return null
+                    }
+                    return {
+                        id: params.term,
+                        text: params.term,
+                    }
+                },
                 ajax: {
                     url: '/products/casnumbers',
-                        data: function (params) {
+                    data: function (params) {
                         var query = {
                             search: params.term,
                             page: params.page || 1,
@@ -113,6 +128,23 @@ block contentjs
                     },
                     dataType: 'json',
                     processResults: function (data) {
+
+                        isExactMatch=false;
+                        
+                        // looking for an exact match
+                        $.each(data.rows, function( index, value ) {
+                            if(value.c == 1) {
+                                isExactMatch=true;
+                            }
+                        });
+                       
+                        // there is a match: setting the input field
+                        if (isExactMatch) {
+                            $("input#exactMatchCasNumber").val("true");
+                        } else {
+                            $("input#exactMatchCasNumber").val("false");
+                        }
+
                         // replacing name by text expected by select2
                         var newdata = $.map(data.rows, function (obj) {
                             obj.text = obj.text || obj.casnumber_label;
@@ -138,10 +170,19 @@ block contentjs
             $('select#cenumber').select2({
                 tags: true,
                 allowClear: true,
+                createTag: function (params) {
+                    if ($("input#exactMatchCeNumber").val() == "true") {
+                        return null
+                    }
+                    return {
+                        id: params.term,
+                        text: params.term,
+                    }
+                },
                 placeholder: "select or enter a CE number",
                 ajax: {
                     url: '/products/cenumbers',
-                        data: function (params) {
+                    data: function (params) {
                         var query = {
                             search: params.term,
                             page: params.page || 1,
@@ -154,10 +195,26 @@ block contentjs
                     },
                     dataType: 'json',
                     processResults: function (data) {
+                        isExactMatch=false;
+                        
+                        // looking for an exact match
+                        $.each(data.rows, function( index, value ) {
+                            if(value.c == 1) {
+                                isExactMatch=true;
+                            }
+                        });
+                       
+                        // there is a match: setting the input field
+                        if (isExactMatch) {
+                            $("input#exactMatchCeNumber").val("true");
+                        } else {
+                            $("input#exactMatchCeNumber").val("false");
+                        }
+
                         // replacing name by text expected by select2
                         var newdata = $.map(data.rows, function (obj) {
-                            obj.text = obj.text || obj.cenumber_label.String;
-                            obj.id = obj.id || obj.cenumber_id.Int64;
+                            obj.text = obj.text || obj.cenumber_label;
+                            obj.id = obj.id || obj.cenumber_id;
                             return obj;
                         });
                         // getting the number of loaded select elements
@@ -178,9 +235,18 @@ block contentjs
             //
             $('select#name').select2({
                 tags: true,
+                createTag: function (params) {
+                    if ($("input#exactMatchName").val() == "true") {
+                        return null
+                    }
+                    return {
+                        id: params.term,
+                        text: params.term,
+                    }
+                },
                 ajax: {
                     url: '/products/names',
-                        data: function (params) {
+                    data: function (params) {
                         var query = {
                             search: params.term,
                             page: params.page || 1,
@@ -193,6 +259,23 @@ block contentjs
                     },
                     dataType: 'json',
                     processResults: function (data) {
+
+                        isExactMatch=false;
+                        
+                        // looking for an exact match
+                        $.each(data.rows, function( index, value ) {
+                            if(value.c == 1) {
+                                isExactMatch=true;
+                            }
+                        });
+                       
+                        // there is a match: setting the input field
+                        if (isExactMatch) {
+                            $("input#exactMatchName").val("true");
+                        } else {
+                            $("input#exactMatchName").val("false");
+                        }
+
                         // replacing name by text expected by select2
                         var newdata = $.map(data.rows, function (obj) {
                             obj.text = obj.text || obj.name_label;
@@ -282,6 +365,15 @@ block contentjs
             //
             $('select#synonyms').select2({
                 tags: true,
+                createTag: function (params) {
+                    if ($("input#exactMatchSynonyms").val() == "true") {
+                        return null
+                    }
+                    return {
+                        id: params.term,
+                        text: params.term,
+                    }
+                },
                 ajax: {
                     url: '/products/synonyms',
                     data: function (params) {
@@ -297,6 +389,23 @@ block contentjs
                     },
                     dataType: 'json',
                     processResults: function (data) {
+
+                        isExactMatch=false;
+                        
+                        // looking for an exact match
+                        $.each(data.rows, function( index, value ) {
+                            if(value.c == 1) {
+                                isExactMatch=true;
+                            }
+                        });
+                       
+                        // there is a match: setting the input field
+                        if (isExactMatch) {
+                            $("input#exactMatchSynonyms").val("true");
+                        } else {
+                            $("input#exactMatchSynonyms").val("false");
+                        }
+
                         // replacing name by text expected by select2
                         var newdata = $.map(data.rows, function (obj) {
                             obj.text = obj.text || obj.name_label;

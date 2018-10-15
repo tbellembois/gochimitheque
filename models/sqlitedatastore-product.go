@@ -62,6 +62,23 @@ func (db *SQLiteDataStore) GetProductsCasNumbers(p helpers.Dbselectparam) ([]Cas
 		return nil, 0, err
 	}
 
+	// setting the C attribute for formula matching exactly the search
+	s := p.GetSearch()
+	s = strings.TrimPrefix(s, "%")
+	s = strings.TrimSuffix(s, "%")
+	var casn CasNumber
+
+	r := db.QueryRowx(`SELECT casnumber_id, casnumber_label FROM casnumber WHERE casnumber_label == ?`, s)
+	if err = r.StructScan(&casn); err != nil && err != sql.ErrNoRows {
+		return nil, 0, err
+	} else {
+		for i, c := range casnumbers {
+			if c.CasNumberID == casn.CasNumberID {
+				casnumbers[i].C = 1
+			}
+		}
+	}
+
 	log.WithFields(log.Fields{"casnumbers": casnumbers}).Debug("GetProductsCasNumbers")
 	return casnumbers, count, nil
 }
@@ -112,6 +129,23 @@ func (db *SQLiteDataStore) GetProductsCeNumbers(p helpers.Dbselectparam) ([]CeNu
 	// count
 	if err = cnstmt.Get(&count, m); err != nil {
 		return nil, 0, err
+	}
+
+	// setting the C attribute for formula matching exactly the search
+	s := p.GetSearch()
+	s = strings.TrimPrefix(s, "%")
+	s = strings.TrimSuffix(s, "%")
+	var cen CeNumber
+
+	r := db.QueryRowx(`SELECT cenumber_id, cenumber_label FROM cenumber WHERE cenumber_label == ?`, s)
+	if err = r.StructScan(&cen); err != nil && err != sql.ErrNoRows {
+		return nil, 0, err
+	} else {
+		for i, c := range cenumbers {
+			if c.CeNumberID == cen.CeNumberID {
+				cenumbers[i].C = 1
+			}
+		}
 	}
 
 	log.WithFields(log.Fields{"cenumbers": cenumbers}).Debug("GetProductsCeNumbers")
@@ -176,9 +210,6 @@ func (db *SQLiteDataStore) GetProductsEmpiricalFormulas(p helpers.Dbselectparam)
 	if err = r.StructScan(&ef); err != nil && err != sql.ErrNoRows {
 		return nil, 0, err
 	} else {
-
-		log.Debug(ef)
-
 		for i, e := range eformulas {
 			if e.EmpiricalFormulaID == ef.EmpiricalFormulaID {
 				eformulas[i].C = 1
@@ -236,6 +267,23 @@ func (db *SQLiteDataStore) GetProductsNames(p helpers.Dbselectparam) ([]Name, in
 	// count
 	if err = cnstmt.Get(&count, m); err != nil {
 		return nil, 0, err
+	}
+
+	// setting the C attribute for formula matching exactly the search
+	s := p.GetSearch()
+	s = strings.TrimPrefix(s, "%")
+	s = strings.TrimSuffix(s, "%")
+	var name Name
+
+	r := db.QueryRowx(`SELECT name_id, name_label FROM name WHERE name_label == ?`, s)
+	if err = r.StructScan(&name); err != nil && err != sql.ErrNoRows {
+		return nil, 0, err
+	} else {
+		for i, n := range names {
+			if n.NameID == name.NameID {
+				names[i].C = 1
+			}
+		}
 	}
 
 	log.WithFields(log.Fields{"names": names}).Debug("GetProductsNames")
