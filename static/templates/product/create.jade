@@ -218,7 +218,7 @@ block contentjs
             $('select#empiricalformula').select2({
                 tags: true,
                 createTag: function (params) {
-                    if ($("input#exactMatchEmpiricalFormula").val() == true) {
+                    if ($("input#exactMatchEmpiricalFormula").val() == "true") {
                         return null
                     }
                     return {
@@ -243,19 +243,19 @@ block contentjs
                     processResults: function (data) {
 
                         isExactMatch=false;
-
+                        
                         // looking for an exact match
                         $.each(data.rows, function( index, value ) {
                             if(value.c == 1) {
                                 isExactMatch=true;
                             }
                         });
-                        
+                       
                         // there is a match: setting the input field
                         if (isExactMatch) {
-                            $("input#exactMatchEmpiricalFormula").val(true);
+                            $("input#exactMatchEmpiricalFormula").val("true");
                         } else {
-                            $("input#exactMatchEmpiricalFormula").val(false);
+                            $("input#exactMatchEmpiricalFormula").val("false");
                         }
 
                         // replacing name by text expected by select2

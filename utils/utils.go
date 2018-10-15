@@ -499,7 +499,7 @@ func SortSimpleFormula(f string) (string, error) {
 		if _, ok := atoms[a[2]]; !ok {
 			return "", errors.New("wrong UL atom in formula")
 		}
-		upperLowerAtoms = append(upperLowerAtoms, a[2])
+		upperLowerAtoms = append(upperLowerAtoms, a[0])
 		// duplicate?
 		if _, ok := atomcount[a[2]]; !ok {
 			atomcount[a[2]] = 0
@@ -508,7 +508,7 @@ func SortSimpleFormula(f string) (string, error) {
 			return "", errors.New("duplicate UL atom in formula")
 		}
 		// removing from formula for the next steps
-		f = strings.Replace(f, a[2], "", -1)
+		f = strings.Replace(f, a[0], "", -1)
 	}
 	if len(upperLowerAtoms) > 0 {
 		hasULatom = true

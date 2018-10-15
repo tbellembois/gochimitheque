@@ -171,10 +171,14 @@ func (db *SQLiteDataStore) GetProductsEmpiricalFormulas(p helpers.Dbselectparam)
 	s = strings.TrimPrefix(s, "%")
 	s = strings.TrimSuffix(s, "%")
 	var ef EmpiricalFormula
+
 	r := db.QueryRowx(`SELECT empiricalformula_id, empiricalformula_label FROM empiricalformula WHERE empiricalformula_label == ?`, s)
 	if err = r.StructScan(&ef); err != nil && err != sql.ErrNoRows {
 		return nil, 0, err
 	} else {
+
+		log.Debug(ef)
+
 		for i, e := range eformulas {
 			if e.EmpiricalFormulaID == ef.EmpiricalFormulaID {
 				eformulas[i].C = 1
