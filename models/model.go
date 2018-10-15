@@ -63,18 +63,21 @@ type Symbol struct {
 
 // Name is a product name
 type Name struct {
+	C         int    `db:"c" json:"c"` // not stored in db but db:"c" set for sqlx
 	NameID    int    `db:"name_id" json:"name_id" schema:"name_id"`
 	NameLabel string `db:"name_label" json:"name_label" schema:"name_label"`
 }
 
 // CasNumber is a product CAS number
 type CasNumber struct {
+	C              int    `db:"c" json:"c"` // not stored in db but db:"c" set for sqlx
 	CasNumberID    int    `db:"casnumber_id" json:"casnumber_id" schema:"casnumber_id"`
 	CasNumberLabel string `db:"casnumber_label" json:"casnumber_label" schema:"casnumber_label"`
 }
 
 // CeNumber is a product CE number
 type CeNumber struct {
+	C             int            `db:"c" json:"c"` // not stored in db but db:"c" set for sqlx
 	CeNumberID    sql.NullInt64  `db:"cenumber_id" json:"cenumber_id" schema:"cenumber_id"`
 	CeNumberLabel sql.NullString `db:"cenumber_label" json:"cenumber_label" schema:"cenumber_label"`
 }
