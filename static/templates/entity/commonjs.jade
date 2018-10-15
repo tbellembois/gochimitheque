@@ -1,0 +1,110 @@
+script.
+
+       $( document ).ready(function() {
+
+            //
+            // create form validation
+            //
+            $( "#entity" ).validate({
+            errorClass: "alert alert-danger",
+            rules: {
+                entity_name: {
+                    required: true,
+                    remote: {
+                        url: "",
+                        type: "post",
+                        beforeSend: function(jqXhr, settings) {
+                            id = -1
+                            if ($("form#entity input#entity_id").length) {
+                                id = $("form#entity input#entity_id").val()
+                            }
+                            settings.url = "/validate/entity/" + id + "/name/";
+                        },
+                    },
+                },
+            },
+            });
+
+
+            //
+            // managers select2
+            //
+            $('select#managers').select2({
+            ajax: {
+                url: '/people',
+                dataType: 'json',
+                processResults: function (data) {
+                // replacing email by text expected by select2
+                var newdata = $.map(data.rows, function (obj) {
+                    obj.text = obj.text || obj.person_email;
+                    obj.id = obj.id || obj.person_id;
+                    return obj;
+                });
+                return {
+                    results: newdata
+                };
+                }
+            }
+            });
+        });
+
+        //
+        // save entity callback
+        //
+        var createCallBack = function createCallback(data, textStatus, jqXHR) {
+            displayMessage("entity " + data.entity_name + " created", "success");
+            setTimeout(function(){ window.location = "/v/entities"; }, 1000);
+        }
+        var updateCallBack = function updateCallback(data, textStatus, jqXHR) {
+            $('#list-collapse').collapse('show');
+            $('#edit-collapse').collapse('hide');
+            var $table = $('#table');
+            var index = $('input#index').val();
+            $table.bootstrapTable('updateRow', {
+                index: index,
+                row: {
+                    "entity_name": data.entity_name,
+                    "entity_description": data.entity_description,
+                }
+            });
+            displayMessage("entity " + data.entity_name + " updated", "success");
+        }
+        function saveEntity() {
+            var form = $("#entity");
+            if (!form.valid()) {
+                return;d
+            };
+
+            var entity_id = $("#edit-collapse input#entity_id").val(),
+                entity_name = $("input#entity_name").val(),
+                entity_description = $("input#entity_description").val(),
+                managers = $('select#managers').select2('data'),
+                ajax_url = "/entities",
+                ajax_method = "POST",
+                ajax_callback = createCallBack,
+                data = {};
+
+                if ($("form#entity input#entity_id").length) {
+                    ajax_url = "/entities/" + entity_id
+                    ajax_method = "PUT"
+                    ajax_callback = updateCallBack
+                }
+
+                $.each(managers, function( index, m ) {
+                    data["managers." + index +".person_id"] = m.id;
+                    data["managers." + index +".person_email"] = m.text;
+                });
+                $.extend(data, {
+                    "entity_id": entity_id,
+                    "entity_name": entity_name,
+                    "entity_description": entity_description,
+                });
+            $.ajax({
+                url: ajax_url,
+                method: ajax_method,
+                dataType: 'json',
+                data: data,
+            }).done(ajax_callback).fail(function(jqXHR, textStatus, errorThrown) {  
+                handleHTTPError(jqXHR.statusText, jqXHR.status)
+            }); 
+        }

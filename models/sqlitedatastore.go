@@ -43,6 +43,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	)
 
 	// activate the foreign keys feature
+	log.Debug("enabling foreign keys")
 	if _, err = db.Exec("PRAGMA foreign_keys = ON"); err != nil {
 		return err
 	}
@@ -153,6 +154,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	("sgh09", "image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAI8SURBVFiFzdi7a1VBEMDhb0EjYhFfaCEICopBi4haWUiqqGgQW1OKaBpNIQEVvREi2lhaWCiC/4CSImgv2IgQELSSdKKlMUKEtTgr3jxuPI+9iQMD5+y9u/NjdmbO7IYYoywSQgvE2MqyXoyxudKKxKStHGvmhsoGl9dTGT2Xf/syweWFygiXHyoTXHegMsDVgprjLk5hS4wRenLD1fYUhjGans9jF/rRlwOuMhS2Yz924F0CO4EBjOTyXK0YwUVcwAcEHMJr9OaKudqLYBA/cQx7cT+NB1xrCld5cvLOGA7gqSIRricv7sED9Df1XB1PbcVOXMZnzOA7pvEcg3UTqjNY1QDlKmLSsRX+14NNlXamLlQyeDJBfenw+xmcxQ3cxunSCVYpINmYatUfHUlg3xaN9+MmjqR5uxPkaNltrZbChcFYUi8tmjuOqbIxt25pT7uifMThtvcBPMS84kvwKY2fizE+hhDCBkXGzuBZaUsN4qtPUVQj3uOJIhmGFSXlOO4loEmsr5KhtYIfvRjCUTxS1K8reKnIwAkLt/UHhqqUjUblIkFuxi18TRCv8KsNah5v8UbqRqqVi5JwOKhI/ym8wKzlg3+xzmGyrJ2QjC2U4ox4J72NS2fFEMI27CsdwEtlNsY43Wn9BVIlILNoo494t+CytD254bI2irngutJaN4Xr6mGkrpFVOb5VNbaqB96yRtfkiuBfxtf0UqUTxH9xDbU8XBaoPGAZt69dq3awy0uMLSH8fc4gvwFyuYuihNiCxwAAAABJRU5ErkJggg==");`
 
 	// tables creation
+	log.Debug("creating tables")
 	if _, err = db.Exec(schema); err != nil {
 		return err
 	}
@@ -163,7 +165,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	log.WithFields(log.Fields{"c": c}).Debug("CreateDatabase")
 	if c == 0 {
 		log.Debug("populating database")
-
+		log.Debug("- symbols")
 		if _, err = db.Exec(values); err != nil {
 			return err
 		}
@@ -179,6 +181,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 
 		scanner := bufio.NewScanner(scas)
 		scanner.Split(bufio.ScanLines)
+		log.Debug("- cas")
 		for scanner.Scan() {
 			log.Debug(scanner.Text())
 			if _, err = db.Exec(`INSERT OR IGNORE INTO casnumber ("casnumber_label") VALUES ("` + scanner.Text() + `");`); err != nil {
@@ -188,6 +191,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 
 		scanner = bufio.NewScanner(sname)
 		scanner.Split(bufio.ScanLines)
+		log.Debug("- names")
 		for scanner.Scan() {
 			log.Debug(scanner.Text())
 			if _, err = db.Exec(`INSERT OR IGNORE INTO name ("name_label") VALUES ("` + scanner.Text() + `");`); err != nil {
@@ -197,6 +201,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 
 		scanner = bufio.NewScanner(sempiricalformula)
 		scanner.Split(bufio.ScanLines)
+		log.Debug("- empirical formulas")
 		for scanner.Scan() {
 			log.Debug(scanner.Text())
 			if _, err = db.Exec(`INSERT OR IGNORE INTO empiricalformula ("empiricalformula_label") VALUES ("` + scanner.Text() + `");`); err != nil {
@@ -208,6 +213,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		m2 := Person{PersonEmail: "manager@lab-two.com"}
 		m3 := Person{PersonEmail: "manager@lab-three.com"}
 
+		log.Debug("- 3 managers")
 		_, m1.PersonID = db.CreatePerson(m1)
 		_, m2.PersonID = db.CreatePerson(m1)
 		_, m3.PersonID = db.CreatePerson(m1)
@@ -216,6 +222,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		e2 := Entity{EntityName: "lab two", EntityDescription: "the lab two", Managers: []Person{m2}}
 		e3 := Entity{EntityName: "lab three", EntityDescription: "the lab three", Managers: []Person{m3}}
 
+		log.Debug("- 3 entities")
 		_, e1.EntityID = db.CreateEntity(e1)
 		_, e2.EntityID = db.CreateEntity(e2)
 		_, e3.EntityID = db.CreateEntity(e3)
@@ -227,6 +234,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		sl5 := StoreLocation{StoreLocationName: "fridgeA3", Entity: e3}
 		sl6 := StoreLocation{StoreLocationName: "fridgeB3", Entity: e3}
 
+		log.Debug("- 3 storelocations")
 		db.CreateStoreLocation(sl1)
 		db.CreateStoreLocation(sl2)
 		db.CreateStoreLocation(sl3)
@@ -241,6 +249,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		m2.Permissions = []Permission{Permission{PermissionPermName: "all", PermissionItemName: "all", PermissionEntityID: e2.EntityID}}
 		m3.Permissions = []Permission{Permission{PermissionPermName: "all", PermissionItemName: "all", PermissionEntityID: e3.EntityID}}
 
+		log.Debug("- updating the 3 managers")
 		db.UpdatePerson(m1)
 		db.UpdatePerson(m2)
 		db.UpdatePerson(m3)
@@ -257,6 +266,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		p9 := Person{PersonEmail: "harrison@lab-three.com", Entities: []Entity{e3}}
 		p10 := Person{PersonEmail: "alone@no-entity.com"}
 
+		log.Debug("- 10 users")
 		db.CreatePerson(p0)
 		db.CreatePerson(p1)
 		db.CreatePerson(p2)
@@ -271,11 +281,14 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 
 		// inserting sample products
 		// attention: values are wrongs, just for devel purposes
+		log.Debug("- sample products")
 		for i := 1; i <= 100; i++ {
+			log.Debug("product " + string(i))
 			ins := fmt.Sprintf("(\"spec%d\", \"%d\", \"%d\", 1, \"%d\")", i, i, i, i)
 			if _, err = db.Exec(`INSERT INTO product ("product_specificity", "casnumber", "name", "person", "empiricalformula") VALUES ` + ins + `;`); err != nil {
 				return err
 			}
+			log.Debug("product symbols" + string(i))
 			if _, err = db.Exec(`INSERT INTO productsymbols ("productsymbols_product_id", "productsymbols_symbol_id") VALUES 
 			(?, ?), (?, ?), (?, ?), (?, ?);`, i, (i%9)+1, i, ((i+1)%9)+1, i, ((i+2)%9)+1, i, ((i+3)%9)+1); err != nil {
 				return err
@@ -284,7 +297,8 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 
 		// inserting sample storages
 		// attention: values are wrongs, just for devel purposes
-		for i := 1; i <= 500; i++ {
+		log.Debug("- sample storages")
+		for i := 1; i <= 200; i++ {
 			comment := fmt.Sprintf("(\"comment%d\", \"%d\", \"%d\")", i, i, i)
 			datetime := time.Now()
 			person := i%9 + 1

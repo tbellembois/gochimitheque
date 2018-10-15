@@ -107,3 +107,21 @@ A custom middleware. Look at `func (env *Env) AuthorizeMiddleware(h http.Handler
 ## web form to struct
 
 - [https://github.com/gorilla/schema]
+
+# windows cross compilation
+
+```bash
+    go generate
+    CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc CXX=x86_64-w64-mingw32-g++ GOOS=windows GOARCH=amd64 go build
+```
+
+> local/mingw-w64-binutils-bin 2.31.1-1 (mingw-w64-toolchain mingw-w64)
+>     Cross binutils for the MinGW-w64 cross-compiler (pre-compiled)
+> local/mingw-w64-crt-bin 6.0.0-1 (mingw-w64-toolchain mingw-w64)
+>     MinGW-w64 CRT for Windows (pre-compiled)
+> local/mingw-w64-gcc-bin 8.2.0-1 (mingw-w64-toolchain mingw-w64)
+>     Cross GCC for the MinGW-w64 cross-compiler (pre-compiled)
+> local/mingw-w64-headers-bin 6.0.0-1 (mingw-w64-toolchain mingw-w64)
+>     MinGW-w64 headers for Windows (pre-compiled)
+> local/mingw-w64-winpthreads-bin 6.0.0-1 (mingw-w64-toolchain mingw-w64)
+>     MinGW-w64 winpthreads library (pre-compiled)
