@@ -20,7 +20,7 @@ func (env *Env) VGetEntitiesHandler(w http.ResponseWriter, r *http.Request) *hel
 
 	c := helpers.ContainerFromRequestContext(r)
 
-	if e := env.Templates["entityindex"].Execute(w, c); e != nil {
+	if e := env.Templates["entityindex"].ExecuteTemplate(w, "BASE", c); e != nil {
 		return &helpers.AppError{
 			Error:   e,
 			Code:    http.StatusInternalServerError,
@@ -35,7 +35,7 @@ func (env *Env) VCreateEntityHandler(w http.ResponseWriter, r *http.Request) *he
 
 	c := helpers.ContainerFromRequestContext(r)
 
-	if e := env.Templates["entitycreate"].Execute(w, c); e != nil {
+	if e := env.Templates["entitycreate"].ExecuteTemplate(w, "BASE", c); e != nil {
 		return &helpers.AppError{
 			Error:   e,
 			Code:    http.StatusInternalServerError,

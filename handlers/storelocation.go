@@ -20,7 +20,7 @@ func (env *Env) VGetStoreLocationsHandler(w http.ResponseWriter, r *http.Request
 
 	c := helpers.ContainerFromRequestContext(r)
 
-	if e := env.Templates["storelocationindex"].Execute(w, c); e != nil {
+	if e := env.Templates["storelocationindex"].ExecuteTemplate(w, "BASE", c); e != nil {
 		return &helpers.AppError{
 			Error:   e,
 			Code:    http.StatusInternalServerError,
@@ -35,7 +35,7 @@ func (env *Env) VCreateStoreLocationHandler(w http.ResponseWriter, r *http.Reque
 
 	c := helpers.ContainerFromRequestContext(r)
 
-	if e := env.Templates["storelocationcreate"].Execute(w, c); e != nil {
+	if e := env.Templates["storelocationcreate"].ExecuteTemplate(w, "BASE", c); e != nil {
 		return &helpers.AppError{
 			Error:   e,
 			Code:    http.StatusInternalServerError,

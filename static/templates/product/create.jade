@@ -1,6 +1,5 @@
-extends static/templates/base.jade
+| {{define "CONTENT"}}
 
-block content
     form#product
         input#exactMatchEmpiricalFormula(type="hidden")
         input#exactMatchCasNumber(type="hidden")
@@ -31,6 +30,7 @@ block content
 
     button#save.btn.btn-primary(type='button', onclick='saveProduct()') save changes
 
-include static/templates/product/commonjs.jade
-
-block contentjs
+| {{end}}
+| {{define "CONTENTJS"}}
+| {{template "COMMONCONTENTJS"}}
+| {{end}}

@@ -1,6 +1,4 @@
-extends static/templates/base.jade
-
-block content
+| {{define "CONTENT"}}
 
     .row
         .col-sm-4
@@ -48,8 +46,8 @@ block content
 
             button#save.btn.btn-primary(type='button', onclick='saveStorage()') save changes
             button.btn.btn-secondary(type='button', onclick='closeEdit();') close
-
-block contentjs
+| {{end}}
+| {{define "CONTENTJS"}}
     script.
         //
         // close buttons actions
@@ -296,3 +294,4 @@ block contentjs
                 });
             }
         };
+| {{end}}

@@ -1,34 +1,10 @@
-extends static/templates/base.jade
+| {{define "CONTENT"}}
 
-mixin test
-  img(src="{{$Foo}}")
+h2 bla
+h1 bli
+h1 bli
 
-mixin test2
-    div.form-group
-        h1 {{$Bar}}
+| {{end}}
 
-mixin inlineradio
-    div.custom-control.custom-radio.custom-control-inline
-        label.custom-control-label(for='{{$id}}') {{$label}}
-        input(class='{{$class}} custom-control-input' id='{{$id}}' type='radio' name='{{$name}}')
-
-block content
-    | {{$Foo := "toto"}}
-    +test
-    | {{$Foo := "tata"}}
-    +test
-    | {{$Bar := "tata"}}
-    +test2
-    | {{$id := "myid"}} {{$class := "myclass"}} {{$label := "mylabel"}} {{$name := "myname"}}
-    +inlineradio
-
-block contentjs
-    script.
-        $.ajax({
-            url: "/f/people/3",
-            method: "DELETE",
-        }).done(function(data, textStatus, jqXHR) {
-            console.log(data);
-        }).fail(function(jqXHR, textStatus, errorThrown) {
-            console(jqXHR.statusText)
-        });
+| {{define "CONTENTJS"}}
+| {{end}}

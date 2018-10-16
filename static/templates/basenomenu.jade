@@ -1,13 +1,28 @@
-include static/templates/mixins.jade
-doctype html
+| {{define "BASE"}}
+| {{template "MIXINS"}}
 html
     head
-        include static/templates/head.jade
+        | {{template "HEAD"}}
     body
         div.container
-            include static/templates/header.jade
-            block content
-            include static/templates/footer.jade
+            | {{template "HEADER"}}
+            | {{template "CONTENT"}}
+            | {{template "FOOTER"}}
 
-        include static/templates/foot.jade
-        block contentjs
+        | {{template "FOOT"}}
+        | {{template "CONTENTJS"}}
+
+        script.
+            //
+            // common javascript
+            //
+
+            // logged user email and permissions
+            var container = {{ . }};
+
+            // setting up logged user
+            window.onload = function() {
+                email = readCookie("email")
+                document.getElementById("logged").innerHTML = email;
+           };
+| {{end}}

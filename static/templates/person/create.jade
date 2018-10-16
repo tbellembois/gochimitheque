@@ -1,6 +1,4 @@
-extends static/templates/base.jade
-
-block content
+| {{define "CONTENT"}}
     form#person-create
         .form-group.row
             | {{$label := "email"}} {{$name := "person_email"}}
@@ -11,8 +9,8 @@ block content
         .form-group.row#permissions
 
     button.btn.btn-primary(type='button', onclick='savePerson()') save changes
-
-block contentjs
+| {{end}}
+| {{define "CONTENTJS"}}
     script.
 
         $( document ).ready(function() {
@@ -101,3 +99,4 @@ block contentjs
                 handleHTTPError(jqXHR.statusText, jqXHR.status)
             }); 
         }
+| {{end}}

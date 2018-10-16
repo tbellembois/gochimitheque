@@ -1,3 +1,4 @@
+| {{define "MIXINS"}}
 mixin inlineradio
     .custom-control.custom-radio.custom-control-inline
         input(class='custom-control-input {{$class}}' id='{{$id}}' type='radio' name='{{$name}}' value='{{$value}}')
@@ -48,3 +49,4 @@ mixin permissions
         +inlineradio
         | {{$id := "permstoragerw"}} {{$value := "w"}} {{$label := "rw"}}
         +inlineradio
+| {{end}}

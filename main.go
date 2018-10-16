@@ -76,9 +76,31 @@ func main() {
 
 	// template compilation
 	b := rice.MustFindBox("static/templates")
+	basejades := []string{
+		"base.jade",
+		"mixins.jade",
+		"head.jade",
+		"header.jade",
+		"footer.jade",
+		"foot.jade"}
+	basenomenujades := []string{
+		"basenomenu.jade",
+		"mixins.jade",
+		"head.jade",
+		"header.jade",
+		"footer.jade",
+		"foot.jade"}
+	basejadess := ""
+	basenomenujadess := ""
+	for _, s := range basejades {
+		basejadess += "\r\n" + b.MustString(s)
+	}
+	for _, s := range basenomenujades {
+		basenomenujadess += "\r\n" + b.MustString(s)
+	}
 
 	// test
-	testtmpl, e := jade.Parse("test", b.MustString("test.jade"))
+	testtmpl, e := jade.Parse("test", basenomenujadess+"\r\n"+b.MustString("test.jade"))
 	if e != nil {
 		log.Fatal("testtmpl jade:" + e.Error())
 	}
@@ -87,7 +109,7 @@ func main() {
 		log.Fatal("testtmpl parse:" + e.Error())
 	}
 	// home
-	hometmpl, e := jade.Parse("home_index", b.MustString("home/index.jade"))
+	hometmpl, e := jade.Parse("home_index", basejadess+"\r\n"+b.MustString("home/index.jade"))
 	if e != nil {
 		log.Fatal("hometmpl jade:" + e.Error())
 	}
@@ -96,7 +118,7 @@ func main() {
 		log.Fatal("hometmpl parse:" + e.Error())
 	}
 	// login
-	logintmpl, e := jade.Parse("login_index", b.MustString("login/index.jade"))
+	logintmpl, e := jade.Parse("login_index", basenomenujadess+"\r\n"+b.MustString("login/index.jade"))
 	if e != nil {
 		log.Fatal("logintmpl jade:" + e.Error())
 	}
@@ -105,7 +127,7 @@ func main() {
 		log.Fatal("logintmpl parse:" + e.Error())
 	}
 	// entity
-	entityindextmpl, e := jade.Parse("entity_index", b.MustString("entity/index.jade"))
+	entityindextmpl, e := jade.Parse("entity_index", basejadess+"\r\n"+b.MustString("entity/commonjs.jade")+"\r\n"+b.MustString("entity/index.jade"))
 	if e != nil {
 		log.Fatal("entityindextmpl jade:" + e.Error())
 	}
@@ -113,7 +135,7 @@ func main() {
 	if err != nil {
 		log.Fatal("entityindextmpl parse:" + e.Error())
 	}
-	entitycreatetmpl, e := jade.Parse("entity_create", b.MustString("entity/create.jade"))
+	entitycreatetmpl, e := jade.Parse("entity_create", basejadess+"\r\n"+b.MustString("entity/commonjs.jade")+"\r\n"+b.MustString("entity/create.jade"))
 	if e != nil {
 		log.Fatal("entitycreatetmpl jade:" + e.Error())
 	}
@@ -122,7 +144,7 @@ func main() {
 		log.Fatal("entitycreatetmpl parse:" + e.Error())
 	}
 	// store location
-	storelocationindextmpl, e := jade.Parse("storelocation_index", b.MustString("storelocation/index.jade"))
+	storelocationindextmpl, e := jade.Parse("storelocation_index", basejadess+"\r\n"+b.MustString("storelocation/index.jade"))
 	if e != nil {
 		log.Fatal("storelocationindextmpl jade:" + e.Error())
 	}
@@ -130,7 +152,7 @@ func main() {
 	if err != nil {
 		log.Fatal("storelocationtmpl parse:" + e.Error())
 	}
-	storelocationcreatetmpl, e := jade.Parse("storelocation_create", b.MustString("storelocation/create.jade"))
+	storelocationcreatetmpl, e := jade.Parse("storelocation_create", basejadess+"\r\n"+b.MustString("storelocation/create.jade"))
 	if e != nil {
 		log.Fatal("storelocationcreatetmpl jade:" + e.Error())
 	}
@@ -139,7 +161,7 @@ func main() {
 		log.Fatal("storelocationcreatetmpl parse:" + e.Error())
 	}
 	// person
-	personindextmpl, e := jade.Parse("person_index", b.MustString("person/index.jade"))
+	personindextmpl, e := jade.Parse("person_index", basejadess+"\r\n"+b.MustString("person/index.jade"))
 	if e != nil {
 		log.Fatal("personindextmpl jade:" + e.Error())
 	}
@@ -147,7 +169,7 @@ func main() {
 	if err != nil {
 		log.Fatal("personindextmpl parse:" + e.Error())
 	}
-	personcreatetmpl, e := jade.Parse("person_create", b.MustString("person/create.jade"))
+	personcreatetmpl, e := jade.Parse("person_create", basejadess+"\r\n"+b.MustString("person/create.jade"))
 	if e != nil {
 		log.Fatal("personcreatetmpl jade:" + e.Error())
 	}
@@ -156,7 +178,7 @@ func main() {
 		log.Fatal("personcreatetmpl parse:" + e.Error())
 	}
 	// product
-	productindextmpl, e := jade.Parse("product_index", b.MustString("product/index.jade"))
+	productindextmpl, e := jade.Parse("product_index", basejadess+"\r\n"+b.MustString("entity/commonjs.jade")+"\r\n"+b.MustString("product/index.jade"))
 	if e != nil {
 		log.Fatal("productindextmpl jade:" + e.Error())
 	}
@@ -164,7 +186,7 @@ func main() {
 	if err != nil {
 		log.Fatal("productindextmpl parse:" + e.Error())
 	}
-	productcreatetmpl, e := jade.Parse("product_create", b.MustString("product/create.jade"))
+	productcreatetmpl, e := jade.Parse("product_create", basejadess+"\r\n"+b.MustString("product/commonjs.jade")+"\r\n"+b.MustString("product/create.jade"))
 	if e != nil {
 		log.Fatal("productcreatetmpl jade:" + e.Error())
 	}
@@ -173,7 +195,7 @@ func main() {
 		log.Fatal("productcreatetmpl parse:" + e.Error())
 	}
 	// storage
-	storageindextmpl, e := jade.Parse("storage_index", b.MustString("storage/index.jade"))
+	storageindextmpl, e := jade.Parse("storage_index", basejadess+"\r\n"+b.MustString("storage/index.jade"))
 	if e != nil {
 		log.Fatal("storageindextmpl jade:" + e.Error())
 	}
@@ -181,7 +203,7 @@ func main() {
 	if err != nil {
 		log.Fatal("storageindextmpl parse:" + e.Error())
 	}
-	storagecreatetmpl, e := jade.Parse("storage_create", b.MustString("storage/create.jade"))
+	storagecreatetmpl, e := jade.Parse("storage_create", basejadess+"\r\n"+b.MustString("storage/create.jade"))
 	if e != nil {
 		log.Fatal("storagecreatetmpl jade:" + e.Error())
 	}
@@ -198,7 +220,7 @@ func main() {
 	r.Handle("/login", commonChain.Then(env.AppMiddleware(env.VLoginHandler))).Methods("GET")
 	r.Handle("/get-token", commonChain.Then(env.AppMiddleware(env.GetTokenHandler))).Methods("POST")
 	// developper tests
-	r.Handle("/v/test", commonChain.Then(env.AppMiddleware(env.VTestHandler))).Methods("GET")
+	r.Handle("/v/test", securechain.Then(env.AppMiddleware(env.VTestHandler))).Methods("GET")
 	// home page
 	r.Handle("/", securechain.Then(env.AppMiddleware(env.HomeHandler))).Methods("GET")
 	// entities

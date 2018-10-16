@@ -1,6 +1,4 @@
-extends static/templates/base.jade
-
-block content
+| {{define "CONTENT"}}
     #accordion
         #list-collapse.collapse.show(data-parent='#accordion')
             header.row
@@ -39,9 +37,10 @@ block content
             button#save.btn.btn-primary(type='button', onclick='saveEntity()') save changes
             button.btn.btn-secondary(type='button', onclick='closeViewEdit();') close
 
-include static/templates/entity/commonjs.jade
+| {{end}}
 
-block contentjs
+| {{define "CONTENTJS"}}
+| {{template "COMMONCONTENTJS"}}
     script.
         //
         // close buttons actions
@@ -202,3 +201,4 @@ block contentjs
                 });
             }
         };
+| {{end}}

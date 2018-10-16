@@ -110,10 +110,20 @@ A custom middleware. Look at `func (env *Env) AuthorizeMiddleware(h http.Handler
 
 # windows cross compilation
 
+## windows 10
+
 ```bash
     go generate
     CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc CXX=x86_64-w64-mingw32-g++ GOOS=windows GOARCH=amd64 go build
 ```
+
+## windows 7
+
+```bash
+    go generate
+    CGO_ENABLED=1 CC=i686-w64-mingw32-gcc CXX=i686-w64-mingw32-g++ GOOS=windows GOARCH=386 go build
+```
+
 
 > local/mingw-w64-binutils-bin 2.31.1-1 (mingw-w64-toolchain mingw-w64)
 >     Cross binutils for the MinGW-w64 cross-compiler (pre-compiled)

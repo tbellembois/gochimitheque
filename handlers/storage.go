@@ -21,7 +21,7 @@ func (env *Env) VGetStoragesHandler(w http.ResponseWriter, r *http.Request) *hel
 
 	c := helpers.ContainerFromRequestContext(r)
 
-	if e := env.Templates["storageindex"].Execute(w, c); e != nil {
+	if e := env.Templates["storageindex"].ExecuteTemplate(w, "BASE", c); e != nil {
 		return &helpers.AppError{
 			Error:   e,
 			Code:    http.StatusInternalServerError,
@@ -36,7 +36,7 @@ func (env *Env) VCreateStorageHandler(w http.ResponseWriter, r *http.Request) *h
 
 	c := helpers.ContainerFromRequestContext(r)
 
-	if e := env.Templates["storagecreate"].Execute(w, c); e != nil {
+	if e := env.Templates["storagecreate"].ExecuteTemplate(w, "BASE", c); e != nil {
 		return &helpers.AppError{
 			Error:   e,
 			Code:    http.StatusInternalServerError,
