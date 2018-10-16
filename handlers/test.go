@@ -9,7 +9,7 @@ func (env *Env) VTestHandler(w http.ResponseWriter, r *http.Request) *helpers.Ap
 
 	c := helpers.ContainerFromRequestContext(r)
 
-	if e := env.Templates["test"].Execute(w, c); e != nil {
+	if e := env.Templates["test"].ExecuteTemplate(w, "BASE", c); e != nil {
 		return &helpers.AppError{
 			Error:   e,
 			Code:    http.StatusInternalServerError,

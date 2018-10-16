@@ -1,6 +1,4 @@
-extends static/templates/base.jade
-
-block content
+| {{define "CONTENT"}}
     form#storelocation-create
         .form-group.row
             | {{$label := "name"}} {{$name := "storelocation_name"}}
@@ -10,8 +8,8 @@ block content
             +select
             
     button#save.btn.btn-primary(type='button', onclick='saveStoreLocation()') save changes
-
-block contentjs
+| {{end}}
+| {{define "CONTENTJS"}}
     script.
 
         $( document ).ready(function() {
@@ -84,3 +82,4 @@ block contentjs
                 handleHTTPError(jqXHR.statusText, jqXHR.status)
             }); 
         }
+| {{end}}

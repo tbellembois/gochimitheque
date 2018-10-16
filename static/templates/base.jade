@@ -1,21 +1,80 @@
-include static/templates/mixins.jade
-doctype html
+| {{define "BASE"}}
+| {{template "MIXINS"}}
 html
     head
-        include static/templates/head.jade
+        | {{template "HEAD"}}
     body
         div.container
-            include static/templates/header.jade
-            include static/templates/menu.jade
-            block content
-            include static/templates/footer.jade
+            | {{template "HEADER"}}
 
-        include static/templates/foot.jade
-        block contentjs
+            nav.navbar.navbar-expand-lg.navbar-light.bg-light
+                button.navbar-toggler(
+                                    type="button"
+                                    data-toggle="collapse" 
+                                    data-target="#navbarSupportedContent" 
+                                    aria-controls="navbarSupportedContent" 
+                                    aria-expanded="false" 
+                                    aria-label="Toggle navigation")
+                    span.navbar-toggler-icon
 
-        // | {{.}}
-        // | {{.}} {{.PersonID}} {{.PersonEmail}}
-        
+                div.collapse.navbar-collapse#navbarSupportedContent
+                    ul.navbar-nav.mr-auto
+                        if HasPermission .PersonID "r" "products" -2
+                            li.nav-item.active
+                                a(href="/v/products").nav-link home
+                        li.nav-item
+                            a(href="/login").nav-link login
+
+                        if HasPermission .PersonID "w" "products" -2
+                            li.nav-item
+                                a(href="/vc/products").nav-link create product card
+
+                        if HasPermission .PersonID "r" "entities" -2
+                            li.nav-item.dropdown
+                                a(href="#", title="entities").nav-link.dropdown-toggle#navbarDropdown(
+                                    role="button" 
+                                    data-toggle="dropdown" 
+                                    aria-haspopup="true" 
+                                    aria-expanded="false") entity
+                                div.dropdown-menu(aria-labelledby="navbarDropdown")
+                                    a(href="/v/entities", title="list").dropdown-item list
+                                    if HasPermission .PersonID "all" "all" -1
+                                        a(href="/vc/entities", title="create").dropdown-item create
+
+                        if HasPermission .PersonID "r" "storelocations" -2
+                            li.nav-item.dropdown
+                                a(href="#", title="storelocations").nav-link.dropdown-toggle#navbarDropdown(
+                                    role="button" 
+                                    data-toggle="dropdown" 
+                                    aria-haspopup="true" 
+                                    aria-expanded="false") store location
+                                div.dropdown-menu(aria-labelledby="navbarDropdown")
+                                    a(href="/v/storelocations", title="list").dropdown-item list
+                                    if HasPermission .PersonID "all" "all" -2
+                                        a(href="/vc/storelocations", title="create").dropdown-item create
+
+                        if HasPermission .PersonID "r" "people" -2
+                            li.nav-item.dropdown
+                                a(href="#", title="people").nav-link.dropdown-toggle#navbarDropdown(
+                                    role="button" 
+                                    data-toggle="dropdown" 
+                                    aria-haspopup="true" 
+                                    aria-expanded="false") person
+                                div.dropdown-menu(aria-labelledby="navbarDropdown")
+                                    a(href="/v/people", title="list").dropdown-item list
+                                    if HasPermission .PersonID "w" "people" -2
+                                        a(href="/vc/people", title="create").dropdown-item create
+
+                        li.nav-item
+                            a.nav-link.disabled(href="#")
+                                span#logged
+
+            | {{template "CONTENT"}}
+            | {{template "FOOTER"}}
+
+        | {{template "FOOT"}}
+        | {{template "CONTENTJS"}}
+
         script.
             //
             // common javascript
@@ -28,4 +87,5 @@ html
             window.onload = function() {
                 email = readCookie("email")
                 document.getElementById("logged").innerHTML = email;
-            };
+           };
+| {{end}}

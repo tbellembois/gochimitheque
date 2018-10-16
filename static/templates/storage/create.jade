@@ -1,6 +1,4 @@
-extends static/templates/base.jade
-
-block content
+| {{define "CONTENT"}}
 
     .row
         .col-sm-4.offset-sm-4
@@ -18,8 +16,8 @@ block content
             +inputtext
     
     button#save.btn.btn-primary(type='button', onclick='saveStorage()') save changes
-
-block contentjs
+| {{end}}
+| {{define "CONTENTJS"}}
     script.
 
        $( document ).ready(function() {           
@@ -126,3 +124,4 @@ block contentjs
                     handleHTTPError(jqXHR.statusText, jqXHR.status)
                 });  
         }
+| {{end}}

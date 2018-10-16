@@ -1,6 +1,4 @@
-extends static/templates/basenomenu.jade
-
-block content
+| {{define "CONTENT"}}
     header.row
         div.col-sm-12
             form#authForm
@@ -22,5 +20,6 @@ block content
             | sample logins:
             ul.list-group
                 li.list-group-item user@super.com is super admin
-
-block contentjs
+| {{end}}
+| {{define "CONTENTJS"}}
+| {{end}}

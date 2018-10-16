@@ -14,7 +14,7 @@ func (env *Env) HomeHandler(w http.ResponseWriter, r *http.Request) *helpers.App
 
 	c := helpers.ContainerFromRequestContext(r)
 
-	if e := env.Templates["home"].Execute(w, c); e != nil {
+	if e := env.Templates["home"].ExecuteTemplate(w, "BASE", c); e != nil {
 		return &helpers.AppError{
 			Error:   e,
 			Code:    http.StatusInternalServerError,

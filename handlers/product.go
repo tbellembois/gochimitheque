@@ -21,7 +21,7 @@ func (env *Env) VGetProductsHandler(w http.ResponseWriter, r *http.Request) *hel
 
 	c := helpers.ContainerFromRequestContext(r)
 
-	if e := env.Templates["productindex"].Execute(w, c); e != nil {
+	if e := env.Templates["productindex"].ExecuteTemplate(w, "BASE", c); e != nil {
 		return &helpers.AppError{
 			Error:   e,
 			Code:    http.StatusInternalServerError,
@@ -36,7 +36,7 @@ func (env *Env) VCreateProductHandler(w http.ResponseWriter, r *http.Request) *h
 
 	c := helpers.ContainerFromRequestContext(r)
 
-	if e := env.Templates["productcreate"].Execute(w, c); e != nil {
+	if e := env.Templates["productcreate"].ExecuteTemplate(w, "BASE", c); e != nil {
 		return &helpers.AppError{
 			Error:   e,
 			Code:    http.StatusInternalServerError,

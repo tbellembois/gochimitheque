@@ -20,7 +20,7 @@ func (env *Env) VCreatePersonHandler(w http.ResponseWriter, r *http.Request) *he
 
 	c := helpers.ContainerFromRequestContext(r)
 
-	if e := env.Templates["personcreate"].Execute(w, c); e != nil {
+	if e := env.Templates["personcreate"].ExecuteTemplate(w, "BASE", c); e != nil {
 		return &helpers.AppError{
 			Error:   e,
 			Code:    http.StatusInternalServerError,
@@ -35,7 +35,7 @@ func (env *Env) VGetPeopleHandler(w http.ResponseWriter, r *http.Request) *helpe
 
 	c := helpers.ContainerFromRequestContext(r)
 
-	if e := env.Templates["personindex"].Execute(w, c); e != nil {
+	if e := env.Templates["personindex"].ExecuteTemplate(w, "BASE", c); e != nil {
 		return &helpers.AppError{
 			Error:   e,
 			Code:    http.StatusInternalServerError,

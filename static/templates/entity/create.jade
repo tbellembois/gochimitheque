@@ -1,6 +1,4 @@
-extends static/templates/base.jade
-
-block content
+| {{define "CONTENT"}}
     form#entity
         .form-group.row
             | {{$label := "name"}} {{$name := "entity_name"}}
@@ -13,7 +11,8 @@ block content
             +selectmultiple
 
     button#save.btn.btn-primary(type='button', onclick='saveEntity()') save changes
+| {{end}}
 
-include static/templates/entity/commonjs.jade
-
-block contentjs
+| {{define "CONTENTJS"}}
+| {{template "COMMONCONTENTJS"}}
+| {{end}}
