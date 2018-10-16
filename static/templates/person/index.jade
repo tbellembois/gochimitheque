@@ -49,13 +49,6 @@
 | {{end}}
 | {{define "CONTENTJS"}}
     script.
-        
-        var URLValues = new Map();
-
-        // initializing query parameters map
-        {{ range $key, $value := .URLValues }}
-            URLValues.set({{ $key }}, {{ $value }});
-        {{ end }}
 
         $( document ).ready(function() {
 

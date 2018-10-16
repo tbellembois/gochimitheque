@@ -83,6 +83,14 @@ html
             // logged user email and permissions
             var container = {{ . }};
 
+            // url parameters
+            var URLValues = new Map();
+
+            // initializing query parameters map
+            {{ range $key, $value := .URLValues }}
+                URLValues.set({{ $key }}, {{ $value }});
+            {{ end }}
+
             // setting up logged user
             window.onload = function() {
                 email = readCookie("email")
