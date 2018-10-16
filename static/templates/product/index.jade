@@ -64,13 +64,6 @@
         //
         function closeEdit() { $("#list-collapse").collapse("show"); $("#edit-collapse").collapse("hide"); }
         
-        var URLValues = new Map();
-
-        // initializing query parameters map
-        {{ range $key, $value := .URLValues }}
-            URLValues.set({{ $key }}, {{ $value }});
-        {{ end }}
-        
         $( document ).ready(function() {           
 
             // populating search input if needed

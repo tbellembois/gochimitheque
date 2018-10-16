@@ -19,3 +19,6 @@ gjs-*.js*
 
 # vscode
 .vscode
+
+# Dist
+dist/
