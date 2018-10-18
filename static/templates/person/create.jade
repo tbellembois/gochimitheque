@@ -1,5 +1,5 @@
 | {{define "CONTENT"}}
-    form#person-create
+    form#person
         .form-group.row
             | {{$label := "email"}} {{$name := "person_email"}}
             +inputtext
@@ -11,92 +11,5 @@
     button.btn.btn-primary(type='button', onclick='savePerson()') save changes
 | {{end}}
 | {{define "CONTENTJS"}}
-    script.
-
-        $( document ).ready(function() {
-            //
-            // manager select2
-            //
-            $('select#entities').select2({
-                ajax: {
-                    url: '/entities',
-                    dataType: 'json',
-                    processResults: function (data) {
-                        // replacing email by text expected by select2
-                        var newdata = $.map(data.rows, function (obj) {
-                            obj.text = obj.text || obj.entity_name;
-                            obj.id = obj.id || obj.entity_id;
-                            return obj;
-                        });
-                        return {
-                            results: newdata
-                        };
-                    }
-                }
-            });
-            $('select#entities').on('select2:unselecting', function (e) {
-                var data = e.params.args.data;
-                // removing permissions widget
-                $("#perm" + data.id).remove();
-            });
-            $('select#entities').on('select2:select', function (e) {
-                var data = e.params.data;
-                
-                // adding permissions widget
-                $("#permissions").append(global.buildPermissionWidget(data.entity_id, data.entity_name));
-            });
-        });
-
-        // form validation
-        $( "#person-create" ).validate({
-        errorClass: "alert alert-danger",
-        rules: {
-            person_email: {
-                required: true,
-                remote: {
-                    url: "",
-                    type: "post",
-                    beforeSend: function(jqXhr, settings) {
-                        settings.url = "/validate/person/-1/email/";
-                    },
-                },
-            },
-        },
-        });
-
-        // call ajax on submit
-        function savePerson(form) {
-            var form = $("#person-create");
-            if (!form.valid()) {
-                return;
-            };
-
-            var person_email = $("input#person_email").val(),
-                entities = $('select#entities').select2('data');
-                permissions = $("input[type=radio]:checked");
-                data = {};
-                $.each(permissions, function( index, e ) {
-                    data["permissions." + index +".permission_perm_name"] = $(e).attr("perm_name");
-                    data["permissions." + index +".permission_item_name"] = $(e).attr("item_name");
-                    data["permissions." + index +".permission_entity_id"] = $(e).attr("entity_id");
-                });               
-                $.each(entities, function( index, e ) {
-                    data["entities." + index +".entity_id"] = e.id;
-                    data["entities." + index +".entity_name"] = e.text;
-                });
-                $.extend(data, {
-                        "person_email": person_email,
-                });
-            $.ajax({
-                url: "/people",
-                method: "POST",
-                dataType: 'json',
-                data: data,
-            }).done(function(data, textStatus, jqXHR) {
-                displayMessage("person " + email + " created", "success");
-                setTimeout(function(){ window.location = "/v/people"; }, 1000);
-            }).fail(function(jqXHR, textStatus, errorThrown) {  
-                handleHTTPError(jqXHR.statusText, jqXHR.status)
-            }); 
-        }
+| {{template "COMMONCONTENTJS"}}
 | {{end}}

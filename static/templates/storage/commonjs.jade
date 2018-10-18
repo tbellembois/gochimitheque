@@ -1,0 +1,111 @@
+| {{define "COMMONCONTENTJS"}}
+
+script.
+
+    $( document ).ready(function() {  
+    
+            //
+            // form validation
+            //
+            $( "#storage" ).validate({
+                errorClass: "alert alert-danger",
+                rules: {
+                    storelocation: {
+                        required: true,
+                    },
+                },
+            });
+
+            //
+            // store location select2
+            //
+            $('select#storelocation').select2({
+                ajax: {
+                    url: '/storelocations',
+                        data: function (params) {
+                        var query = {
+                            search: params.term,
+                            page: params.page || 1,
+                            offset: params.page*10 || 0,
+                            limit: 10
+                        }
+
+                        // Query parameters will be ?search=[term]&page=[page]
+                        return query;
+                    },
+                    dataType: 'json',
+                    processResults: function (data) {
+                        // replacing name by text expected by select2
+                        var newdata = $.map(data.rows, function (obj) {
+                            obj.text = obj.text || obj.storelocation_name;
+                            obj.id = obj.id || obj.storelocation_id;
+                            return obj;
+                        });
+                        // getting the number of loaded select elements
+                        selectnbitems = $("ul#select2-storelocation-results li").length + 10;
+
+                        return {
+                            results: newdata,
+                            pagination: {more: selectnbitems<data.total}
+                        };
+                    }
+                }
+            }).on("change", function (e) {
+                $(this).valid(); // FIXME: see https://github.com/select2/select2/issues/3901
+            });
+
+    });
+
+    //
+    // save storage callback
+    //
+    var createCallBack = function createCallback(data, textStatus, jqXHR) {
+        displayMessage("storage created", "success");
+        setTimeout(function(){ window.location = "/v/storages?product="+data.product.product_id; }, 1000);
+    }
+    var updateCallBack = function updateCallback(data, textStatus, jqXHR) {
+        $('#list-collapse').collapse('show');
+        $('#edit-collapse').collapse('hide');
+        var $table = $('#table');
+        var index = $('input#index').val();
+        $table.bootstrapTable('refresh');
+        displayMessage("storage " + data.storage_id + " updated", "success");
+    }
+    function saveStorage() {
+        var form = $("#storage");
+        if (! form.valid()) {
+            return;
+        };
+
+        var product_id = $("input#product_id").val(),
+            storage_id = $("input#storage_id").val(),
+            storage_comment = $("input#storage_comment").val(),
+            storelocation = $('select#storelocation').select2('data')[0],
+            ajax_url = "/storages",
+            ajax_method = "POST",
+            ajax_callback = createCallBack,
+            data = {};
+
+            if ($("form#storage input#storage_id").length) {
+                ajax_url = "/storages/" + storage_id
+                ajax_method = "PUT"
+                ajax_callback = updateCallBack
+            }
+
+            $.extend(data, {
+                "product.product_id": product_id,
+                "storage_id": storage_id,
+                "storage_comment": storage_comment,
+                "storelocation.storelocation_id": storelocation.id,
+            });
+            $.ajax({
+                url: ajax_url,
+                method: ajax_method,
+                dataType: 'json',
+                data: data,
+            }).done(ajax_callback).fail(function(jqXHR, textStatus, errorThrown) {
+                handleHTTPError(jqXHR.statusText, jqXHR.status)
+            });  
+    }
+
+| {{end}}

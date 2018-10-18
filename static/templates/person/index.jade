@@ -19,7 +19,7 @@
                                 th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') actions
 
         #viewedit-collapse.collapse(data-parent='#accordion')
-            form#person-update
+            form#person
                 input#index(type='hidden', name='index', value='')
                 input#person_id(type='hidden', name='person_id', value='')
 
@@ -48,6 +48,7 @@
             button.btn.btn-secondary(type='button', onclick='closeView();') close
 | {{end}}
 | {{define "CONTENTJS"}}
+| {{template "COMMONCONTENTJS"}}
     script.
 
         $( document ).ready(function() {
@@ -57,130 +58,12 @@
                 $('#table').bootstrapTable('resetSearch', URLValues.get("search")[0]);
             }
 
-            //
-            // manager select2
-            //
-            $('select#entities').select2({
-                dropdownParent: $('#viewedit-collapse'),
-                ajax: {
-                    url: '/entities',
-                    dataType: 'json',
-                    processResults: function (data) {
-                        // replacing email by text expected by select2
-                        var newdata = $.map(data.rows, function (obj) {
-                            obj.text = obj.text || obj.entity_name;
-                            obj.id = obj.id || obj.entity_id;
-                            return obj;
-                        });
-                        return {
-                            results: newdata
-                        };
-                    }
-                }
-            });
-            $('select#entities').on('select2:unselecting', function (e) {
-                var ismanager = false;
-                var data = e.params.args.data,
-                    entityid = data.id,
-                    entityname = data.text;
-                
-                // preventing unselecting entity if the person is one its manager
-                manageentities = $("input.manageentities")
-                $.each(manageentities, function( index, e ) {
-                    if ($(e).val() == entityid) {
-                        ismanager = true;
-                    }
-                });
-                if (ismanager) {
-                    // FIXME: do we have to do something on the server side to check this?
-                    displayMessage("this entity can not be removed, the user is one of its manager", "success");
-                    e.preventDefault();
-                } else {
-                    // removing permissions widget
-                    $("#perm" + data.id).remove();
-                }
-            });
-            $('select#entities').on('select2:select', function (e) {
-                var data = e.params.data;
-                
-                // adding permissions widget
-                $("#permissions").append(global.buildPermissionWidget(data.entity_id, data.entity_name));
-            });
         });
 
         //
         // close buttons actions
         //
         function closeView() { $("#list-collapse").collapse("show"); $("#viewedit-collapse").collapse("hide"); }
-
-        //
-        // update form validation
-        //
-        $( "#person-update" ).validate({
-            errorClass: "alert alert-danger",
-            rules: {
-                person_email: {
-                    required: true,
-                    email: true,
-                    remote: {
-                        url: "",
-                        type: "post",
-                        beforeSend: function(jqXhr, settings) {
-                            settings.url = "/validate/person/" + $("form#person-update input#person_id").val() + "/email/";
-                        },
-                    },
-                },
-            },
-        });
-
-        //
-        // save person callback
-        //
-        function savePerson() {
-            var form = $("#person-update");
-            if (! form.valid()) {
-                return;
-            };
-
-            var person_id = $("#viewedit-collapse input#person_id").val(),
-                person_email = $("#viewedit-collapse input#person_email").val(),
-                entities = $('select#entities').select2('data');
-                permissions = $("input[type=radio]:checked");
-                data = {};
-                $.each(permissions, function( index, e ) {
-                    data["permissions." + index +".permission_perm_name"] = $(e).attr("perm_name");
-                    data["permissions." + index +".permission_item_name"] = $(e).attr("item_name");
-                    data["permissions." + index +".permission_entity_id"] = $(e).attr("entity_id");
-                });               
-                $.each(entities, function( index, e ) {
-                    data["entities." + index +".entity_id"] = e.id;
-                    data["entities." + index +".entity_name"] = e.text;
-                });
-                $.extend(data, {
-                        "person_id": person_id,
-                        "person_email": person_email,
-                });
-                $.ajax({
-                    url: "/people/" + person_id,
-                    method: "PUT",
-                    dataType: 'json',
-                    data: data,
-                }).done(function(data, textStatus, jqXHR) {
-                    $('#list-collapse').collapse('show');
-                    $('#viewedit-collapse').collapse('hide');
-                    var $table = $('#table');
-                    var index = $('input#index').val();
-                    $table.bootstrapTable('updateRow', {
-                        index: index,
-                        row: {
-                            "person_email": person_email,
-                        }
-                    });
-                    displayMessage("person " + person_email + " updated", "success");
-                }).fail(function(jqXHR, textStatus, errorThrown) {
-                    handleHTTPError(jqXHR.statusText, jqXHR.status)
-                });  
-        }
 
         //
         // table data loading

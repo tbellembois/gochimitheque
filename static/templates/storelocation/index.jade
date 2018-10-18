@@ -20,7 +20,7 @@
                                 th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') actions
 
         #edit-collapse.collapse(data-parent='#accordion')
-            form#storelocation-update
+            form#storelocation
                 input#index(type='hidden', name='index', value='')
                 input#storelocation_id(type='hidden', name='storelocation_id', value='')
 
@@ -35,6 +35,7 @@
             button.btn.btn-secondary(type='button', onclick='closeEdit();') close
 | {{end}}
 | {{define "CONTENTJS"}}
+| {{template "COMMONCONTENTJS"}}
     script.
         //
         // close buttons actions
@@ -48,88 +49,8 @@
                 $('#table').bootstrapTable('resetSearch', URLValues.get("search")[0]);
             }
 
-            //
-            // update form validation
-            //
-            $( "#storelocation-update" ).validate({
-                // ignore required to validate select2
-                ignore: "",
-                errorClass: "alert alert-danger",
-                rules: {
-                    storelocation_name: {
-                        required: true,
-                    },
-                    entity: {
-                        required: true,
-                    },
-                },
-            });
-
-            //
-            // manager select2
-            //
-            $('select#entity').select2({
-                dropdownParent: $('#edit-collapse'),
-                ajax: {
-                    url: '/entities',
-                    dataType: 'json',
-                    processResults: function (data) {
-                        // replacing name by text expected by select2
-                        var newdata = $.map(data.rows, function (obj) {
-                            obj.text = obj.text || obj.entity_name;
-                            obj.id = obj.id || obj.entity_id;
-                            return obj;
-                        });
-                        return {
-                            results: newdata
-                        };
-                    }
-                }
-            });
         });
         
-        //
-        // save store location callback
-        //
-        function saveStoreLocation() {
-            var form = $("#storelocation-update");
-            if (! form.valid()) {
-                return;
-            };
-
-            var id = $("#edit-collapse input#storelocation_id").val(),
-                name = $("#edit-collapse input#storelocation_name").val(),
-                selectedentity = $('select#entity').select2('data')[0];
-                data = {};
-                $.extend(data, {
-                    "storelocation_id": id,
-                    "storelocation_name": name,
-                    "entity.entity_id": selectedentity.id,
-                    "entity.entity_name": selectedentity.text,
-                });
-                $.ajax({
-                    url: "/storelocations/" + id,
-                    method: "PUT",
-                    dataType: 'json',
-                    data: data,
-                }).done(function(data, textStatus, jqXHR) {
-                    $('#list-collapse').collapse('show');
-                    $('#edit-collapse').collapse('hide');
-                    var $table = $('#table');
-                    var index = $('input#index').val();
-                    $table.bootstrapTable('updateRow', {
-                        index: index,
-                        row: {
-                            "storelocation_name": name,
-                            "entity.entity_name": selectedentity.text,
-                        }
-                    });
-                    displayMessage("store location " + name + " updated", "success");
-                }).fail(function(jqXHR, textStatus, errorThrown) {
-                    handleHTTPError(jqXHR.statusText, jqXHR.status)
-                });  
-        }
-
         //
         // table data loading
         //

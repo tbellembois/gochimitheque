@@ -144,7 +144,7 @@ func main() {
 		log.Fatal("entitycreatetmpl parse:" + e.Error())
 	}
 	// store location
-	storelocationindextmpl, e := jade.Parse("storelocation_index", basejadess+"\r\n"+b.MustString("storelocation/index.jade"))
+	storelocationindextmpl, e := jade.Parse("storelocation_index", basejadess+"\r\n"+b.MustString("storelocation/commonjs.jade")+"\r\n"+b.MustString("storelocation/index.jade"))
 	if e != nil {
 		log.Fatal("storelocationindextmpl jade:" + e.Error())
 	}
@@ -152,7 +152,7 @@ func main() {
 	if err != nil {
 		log.Fatal("storelocationtmpl parse:" + e.Error())
 	}
-	storelocationcreatetmpl, e := jade.Parse("storelocation_create", basejadess+"\r\n"+b.MustString("storelocation/create.jade"))
+	storelocationcreatetmpl, e := jade.Parse("storelocation_create", basejadess+"\r\n"+b.MustString("storelocation/commonjs.jade")+"\r\n"+b.MustString("storelocation/create.jade"))
 	if e != nil {
 		log.Fatal("storelocationcreatetmpl jade:" + e.Error())
 	}
@@ -161,7 +161,7 @@ func main() {
 		log.Fatal("storelocationcreatetmpl parse:" + e.Error())
 	}
 	// person
-	personindextmpl, e := jade.Parse("person_index", basejadess+"\r\n"+b.MustString("person/index.jade"))
+	personindextmpl, e := jade.Parse("person_index", basejadess+"\r\n"+b.MustString("person/commonjs.jade")+"\r\n"+b.MustString("person/index.jade"))
 	if e != nil {
 		log.Fatal("personindextmpl jade:" + e.Error())
 	}
@@ -169,7 +169,7 @@ func main() {
 	if err != nil {
 		log.Fatal("personindextmpl parse:" + e.Error())
 	}
-	personcreatetmpl, e := jade.Parse("person_create", basejadess+"\r\n"+b.MustString("person/create.jade"))
+	personcreatetmpl, e := jade.Parse("person_create", basejadess+"\r\n"+b.MustString("person/commonjs.jade")+"\r\n"+b.MustString("person/create.jade"))
 	if e != nil {
 		log.Fatal("personcreatetmpl jade:" + e.Error())
 	}
@@ -195,7 +195,7 @@ func main() {
 		log.Fatal("productcreatetmpl parse:" + e.Error())
 	}
 	// storage
-	storageindextmpl, e := jade.Parse("storage_index", basejadess+"\r\n"+b.MustString("storage/index.jade"))
+	storageindextmpl, e := jade.Parse("storage_index", basejadess+"\r\n"+b.MustString("storage/commonjs.jade")+"\r\n"+b.MustString("storage/index.jade"))
 	if e != nil {
 		log.Fatal("storageindextmpl jade:" + e.Error())
 	}
@@ -203,7 +203,7 @@ func main() {
 	if err != nil {
 		log.Fatal("storageindextmpl parse:" + e.Error())
 	}
-	storagecreatetmpl, e := jade.Parse("storage_create", basejadess+"\r\n"+b.MustString("storage/create.jade"))
+	storagecreatetmpl, e := jade.Parse("storage_create", basejadess+"\r\n"+b.MustString("storage/commonjs.jade")+"\r\n"+b.MustString("storage/create.jade"))
 	if e != nil {
 		log.Fatal("storagecreatetmpl jade:" + e.Error())
 	}
