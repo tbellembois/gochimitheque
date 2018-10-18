@@ -1,5 +1,5 @@
 | {{define "CONTENT"}}
-    form#storelocation-create
+    form#storelocation
         .form-group.row
             | {{$label := "name"}} {{$name := "storelocation_name"}}
             +inputtext
@@ -10,76 +10,5 @@
     button#save.btn.btn-primary(type='button', onclick='saveStoreLocation()') save changes
 | {{end}}
 | {{define "CONTENTJS"}}
-    script.
-
-        $( document ).ready(function() {
-
-            //
-            // create form validation
-            //
-            $( "#storelocation-create" ).validate({
-                // ignore required to validate select2
-                ignore: "",
-                errorClass: "alert alert-danger",
-                rules: {
-                    storelocation_name: {
-                        required: true,
-                    },
-                    entity: {
-                        required: true,
-                    },
-                },
-            });
-
-            //
-            // entity select2
-            //
-            $('select#entity').select2({
-                ajax: {
-                    url: '/entities',
-                    dataType: 'json',
-                    processResults: function (data) {
-                    // replacing email by text expected by select2
-                    var newdata = $.map(data.rows, function (obj) {
-                        obj.text = obj.text || obj.entity_name;
-                        obj.id = obj.id || obj.entity_id;
-                        return obj;
-                    });
-                    return {
-                        results: newdata
-                    };
-                    }
-                }
-            });
-        });
-
-        //
-        // save store location callback
-        //
-        function saveStoreLocation() {
-            var form = $("#storelocation-create");
-            if (!form.valid()) {
-                return;
-            };
-
-            var storelocation_name = $("input#storelocation_name").val(),
-                entity = $('select#entity').select2('data')[0];
-                data = {};
-                $.extend(data, {
-                    "storelocation_name": storelocation_name,
-                    "entity.entity_id": entity.id,
-                    "entity.entity_name": entity.text,
-                });
-            $.ajax({
-                url: "/storelocations",
-                method: "POST",
-                dataType: 'json',
-                data: data,
-            }).done(function(data, textStatus, jqXHR) {
-                displayMessage("store location " + name + " created", "success");
-                setTimeout(function(){ window.location = "/v/storelocations"; }, 1000);
-            }).fail(function(jqXHR, textStatus, errorThrown) {  
-                handleHTTPError(jqXHR.statusText, jqXHR.status)
-            }); 
-        }
+| {{template "COMMONCONTENTJS"}}
 | {{end}}

@@ -190,7 +190,8 @@ func (env *Env) DeleteStorageHandler(w http.ResponseWriter, r *http.Request) *he
 func (env *Env) CreateStorageHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	log.Debug("CreateStorageHandler")
 	var (
-		s models.Storage
+		s   models.Storage
+		err error
 	)
 	if err := r.ParseForm(); err != nil {
 		return &helpers.AppError{
@@ -212,7 +213,7 @@ func (env *Env) CreateStorageHandler(w http.ResponseWriter, r *http.Request) *he
 	s.PersonID = c.PersonID
 	log.WithFields(log.Fields{"s": s}).Debug("CreateStorageHandler")
 
-	if err, _ := env.DB.CreateStorage(s); err != nil {
+	if err, s.StorageID = env.DB.CreateStorage(s); err != nil {
 		return &helpers.AppError{
 			Error:   err,
 			Message: "create storage error",

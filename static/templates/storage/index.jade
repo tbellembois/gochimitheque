@@ -33,7 +33,7 @@
                                 th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') actions
 
         #edit-collapse.collapse(data-parent='#accordion')
-            form#storage-update
+            form#storage
                 input#index(type='hidden', name='index', value='')
                 input#storage_id(type='hidden', name='storage_id', value='')
 
@@ -48,6 +48,7 @@
             button.btn.btn-secondary(type='button', onclick='closeEdit();') close
 | {{end}}
 | {{define "CONTENTJS"}}
+| {{template "COMMONCONTENTJS"}}
     script.
         //
         // close buttons actions
@@ -60,58 +61,6 @@
             if (URLValues.has("search")) {
                 $('#table').bootstrapTable('resetSearch', URLValues.get("search")[0]);
             }
-
-            //
-            // update form validation
-            //
-            $( "#storage-update" ).validate({
-                errorClass: "alert alert-danger",
-                rules: {
-                    storelocation: {
-                        required: true,
-                    },
-                },
-            });
-
-            //
-            // store location select2
-            //
-            $('select#storelocation').select2({
-                tags: false,
-                dropdownParent: $('#edit-collapse'),
-                ajax: {
-                    url: '/storelocations',
-                        data: function (params) {
-                        var query = {
-                            search: params.term,
-                            page: params.page || 1,
-                            offset: params.page*10 || 0,
-                            limit: 10
-                        }
-
-                        // Query parameters will be ?search=[term]&page=[page]
-                        return query;
-                    },
-                    dataType: 'json',
-                    processResults: function (data) {
-                        // replacing name by text expected by select2
-                        var newdata = $.map(data.rows, function (obj) {
-                            obj.text = obj.text || obj.storelocation_name;
-                            obj.id = obj.id || obj.storelocation_id;
-                            return obj;
-                        });
-                        // getting the number of loaded select elements
-                        selectnbitems = $("ul#select2-storelocation-results li").length + 10;
-
-                        return {
-                            results: newdata,
-                            pagination: {more: selectnbitems<data.total}
-                        };
-                    }
-                }
-            }).on("change", function (e) {
-                $(this).valid(); // FIXME: see https://github.com/select2/select2/issues/3901
-            });
 
         });
 
@@ -151,41 +100,6 @@
                 params.error(jqXHR.statusText);                
                 handleHTTPError(jqXHR.statusText, jqXHR.status);
             });
-        }
-
-        //
-        // save storage callback
-        //
-        function saveStorage() {
-            var form = $("#storage-update");
-            if (! form.valid()) {
-                return;
-            };
-
-            var storage_id = $("#edit-collapse input#storage_id").val(),
-                storage_comment = $("#edit-collapse input#storage_comment").val(),
-                storelocation = $('select#storelocation').select2('data')[0];
-                data = {};
-                $.extend(data, {
-                    "storage_id": storage_id,
-                    "storage_comment": storage_comment,
-                    "storelocation.storelocation_id": storelocation.id,
-                });
-                $.ajax({
-                    url: "/storages/" + storage_id,
-                    method: "PUT",
-                    dataType: 'json',
-                    data: data,
-                }).done(function(data, textStatus, jqXHR) {
-                    $('#list-collapse').collapse('show');
-                    $('#edit-collapse').collapse('hide');
-                    var $table = $('#table');
-                    var index = $('input#index').val();
-                    $table.bootstrapTable('refresh');
-                    displayMessage("storage " + storage_id + " updated", "success");
-                }).fail(function(jqXHR, textStatus, errorThrown) {
-                    handleHTTPError(jqXHR.statusText, jqXHR.status)
-                });  
         }
 
         //
