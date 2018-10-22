@@ -56,6 +56,9 @@ func main() {
 	if err = datastore.CreateDatabase(); err != nil {
 		log.Panic(err)
 	}
+	if err = datastore.InsertSamples(); err != nil {
+		log.Panic(err)
+	}
 
 	// environment creation
 	env := handlers.Env{

@@ -221,6 +221,75 @@ func (db *SQLiteDataStore) GetProductsEmpiricalFormulas(p helpers.Dbselectparam)
 	return eformulas, count, nil
 }
 
+// GetProductsClassOfCompounds return the classe of compounds matching the search criteria
+func (db *SQLiteDataStore) GetProductsClassOfCompounds(p helpers.Dbselectparam) ([]ClassOfCompound, int, error) {
+	var (
+		classofcompounds                   []ClassOfCompound
+		count                              int
+		precreq, presreq, comreq, postsreq strings.Builder
+		cnstmt                             *sqlx.NamedStmt
+		snstmt                             *sqlx.NamedStmt
+		err                                error
+	)
+
+	precreq.WriteString(" SELECT count(DISTINCT classofcompound.classofcompound_id)")
+	presreq.WriteString(" SELECT classofcompound_id, classofcompound_label")
+
+	comreq.WriteString(" FROM classofcompound")
+	comreq.WriteString(" WHERE classofcompound_label LIKE :search")
+	postsreq.WriteString(" ORDER BY classofcompound_label  " + p.GetOrder())
+
+	// limit
+	if p.GetLimit() != constants.MaxUint64 {
+		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
+	}
+
+	// building count and select statements
+	if cnstmt, err = db.PrepareNamed(precreq.String() + comreq.String()); err != nil {
+		return nil, 0, err
+	}
+	if snstmt, err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); err != nil {
+		return nil, 0, err
+	}
+
+	// building argument map
+	m := map[string]interface{}{
+		"search": p.GetSearch(),
+		"order":  p.GetOrder(),
+		"limit":  p.GetLimit(),
+		"offset": p.GetOffset(),
+	}
+
+	// select
+	if err = snstmt.Select(&classofcompounds, m); err != nil {
+		return nil, 0, err
+	}
+	// count
+	if err = cnstmt.Get(&count, m); err != nil {
+		return nil, 0, err
+	}
+
+	// setting the C attribute for formula matching exactly the search
+	s := p.GetSearch()
+	s = strings.TrimPrefix(s, "%")
+	s = strings.TrimSuffix(s, "%")
+	var coc ClassOfCompound
+
+	r := db.QueryRowx(`SELECT classofcompound_id, classofcompound_label FROM classofcompound WHERE classofcompound_label == ?`, s)
+	if err = r.StructScan(&coc); err != nil && err != sql.ErrNoRows {
+		return nil, 0, err
+	} else {
+		for i, e := range classofcompounds {
+			if e.ClassOfCompoundID == coc.ClassOfCompoundID {
+				classofcompounds[i].C = 1
+			}
+		}
+	}
+
+	log.WithFields(log.Fields{"classofcompounds": classofcompounds}).Debug("GetProductsClassOfCompounds")
+	return classofcompounds, count, nil
+}
+
 // GetProductsNames return the names matching the search criteria
 func (db *SQLiteDataStore) GetProductsNames(p helpers.Dbselectparam) ([]Name, int, error) {
 	var (
@@ -342,6 +411,214 @@ func (db *SQLiteDataStore) GetProductsSymbols(p helpers.Dbselectparam) ([]Symbol
 	return symbols, count, nil
 }
 
+// GetProductsHazardStatements return the hazard statements matching the search criteria
+func (db *SQLiteDataStore) GetProductsHazardStatements(p helpers.Dbselectparam) ([]HazardStatement, int, error) {
+	var (
+		hazardstatements                   []HazardStatement
+		count                              int
+		precreq, presreq, comreq, postsreq strings.Builder
+		cnstmt                             *sqlx.NamedStmt
+		snstmt                             *sqlx.NamedStmt
+		err                                error
+	)
+
+	precreq.WriteString(" SELECT count(DISTINCT hazardstatement.hazardstatement_id)")
+	presreq.WriteString(" SELECT hazardstatement_id, hazardstatement_label, hazardstatement_reference")
+
+	comreq.WriteString(" FROM hazardstatement")
+	comreq.WriteString(" WHERE hazardstatement_reference LIKE :search")
+	postsreq.WriteString(" ORDER BY hazardstatement_label  " + p.GetOrder())
+
+	// limit
+	if p.GetLimit() != constants.MaxUint64 {
+		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
+	}
+
+	// building count and select statements
+	if cnstmt, err = db.PrepareNamed(precreq.String() + comreq.String()); err != nil {
+		return nil, 0, err
+	}
+	if snstmt, err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); err != nil {
+		return nil, 0, err
+	}
+
+	// building argument map
+	m := map[string]interface{}{
+		"search": p.GetSearch(),
+		"order":  p.GetOrder(),
+		"limit":  p.GetLimit(),
+		"offset": p.GetOffset(),
+	}
+
+	// select
+	if err = snstmt.Select(&hazardstatements, m); err != nil {
+		return nil, 0, err
+	}
+	// count
+	if err = cnstmt.Get(&count, m); err != nil {
+		return nil, 0, err
+	}
+
+	log.WithFields(log.Fields{"hazardstatements": hazardstatements}).Debug("GetProductsHazardStatements")
+	return hazardstatements, count, nil
+}
+
+// GetProductsPrecautionaryStatements return the hazard statements matching the search criteria
+func (db *SQLiteDataStore) GetProductsPrecautionaryStatements(p helpers.Dbselectparam) ([]PrecautionaryStatement, int, error) {
+	var (
+		precautionarystatements            []PrecautionaryStatement
+		count                              int
+		precreq, presreq, comreq, postsreq strings.Builder
+		cnstmt                             *sqlx.NamedStmt
+		snstmt                             *sqlx.NamedStmt
+		err                                error
+	)
+
+	precreq.WriteString(" SELECT count(DISTINCT precautionarystatement.precautionarystatement_id)")
+	presreq.WriteString(" SELECT precautionarystatement_id, precautionarystatement_label, precautionarystatement_reference")
+
+	comreq.WriteString(" FROM precautionarystatement")
+	comreq.WriteString(" WHERE precautionarystatement_reference LIKE :search")
+	postsreq.WriteString(" ORDER BY precautionarystatement_label  " + p.GetOrder())
+
+	// limit
+	if p.GetLimit() != constants.MaxUint64 {
+		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
+	}
+
+	// building count and select statements
+	if cnstmt, err = db.PrepareNamed(precreq.String() + comreq.String()); err != nil {
+		return nil, 0, err
+	}
+	if snstmt, err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); err != nil {
+		return nil, 0, err
+	}
+
+	// building argument map
+	m := map[string]interface{}{
+		"search": p.GetSearch(),
+		"order":  p.GetOrder(),
+		"limit":  p.GetLimit(),
+		"offset": p.GetOffset(),
+	}
+
+	// select
+	if err = snstmt.Select(&precautionarystatements, m); err != nil {
+		return nil, 0, err
+	}
+	// count
+	if err = cnstmt.Get(&count, m); err != nil {
+		return nil, 0, err
+	}
+
+	log.WithFields(log.Fields{"precautionarystatements": precautionarystatements}).Debug("GetProductsPrecautionaryStatements")
+	return precautionarystatements, count, nil
+}
+
+// GetProductsPhysicalStates return the physical states matching the search criteria
+func (db *SQLiteDataStore) GetProductsPhysicalStates(p helpers.Dbselectparam) ([]PhysicalState, int, error) {
+	var (
+		physicalstates                     []PhysicalState
+		count                              int
+		precreq, presreq, comreq, postsreq strings.Builder
+		cnstmt                             *sqlx.NamedStmt
+		snstmt                             *sqlx.NamedStmt
+		err                                error
+	)
+
+	precreq.WriteString(" SELECT count(DISTINCT physicalstate.physicalstate_id)")
+	presreq.WriteString(" SELECT physicalstate_id, physicalstate_label")
+
+	comreq.WriteString(" FROM physicalstate")
+	comreq.WriteString(" WHERE physicalstate_label LIKE :search")
+	postsreq.WriteString(" ORDER BY physicalstate_label  " + p.GetOrder())
+
+	// limit
+	if p.GetLimit() != constants.MaxUint64 {
+		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
+	}
+
+	// building count and select statements
+	if cnstmt, err = db.PrepareNamed(precreq.String() + comreq.String()); err != nil {
+		return nil, 0, err
+	}
+	if snstmt, err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); err != nil {
+		return nil, 0, err
+	}
+
+	// building argument map
+	m := map[string]interface{}{
+		"search": p.GetSearch(),
+		"order":  p.GetOrder(),
+		"limit":  p.GetLimit(),
+		"offset": p.GetOffset(),
+	}
+
+	// select
+	if err = snstmt.Select(&physicalstates, m); err != nil {
+		return nil, 0, err
+	}
+	// count
+	if err = cnstmt.Get(&count, m); err != nil {
+		return nil, 0, err
+	}
+
+	log.WithFields(log.Fields{"physicalstates": physicalstates}).Debug("GetProductsPhysicalStates")
+	return physicalstates, count, nil
+}
+
+// GetProductsSignalWords return the signal words matching the search criteria
+func (db *SQLiteDataStore) GetProductsSignalWords(p helpers.Dbselectparam) ([]SignalWord, int, error) {
+	var (
+		signalwords                        []SignalWord
+		count                              int
+		precreq, presreq, comreq, postsreq strings.Builder
+		cnstmt                             *sqlx.NamedStmt
+		snstmt                             *sqlx.NamedStmt
+		err                                error
+	)
+
+	precreq.WriteString(" SELECT count(DISTINCT signalword.signalword_id)")
+	presreq.WriteString(" SELECT signalword_id, signalword_label")
+
+	comreq.WriteString(" FROM signalword")
+	comreq.WriteString(" WHERE signalword_label LIKE :search")
+	postsreq.WriteString(" ORDER BY signalword_label  " + p.GetOrder())
+
+	// limit
+	if p.GetLimit() != constants.MaxUint64 {
+		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
+	}
+
+	// building count and select statements
+	if cnstmt, err = db.PrepareNamed(precreq.String() + comreq.String()); err != nil {
+		return nil, 0, err
+	}
+	if snstmt, err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); err != nil {
+		return nil, 0, err
+	}
+
+	// building argument map
+	m := map[string]interface{}{
+		"search": p.GetSearch(),
+		"order":  p.GetOrder(),
+		"limit":  p.GetLimit(),
+		"offset": p.GetOffset(),
+	}
+
+	// select
+	if err = snstmt.Select(&signalwords, m); err != nil {
+		return nil, 0, err
+	}
+	// count
+	if err = cnstmt.Get(&count, m); err != nil {
+		return nil, 0, err
+	}
+
+	log.WithFields(log.Fields{"signalwords": signalwords}).Debug("GetProductsSignalWords")
+	return signalwords, count, nil
+}
+
 // GetProducts return the products matching the search criteria
 func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Product, int, error) {
 	var (
@@ -358,8 +635,21 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	precreq.WriteString(" SELECT count(DISTINCT product.product_id)")
 	presreq.WriteString(` SELECT product.product_id, 
 	product.product_specificity, 
+	product_msds,
+	product_restricted,
+	product_radioactive,
+	product_linearformula,
+	product_threedformula,
+	product_disposalcomment,
+	product_remark,
 	empiricalformula.empiricalformula_id AS "empiricalformula.empiricalformula_id",
 	empiricalformula.empiricalformula_label AS "empiricalformula.empiricalformula_label",
+	physicalstate.physicalstate_id AS "physicalstate.physicalstate_id",
+	physicalstate.physicalstate_label AS "physicalstate.physicalstate_label",
+	signalword.signalword_id AS "signalword.signalword_id",
+	signalword.signalword_label AS "signalword.signalword_label",
+	classofcompound.classofcompound_id AS "classofcompound.classofcompound_id",
+	classofcompound.classofcompound_label AS "classofcompound.classofcompound_label",
 	person.person_id AS "person.person_id",
 	person.person_email AS "person.person_email",
 	name.name_id AS "name.name_id",
@@ -379,6 +669,12 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	comreq.WriteString(" LEFT JOIN cenumber ON product.cenumber = cenumber.cenumber_id")
 	// get person
 	comreq.WriteString(" JOIN person ON product.person = person.person_id")
+	// get physical state
+	comreq.WriteString(" LEFT JOIN physicalstate ON product.physicalstate = physicalstate.physicalstate_id")
+	// get signal word
+	comreq.WriteString(" LEFT JOIN signalword ON product.signalword = signalword.signalword_id")
+	// get class of compound
+	comreq.WriteString(" LEFT JOIN classofcompound ON product.classofcompound = classofcompound.classofcompound_id")
 	// get empirical formula
 	comreq.WriteString(" JOIN empiricalformula ON product.empiricalformula = empiricalformula.empiricalformula_id")
 	// filter by permissions
@@ -465,6 +761,38 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 		}
 	}
 
+	//
+	// getting hazard statements
+	//
+	for i, p := range products {
+		// note: do not modify p but products[i] instead
+		req.Reset()
+		req.WriteString("SELECT hazardstatement_id, hazardstatement_label, hazardstatement_reference FROM hazardstatement")
+		req.WriteString(" JOIN producthazardstatements ON producthazardstatements.producthazardstatements_hazardstatement_id = hazardstatement.hazardstatement_id")
+		req.WriteString(" JOIN product ON producthazardstatements.producthazardstatements_product_id = product.product_id")
+		req.WriteString(" WHERE product.product_id = ?")
+
+		if err = db.Select(&products[i].HazardStatements, req.String(), p.ProductID); err != nil {
+			return nil, 0, err
+		}
+	}
+
+	//
+	// getting precautionary statements
+	//
+	for i, p := range products {
+		// note: do not modify p but products[i] instead
+		req.Reset()
+		req.WriteString("SELECT precautionarystatement_id, precautionarystatement_label, precautionarystatement_reference FROM precautionarystatement")
+		req.WriteString(" JOIN productprecautionarystatements ON productprecautionarystatements.productprecautionarystatements_precautionarystatement_id = precautionarystatement.precautionarystatement_id")
+		req.WriteString(" JOIN product ON productprecautionarystatements.productprecautionarystatements_product_id = product.product_id")
+		req.WriteString(" WHERE product.product_id = ?")
+
+		if err = db.Select(&products[i].PrecautionaryStatements, req.String(), p.ProductID); err != nil {
+			return nil, 0, err
+		}
+	}
+
 	return products, count, nil
 }
 
@@ -475,10 +803,23 @@ func (db *SQLiteDataStore) GetProduct(id int) (Product, error) {
 		err     error
 	)
 
-	sqlr = `SELECT product_id, 
-	product_specificity, 
+	sqlr = `SELECT product.product_id, 
+	product.product_specificity, 
+	product_msds,
+	product_restricted,
+	product_radioactive,
+	product_linearformula,
+	product_threedformula,
+	product_disposalcomment,
+	product_remark,
 	empiricalformula.empiricalformula_id AS "empiricalformula.empiricalformula_id",
 	empiricalformula.empiricalformula_label AS "empiricalformula.empiricalformula_label",
+	physicalstate.physicalstate_id AS "physicalstate.physicalstate_id",
+	physicalstate.physicalstate_label AS "physicalstate.physicalstate_label",
+	signalword.signalword_id AS "signalword.signalword_id",
+	signalword.signalword_label AS "signalword.signalword_label",
+	classofcompound.classofcompound_id AS "classofcompound.classofcompound_id",
+	classofcompound.classofcompound_label AS "classofcompound.classofcompound_label",
 	person.person_id AS "person.person_id",
 	person.person_email AS "person.person_email",
 	name.name_id AS "name.name_id",
@@ -493,6 +834,9 @@ func (db *SQLiteDataStore) GetProduct(id int) (Product, error) {
 	LEFT JOIN cenumber ON product.cenumber = cenumber.cenumber_id
 	JOIN person ON product.person = person.person_id
 	JOIN empiricalformula ON product.empiricalformula = empiricalformula.empiricalformula_id
+	LEFT JOIN physicalstate ON product.physicalstate = physicalstate.physicalstate_id
+	LEFT JOIN signalword ON product.signalword = signalword.signalword_id
+	LEFT JOIN classofcompound ON product.classofcompound = classofcompound.classofcompound_id"
 	WHERE product_id = ?`
 	if err = db.Get(&product, sqlr, id); err != nil {
 		return Product{}, err
@@ -520,6 +864,28 @@ func (db *SQLiteDataStore) GetProduct(id int) (Product, error) {
 		return product, err
 	}
 
+	//
+	// getting hazard statements
+	//
+	sqlr = `SELECT hazardstatement_id, hazardstatement_label, hazardstatement_reference FROM hazardstatement
+	JOIN producthazardstatements ON producthazardstatements.producthazardstatements_hazardstatement_id = hazardstatement.hazardstatement_id
+	JOIN product ON producthazardstatements.producthazardstatements_product_id = product.product_id
+	WHERE product.product_id = ?`
+	if err = db.Select(&product.HazardStatements, sqlr, product.ProductID); err != nil {
+		return product, err
+	}
+
+	//
+	// getting precautionary statements
+	//
+	sqlr = `SELECT precautionarystatement_id, precautionarystatement_label, precautionarystatement_reference FROM precautionarystatement
+	JOIN productprecautionarystatements ON productprecautionarystatements.productprecautionarystatements_precautionarystatement_id = precautionarystatement.precautionarystatement_id
+	JOIN product ON productprecautionarystatements.productprecautionarystatements_product_id = product.product_id
+	WHERE product.product_id = ?`
+	if err = db.Select(&product.PrecautionaryStatements, sqlr, product.ProductID); err != nil {
+		return product, err
+	}
+
 	log.WithFields(log.Fields{"ID": id, "product": product}).Debug("GetProduct")
 	return product, nil
 }
@@ -529,9 +895,32 @@ func (db *SQLiteDataStore) DeleteProduct(id int) error {
 		sqlr string
 		err  error
 	)
-	// TODO: synonyms, symbols
-	sqlr = `DELETE FROM product 
-	WHERE product_id = ?`
+	// deleting symbols
+	sqlr = `DELETE FROM productsymbols WHERE productsymbols.productsymbols_product_id = (?)`
+	if _, err = db.Exec(sqlr, id); err != nil {
+		return err
+	}
+
+	// deleting synonyms
+	sqlr = `DELETE FROM productsynonyms WHERE productsynonyms.productsynonyms_product_id = (?)`
+	if _, err = db.Exec(sqlr, id); err != nil {
+		return err
+	}
+
+	// deleting hazard statements
+	sqlr = `DELETE FROM producthazardstatements WHERE producthazardstatements.producthazardstatements_product_id = (?)`
+	if _, err = db.Exec(sqlr, id); err != nil {
+		return err
+	}
+
+	// deleting precautionary statements
+	sqlr = `DELETE FROM productprecautionarystatements WHERE productprecautionarystatements.productprecautionarystatements_product_id = (?)`
+	if _, err = db.Exec(sqlr, id); err != nil {
+		return err
+	}
+
+	// deleting product
+	sqlr = `DELETE FROM product WHERE product_id = ?`
 	if _, err = db.Exec(sqlr, id); err != nil {
 		return err
 	}
@@ -617,7 +1006,9 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 
 	// finally updating the product
 	s := make(map[string]interface{})
-	s["product_specificity"] = p.ProductSpecificity
+	if p.ProductSpecificity != "" {
+		s["product_specificity"] = p.ProductSpecificity
+	}
 	s["casnumber"] = p.CasNumberID
 	s["name"] = p.NameID
 	s["empiricalformula"] = p.EmpiricalFormulaID
