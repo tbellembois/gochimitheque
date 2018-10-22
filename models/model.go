@@ -89,17 +89,62 @@ type EmpiricalFormula struct {
 	EmpiricalFormulaLabel string `db:"empiricalformula_label" json:"empiricalformula_label" schema:"empiricalformula_label"`
 }
 
+// PhysicalState is a product physical state
+type PhysicalState struct {
+	PhysicalStateID    int    `db:"physicalstate_id" json:"physicalstate_id" schema:"physicalstate_id"`
+	PhysicalStateLabel string `db:"physicalstate_label" json:"physicalstate_label" schema:"physicalstate_label"`
+}
+
+// ClassOfCompound is a product class of compound
+type ClassOfCompound struct {
+	C                    int    `db:"c" json:"c"` // not stored in db but db:"c" set for sqlx
+	ClassOfCompoundID    int    `db:"classofcompound_id" json:"classofcompound_id" schema:"classofcompound_id"`
+	ClassOfCompoundLabel string `db:"classofcompound_label" json:"classofcompound_label" schema:"classofcompound_label"`
+}
+
+// SignalWord is a product signal word
+type SignalWord struct {
+	SignalWordID    int    `db:"signalword_id" json:"signalword_id" schema:"signalword_id"`
+	SignalWordLabel string `db:"signalword_label" json:"signalword_label" schema:"signalword_label"`
+}
+
+// HazardStatement is a product hazard statement
+type HazardStatement struct {
+	HazardStatementID        int    `db:"hazardstatement_id" json:"hazardstatement_id" schema:"hazardstatemente_id"`
+	HazardStatementLabel     string `db:"hazardstatement_label" json:"hazardstatement_label" schema:"hazardstatement_label"`
+	HazardStatementReference string `db:"hazardstatement_reference" json:"hazardstatement_reference" schema:"hazardstatement_reference"`
+}
+
+// PrecautionaryStatement is a product precautionary statement
+type PrecautionaryStatement struct {
+	PrecautionaryStatementID        int    `db:"precautionarystatement_id" json:"precautionarystatement_id" schema:"precautionarystatement_id"`
+	PrecautionaryStatementLabel     string `db:"precautionarystatement_label" json:"precautionarystatement_label" schema:"precautionarystatement_label"`
+	PrecautionaryStatementReference string `db:"precautionarystatement_reference" json:"precautionarystatement_reference" schema:"precautionarystatement_reference"`
+}
+
 // Product is a chemical product card
 type Product struct {
-	ProductID          int    `db:"product_id" json:"product_id" schema:"product_id"`
-	ProductSpecificity string `db:"product_specificity" json:"product_specificity" schema:"product_specificity"`
-	EmpiricalFormula   `db:"empiricalformula" json:"empiricalformula" schema:"empiricalformula"`
-	Person             `db:"person" json:"person" schema:"person"`
-	CasNumber          `db:"casnumber" json:"casnumber" schema:"casnumber"`
-	CeNumber           `db:"cenumber" json:"cenumber" schema:"cenumber"`
-	Name               `db:"name" json:"name" schema:"name"`
-	Synonyms           []Name   `db:"-" schema:"synonyms" json:"synonyms"`
-	Symbols            []Symbol `db:"-" schema:"symbols" json:"symbols"`
+	ProductID               int    `db:"product_id" json:"product_id" schema:"product_id"`
+	ProductSpecificity      string `db:"product_specificity" json:"product_specificity" schema:"product_specificity"`
+	ProductMSDS             string `db:"product_msds" json:"product_msds" schema:"product_msds"`
+	ProductRestricted       bool   `db:"product_restricted" json:"product_restricted" schema:"product_restricted"`
+	ProductRadioactive      bool   `db:"product_radioactive" json:"product_radioactive" schema:"product_radioactive"`
+	ProductLinearFormula    string `db:"product_linearformula" json:"product_linearformula" schema:"product_linearformula"`
+	ProductThreeDFormula    string `db:"product_threedformula" json:"product_threedformula" schema:"product_threedformula"`
+	ProductDisposalComment  string `db:"product_disposalcomment" json:"product_disposalcomment" schema:"product_disposalcomment"`
+	ProductRemark           string `db:"product_remark" json:"product_remark" schema:"product_remark"`
+	EmpiricalFormula        `db:"empiricalformula" json:"empiricalformula" schema:"empiricalformula"`
+	PhysicalState           `db:"physicalstate" json:"physicalstate" schema:"physicalstate"`
+	SignalWord              `db:"signalword" json:"signalword" schema:"signalword"`
+	ClassOfCompound         `db:"classofcompound" json:"classofcompound" schema:"classofcompound"`
+	Person                  `db:"person" json:"person" schema:"person"`
+	CasNumber               `db:"casnumber" json:"casnumber" schema:"casnumber"`
+	CeNumber                `db:"cenumber" json:"cenumber" schema:"cenumber"`
+	Name                    `db:"name" json:"name" schema:"name"`
+	Synonyms                []Name                   `db:"-" schema:"synonyms" json:"synonyms"`
+	Symbols                 []Symbol                 `db:"-" schema:"symbols" json:"symbols"`
+	HazardStatements        []HazardStatement        `db:"-" schema:"hazardstatements" json:"hazardstatements"`
+	PrecautionaryStatements []PrecautionaryStatement `db:"-" schema:"precautionarystatements" json:"precautionarystatements"`
 }
 
 func (p Product) String() string {
