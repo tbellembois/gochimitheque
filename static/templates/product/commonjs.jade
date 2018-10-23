@@ -207,6 +207,135 @@ script.
             });
 
             //
+            // physicalstate select2
+            //
+            $('select#physicalstate').select2({
+                allowClear: true,
+                placeholder: "select physical state",
+                ajax: {
+                    url: '/products/physicalstates',
+                    data: function (params) {
+                        var query = {
+                            search: params.term,
+                            page: params.page || 1,
+                            offset: params.page*10 || 0,
+                            limit: 10
+                        }
+
+                        // Query parameters will be ?search=[term]&page=[page]
+                        return query;
+                    },
+                    dataType: 'json',
+                    processResults: function (data) {
+                        // replacing name by text expected by select2
+                        var newdata = $.map(data.rows, function (obj) {
+                            obj.text = obj.text || obj.physicalstate_label.String;
+                            obj.id = obj.id || obj.physicalstate_id.Int64;
+                            return obj;
+                        });
+                         return {
+                            results: newdata,
+                        };
+                    }
+                }
+            }).on("change", function (e) {
+                $(this).valid(); // FIXME: see https://github.com/select2/select2/issues/3901
+            });
+
+            //
+            // signalword select2
+            //
+            $('select#signalword').select2({
+                allowClear: true,
+                placeholder: "select signal word",
+                ajax: {
+                    url: '/products/signalwords',
+                    data: function (params) {
+                        var query = {
+                            search: params.term,
+                            page: params.page || 1,
+                            offset: params.page*10 || 0,
+                            limit: 10
+                        }
+
+                        // Query parameters will be ?search=[term]&page=[page]
+                        return query;
+                    },
+                    dataType: 'json',
+                    processResults: function (data) {
+                        // replacing name by text expected by select2
+                        var newdata = $.map(data.rows, function (obj) {
+                            obj.text = obj.text || obj.signalword_label.String;
+                            obj.id = obj.id || obj.signalword_id.Int64;
+                            return obj;
+                        });
+                         return {
+                            results: newdata,
+                        };
+                    }
+                }
+            }).on("change", function (e) {
+                $(this).valid(); // FIXME: see https://github.com/select2/select2/issues/3901
+            });
+
+            //
+            // classofcompound select2
+            //
+            $('select#classofcompound').select2({
+                allowClear: true,
+                tags: true,
+                placeholder: "select class of compound",
+                ajax: {
+                    url: '/products/classofcompounds',
+                    data: function (params) {
+                        var query = {
+                            search: params.term,
+                            page: params.page || 1,
+                            offset: params.page*10 || 0,
+                            limit: 10
+                        }
+
+                        // Query parameters will be ?search=[term]&page=[page]
+                        return query;
+                    },
+                    dataType: 'json',
+                    processResults: function (data) {
+                        isExactMatch=false;
+                        
+                        // looking for an exact match
+                        $.each(data.rows, function( index, value ) {
+                            if(value.c == 1) {
+                                isExactMatch=true;
+                            }
+                        });
+                       
+                        // there is a match: setting the input field
+                        if (isExactMatch) {
+                            $("input#exactMatchClassofcompounds").val("true");
+                        } else {
+                            $("input#exactMatchClassofcompounds").val("false");
+                        }
+
+                        // replacing name by text expected by select2
+                        var newdata = $.map(data.rows, function (obj) {
+                            obj.text = obj.text || obj.classofcompound_label;
+                            obj.id = obj.id || obj.classofcompound_id;
+                            return obj;
+                        });
+                        // getting the number of loaded select elements
+                        selectnbitems = $("ul#select2-classofcompounds-results li").length + 10;
+
+                        return {
+                            results: newdata,
+                            pagination: {more: selectnbitems<data.total}
+                        };
+                    }
+                }
+            }).on("change", function (e) {
+                $(this).valid(); // FIXME: see https://github.com/select2/select2/issues/3901
+            });
+
+            //
             // name select2
             //
             $('select#name').select2({
@@ -403,7 +532,6 @@ script.
             // symbols select2
             //
             $('select#symbols').select2({
-                tags: true,
                 templateResult: formatSymbol,
                 ajax: {
                     url: '/products/symbols',
@@ -422,6 +550,80 @@ script.
                 }
             });
 
+            //
+            // hazardstatements select2
+            //
+            $('select#hazardstatements').select2({
+                templateResult: formatHazardStatement,
+                ajax: {
+                    url: '/products/hazardstatements',
+                    data: function (params) {
+                        var query = {
+                            search: params.term,
+                            page: params.page || 1,
+                            offset: params.page*10 || 0,
+                            limit: 10
+                        }
+
+                        // Query parameters will be ?search=[term]&page=[page]
+                        return query;
+                    },
+                    dataType: 'json',
+                    processResults: function (data) {
+                        // replacing name by text expected by select2
+                        var newdata = $.map(data.rows, function (obj) {
+                            obj.text = obj.text || obj.hazardstatement_reference;
+                            obj.id = obj.id || obj.hazardstatement_id;
+                            return obj;
+                        });
+                        // getting the number of loaded select elements
+                        selectnbitems = $("ul#select2-hazardstatements-results li").length + 10;
+
+                        return {
+                            results: newdata,
+                            pagination: {more: selectnbitems<data.total}
+                        };
+                    }
+                }
+            });
+
+            //
+            // precautionarystatements select2
+            //
+            $('select#precautionarystatements').select2({
+                templateResult: formatPrecautionaryStatement,
+                ajax: {
+                    url: '/products/precautionarystatements',
+                    data: function (params) {
+                        var query = {
+                            search: params.term,
+                            page: params.page || 1,
+                            offset: params.page*10 || 0,
+                            limit: 10
+                        }
+
+                        // Query parameters will be ?search=[term]&page=[page]
+                        return query;
+                    },
+                    dataType: 'json',
+                    processResults: function (data) {
+                        // replacing name by text expected by select2
+                        var newdata = $.map(data.rows, function (obj) {
+                            obj.text = obj.text || obj.precautionarystatement_reference;
+                            obj.id = obj.id || obj.precautionarystatement_id;
+                            return obj;
+                        });
+                        // getting the number of loaded select elements
+                        selectnbitems = $("ul#select2-precautionarystatements-results li").length + 10;
+
+                        return {
+                            results: newdata,
+                            pagination: {more: selectnbitems<data.total}
+                        };
+                    }
+                }
+            });
+
         });
 
         //
@@ -433,6 +635,30 @@ script.
             }
             var s = $(
                 '<span><img src="data:' + symbol.symbol_image + '" title="' + symbol.symbol_label + '" /> ' + symbol.symbol_label + '</span>'
+            );
+            return s;
+        };
+        //
+        // precautionary statements select2 formatter
+        //
+        function formatPrecautionaryStatement (ps) {
+            if (!ps.precautionarystatement_id) {
+                return ps.precautionarystatement_label;
+            }
+            var s = $(
+                '<span><b>' + ps.precautionarystatement_reference + '</b> ' + ps.precautionarystatement_label + '</span>'
+            );
+            return s;
+        };
+        //
+        // hazard statements select2 formatter
+        //
+        function formatHazardStatement (hs) {
+            if (!hs.hazardstatement_id) {
+                return hs.hazardstatement_label;
+            }
+            var s = $(
+                '<span><b>' + hs.hazardstatement_reference + '</b> ' + hs.hazardstatement_label + '</span>'
             );
             return s;
         };
@@ -459,14 +685,26 @@ script.
                 return;
             };
 
-            var product_id = $("#edit-collapse input#product_id").val(),
-                product_specificity = $("#edit-collapse input#product_specificity").val(),
+            var product_id = $("input#product_id").val(),
+                product_specificity = $("input#product_specificity").val(),
+                product_linearformula = $("input#product_linearformula").val(),
+                product_threedformula = $("input#product_threedformula").val(),
+                product_msds = $("input#product_msds").val(),
+                product_disposalcomment = $("input#product_disposalcomment").val(),
+                product_remark = $("input#product_remark").val(),
+                product_restricted = $("input#product_restricted:CHECKED").val(),
+                product_radioactive = $("input#product_radioactive:CHECKED").val(),
                 casnumber = $('select#casnumber').select2('data')[0],
                 cenumber = $('select#cenumber').select2('data')[0],
                 empiricalformula = $('select#empiricalformula').select2('data')[0],
                 name_ = $('select#name').select2('data')[0],
+                physicalstate = $('select#physicalstate').select2('data')[0],
+                signalword = $('select#signalword').select2('data')[0],
+                classofcompound = $('select#classofcompound').select2('data')[0],
                 synonyms = $('select#synonyms').select2('data'),
                 symbols = $('select#symbols').select2('data'),
+                hazardstatements = $('select#hazardstatements').select2('data'),
+                precautionarystatements = $('select#precautionarystatements').select2('data'),
                 ajax_url = "/products",
                 ajax_method = "POST",
                 ajax_callback = createCallBack,
@@ -487,9 +725,20 @@ script.
                     data["synonyms." + index +".name_id"] = s.id == s.text ? -1 : s.id;
                     data["synonyms." + index +".name_label"] = s.text;
                 });
+                $.each(hazardstatements, function( index, s ) {
+                    data["hazardstatements." + index +".hazardstatement_id"] = s.id == s.text ? -1 : s.id;
+                    data["hazardstatements." + index +".hazardstatement_reference"] = s.text;
+                });
+                $.each(precautionarystatements, function( index, s ) {
+                    data["precautionarystatements." + index +".precautionarystatement_id"] = s.id == s.text ? -1 : s.id;
+                    data["precautionarystatements." + index +".precautionarystatement_reference"] = s.text;
+                });
                 $.extend(data, {
                     "product_id": product_id,
-                    "product_specificity": product_specificity,
+                    "product_disposalcomment": product_disposalcomment,
+                    "product_remark": product_remark,
+                    "product_restricted": product_restricted,
+                    "product_radioactive": product_radioactive,
                     "casnumber.casnumber_id": casnumber.id == casnumber.text ? -1 : casnumber.id,
                     "casnumber.casnumber_label": casnumber.text,
                     "empiricalformula.empiricalformula_id": empiricalformula.id == empiricalformula.text ? -1 : empiricalformula.id,
@@ -497,12 +746,50 @@ script.
                     "name.name_id": name_.id == name_.text ? -1 : name_.id,
                     "name.name_label": name_.text,
                 });
+                if (product_specificity !== "") {
+                    $.extend(data, {
+                        "product_specificity": product_specificity,
+                    });                    
+                }
+                if (product_linearformula !== "") {
+                    $.extend(data, {
+                        "product_linearformula": product_linearformula,
+                    });                    
+                } 
+                if (product_msds !== "") {
+                    $.extend(data, {
+                        "product_msds": product_msds,
+                    });                    
+                } 
+                if (product_threedformula !== "") {
+                    $.extend(data, {
+                        "product_threedformula": product_threedformula,
+                    });                    
+                } 
                 if (cenumber !== undefined) {
                     $.extend(data, {
                         "cenumber.cenumber_id": cenumber.id == cenumber.text ? -1 : cenumber.id,
                         "cenumber.cenumber_label": cenumber === undefined ? "" : cenumber.text,
                     });                    
                 }
+                if (physicalstate !== undefined) {
+                    $.extend(data, {
+                        "physicalstate.physicalstate_id": physicalstate.id == physicalstate.text ? -1 : physicalstate.id,
+                        "physicalstate.physicalstate_label": physicalstate.text,
+                    });                    
+                }
+                if (signalword !== undefined) {
+                    $.extend(data, {
+                        "signalword.signalword_id": signalword.id == signalword.text ? -1 : signalword.id,
+                        "signalword.signalword_label": signalword.text,
+                    });                    
+                }
+                if (classofcompound !== undefined) {
+                    $.extend(data, {
+                        "classofcompound.classofcompound_id": classofcompound.id == classofcompound.text ? -1 : classofcompound.id,
+                        "classofcompound.classofcompound_label": classofcompound.text,
+                    });                    
+                }           
                 $.ajax({
                     url: ajax_url,
                     method: ajax_method,

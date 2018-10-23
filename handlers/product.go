@@ -120,6 +120,111 @@ func (env *Env) GetProductsCeNumbersHandler(w http.ResponseWriter, r *http.Reque
 	return nil
 }
 
+// GetProductsPhysicalStatesHandler returns a json list of the physical states matching the search criteria
+func (env *Env) GetProductsPhysicalStatesHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	log.Debug("GetProductsPhysicalStatesHandler")
+
+	var (
+		err  error
+		aerr *helpers.AppError
+		dsp  helpers.Dbselectparam
+	)
+
+	// init db request parameters
+	if dsp, aerr = helpers.Newdbselectparam(r, nil); err != nil {
+		return aerr
+	}
+
+	pstates, count, err := env.DB.GetProductsPhysicalStates(dsp)
+	if err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the physical states",
+		}
+	}
+
+	type resp struct {
+		Rows  []models.PhysicalState `json:"rows"`
+		Total int                    `json:"total"`
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resp{Rows: pstates, Total: count})
+	return nil
+}
+
+// GetProductsSignalWordsHandler returns a json list of the signal words matching the search criteria
+func (env *Env) GetProductsSignalWordsHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	log.Debug("GetProductsSignalWordsHandler")
+
+	var (
+		err  error
+		aerr *helpers.AppError
+		dsp  helpers.Dbselectparam
+	)
+
+	// init db request parameters
+	if dsp, aerr = helpers.Newdbselectparam(r, nil); err != nil {
+		return aerr
+	}
+
+	swords, count, err := env.DB.GetProductsSignalWords(dsp)
+	if err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the signal words",
+		}
+	}
+
+	type resp struct {
+		Rows  []models.SignalWord `json:"rows"`
+		Total int                 `json:"total"`
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resp{Rows: swords, Total: count})
+	return nil
+}
+
+// GetProductsClassOfCompoundsHandler returns a json list of the classes of compounds matching the search criteria
+func (env *Env) GetProductsClassOfCompoundsHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	log.Debug("GetProductsClassOfCompoundsHandler")
+
+	var (
+		err  error
+		aerr *helpers.AppError
+		dsp  helpers.Dbselectparam
+	)
+
+	// init db request parameters
+	if dsp, aerr = helpers.Newdbselectparam(r, nil); err != nil {
+		return aerr
+	}
+
+	cocs, count, err := env.DB.GetProductsClassOfCompounds(dsp)
+	if err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the classes of compounds",
+		}
+	}
+
+	type resp struct {
+		Rows  []models.ClassOfCompound `json:"rows"`
+		Total int                      `json:"total"`
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resp{Rows: cocs, Total: count})
+	return nil
+}
+
 // GetProductsEmpiricalFormulasHandler returns a json list of the empirical formulas matching the search criteria
 func (env *Env) GetProductsEmpiricalFormulasHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	log.Debug("GetProductsEmpiricalFormulasHandler")
@@ -222,6 +327,76 @@ func (env *Env) GetProductsSymbolsHandler(w http.ResponseWriter, r *http.Request
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp{Rows: symbols, Total: count})
+	return nil
+}
+
+// GetProductsHazardStatementsHandler returns a json list of the hazard statements matching the search criteria
+func (env *Env) GetProductsHazardStatementsHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	log.Debug("GetProductsHazardStatementsHandler")
+
+	var (
+		err  error
+		aerr *helpers.AppError
+		dsp  helpers.Dbselectparam
+	)
+
+	// init db request parameters
+	if dsp, aerr = helpers.Newdbselectparam(r, nil); err != nil {
+		return aerr
+	}
+
+	hs, count, err := env.DB.GetProductsHazardStatements(dsp)
+	if err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the hazard statements",
+		}
+	}
+
+	type resp struct {
+		Rows  []models.HazardStatement `json:"rows"`
+		Total int                      `json:"total"`
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resp{Rows: hs, Total: count})
+	return nil
+}
+
+// GetProductsPrecautionaryStatementsHandler returns a json list of the precautionary statements matching the search criteria
+func (env *Env) GetProductsPrecautionaryStatementsHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	log.Debug("GetProductsPrecautionaryStatementsHandler")
+
+	var (
+		err  error
+		aerr *helpers.AppError
+		dsp  helpers.Dbselectparam
+	)
+
+	// init db request parameters
+	if dsp, aerr = helpers.Newdbselectparam(r, nil); err != nil {
+		return aerr
+	}
+
+	ps, count, err := env.DB.GetProductsPrecautionaryStatements(dsp)
+	if err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the precautionary statements",
+		}
+	}
+
+	type resp struct {
+		Rows  []models.PrecautionaryStatement `json:"rows"`
+		Total int                             `json:"total"`
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resp{Rows: ps, Total: count})
 	return nil
 }
 

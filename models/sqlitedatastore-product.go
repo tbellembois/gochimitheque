@@ -1006,8 +1006,8 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 
 	// finally updating the product
 	s := make(map[string]interface{})
-	if p.ProductSpecificity != "" {
-		s["product_specificity"] = p.ProductSpecificity
+	if p.ProductSpecificity.Valid {
+		s["product_specificity"] = p.ProductSpecificity.String
 	}
 	s["casnumber"] = p.CasNumberID
 	s["name"] = p.NameID

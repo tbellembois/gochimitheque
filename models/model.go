@@ -91,21 +91,24 @@ type EmpiricalFormula struct {
 
 // PhysicalState is a product physical state
 type PhysicalState struct {
-	PhysicalStateID    int    `db:"physicalstate_id" json:"physicalstate_id" schema:"physicalstate_id"`
-	PhysicalStateLabel string `db:"physicalstate_label" json:"physicalstate_label" schema:"physicalstate_label"`
+	// nullable values to handle optional Product foreign key (gorilla shema nil values)
+	PhysicalStateID    sql.NullInt64  `db:"physicalstate_id" json:"physicalstate_id" schema:"physicalstate_id"`
+	PhysicalStateLabel sql.NullString `db:"physicalstate_label" json:"physicalstate_label" schema:"physicalstate_label"`
 }
 
 // ClassOfCompound is a product class of compound
 type ClassOfCompound struct {
-	C                    int    `db:"c" json:"c"` // not stored in db but db:"c" set for sqlx
-	ClassOfCompoundID    int    `db:"classofcompound_id" json:"classofcompound_id" schema:"classofcompound_id"`
-	ClassOfCompoundLabel string `db:"classofcompound_label" json:"classofcompound_label" schema:"classofcompound_label"`
+	// nullable values to handle optional Product foreign key (gorilla shema nil values)
+	C                    int            `db:"c" json:"c"` // not stored in db but db:"c" set for sqlx
+	ClassOfCompoundID    sql.NullInt64  `db:"classofcompound_id" json:"classofcompound_id" schema:"classofcompound_id"`
+	ClassOfCompoundLabel sql.NullString `db:"classofcompound_label" json:"classofcompound_label" schema:"classofcompound_label"`
 }
 
 // SignalWord is a product signal word
 type SignalWord struct {
-	SignalWordID    int    `db:"signalword_id" json:"signalword_id" schema:"signalword_id"`
-	SignalWordLabel string `db:"signalword_label" json:"signalword_label" schema:"signalword_label"`
+	// nullable values to handle optional Product foreign key (gorilla shema nil values)
+	SignalWordID    sql.NullInt64  `db:"signalword_id" json:"signalword_id" schema:"signalword_id"`
+	SignalWordLabel sql.NullString `db:"signalword_label" json:"signalword_label" schema:"signalword_label"`
 }
 
 // HazardStatement is a product hazard statement
@@ -124,15 +127,15 @@ type PrecautionaryStatement struct {
 
 // Product is a chemical product card
 type Product struct {
-	ProductID               int    `db:"product_id" json:"product_id" schema:"product_id"`
-	ProductSpecificity      string `db:"product_specificity" json:"product_specificity" schema:"product_specificity"`
-	ProductMSDS             string `db:"product_msds" json:"product_msds" schema:"product_msds"`
-	ProductRestricted       bool   `db:"product_restricted" json:"product_restricted" schema:"product_restricted"`
-	ProductRadioactive      bool   `db:"product_radioactive" json:"product_radioactive" schema:"product_radioactive"`
-	ProductLinearFormula    string `db:"product_linearformula" json:"product_linearformula" schema:"product_linearformula"`
-	ProductThreeDFormula    string `db:"product_threedformula" json:"product_threedformula" schema:"product_threedformula"`
-	ProductDisposalComment  string `db:"product_disposalcomment" json:"product_disposalcomment" schema:"product_disposalcomment"`
-	ProductRemark           string `db:"product_remark" json:"product_remark" schema:"product_remark"`
+	ProductID               int            `db:"product_id" json:"product_id" schema:"product_id"`
+	ProductSpecificity      sql.NullString `db:"product_specificity" json:"product_specificity" schema:"product_specificity"`
+	ProductMSDS             sql.NullString `db:"product_msds" json:"product_msds" schema:"product_msds"`
+	ProductRestricted       sql.NullBool   `db:"product_restricted" json:"product_restricted" schema:"product_restricted"`
+	ProductRadioactive      sql.NullBool   `db:"product_radioactive" json:"product_radioactive" schema:"product_radioactive"`
+	ProductLinearFormula    sql.NullString `db:"product_linearformula" json:"product_linearformula" schema:"product_linearformula"`
+	ProductThreeDFormula    sql.NullString `db:"product_threedformula" json:"product_threedformula" schema:"product_threedformula"`
+	ProductDisposalComment  sql.NullString `db:"product_disposalcomment" json:"product_disposalcomment" schema:"product_disposalcomment"`
+	ProductRemark           sql.NullString `db:"product_remark" json:"product_remark" schema:"product_remark"`
 	EmpiricalFormula        `db:"empiricalformula" json:"empiricalformula" schema:"empiricalformula"`
 	PhysicalState           `db:"physicalstate" json:"physicalstate" schema:"physicalstate"`
 	SignalWord              `db:"signalword" json:"signalword" schema:"signalword"`
