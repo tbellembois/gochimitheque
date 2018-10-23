@@ -15,21 +15,31 @@ mixin inlineimgcheckbox
         label.form-check-label(for='{{$id}}')
             img(src='data:{{$img}}' alt='{{$title}}' title='{{$title}}')
 
+mixin checkbox
+    .form-check
+        input.form-check-input(type='checkbox' id='{{$name}}')
+        label.form-check-label(for='{{$name}}') {{$label}}
+
 mixin select
-    .col-sm-10
-        label.col-sm-2.col-form-label(for='{{$name}}') {{$label}}
+    .form-group.col-sm-12
+        label(for='{{$name}}') {{$label}}
         select.form-control(style='width: 100% !important;' id='{{$name}}' name='{{$name}}')
 
 mixin selectmultiple
-    .col-sm-10
-        label.col-sm-2.col-form-label(for='{{$name}}') {{$label}}
+    .form-group.col-sm-12
+        label(for='{{$name}}') {{$label}}
         select.form-control(style='width: 100% !important;' id='{{$name}}' name='{{$name}}' multiple='multiple')
         
 mixin inputtext
-    .col-sm-10
-        label.col-sm-2.col-form-label(for='{{$name}}') {{$label}}
+    .form-group.col-sm-12
+        label(for='{{$name}}') {{$label}}
         input.form-control(type='text' id='{{$name}}' name='{{$name}}' title='{{$name}}')
-          
+
+mixin inputtextarea
+    .form-group.col-sm-12
+        label(for='{{$name}}') {{$label}}
+        textarea.form-control(type='text' id='{{$name}}' name='{{$name}}' title='{{$name}}')
+
 mixin permissions
     .col-sm-6
         .alert.alert-primary product

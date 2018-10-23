@@ -1,34 +1,105 @@
 | {{define "CONTENT"}}
 
+    .card.bg-light.text-center.w-25.mx-auto.mt-md-5.mb-md-5
+        .card-body
+            h4.card-title new product card
+
     form#product
         input#exactMatchEmpiricalFormula(type="hidden")
         input#exactMatchCasNumber(type="hidden")
         input#exactMatchCeNumber(type="hidden")
         input#exactMatchName(type="hidden")
         input#exactMatchSynonyms(type="hidden")
-        .form-group.row
-            | {{$label := "name"}} {{$name := "name"}}
-            +select
-        .form-group.row
-            | {{$label := "synonym(s)"}} {{$name := "synonyms"}}
-            +selectmultiple
-        .form-group.row
-            | {{$label := "empirical formula"}} {{$name := "empiricalformula"}}
-            +select
-        .form-group.row
-            | {{$label := "cas number"}} {{$name := "casnumber"}}
-            +select
-        .form-group.row
-            | {{$label := "ce number"}} {{$name := "cenumber"}}
-            +select
-        .form-group.row
-            | {{$label := "specificity"}} {{$name := "product_specificity"}}
-            +inputtext
-        .form-group.row
-            | {{$label := "symbol(s)"}} {{$name := "symbols"}}
-            +selectmultiple
+        input#exactMatchClassofcompounds(type="hidden")
 
-    button#save.btn.btn-primary(type='button', onclick='saveProduct()') save changes
+        .form-row
+            .form-group.col-sm-auto
+                span.badge.badge-pill.badge-danger &nbsp;
+            .form-group.col-sm-5
+                | {{$label := "name"}} {{$name := "name"}}
+                +select
+            .form-group.col-sm-5
+                | {{$label := "synonym(s)"}} {{$name := "synonyms"}}
+                +selectmultiple
+
+        .form-row
+            .form-group.col-sm-12
+                | {{$label := "specificity"}} {{$name := "product_specificity"}}
+                +inputtext
+
+        .form-row
+            .form-group.col-sm-auto
+                span.badge.badge-pill.badge-danger &nbsp;
+            .form-group.col-sm-6
+                | {{$label := "empirical formula"}} {{$name := "empiricalformula"}}
+                +select
+            .form-group.col-sm-5
+                | {{$label := "linear formula"}} {{$name := "product_linearformula"}}
+                +inputtext
+        
+        .form-row
+            .form-group.col-sm-auto
+                span.badge.badge-pill.badge-danger &nbsp;
+            .form-group.col-sm-6
+                | {{$label := "cas number"}} {{$name := "casnumber"}}
+                +select
+            .form-group.col-sm-5
+                | {{$label := "ce number"}} {{$name := "cenumber"}}
+                +select
+
+        .form-row
+            .form-group.col-sm-12
+                | {{$label := "MSDS link"}} {{$name := "product_msds"}}
+                +inputtext
+
+        .form-row
+            .form-group.col-sm-12
+                | {{$label := "3D formula link"}} {{$name := "product_threedformula"}}
+                +inputtext
+
+        .form-row
+            .form-group.col-sm-6
+                | {{$label := "physical state"}} {{$name := "physicalstate"}}
+                +select
+            .form-group.col-sm-6
+                | {{$label := "class of compound"}} {{$name := "classofcompound"}}
+                +select  
+                
+        .form-row
+            .form-group.col-sm-6
+                | {{$label := "signal word"}} {{$name := "signalword"}}
+                +select
+            .form-group.col-sm-6
+                | {{$label := "symbol(s)"}} {{$name := "symbols"}}
+                +selectmultiple
+
+        .form-row
+            .form-group.col-sm-6
+                | {{$label := "hazard statement(s)"}} {{$name := "hazardstatements"}}
+                +selectmultiple
+            .form-group.col-sm-6
+                | {{$label := "precautionary statement(s)"}} {{$name := "precautionarystatements"}}
+                +selectmultiple
+
+        .form-row
+            .form-group.col-sm-12
+                | {{$label := "restricted access"}} {{$name := "product_restricted"}}
+                +checkbox
+        .form-row
+            .form-group.col-sm-12
+                | {{$label := "radioactive"}} {{$name := "product_radioactive"}}
+                +checkbox
+
+        .form-row
+            .form-group.col-sm-12
+                | {{$label := "disposal comment"}} {{$name := "product_disposalcomment"}}
+                +inputtextarea
+        .form-row
+            .form-group.col-sm-12
+                | {{$label := "remark"}} {{$name := "product_remark"}}
+                +inputtextarea
+
+        button#save.btn.btn-primary(type='button', onclick='saveProduct()') save changes
 
 | {{end}}
 | {{define "CONTENTJS"}}

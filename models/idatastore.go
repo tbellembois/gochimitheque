@@ -17,6 +17,11 @@ type Datastore interface {
 	GetProductsNames(helpers.Dbselectparam) ([]Name, int, error)
 	GetProductsSymbols(helpers.Dbselectparam) ([]Symbol, int, error)
 	GetProductsEmpiricalFormulas(helpers.Dbselectparam) ([]EmpiricalFormula, int, error)
+	GetProductsPhysicalStates(helpers.Dbselectparam) ([]PhysicalState, int, error)
+	GetProductsSignalWords(helpers.Dbselectparam) ([]SignalWord, int, error)
+	GetProductsClassOfCompounds(helpers.Dbselectparam) ([]ClassOfCompound, int, error)
+	GetProductsHazardStatements(helpers.Dbselectparam) ([]HazardStatement, int, error)
+	GetProductsPrecautionaryStatements(helpers.Dbselectparam) ([]PrecautionaryStatement, int, error)
 	GetProduct(id int) (Product, error)
 	DeleteProduct(id int) error
 	CreateProduct(p Product) (error, int)

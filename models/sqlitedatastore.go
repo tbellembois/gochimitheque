@@ -391,35 +391,44 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	}
 
 	// hazard statements
-	if f, err = os.Open("models/data-hazardstatement.csv"); err != nil {
+	if err = db.Get(&c, `SELECT count(*) FROM hazardstatement`); err != nil {
 		return err
 	}
-	defer f.Close()
-	r = csv.NewReader(f)
-	r.Comma = '\t'
-	if records, err = r.ReadAll(); err != nil {
-		return err
-	}
-	for _, record := range records {
-		if _, err = db.Exec(`INSERT INTO hazardstatement (hazardstatement_label, hazardstatement_reference) VALUES (?, ?)`, record[0], record[1]); err != nil {
+	if c == 0 {
+		if f, err = os.Open("models/data-hazardstatement.csv"); err != nil {
 			return err
+		}
+		defer f.Close()
+		r = csv.NewReader(f)
+		r.Comma = '\t'
+		if records, err = r.ReadAll(); err != nil {
+			return err
+		}
+		for _, record := range records {
+			if _, err = db.Exec(`INSERT INTO hazardstatement (hazardstatement_label, hazardstatement_reference) VALUES (?, ?)`, record[0], record[1]); err != nil {
+				return err
+			}
 		}
 	}
 
 	// precautionary statements
-	if f, err = os.Open("models/data-precautionarystatement.csv"); err != nil {
+	if err = db.Get(&c, `SELECT count(*) FROM precautionarystatement`); err != nil {
 		return err
 	}
-	r = csv.NewReader(f)
-	r.Comma = '\t'
-	if records, err = r.ReadAll(); err != nil {
-		return err
-	}
-	for _, record := range records {
-		if _, err = db.Exec(`INSERT INTO precautionarystatement (precautionarystatement_label, precautionarystatement_reference) VALUES (?, ?)`, record[0], record[1]); err != nil {
+	if c == 0 {
+		if f, err = os.Open("models/data-precautionarystatement.csv"); err != nil {
 			return err
 		}
+		r = csv.NewReader(f)
+		r.Comma = '\t'
+		if records, err = r.ReadAll(); err != nil {
+			return err
+		}
+		for _, record := range records {
+			if _, err = db.Exec(`INSERT INTO precautionarystatement (precautionarystatement_label, precautionarystatement_reference) VALUES (?, ?)`, record[0], record[1]); err != nil {
+				return err
+			}
+		}
 	}
-
 	return nil
 }

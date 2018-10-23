@@ -23,7 +23,8 @@
                             tr
                                 th(data-field='product_id' data-sortable='true') ID
                                 th(data-field='name.name_label' data-sortable='true') name
-                                th(data-field='product_specificity' data-sortable='false') specificity
+                                th(data-field='casnumber.casnumber_label' data-sortable='true') CAS
+                                th(data-field='product_specificity' data-sortable='false' data-formatter='product_specificityFormatter') specificity
                                 th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') actions
 
         #edit-collapse.collapse(data-parent='#accordion')
@@ -113,7 +114,7 @@
                 html.push("<p>" + value["name_label"] + "</p>");
             });
             html.push("<p><b>empirical formula</b>: " + row["empiricalformula"]["empiricalformula_label"] + "</p>")
-            html.push("<p><b>specificity</b>: " + row["product_specificity"] + "</p>")
+            html.push("<p><b>specificity</b>: " + row["product_specificity"]["String"] + "</p>")
             html.push("<p><b>cas</b>: " + row["casnumber"]["casnumber_label"] + "</p>")
             html.push("<p><b>ce</b>: " + row["cenumber"]["cenumber_label"]["String"] + "</p>")
             html.push("<p>")
@@ -122,6 +123,13 @@
             });
             html.push("</p>")
             return html.join('');
+        }
+
+        //
+        // product_specificityFormatter formatter
+        //
+        function product_specificityFormatter(value, row, index, field) {
+            return value.String;
         }
 
         //
