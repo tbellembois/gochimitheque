@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-
 	"github.com/gopherjs/gopherjs/js"
 	"honnef.co/go/js/dom"
 )

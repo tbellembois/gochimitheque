@@ -181,7 +181,7 @@ func main() {
 		log.Fatal("personcreatetmpl parse:" + e.Error())
 	}
 	// product
-	productindextmpl, e := jade.Parse("product_index", basejadess+"\r\n"+b.MustString("entity/commonjs.jade")+"\r\n"+b.MustString("product/index.jade"))
+	productindextmpl, e := jade.Parse("product_index", basejadess+"\r\n"+b.MustString("product/commonjs.jade")+"\r\n"+b.MustString("product/index.jade"))
 	if e != nil {
 		log.Fatal("productindextmpl jade:" + e.Error())
 	}

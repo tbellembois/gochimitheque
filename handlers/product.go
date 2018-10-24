@@ -580,16 +580,24 @@ func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *he
 	updatedp, _ := env.DB.GetProduct(id)
 	updatedp.CasNumber = p.CasNumber
 	updatedp.CeNumber = p.CeNumber
-	// id=-2 is passed from the view when no ce number is entered
-	// then invalidating the field
-	if updatedp.CeNumberID.Int64 == -2 {
-		updatedp.CeNumberID.Valid = false
-	}
 	updatedp.EmpiricalFormula = p.EmpiricalFormula
+	updatedp.ProductLinearFormula = p.ProductLinearFormula
 	updatedp.Name = p.Name
 	updatedp.ProductSpecificity = p.ProductSpecificity
 	updatedp.Symbols = p.Symbols
 	updatedp.Synonyms = p.Synonyms
+	updatedp.ProductMSDS = p.ProductMSDS
+	updatedp.ProductRestricted = p.ProductRestricted
+	updatedp.ProductRadioactive = p.ProductRadioactive
+	updatedp.ProductLinearFormula = p.ProductLinearFormula
+	updatedp.ProductThreeDFormula = p.ProductThreeDFormula
+	updatedp.ProductDisposalComment = p.ProductDisposalComment
+	updatedp.ProductRemark = p.ProductRemark
+	updatedp.PhysicalState = p.PhysicalState
+	updatedp.SignalWord = p.SignalWord
+	updatedp.ClassOfCompound = p.ClassOfCompound
+	updatedp.HazardStatements = p.HazardStatements
+	updatedp.PrecautionaryStatements = p.PrecautionaryStatements
 	log.WithFields(log.Fields{"updatedp": updatedp}).Debug("UpdateProductHandler")
 
 	if err := env.DB.UpdateProduct(updatedp); err != nil {

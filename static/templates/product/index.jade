@@ -32,30 +32,102 @@
                 input#index(type='hidden', name='index', value='')
                 input#product_id(type='hidden', name='product_id', value='')
 
-                .form-group.row
-                    | {{$label := "name"}} {{$name := "name"}}
-                    +select
-                .form-group.row
-                    | {{$label := "synonym(s)"}} {{$name := "synonyms"}}
-                    +selectmultiple
-                .form-group.row
-                    | {{$label := "empirical formula"}} {{$name := "empiricalformula"}}
-                    +select
-                .form-group.row
-                    | {{$label := "cas number"}} {{$name := "casnumber"}}
-                    +select
-                .form-group.row
-                    | {{$label := "ce number"}} {{$name := "cenumber"}}
-                    +select
-                .form-group.row
-                    | {{$label := "specificity"}} {{$name := "product_specificity"}}
-                    +inputtext
-                .form-group.row
-                    | {{$label := "symbol(s)"}} {{$name := "symbols"}}
-                    +selectmultiple
-                    
-            button#save.btn.btn-primary(type='button', onclick='saveProduct()') save changes
-            button.btn.btn-secondary(type='button', onclick='closeEdit();') close
+                input#exactMatchEmpiricalFormula(type="hidden")
+                input#exactMatchCasNumber(type="hidden")
+                input#exactMatchCeNumber(type="hidden")
+                input#exactMatchName(type="hidden")
+                input#exactMatchSynonyms(type="hidden")
+                input#exactMatchClassofcompounds(type="hidden")
+
+                .form-row
+                    .form-group.col-sm-auto
+                        span.badge.badge-pill.badge-danger &nbsp;
+                    .form-group.col-sm-5
+                        | {{$label := "name"}} {{$name := "name"}}
+                        +select
+                    .form-group.col-sm-5
+                        | {{$label := "synonym(s)"}} {{$name := "synonyms"}}
+                        +selectmultiple
+
+                .form-row
+                    .form-group.col-sm-12
+                        | {{$label := "specificity"}} {{$name := "product_specificity"}}
+                        +inputtext
+
+                .form-row
+                    .form-group.col-sm-auto
+                        span.badge.badge-pill.badge-danger &nbsp;
+                    .form-group.col-sm-6
+                        | {{$label := "empirical formula"}} {{$name := "empiricalformula"}}
+                        +select
+                    .form-group.col-sm-5
+                        | {{$label := "linear formula"}} {{$name := "product_linearformula"}}
+                        +inputtext
+                
+                .form-row
+                    .form-group.col-sm-auto
+                        span.badge.badge-pill.badge-danger &nbsp;
+                    .form-group.col-sm-6
+                        | {{$label := "cas number"}} {{$name := "casnumber"}}
+                        +select
+                    .form-group.col-sm-5
+                        | {{$label := "ce number"}} {{$name := "cenumber"}}
+                        +select
+
+                .form-row
+                    .form-group.col-sm-12
+                        | {{$label := "MSDS link"}} {{$name := "product_msds"}}
+                        +inputtext
+
+                .form-row
+                    .form-group.col-sm-12
+                        | {{$label := "3D formula link"}} {{$name := "product_threedformula"}}
+                        +inputtext
+
+                .form-row
+                    .form-group.col-sm-6
+                        | {{$label := "physical state"}} {{$name := "physicalstate"}}
+                        +select
+                    .form-group.col-sm-6
+                        | {{$label := "class of compound"}} {{$name := "classofcompound"}}
+                        +select  
+                        
+                .form-row
+                    .form-group.col-sm-6
+                        | {{$label := "signal word"}} {{$name := "signalword"}}
+                        +select
+                    .form-group.col-sm-6
+                        | {{$label := "symbol(s)"}} {{$name := "symbols"}}
+                        +selectmultiple
+
+                .form-row
+                    .form-group.col-sm-6
+                        | {{$label := "hazard statement(s)"}} {{$name := "hazardstatements"}}
+                        +selectmultiple
+                    .form-group.col-sm-6
+                        | {{$label := "precautionary statement(s)"}} {{$name := "precautionarystatements"}}
+                        +selectmultiple
+
+                .form-row
+                    .form-group.col-sm-12
+                        | {{$label := "restricted access"}} {{$name := "product_restricted"}}
+                        +checkbox
+                .form-row
+                    .form-group.col-sm-12
+                        | {{$label := "radioactive"}} {{$name := "product_radioactive"}}
+                        +checkbox
+
+                .form-row
+                    .form-group.col-sm-12
+                        | {{$label := "disposal comment"}} {{$name := "product_disposalcomment"}}
+                        +inputtextarea
+                .form-row
+                    .form-group.col-sm-12
+                        | {{$label := "remark"}} {{$name := "product_remark"}}
+                        +inputtextarea
+
+                button#save.btn.btn-primary(type='button', onclick='saveProduct()') save changes
+                button.btn.btn-secondary(type='button', onclick='closeEdit();') close
 | {{end}}
 | {{define "CONTENTJS"}}
 | {{template "COMMONCONTENTJS"}}
@@ -66,7 +138,7 @@
         function closeEdit() { $("#list-collapse").collapse("show"); $("#edit-collapse").collapse("hide"); }
         
         $( document ).ready(function() {           
-
+            
             // populating search input if needed
             if (URLValues.has("search")) {
                 $('#table').bootstrapTable('resetSearch', URLValues.get("search")[0]);
@@ -108,20 +180,40 @@
         //
         function detailFormatter(index, row) {
             var html = [];
+            html.push("<p><b>id</b>: " + row["product_id"] + "</p>")
             html.push("<p><b>creator</b>: " + row["person"]["person_email"] + "</p>")
             html.push("<p><b>name</b>: " + row["name"]["name_label"] + "</p>")
             $.each(row["synonyms"], function (key, value) {
                 html.push("<p>" + value["name_label"] + "</p>");
             });
             html.push("<p><b>empirical formula</b>: " + row["empiricalformula"]["empiricalformula_label"] + "</p>")
+            html.push("<p><b>linear formula</b>: " + row["product_linearformula"]["String"] + "</p>")
             html.push("<p><b>specificity</b>: " + row["product_specificity"]["String"] + "</p>")
             html.push("<p><b>cas</b>: " + row["casnumber"]["casnumber_label"] + "</p>")
             html.push("<p><b>ce</b>: " + row["cenumber"]["cenumber_label"]["String"] + "</p>")
+            html.push("<p><b>msds</b>: " + row["product_msds"]["String"] + "</p>")
+            html.push("<p><b>classofcompound</b>: " + row["classofcompound"]["classofcompound_label"]["String"] + "</p>")
+            html.push("<p><b>restricted</b>: " + row["product_restricted"]["Bool"] + "</p>")
+            html.push("<p><b>radioactive</b>: " + row["product_radioactive"]["Bool"] + "</p>")
             html.push("<p>")
             $.each(row["symbols"], function (key, value) {
                 html.push("<img src='data:" + value["symbol_image"] + "' alt='" + value["symbol_label"] + "' title='" + value["symbol_label"] + "'/>");
             });
             html.push("</p>")
+            html.push("<p>")
+            $.each(row["hazardstatements"], function (key, value) {
+                html.push("<span>" + value["hazardstatement_reference"] + ": " + value["hazardstatement_label"] + "</span>");
+            });
+            html.push("</p>")
+            $.each(row["precautionarystatements"], function (key, value) {
+                html.push("<span>" + value["precautionarystatement_reference"] + ": " + value["precautionarystatement_label"] + "</span>");
+            });
+            html.push("</p>")
+            html.push("<p><b>3d formula</b>: " + row["product_threedformula"]["String"] + "</p>")
+            html.push("<p><b>physical state</b>: " + row["physicalstate"]["physicalstate_label"]["String"] + "</p>")
+            html.push("<p><b>signal word</b>: " + row["signalword"]["signalword_label"]["String"] + "</p>")
+            html.push("<p><b>disposal comment</b>: " + row["product_disposalcomment"]["String"] + "</p>")
+            html.push("<p><b>remark</b>: " + row["product_remark"]["String"] + "</p>")
             return html.join('');
         }
 
@@ -185,6 +277,18 @@
             $('select#synonyms').find('option').remove();
             $('select#empiricalformula').val(null).trigger('change');
             $('select#empiricalformula').find('option').remove();
+            $('select#physicalstate').val(null).trigger('change');
+            $('select#physicalstate').find('option').remove();
+            $('select#classofcompound').val(null).trigger('change');
+            $('select#classofcompound').find('option').remove();
+            $('select#symbols').val(null).trigger('change');
+            $('select#symbols').find('option').remove();
+            $('select#signalword').val(null).trigger('change');
+            $('select#signalword').find('option').remove();
+            $('select#hazardstatements').val(null).trigger('change');
+            $('select#hazardstatements').find('option').remove();
+            $('select#precautionarystatements').val(null).trigger('change');
+            $('select#precautionarystatements').find('option').remove();
 
             // getting the product
             $.ajax({
@@ -193,28 +297,89 @@
             }).done(function(data, textStatus, jqXHR) {
                 // flattening response data
                 fdata = flatten(data);
+
+                // processing sqlNull values
+                newfdata = new Map()
+                $.each(fdata, function(k, v) {
+                    matchs = k.match(/(.+)\.String/);
+                    matchi = k.match(/(.+)\.Int64/);
+                    matchb = k.match(/(.+)\.Bool/);
+                    if (matchs !== null) {
+                        fieldname = matchs[1];
+                        valid = fdata[fieldname+".Valid"] == true;
+                        if (valid) {
+                            newfdata[fieldname] = v;
+                        }
+                    }  else if (matchi !== null) {
+                        fieldname = matchi[1];
+                        valid = fdata[fieldname+".Valid"] == true;
+                        if (valid) {
+                            newfdata[fieldname] = v;
+                        }
+                    }  else if (matchb !== null) {
+                        fieldname = matchb[1];
+                        valid = fdata[fieldname+".Valid"] == true;
+                        if (valid) {
+                            newfdata[fieldname] = v;
+                        }
+                    } else {
+                        newfdata[k] = v;
+                    }
+                });
+
                 // autofilling form
-                $("#edit-collapse").autofill( fdata, {"findbyname": false } );
+                $("#edit-collapse").autofill( newfdata, {"findbyname": false } );
                 // setting index hidden input
                 $("input#index").val(index);
+                
                 // select2 is not autofilled - we need a special operation
                 var newOption = new Option(data.casnumber.casnumber_label, data.casnumber.casnumber_id, true, true);
                 $('select#casnumber').append(newOption).trigger('change');
+                
+                var newOption = new Option(data.empiricalformula.empiricalformula_label, data.empiricalformula.empiricalformula_id, true, true);
+                $('select#empiricalformula').append(newOption).trigger('change');
+                
+                var newOption = new Option(data.name.name_label, data.name.name_id, true, true);
+                $('select#name').append(newOption).trigger('change');
+
                 if (data.cenumber.cenumber_id.Valid) {
                     var newOption = new Option(data.cenumber.cenumber_label.String, data.cenumber.cenumber_id.Int64, true, true);
                     $('select#cenumber').append(newOption).trigger('change');
                 }
-                var newOption = new Option(data.empiricalformula.empiricalformula_label, data.empiricalformula.empiricalformula_id, true, true);
-                $('select#empiricalformula').append(newOption).trigger('change');
-                var newOption = new Option(data.name.name_label, data.name.name_id, true, true);
-                $('select#name').append(newOption).trigger('change');
+
+                if (data.physicalstate.physicalstate_id.Valid) {
+                    var newOption = new Option(data.physicalstate.physicalstate_label.String, data.physicalstate.physicalstate_id.Int64, true, true);
+                    $('select#physicalstate').append(newOption).trigger('change');
+                }
+
+                if (data.classofcompound.classofcompound_id.Valid) {
+                    var newOption = new Option(data.classofcompound.classofcompound_label.String, data.classofcompound.classofcompound_id.Int64, true, true);
+                    $('select#classofcompound').append(newOption).trigger('change');
+                }
+
+                if (data.signalword.signalword_id.Valid) {
+                    var newOption = new Option(data.signalword.signalword_label.String, data.signalword.signalword_id.Int64, true, true);
+                    $('select#signalword').append(newOption).trigger('change');
+                }
+               
                 for(var i in data.symbols) {
                    var newOption = new Option(data.symbols[i].symbol_label, data.symbols[i].symbol_id, true, true);
                    $('select#symbols').append(newOption).trigger('change');
                 }
+                
                 for(var i in data.synonyms) {
                    var newOption = new Option(data.synonyms[i].name_label, data.synonyms[i].name_id, true, true);
                    $('select#synonyms').append(newOption).trigger('change');
+                }
+
+                for(var i in data.hazardstatements) {
+                   var newOption = new Option(data.hazardstatements[i].hazardstatement_reference, data.hazardstatements[i].hazardstatement_id, true, true);
+                   $('select#hazardstatements').append(newOption).trigger('change');
+                }
+
+                for(var i in data.precautionarystatements) {
+                   var newOption = new Option(data.precautionarystatements[i].precautionarystatement_reference, data.precautionarystatements[i].precautionarystatement_id, true, true);
+                   $('select#precautionarystatements').append(newOption).trigger('change');
                 }
             }).fail(function(jqXHR, textStatus, errorThrown) {
                 handleHTTPError(jqXHR.statusText, jqXHR.status)

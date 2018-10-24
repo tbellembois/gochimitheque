@@ -113,7 +113,7 @@ type SignalWord struct {
 
 // HazardStatement is a product hazard statement
 type HazardStatement struct {
-	HazardStatementID        int    `db:"hazardstatement_id" json:"hazardstatement_id" schema:"hazardstatemente_id"`
+	HazardStatementID        int    `db:"hazardstatement_id" json:"hazardstatement_id" schema:"hazardstatement_id"`
 	HazardStatementLabel     string `db:"hazardstatement_label" json:"hazardstatement_label" schema:"hazardstatement_label"`
 	HazardStatementReference string `db:"hazardstatement_reference" json:"hazardstatement_reference" schema:"hazardstatement_reference"`
 }
@@ -151,7 +151,17 @@ type Product struct {
 }
 
 func (p Product) String() string {
-	return fmt.Sprintf("ProductID:%d | ProductSpecificity:%s | EmpiricalFormula:%+v | Person:%+v | CasNumber:%s | CeNumber:%s | Name:%s | Synonyms:%+v | Symbols:%+v", p.ProductID, p.ProductSpecificity, p.EmpiricalFormula, p.Person, p.CasNumber, p.CeNumber, p.Name, p.Synonyms, p.Symbols)
+	return fmt.Sprintf(`ProductID:%d | 
+	ProductSpecificity:%s | 
+	EmpiricalFormula:%+v | 
+	Person:%+v | 
+	CasNumber:%s | 
+	CeNumber:%s | 
+	Name:%s | 
+	Synonyms:%+v | 
+	Symbols:%+v |
+	DisposalComment:%+v |
+	Remark:%+v |`, p.ProductID, p.ProductSpecificity, p.EmpiricalFormula, p.Person, p.CasNumber, p.CeNumber, p.Name, p.Synonyms, p.Symbols, p.ProductDisposalComment, p.ProductRemark)
 }
 
 func (p Person) String() string {
