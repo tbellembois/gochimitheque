@@ -836,7 +836,7 @@ func (db *SQLiteDataStore) GetProduct(id int) (Product, error) {
 	JOIN empiricalformula ON product.empiricalformula = empiricalformula.empiricalformula_id
 	LEFT JOIN physicalstate ON product.physicalstate = physicalstate.physicalstate_id
 	LEFT JOIN signalword ON product.signalword = signalword.signalword_id
-	LEFT JOIN classofcompound ON product.classofcompound = classofcompound.classofcompound_id"
+	LEFT JOIN classofcompound ON product.classofcompound = classofcompound.classofcompound_id
 	WHERE product_id = ?`
 	if err = db.Get(&product, sqlr, id); err != nil {
 		return Product{}, err
@@ -959,7 +959,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 		p.CasNumber.CasNumberID = int(lastid)
 	}
 	// if CeNumberID = -1 then it is a new ce
-	if v, err := p.CeNumber.CeNumberID.Value(); err == nil && v == -1 {
+	if v, err := p.CeNumber.CeNumberID.Value(); p.CeNumber.CeNumberID.Valid && err == nil && v.(int64) == -1 {
 		sqlr = `INSERT INTO cenumber (cenumber_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.CeNumberLabel); err != nil {
 			tx.Rollback()
@@ -972,6 +972,11 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 		}
 		// updating the product CeNumberID (CeNumberLabel already set)
 		p.CeNumber.CeNumberID = sql.NullInt64{Int64: lastid}
+	}
+	if err != nil {
+		log.Error("cenumber error - " + err.Error())
+		tx.Rollback()
+		return err, 0
 	}
 	// if NameID = -1 then it is a new name
 	if p.Name.NameID == -1 {
@@ -988,6 +993,21 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 		// updating the product NameID (NameLabel already set)
 		p.Name.NameID = int(lastid)
 	}
+	for i, syn := range p.Synonyms {
+		if syn.NameID == -1 {
+			sqlr = `INSERT INTO name (name_label) VALUES (?)`
+			if res, err = tx.Exec(sqlr, strings.ToUpper(syn.NameLabel)); err != nil {
+				tx.Rollback()
+				return err, 0
+			}
+			// getting the last inserted id
+			if lastid, err = res.LastInsertId(); err != nil {
+				tx.Rollback()
+				return err, 0
+			}
+			p.Synonyms[i].NameID = int(lastid)
+		}
+	}
 	// if EmpiricalFormulaID = -1 then it is a new empirical formula
 	if p.EmpiricalFormula.EmpiricalFormulaID == -1 {
 		sqlr = `INSERT INTO empiricalformula (empiricalformula_label) VALUES (?)`
@@ -1003,19 +1023,70 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 		// updating the product EmpiricalFormulaID (EmpiricalFormulaLabel already set)
 		p.EmpiricalFormula.EmpiricalFormulaID = int(lastid)
 	}
+	// if ClassOfCompoundID = -1 then it is a new class of compound
+	if v, err := p.ClassOfCompound.ClassOfCompoundID.Value(); p.ClassOfCompound.ClassOfCompoundID.Valid && err == nil && v.(int64) == -1 {
+		sqlr = `INSERT INTO classofcompound (classofcompound_label) VALUES (?)`
+		if res, err = tx.Exec(sqlr, p.ClassOfCompoundLabel); err != nil {
+			tx.Rollback()
+			return err, 0
+		}
+		// getting the last inserted id
+		if lastid, err = res.LastInsertId(); err != nil {
+			tx.Rollback()
+			return err, 0
+		}
+		// updating the product ClassOfCompoundID (ClassOfCompoundLabel already set)
+		p.ClassOfCompound.ClassOfCompoundID = sql.NullInt64{Int64: lastid}
+	}
+	if err != nil {
+		log.Error("classofcompound error - " + err.Error())
+		tx.Rollback()
+		return err, 0
+	}
 
 	// finally updating the product
 	s := make(map[string]interface{})
 	if p.ProductSpecificity.Valid {
 		s["product_specificity"] = p.ProductSpecificity.String
 	}
+	if p.ProductMSDS.Valid {
+		s["product_msds"] = p.ProductMSDS.String
+	}
+	if p.ProductRestricted.Valid {
+		s["product_restricted"] = p.ProductRestricted.Bool
+	}
+	if p.ProductRadioactive.Valid {
+		s["product_radioactive"] = p.ProductRadioactive.Bool
+	}
+	if p.ProductLinearFormula.Valid {
+		s["product_linearformula"] = p.ProductLinearFormula.String
+	}
+	if p.ProductThreeDFormula.Valid {
+		s["product_threedformula"] = p.ProductThreeDFormula.String
+	}
+	if p.ProductDisposalComment.Valid {
+		s["product_disposalcomment"] = p.ProductDisposalComment.String
+	}
+	if p.ProductRemark.Valid {
+		s["product_remark"] = p.ProductRemark.String
+	}
+	if p.PhysicalStateID.Valid {
+		s["physicalstate"] = int(p.PhysicalStateID.Int64)
+	}
+	if p.SignalWordID.Valid {
+		s["signalword"] = int(p.SignalWordID.Int64)
+	}
+	if p.ClassOfCompoundID.Valid {
+		s["classofcompound"] = int(p.ClassOfCompoundID.Int64)
+	}
+	if p.CeNumberID.Valid {
+		s["cenumber"] = int(p.CeNumberID.Int64)
+	}
 	s["casnumber"] = p.CasNumberID
 	s["name"] = p.NameID
 	s["empiricalformula"] = p.EmpiricalFormulaID
 	s["person"] = p.PersonID
-	if p.CeNumber.CeNumberID.Valid {
-		s["cenumber"] = int(p.CeNumberID.Int64)
-	}
+
 	// building column names/values
 	col := make([]string, 0, len(s))
 	val := make([]interface{}, 0, len(s))
@@ -1028,8 +1099,10 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 			val = append(val, strconv.Itoa(int(rv.Int())))
 		case reflect.String:
 			val = append(val, rv.String())
+		case reflect.Bool:
+			val = append(val, rv.Bool())
 		default:
-			panic("unknown type")
+			panic("unknown type:" + rt.String())
 		}
 	}
 
@@ -1040,6 +1113,8 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 	}
 
 	if res, err = tx.Exec(sqlr, sqla...); err != nil {
+		log.Error("product error - " + err.Error())
+		log.Error("sql:" + sqlr)
 		tx.Rollback()
 		return err, 0
 	}
@@ -1056,25 +1131,31 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 	for _, sym := range p.Symbols {
 		sqlr = `INSERT INTO productsymbols (productsymbols_product_id, productsymbols_symbol_id) VALUES (?,?)`
 		if res, err = tx.Exec(sqlr, p.ProductID, sym.SymbolID); err != nil {
+			log.Error("productsymbols error - " + err.Error())
+			tx.Rollback()
+			return err, 0
+		}
+	}
+	// adding hazard statements
+	for _, hs := range p.HazardStatements {
+		sqlr = `INSERT INTO producthazardstatements (producthazardstatements_product_id, producthazardstatements_hazardstatement_id) VALUES (?,?)`
+		if res, err = tx.Exec(sqlr, p.ProductID, hs.HazardStatementID); err != nil {
+			log.Error("producthazardstatements error - " + err.Error())
+			tx.Rollback()
+			return err, 0
+		}
+	}
+	// adding precautionary statements
+	for _, ps := range p.PrecautionaryStatements {
+		sqlr = `INSERT INTO productprecautionarystatements (productprecautionarystatements_product_id, productprecautionarystatements_precautionarystatement_id) VALUES (?,?)`
+		if res, err = tx.Exec(sqlr, p.ProductID, ps.PrecautionaryStatementID); err != nil {
+			log.Error("productprecautionarystatements error - " + err.Error())
 			tx.Rollback()
 			return err, 0
 		}
 	}
 	// adding synonyms
 	for _, syn := range p.Synonyms {
-		if syn.NameID == -1 {
-			sqlr = `INSERT INTO name (name_label) VALUES (?)`
-			if res, err = tx.Exec(sqlr, strings.ToUpper(syn.NameLabel)); err != nil {
-				tx.Rollback()
-				return err, 0
-			}
-			// getting the last inserted id
-			if lastid, err = res.LastInsertId(); err != nil {
-				tx.Rollback()
-				return err, 0
-			}
-			syn.NameID = int(lastid)
-		}
 		sqlr = `INSERT INTO productsynonyms (productsynonyms_product_id, productsynonyms_name_id) VALUES (?,?)`
 		if res, err = tx.Exec(sqlr, p.ProductID, syn.NameID); err != nil {
 			tx.Rollback()
@@ -1123,7 +1204,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 		p.CasNumber.CasNumberID = int(lastid)
 	}
 	// if CeNumberID = -1 then it is a new ce
-	if p.CeNumber.CeNumberID.Int64 == -1 {
+	if v, err := p.CeNumber.CeNumberID.Value(); p.CeNumber.CeNumberID.Valid && err == nil && v.(int64) == -1 {
 		sqlr = `INSERT INTO cenumber (cenumber_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.CeNumberLabel); err != nil {
 			tx.Rollback()
@@ -1135,7 +1216,12 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 			return err
 		}
 		// updating the product CeNumberID (CeNumberLabel already set)
-		p.CeNumber.CeNumberID = sql.NullInt64{Int64: lastid, Valid: true}
+		p.CeNumber.CeNumberID = sql.NullInt64{Int64: lastid}
+	}
+	if err != nil {
+		log.Error("cenumber error - " + err.Error())
+		tx.Rollback()
+		return err
 	}
 	// if NameID = -1 then it is a new name
 	if p.Name.NameID == -1 {
@@ -1152,6 +1238,21 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 		// updating the product NameID (NameLabel already set)
 		p.Name.NameID = int(lastid)
 	}
+	for i, syn := range p.Synonyms {
+		if syn.NameID == -1 {
+			sqlr = `INSERT INTO name (name_label) VALUES (?)`
+			if res, err = tx.Exec(sqlr, strings.ToUpper(syn.NameLabel)); err != nil {
+				tx.Rollback()
+				return err
+			}
+			// getting the last inserted id
+			if lastid, err = res.LastInsertId(); err != nil {
+				tx.Rollback()
+				return err
+			}
+			p.Synonyms[i].NameID = int(lastid)
+		}
+	}
 	// if EmpiricalFormulaID = -1 then it is a new empirical formula
 	if p.EmpiricalFormula.EmpiricalFormulaID == -1 {
 		sqlr = `INSERT INTO empiricalformula (empiricalformula_label) VALUES (?)`
@@ -1166,6 +1267,81 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 		}
 		// updating the product EmpiricalFormulaID (EmpiricalFormulaLabel already set)
 		p.EmpiricalFormula.EmpiricalFormulaID = int(lastid)
+	}
+	// if ClassOfCompoundID = -1 then it is a new class of compound
+	if v, err := p.ClassOfCompound.ClassOfCompoundID.Value(); p.ClassOfCompound.ClassOfCompoundID.Valid && err == nil && v.(int64) == -1 {
+		sqlr = `INSERT INTO classofcompound (classofcompound_label) VALUES (?)`
+		if res, err = tx.Exec(sqlr, p.ClassOfCompoundLabel); err != nil {
+			tx.Rollback()
+			return err
+		}
+		// getting the last inserted id
+		if lastid, err = res.LastInsertId(); err != nil {
+			tx.Rollback()
+			return err
+		}
+		// updating the product ClassOfCompoundID (ClassOfCompoundLabel already set)
+		p.ClassOfCompound.ClassOfCompoundID = sql.NullInt64{Int64: lastid}
+	}
+	if err != nil {
+		log.Error("classofcompound error - " + err.Error())
+		tx.Rollback()
+		return err
+	}
+
+	// finally updating the product
+	s := make(map[string]interface{})
+	if p.ProductSpecificity.Valid {
+		s["product_specificity"] = p.ProductSpecificity.String
+	}
+	if p.ProductMSDS.Valid {
+		s["product_msds"] = p.ProductMSDS.String
+	}
+	if p.ProductRestricted.Valid {
+		s["product_restricted"] = p.ProductRestricted.Bool
+	}
+	if p.ProductRadioactive.Valid {
+		s["product_radioactive"] = p.ProductRadioactive.Bool
+	}
+	if p.ProductLinearFormula.Valid {
+		s["product_linearformula"] = p.ProductLinearFormula.String
+	}
+	if p.ProductThreeDFormula.Valid {
+		s["product_threedformula"] = p.ProductThreeDFormula.String
+	}
+	if p.ProductDisposalComment.Valid {
+		s["product_disposalcomment"] = p.ProductDisposalComment.String
+	}
+	if p.ProductRemark.Valid {
+		s["product_remark"] = p.ProductRemark.String
+	}
+	if p.PhysicalStateID.Valid {
+		s["physicalstate"] = int(p.PhysicalStateID.Int64)
+	}
+	if p.SignalWordID.Valid {
+		s["signalword"] = int(p.SignalWordID.Int64)
+	}
+	if p.ClassOfCompoundID.Valid {
+		s["classofcompound"] = int(p.ClassOfCompoundID.Int64)
+	}
+	if p.CeNumberID.Valid {
+		s["cenumber"] = int(p.CeNumberID.Int64)
+	}
+	s["casnumber"] = p.CasNumberID
+	s["name"] = p.NameID
+	s["empiricalformula"] = p.EmpiricalFormulaID
+	s["person"] = p.PersonID
+
+	ubuilder = sq.Update("product").
+		SetMap(s).
+		Where(sq.Eq{"product_id": p.ProductID})
+	if sqlr, sqla, err = ubuilder.ToSql(); err != nil {
+		tx.Rollback()
+		return err
+	}
+	if _, err = tx.Exec(sqlr, sqla...); err != nil {
+		tx.Rollback()
+		return err
 	}
 
 	// deleting symbols
@@ -1191,19 +1367,6 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	}
 	// adding new ones
 	for _, syn := range p.Synonyms {
-		if syn.NameID == -1 {
-			sqlr = `INSERT INTO name (name_label) VALUES (?)`
-			if res, err = tx.Exec(sqlr, strings.ToUpper(syn.NameLabel)); err != nil {
-				tx.Rollback()
-				return err
-			}
-			// getting the last inserted id
-			if lastid, err = res.LastInsertId(); err != nil {
-				tx.Rollback()
-				return err
-			}
-			syn.NameID = int(lastid)
-		}
 		sqlr = `INSERT INTO productsynonyms (productsynonyms_product_id, productsynonyms_name_id) VALUES (?,?)`
 		if res, err = tx.Exec(sqlr, p.ProductID, syn.NameID); err != nil {
 			tx.Rollback()
@@ -1211,29 +1374,36 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 		}
 	}
 
-	// finally updating the product
-	s := make(map[string]interface{})
-	s["product_specificity"] = p.ProductSpecificity
-	s["casnumber"] = p.CasNumberID
-	s["name"] = p.NameID
-	s["empiricalformula"] = p.EmpiricalFormulaID
-	s["person"] = p.PersonID
-	if p.CeNumber.CeNumberID.Valid {
-		s["cenumber"] = p.CeNumberID.Int64
-	} else {
-		s["cenumber"] = nil
+	// deleting hazard statements
+	sqlr = `DELETE FROM producthazardstatements WHERE producthazardstatements.producthazardstatements_product_id = (?)`
+	if res, err = tx.Exec(sqlr, p.ProductID); err != nil {
+		tx.Rollback()
+		return err
+	}
+	// adding new ones
+	for _, hs := range p.HazardStatements {
+		sqlr = `INSERT INTO producthazardstatements (producthazardstatements_product_id, producthazardstatements_hazardstatement_id) VALUES (?,?)`
+		if res, err = tx.Exec(sqlr, p.ProductID, hs.HazardStatementID); err != nil {
+			log.Error("producthazardstatements error - " + err.Error())
+			tx.Rollback()
+			return err
+		}
 	}
 
-	ubuilder = sq.Update("product").
-		SetMap(s).
-		Where(sq.Eq{"product_id": p.ProductID})
-	if sqlr, sqla, err = ubuilder.ToSql(); err != nil {
+	// deleting precautionary statements
+	sqlr = `DELETE FROM productprecautionarystatements WHERE productprecautionarystatements.productprecautionarystatements_product_id = (?)`
+	if res, err = tx.Exec(sqlr, p.ProductID); err != nil {
 		tx.Rollback()
 		return err
 	}
-	if _, err = tx.Exec(sqlr, sqla...); err != nil {
-		tx.Rollback()
-		return err
+	// adding new ones
+	for _, ps := range p.PrecautionaryStatements {
+		sqlr = `INSERT INTO productprecautionarystatements (productprecautionarystatements_product_id, productprecautionarystatements_precautionarystatement_id) VALUES (?,?)`
+		if res, err = tx.Exec(sqlr, p.ProductID, ps.PrecautionaryStatementID); err != nil {
+			log.Error("productprecautionarystatements error - " + err.Error())
+			tx.Rollback()
+			return err
+		}
 	}
 
 	// committing changes
