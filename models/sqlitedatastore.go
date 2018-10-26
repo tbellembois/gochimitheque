@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"bufio"
+	"database/sql"
 	"encoding/csv"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
@@ -99,12 +100,12 @@ func (db *SQLiteDataStore) InsertSamples() error {
 		_, e2.EntityID = db.CreateEntity(e2)
 		_, e3.EntityID = db.CreateEntity(e3)
 
-		sl1 := StoreLocation{StoreLocationName: "fridgeA1", Entity: e1}
-		sl2 := StoreLocation{StoreLocationName: "fridgeB1", Entity: e1}
-		sl3 := StoreLocation{StoreLocationName: "fridgeA2", Entity: e2}
-		sl4 := StoreLocation{StoreLocationName: "fridgeB2", Entity: e2}
-		sl5 := StoreLocation{StoreLocationName: "fridgeA3", Entity: e3}
-		sl6 := StoreLocation{StoreLocationName: "fridgeB3", Entity: e3}
+		sl1 := StoreLocation{StoreLocationName: sql.NullString{Valid: true, String: "fridgeA1"}, Entity: e1}
+		sl2 := StoreLocation{StoreLocationName: sql.NullString{Valid: true, String: "fridgeB1"}, Entity: e1}
+		sl3 := StoreLocation{StoreLocationName: sql.NullString{Valid: true, String: "fridgeA2"}, Entity: e2}
+		sl4 := StoreLocation{StoreLocationName: sql.NullString{Valid: true, String: "fridgeB2"}, Entity: e2}
+		sl5 := StoreLocation{StoreLocationName: sql.NullString{Valid: true, String: "fridgeA3"}, Entity: e3}
+		sl6 := StoreLocation{StoreLocationName: sql.NullString{Valid: true, String: "fridgeB3"}, Entity: e3}
 
 		log.Debug("- 3 storelocations")
 		db.CreateStoreLocation(sl1)
@@ -211,7 +212,11 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	CREATE TABLE IF NOT EXISTS storelocation (
 		storelocation_id integer PRIMARY KEY,
 		storelocation_name string NOT NULL,
+		storelocation_color string,
+		storelocation_canstore bool,
 		entity integer NOT NULL,
+		storelocation integer,
+		FOREIGN KEY(storelocation) references storelocation(storelocation_id),
 		FOREIGN KEY(entity) references entity(entity_id));
 	CREATE TABLE IF NOT EXISTS storage (
 		storage_id integer PRIMARY KEY,

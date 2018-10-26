@@ -1,8 +1,7 @@
 | {{define "CONTENT"}}
 
-    .card.bg-light.text-center.w-25.mx-auto.mt-md-5.mb-md-5
-        .card-body
-            h4.card-title new product card
+    | {{$label := "new product card"}}
+    +title
 
     form#product
         input#exactMatchEmpiricalFormula(type="hidden")

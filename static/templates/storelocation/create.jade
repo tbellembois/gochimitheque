@@ -1,12 +1,26 @@
 | {{define "CONTENT"}}
+
+    | {{$label := "new store location"}}
+    +title
+
     form#storelocation
         .form-group.row
-            | {{$label := "name"}} {{$name := "storelocation_name"}}
-            +inputtext
+            .form-group.col-sm-12
+                | {{$label := "name"}} {{$name := "storelocation_name"}}
+                +inputtext
         .form-group.row
-            | {{$label := "entity"}} {{$name := "entity"}}
-            +select
-            
+            .form-group.col-sm-12
+                | {{$label := "entity"}} {{$name := "entity"}}
+                +select
+        .form-group.row
+            .form-group.col-sm-12
+                | {{$label := "can store?"}} {{$name := "storelocation_canstore"}}
+                +checkbox
+        .form-group.row
+            .form-group.col-sm-12
+                | {{$label := "color"}} {{$name := "storelocation_color"}}
+                +inputtext
+
     button#save.btn.btn-primary(type='button', onclick='saveStoreLocation()') save changes
 | {{end}}
 | {{define "CONTENTJS"}}

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -169,6 +170,20 @@ func (env *Env) UpdateStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 			Message: "form decoding error",
 			Code:    http.StatusBadRequest}
 	}
+	// processing storelocation not processed by Decode
+	var slid int
+	slname := r.FormValue("storelocation.storelocation.storelocation_name")
+	if slid, err = strconv.Atoi(r.FormValue("storelocation.storelocation.storelocation_id")); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "slid atoi conversion",
+			Code:    http.StatusInternalServerError}
+	}
+	sl.StoreLocation = &models.StoreLocation{
+		StoreLocationID:   sql.NullInt64{Valid: true, Int64: int64(slid)},
+		StoreLocationName: sql.NullString{Valid: true, String: slname},
+	}
+
 	log.WithFields(log.Fields{"sl": sl}).Debug("UpdateStoreLocationHandler")
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
@@ -180,6 +195,9 @@ func (env *Env) UpdateStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 
 	updatedsl, _ := env.DB.GetStoreLocation(id)
 	updatedsl.StoreLocationName = sl.StoreLocationName
+	updatedsl.StoreLocationColor = sl.StoreLocationColor
+	updatedsl.StoreLocationCanStore = sl.StoreLocationCanStore
+	updatedsl.StoreLocation = sl.StoreLocation
 	updatedsl.Entity = sl.Entity
 	log.WithFields(log.Fields{"updatedsl": updatedsl}).Debug("UpdateStoreLocationHandler")
 
