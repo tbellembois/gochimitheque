@@ -2,7 +2,7 @@
 
     .row
         .col-sm-12
-            button.btn.btn-dark(type="button" onclick="location.href='/v/storages';") switch to storage view
+            button.btn.btn-dark#switchview(type="button" onclick="location.href='/v/storages';") switch to storage view
 
     #accordion
         #list-collapse.collapse.show(data-parent='#accordion')
@@ -25,7 +25,7 @@
                                 th(data-field='name.name_label' data-sortable='true') name
                                 th(data-field='casnumber.casnumber_label' data-sortable='true') CAS
                                 th(data-field='product_specificity' data-sortable='false' data-formatter='product_specificityFormatter') specificity
-                                th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') actions
+                                th(data-field='operate' data-formatter='operateFormatter' data-events='operateEvents') actions
 
         #edit-collapse.collapse(data-parent='#accordion')
             form#product
@@ -135,7 +135,11 @@
         //
         // close buttons actions
         //
-        function closeEdit() { $("#list-collapse").collapse("show"); $("#edit-collapse").collapse("hide"); }
+        function closeEdit() { 
+            $("#list-collapse").collapse("show");
+            $("#edit-collapse").collapse("hide"); 
+            $("#switchview").toggle("show");
+        }
         
         $( document ).ready(function() {           
             
@@ -180,40 +184,85 @@
         //
         function detailFormatter(index, row) {
             var html = [];
-            html.push("<p><b>id</b>: " + row["product_id"] + "</p>")
-            html.push("<p><b>creator</b>: " + row["person"]["person_email"] + "</p>")
-            html.push("<p><b>name</b>: " + row["name"]["name_label"] + "</p>")
+            html.push("<div class='row mt-md-3'>")
+            html.push("<div class='col-sm-6'><b>id</b>: " + row["product_id"] + "</div>")
+            html.push("<div class='col-sm-6'><b>creator</b>: " + row["person"]["person_email"] + "</div>")
+            html.push("</div>")
+
+            html.push("<div class='row mt-md-3'>")
+            html.push("<div class='col-sm-6'><b>name</b>: " + row["name"]["name_label"] + "</div>")
+            html.push("<div class='col-sm-6'>")
+            html.push("<b>synonyms</b>:")
             $.each(row["synonyms"], function (key, value) {
-                html.push("<p>" + value["name_label"] + "</p>");
+                html.push("<span>" + value["name_label"] + "</span> ");
             });
-            html.push("<p><b>empirical formula</b>: " + row["empiricalformula"]["empiricalformula_label"] + "</p>")
-            html.push("<p><b>linear formula</b>: " + row["product_linearformula"]["String"] + "</p>")
-            html.push("<p><b>specificity</b>: " + row["product_specificity"]["String"] + "</p>")
-            html.push("<p><b>cas</b>: " + row["casnumber"]["casnumber_label"] + "</p>")
-            html.push("<p><b>ce</b>: " + row["cenumber"]["cenumber_label"]["String"] + "</p>")
-            html.push("<p><b>msds</b>: " + row["product_msds"]["String"] + "</p>")
-            html.push("<p><b>classofcompound</b>: " + row["classofcompound"]["classofcompound_label"]["String"] + "</p>")
-            html.push("<p><b>restricted</b>: " + row["product_restricted"]["Bool"] + "</p>")
-            html.push("<p><b>radioactive</b>: " + row["product_radioactive"]["Bool"] + "</p>")
-            html.push("<p>")
+            html.push("</div>")
+            html.push("</div>")
+
+            html.push("<div class='row mt-md-3'>")
+            html.push("<div class='col-sm-4'><b>empirical formula</b>: " + row["empiricalformula"]["empiricalformula_label"] + "</div>")
+            html.push("<div class='col-sm-4'><b>linear formula</b>: " + row["product_linearformula"]["String"] + "</div>")
+            html.push("<div class='col-sm-4'><b>3D formula</b>:: " + row["product_threedformula"]["String"] + "</div>")
+            html.push("</div>")
+
+            html.push("<div class='row mt-md-3'>")
+            html.push("<div class='col-sm-4'><b>specificity</b>: " + row["product_specificity"]["String"] + "</div>")
+            html.push("<div class='col-sm-4'><b>cas</b>: " + row["casnumber"]["casnumber_label"] + "</div>")
+            html.push("<div class='col-sm-4'><b>ce</b>: " + row["cenumber"]["cenumber_label"]["String"] + "</div>")
+            html.push("</div>")
+
+            html.push("<div class='row mt-md-3'>")
+            html.push("<div class='col-sm-12'><b>msds</b>: " + row["product_msds"]["String"] + "</div>")
+            html.push("</div>")
+
+            html.push("<div class='row mt-md-3'>")
+            html.push("<div class='col-sm-4'><b>classofcompound</b>: " + row["classofcompound"]["classofcompound_label"]["String"] + "</div>")
+            html.push("<div class='col-sm-4'><b>restricted</b>: " + row["product_restricted"]["Bool"] + "</div>")
+            html.push("<div class='col-sm-4'><b>radioactive</b>: " + row["product_radioactive"]["Bool"] + "</div>")
+            html.push("</div>")
+
+            html.push("<div class='row mt-md-3'>")
+            html.push("<div class='col-sm-6'>")
+            html.push("<b>symbols</b>:")
             $.each(row["symbols"], function (key, value) {
                 html.push("<img src='data:" + value["symbol_image"] + "' alt='" + value["symbol_label"] + "' title='" + value["symbol_label"] + "'/>");
             });
-            html.push("</p>")
-            html.push("<p>")
-            $.each(row["hazardstatements"], function (key, value) {
-                html.push("<span>" + value["hazardstatement_reference"] + ": " + value["hazardstatement_label"] + "</span>");
-            });
-            html.push("</p>")
-            $.each(row["precautionarystatements"], function (key, value) {
-                html.push("<span>" + value["precautionarystatement_reference"] + ": " + value["precautionarystatement_label"] + "</span>");
-            });
-            html.push("</p>")
-            html.push("<p><b>3d formula</b>: " + row["product_threedformula"]["String"] + "</p>")
-            html.push("<p><b>physical state</b>: " + row["physicalstate"]["physicalstate_label"]["String"] + "</p>")
+            html.push("</div>")
+            html.push("<div class='col-sm-6'>")
             html.push("<p><b>signal word</b>: " + row["signalword"]["signalword_label"]["String"] + "</p>")
-            html.push("<p><b>disposal comment</b>: " + row["product_disposalcomment"]["String"] + "</p>")
-            html.push("<p><b>remark</b>: " + row["product_remark"]["String"] + "</p>")
+            html.push("</div>")
+            html.push("</div>")
+
+            html.push("<div class='row mt-md-3'>")
+            html.push("<div class='col-sm-6'>")
+            html.push("<b>hazardstatements</b>:")
+            html.push("<ul>")
+            $.each(row["hazardstatements"], function (key, value) {
+                html.push("<li>" + value["hazardstatement_reference"] + ": <i>" + value["hazardstatement_label"] + "</i></li>");
+            });
+            html.push("</ul>")
+            html.push("</div>")
+            html.push("<div class='col-sm-4'>")
+            html.push("<b>precautionarystatements</b>:")
+            html.push("<ul>")
+            $.each(row["precautionarystatements"], function (key, value) {
+                html.push("<li>" + value["precautionarystatement_reference"] + ": " + value["precautionarystatement_label"] + "</li>");
+            });
+            html.push("</ul>")
+            html.push("</div>")
+            html.push("</div>")
+
+            html.push("<div class='row mt-md-3'>")
+            html.push("<div class='col-sm-12'><b>physical state</b>: " + row["physicalstate"]["physicalstate_label"]["String"] + "</div>")
+            html.push("</div>")
+
+            html.push("<div class='row mt-md-3'>")
+            html.push("<div class='col-sm-12'><b>disposal comment</b>: " + row["product_disposalcomment"]["String"] + "</div>")
+            html.push("</div>")
+
+            html.push("<div class='row mt-md-3'>")
+            html.push("<div class='col-sm-12'><b>remark</b>: " + row["product_remark"]["String"] + "</div>")
+            html.push("</div>")
             return html.join('');
         }
 
@@ -221,7 +270,11 @@
         // product_specificityFormatter formatter
         //
         function product_specificityFormatter(value, row, index, field) {
-            return value.String;
+            if (value.Valid) {
+                return value.String;
+            } else {
+                return "";
+            }
         }
 
         //
@@ -246,17 +299,17 @@
 
             // buttons are hidden by default
             var actions = [
-            '<button id="store' + pid + '" class="store btn btn-secondary" style="display: none;" title="store" type="button">',
-                '<i class="fas fa-box-open"></i>',
+            '<button id="store' + pid + '" class="store btn btn-link" style="display: none;" title="store" type="button">',
+                '<i class="material-icons">move_to_inbox</i>',
             '</button>',
-            '<button id="storages' + pid + '" class="storages btn btn-secondary" style="display: none;" title="storages" type="button">',
-                '<i class="fas fa-boxes"></i>',
+            '<button id="storages' + pid + '" class="storages btn btn-link" style="display: none;" title="storages" type="button">',
+                '<i class="material-icons">all_inbox</i>',
             '</button>',
-            '<button id="edit' + pid + '" class="edit btn btn-secondary" style="display: none;" title="edit" type="button">',
-                '<i class="fas fa-edit"></i>',
+            '<button id="edit' + pid + '" class="edit btn btn-link" style="display: none;" title="edit" type="button">',
+                '<i class="material-icons">edit</i>',
             '</button>',
-            '<button id="delete' + pid + '" class="delete btn btn-secondary" style="display: none;" title="delete" type="button">',
-                '<i class="fas fa-trash-alt"></i>',
+            '<button id="delete' + pid + '" class="delete btn btn-link" style="display: none;" title="delete" type="button">',
+                '<i class="material-icons">delete</i>',
             '</button>'];
 
             return actions.join('&nbsp;')    
@@ -299,33 +352,7 @@
                 fdata = flatten(data);
 
                 // processing sqlNull values
-                newfdata = new Map()
-                $.each(fdata, function(k, v) {
-                    matchs = k.match(/(.+)\.String/);
-                    matchi = k.match(/(.+)\.Int64/);
-                    matchb = k.match(/(.+)\.Bool/);
-                    if (matchs !== null) {
-                        fieldname = matchs[1];
-                        valid = fdata[fieldname+".Valid"] == true;
-                        if (valid) {
-                            newfdata[fieldname] = v;
-                        }
-                    }  else if (matchi !== null) {
-                        fieldname = matchi[1];
-                        valid = fdata[fieldname+".Valid"] == true;
-                        if (valid) {
-                            newfdata[fieldname] = v;
-                        }
-                    }  else if (matchb !== null) {
-                        fieldname = matchb[1];
-                        valid = fdata[fieldname+".Valid"] == true;
-                        if (valid) {
-                            newfdata[fieldname] = v;
-                        }
-                    } else {
-                        newfdata[k] = v;
-                    }
-                });
+                newfdata = normalizeSqlNull(fdata)
 
                 // autofilling form
                 $("#edit-collapse").autofill( newfdata, {"findbyname": false } );
@@ -388,6 +415,7 @@
             // finally collapsing the view
             $('#edit-collapse').collapse('show');
             $('#list-collapse').collapse('hide');
+            $("#switchview").toggle("hide");
         }
         window.operateEvents = {
             'click .store': function (e, value, row, index) {

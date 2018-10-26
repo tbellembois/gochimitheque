@@ -1,4 +1,9 @@
 | {{define "MIXINS"}}
+mixin title
+    .card.bg-light.text-center.w-25.mx-auto.mt-md-5.mb-md-5
+        .card-body
+            h4.card-title {{$label}}
+
 mixin inlineradio
     .custom-control.custom-radio.custom-control-inline
         input(class='custom-control-input {{$class}}' id='{{$id}}' type='radio' name='{{$name}}' value='{{$value}}')

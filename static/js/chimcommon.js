@@ -27,6 +27,37 @@ var flatten = function(obj, name, stem) {
     return out;
 };
 
+var normalizeSqlNull = function(obj) {
+  newfdata = new Map()
+  $.each(obj, function(k, v) {
+    matchs = k.match(/(.+)\.String/);
+    matchi = k.match(/(.+)\.Int64/);
+    matchb = k.match(/(.+)\.Bool/);
+    if (matchs !== null) {
+        fieldname = matchs[1];
+        valid = fdata[fieldname+".Valid"] == true;
+        if (valid) {
+            newfdata[fieldname] = v;
+        }
+    }  else if (matchi !== null) {
+        fieldname = matchi[1];
+        valid = fdata[fieldname+".Valid"] == true;
+        if (valid) {
+            newfdata[fieldname] = v;
+        }
+    }  else if (matchb !== null) {
+        fieldname = matchb[1];
+        valid = fdata[fieldname+".Valid"] == true;
+        if (valid) {
+            newfdata[fieldname] = v;
+        }
+    } else {
+        newfdata[k] = v;
+    }
+  });
+  return newfdata;
+};
+
 // displays and fadeout the given message
 function displayMessage(msgText, type) {
     var d = $("<div>");

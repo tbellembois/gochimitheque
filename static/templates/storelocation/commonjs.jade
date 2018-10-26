@@ -42,6 +42,32 @@ script.
                 }
             });
 
+            //
+            // storelocation select2
+            //
+            $('select#storelocation').select2({
+                ajax: {
+                    url: '/storelocations',
+                    dataType: 'json',
+                    processResults: function (data) {
+                    // replacing email by text expected by select2
+                    var newdata = $.map(data.rows, function (obj) {
+                        obj.text = obj.text || obj.storelocation_name;
+                        obj.id = obj.id || obj.storelocation_id;
+                        return obj;
+                    });
+                    return {
+                        results: newdata
+                    };
+                    }
+                }
+            });
+
+            //
+            // color picker
+            //
+            $("#storelocation_color").colorpicker();
+
     });
 
     //
@@ -60,6 +86,8 @@ script.
             index: index,
             row: {
                 "storelocation_name": data.storelocation_name,
+                "storelocation_canstore": data.storelocation_canstore,
+                "storelocation_color": data.storelocation_color,
                 "entity.entity_name": data.entity.entity_name,
             }
         });
@@ -73,11 +101,21 @@ script.
 
         var storelocation_id = $("input#storelocation_id").val(),
             storelocation_name = $("input#storelocation_name").val(),
+            storelocation_color = $("input#storelocation_color").val(),
+            storelocation_canstore = $("input#storelocation_canstore:CHECKED").val(),
             entity = $('select#entity').select2('data')[0],
+            storelocation = $('select#storelocation').select2('data')[0],
             ajax_url = "/storelocations",
             ajax_method = "POST",
             ajax_callback = createCallBack,
             data = {};
+
+            if (storelocation !== undefined) {
+                $.extend(data, {
+                    "storelocation.storelocation.storelocation_id": storelocation.id,
+                    "storelocation.storelocation.storelocation_name": storelocation.text,
+                });                    
+            }
 
             if ($("form#storelocation input#storelocation_id").length) {
                 ajax_url = "/storelocations/" + storelocation_id
@@ -88,6 +126,8 @@ script.
             $.extend(data, {
                 "storelocation_id": storelocation_id,
                 "storelocation_name": storelocation_name,
+                "storelocation_color": storelocation_color,
+                "storelocation_canstore": storelocation_canstore == "on" ? true : false,
                 "entity.entity_id": entity.id,
                 "entity.entity_name": entity.text,
             });

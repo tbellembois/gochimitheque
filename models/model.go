@@ -13,9 +13,13 @@ type AppHandlerFunc func(http.ResponseWriter, *http.Request) *helpers.AppError
 
 // StoreLocation is where products are stored in entities
 type StoreLocation struct {
-	StoreLocationID   int    `db:"storelocation_id" json:"storelocation_id" schema:"storelocation_id"`
-	StoreLocationName string `db:"storelocation_name" json:"storelocation_name" schema:"storelocation_name"`
-	Entity            `db:"entity" json:"entity" schema:"entity"`
+	// nullable values to handle optional StoreLocation foreign key (gorilla shema nil values)
+	StoreLocationID       sql.NullInt64  `db:"storelocation_id" json:"storelocation_id" schema:"storelocation_id"`
+	StoreLocationName     sql.NullString `db:"storelocation_name" json:"storelocation_name" schema:"storelocation_name"`
+	StoreLocationCanStore sql.NullBool   `db:"storelocation_canstore" json:"storelocation_canstore" schema:"storelocation_canstore"`
+	StoreLocationColor    sql.NullString `db:"storelocation_color" json:"storelocation_color" schema:"storelocation_color"`
+	Entity                `db:"entity" json:"entity" schema:"entity"`
+	StoreLocation         *StoreLocation `db:"storelocation" json:"storelocation" schema:"storelocation"`
 }
 
 // Entity represent a department, a laboratory...
@@ -166,6 +170,10 @@ func (p Product) String() string {
 
 func (p Person) String() string {
 	return fmt.Sprintf("PersonEmail: %s", p.PersonEmail)
+}
+
+func (s StoreLocation) String() string {
+	return fmt.Sprintf("StoreLocationName: %s | StoreLocationCanStore: %b | StoreLocationColor: %s | Entity: %d | StoreLocation: %d", s.StoreLocationName, s.StoreLocationCanStore, s.StoreLocationColor, s.EntityID, s.StoreLocation.StoreLocationID)
 }
 
 func (p Permission) String() string {
