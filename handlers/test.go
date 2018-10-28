@@ -1,8 +1,9 @@
 package handlers
 
 import (
-	"github.com/tbellembois/gochimitheque/helpers"
 	"net/http"
+
+	"github.com/tbellembois/gochimitheque/helpers"
 )
 
 func (env *Env) VTestHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {

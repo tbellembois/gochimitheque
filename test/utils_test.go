@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/tbellembois/gochimitheque/utils"
 	"testing"
+
+	"github.com/tbellembois/gochimitheque/utils"
 )
 
 func TestIsCasNumber(t *testing.T) {

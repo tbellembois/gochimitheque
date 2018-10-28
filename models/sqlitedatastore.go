@@ -6,11 +6,12 @@ import (
 	"bufio"
 	"database/sql"
 	"encoding/csv"
+	"os"
+	"time"
+
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
 	log "github.com/sirupsen/logrus"
-	"os"
-	"time"
 )
 
 const (
@@ -213,7 +214,8 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		storelocation_id integer PRIMARY KEY,
 		storelocation_name string NOT NULL,
 		storelocation_color string,
-		storelocation_canstore bool,
+		storelocation_canstore boolean default 0,
+		storelocation_fullpath string,
 		entity integer NOT NULL,
 		storelocation integer,
 		FOREIGN KEY(storelocation) references storelocation(storelocation_id),
@@ -297,8 +299,8 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		product_id integer PRIMARY KEY,
 		product_specificity string,
 		product_msds string,
-		product_restricted boolean,
-		product_radioactive boolean,
+		product_restricted boolean default 0,
+		product_radioactive boolean default 0,
 		product_linearformula string,
 		product_threedformula string,
 		product_disposalcomment string,

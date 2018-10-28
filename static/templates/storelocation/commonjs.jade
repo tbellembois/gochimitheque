@@ -52,8 +52,8 @@ script.
                     processResults: function (data) {
                     // replacing email by text expected by select2
                     var newdata = $.map(data.rows, function (obj) {
-                        obj.text = obj.text || obj.storelocation_name;
-                        obj.id = obj.id || obj.storelocation_id;
+                        obj.text = obj.text || obj.storelocation_name.String;
+                        obj.id = obj.id || obj.storelocation_id.Int64;
                         return obj;
                     });
                     return {
@@ -74,7 +74,7 @@ script.
     // save store location callback
     //
     var createCallBack = function createCallback(data, textStatus, jqXHR) {
-        displayMessage("store location " + data.storelocation_name + " created", "success");
+        displayMessage("store location " + data.storelocation_name.String + " created", "success");
         setTimeout(function(){ window.location = "/v/storelocations"; }, 1000);
     }
     var updateCallBack = function updateCallback(data, textStatus, jqXHR) {
@@ -91,7 +91,7 @@ script.
                 "entity.entity_name": data.entity.entity_name,
             }
         });
-        displayMessage("store location " + data.storelocation_name + " updated", "success");
+        displayMessage("store location " + data.storelocation_name.String + " updated", "success");
     }
     function saveStoreLocation() {
         var form = $("#storelocation");

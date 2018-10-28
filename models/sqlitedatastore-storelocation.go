@@ -2,10 +2,11 @@ package models
 
 import (
 	"database/sql"
-	"github.com/jmoiron/sqlx"
 	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/jmoiron/sqlx"
 
 	sq "github.com/Masterminds/squirrel"
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
@@ -13,6 +14,18 @@ import (
 	"github.com/tbellembois/gochimitheque/constants"
 	"github.com/tbellembois/gochimitheque/helpers"
 )
+
+func (db *SQLiteDataStore) buildFullPath(s *StoreLocation) {
+	s.StoreLocationFullPath = s.StoreLocationName.String + "/"
+	if s.StoreLocation != nil {
+		for p := *s.StoreLocation; p.StoreLocationID.Valid; {
+			p, _ = db.GetStoreLocation(int(p.StoreLocationID.Int64))
+			s.StoreLocationFullPath = p.StoreLocationName.String + "/" + s.StoreLocationFullPath
+			p = *p.StoreLocation
+		}
+		s.StoreLocationFullPath = strings.TrimSuffix(s.StoreLocationFullPath, "/")
+	}
+}
 
 // GetStoreLocations returns the store locations matching the search criteria
 // order, offset and limit are passed to the sql request
@@ -28,7 +41,7 @@ func (db *SQLiteDataStore) GetStoreLocations(p helpers.DbselectparamStoreLocatio
 	log.WithFields(log.Fields{"p": p}).Debug("GetStoreLocations")
 
 	precreq.WriteString(" SELECT count(DISTINCT s.storelocation_id)")
-	presreq.WriteString(` SELECT s.storelocation_id AS "storelocation_id", s.storelocation_name AS "storelocation_name", s.storelocation_canstore, s.storelocation_color, 
+	presreq.WriteString(` SELECT s.storelocation_id AS "storelocation_id", s.storelocation_name AS "storelocation_name", s.storelocation_canstore, s.storelocation_color, s.storelocation_fullpath AS "storelocation_fullpath",
 	storelocation.storelocation_id AS "storelocation.storelocation_id",
 	storelocation.storelocation_name AS "storelocation.storelocation_name",
 	entity.entity_id AS "entity.entity_id", 
@@ -93,19 +106,21 @@ func (db *SQLiteDataStore) GetStoreLocation(id int) (StoreLocation, error) {
 		sqlr          string
 		err           error
 	)
+	log.WithFields(log.Fields{"id": id}).Debug("GetStoreLocation")
 
-	sqlr = `SELECT s.storelocation_id, s.storelocation_name, s.storelocation_canstore, s.storelocation_color,
+	sqlr = `SELECT s.storelocation_id, s.storelocation_name, s.storelocation_canstore, s.storelocation_color, s.storelocation_fullpath,
 	storelocation.storelocation_id AS "storelocation.storelocation_id",
 	storelocation.storelocation_name AS "storelocation.storelocation_name",
 	entity.entity_id AS "entity.entity_id",
 	entity.entity_name AS "entity.entity_name"
 	FROM storelocation AS s
 	JOIN entity ON s.entity = entity.entity_id
-	JOIN storelocation on s.storelocation = storelocation.storelocation_id
+	LEFT JOIN storelocation on s.storelocation = storelocation.storelocation_id
 	WHERE s.storelocation_id = ?`
 	if err = db.Get(&storelocation, sqlr, id); err != nil {
 		return StoreLocation{}, err
 	}
+
 	log.WithFields(log.Fields{"ID": id, "storelocation": storelocation}).Debug("GetStoreLocation")
 	return storelocation, nil
 }
@@ -157,6 +172,9 @@ func (db *SQLiteDataStore) CreateStoreLocation(s StoreLocation) (error, int) {
 		ibuilder sq.InsertBuilder
 	)
 
+	// building full path
+	db.buildFullPath(&s)
+
 	m := make(map[string]interface{})
 	if s.StoreLocationCanStore.Valid {
 		m["storelocation_canstore"] = s.StoreLocationCanStore.Bool
@@ -164,8 +182,12 @@ func (db *SQLiteDataStore) CreateStoreLocation(s StoreLocation) (error, int) {
 	if s.StoreLocationColor.Valid {
 		m["storelocation_color"] = s.StoreLocationColor.String
 	}
-	m["storelocation_name"] = s.StoreLocationName
+	m["storelocation_name"] = s.StoreLocationName.String
+	if s.StoreLocation != nil {
+		m["storelocation"] = s.StoreLocation.StoreLocationID.Int64
+	}
 	m["entity"] = s.EntityID
+	m["storelocation_fullpath"] = s.StoreLocationFullPath
 
 	// building column names/values
 	col := make([]string, 0, len(m))
@@ -175,7 +197,7 @@ func (db *SQLiteDataStore) CreateStoreLocation(s StoreLocation) (error, int) {
 		rt := reflect.TypeOf(v)
 		rv := reflect.ValueOf(v)
 		switch rt.Kind() {
-		case reflect.Int:
+		case reflect.Int, reflect.Int64:
 			val = append(val, strconv.Itoa(int(rv.Int())))
 		case reflect.String:
 			val = append(val, rv.String())
@@ -227,6 +249,9 @@ func (db *SQLiteDataStore) UpdateStoreLocation(s StoreLocation) error {
 	)
 	log.WithFields(log.Fields{"s": s}).Debug("UpdateStoreLocation")
 
+	// building full path
+	db.buildFullPath(&s)
+
 	m := make(map[string]interface{})
 	if s.StoreLocationCanStore.Valid {
 		m["storelocation_canstore"] = s.StoreLocationCanStore.Bool
@@ -234,9 +259,12 @@ func (db *SQLiteDataStore) UpdateStoreLocation(s StoreLocation) error {
 	if s.StoreLocationColor.Valid {
 		m["storelocation_color"] = s.StoreLocationColor.String
 	}
-	m["storelocation_name"] = s.StoreLocationName
-	m["storelocation"] = s.StoreLocation.StoreLocationID
+	m["storelocation_name"] = s.StoreLocationName.String
+	if s.StoreLocation != nil {
+		m["storelocation"] = s.StoreLocation.StoreLocationID.Int64
+	}
 	m["entity"] = s.EntityID
+	m["storelocation_fullpath"] = s.StoreLocationFullPath
 
 	// building column names/values
 	col := make([]string, 0, len(m))
@@ -246,7 +274,7 @@ func (db *SQLiteDataStore) UpdateStoreLocation(s StoreLocation) error {
 		rt := reflect.TypeOf(v)
 		rv := reflect.ValueOf(v)
 		switch rt.Kind() {
-		case reflect.Int:
+		case reflect.Int, reflect.Int64:
 			val = append(val, strconv.Itoa(int(rv.Int())))
 		case reflect.String:
 			val = append(val, rv.String())

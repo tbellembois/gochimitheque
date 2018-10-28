@@ -11,11 +11,11 @@
                                 data-pagination='true', 
                                 data-ajax='getData', 
                                 data-query-params='queryParams',
-                                data-sort-name='storelocation_name')
+                                data-sort-name='storelocation_fullpath')
                         thead
                             tr
                                 th(data-field='storelocation_id' data-sortable='true' data-formatter='storelocation_idFormatter') ID
-                                th(data-field='storelocation_name' data-sortable='true' data-formatter='storelocation_nameFormatter') name
+                                th(data-field='storelocation_fullpath' data-sortable='true') name
                                 th(data-field='entity.entity_name' data-sortable='true') entity
                                 th(data-field='storelocation_color' data-sortable='false' data-formatter='storelocation_colorFormatter') color
                                 th(data-field='storelocation_canstore' data-sortable='false' data-formatter='storelocation_canstoreFormatter') can store
@@ -105,16 +105,6 @@
             }
         }
         //
-        // storelocation_nameFormatter formatter
-        //
-        function storelocation_nameFormatter(value, row, index, field) {
-            if (value.Valid) {
-                return value.String;
-            } else {
-                return "";
-            }
-        }
-        //
         // storelocation_colorFormatter formatter
         //
         function storelocation_colorFormatter(value, row, index, field) {
@@ -128,7 +118,7 @@
         // storelocation_canstoreFormatter formatter
         //
         function storelocation_canstoreFormatter(value, row, index, field) {
-            if (value.Valid) {
+            if (value.Valid && value.Bool) {
                 return '<i class="material-icons">check</i>';
             } else {
                 return "";
@@ -175,6 +165,8 @@
             // clearing selections
             $('select#entity').val(null).trigger('change');
             $('select#entity').find('option').remove();
+            $('select#storelocation').val(null).trigger('change');
+            $('select#storelocation').find('option').remove();
 
             // getting the store location
             $.ajax({
