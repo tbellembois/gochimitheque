@@ -120,7 +120,8 @@ func (env *Env) GetStoreLocationHandler(w http.ResponseWriter, r *http.Request) 
 func (env *Env) CreateStoreLocationHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	log.Debug("CreateStoreLocationHandler")
 	var (
-		sl models.StoreLocation
+		sl  models.StoreLocation
+		err error
 	)
 	if err := r.ParseForm(); err != nil {
 		return &helpers.AppError{
@@ -134,6 +135,21 @@ func (env *Env) CreateStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 			Error:   err,
 			Message: "form decoding error",
 			Code:    http.StatusBadRequest}
+	}
+	// processing storelocation not processed by Decode
+	if r.FormValue("storelocation.storelocation.storelocation_id") != "" {
+		var slid int
+		slname := r.FormValue("storelocation.storelocation.storelocation_name")
+		if slid, err = strconv.Atoi(r.FormValue("storelocation.storelocation.storelocation_id")); err != nil {
+			return &helpers.AppError{
+				Error:   err,
+				Message: "slid atoi conversion",
+				Code:    http.StatusInternalServerError}
+		}
+		sl.StoreLocation = &models.StoreLocation{
+			StoreLocationID:   sql.NullInt64{Valid: true, Int64: int64(slid)},
+			StoreLocationName: sql.NullString{Valid: true, String: slname},
+		}
 	}
 	log.WithFields(log.Fields{"sl": sl}).Debug("CreateStoreLocationHandler")
 
@@ -171,19 +187,20 @@ func (env *Env) UpdateStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 			Code:    http.StatusBadRequest}
 	}
 	// processing storelocation not processed by Decode
-	var slid int
-	slname := r.FormValue("storelocation.storelocation.storelocation_name")
-	if slid, err = strconv.Atoi(r.FormValue("storelocation.storelocation.storelocation_id")); err != nil {
-		return &helpers.AppError{
-			Error:   err,
-			Message: "slid atoi conversion",
-			Code:    http.StatusInternalServerError}
+	if r.FormValue("storelocation.storelocation.storelocation_id") != "" {
+		var slid int
+		slname := r.FormValue("storelocation.storelocation.storelocation_name")
+		if slid, err = strconv.Atoi(r.FormValue("storelocation.storelocation.storelocation_id")); err != nil {
+			return &helpers.AppError{
+				Error:   err,
+				Message: "slid atoi conversion",
+				Code:    http.StatusInternalServerError}
+		}
+		sl.StoreLocation = &models.StoreLocation{
+			StoreLocationID:   sql.NullInt64{Valid: true, Int64: int64(slid)},
+			StoreLocationName: sql.NullString{Valid: true, String: slname},
+		}
 	}
-	sl.StoreLocation = &models.StoreLocation{
-		StoreLocationID:   sql.NullInt64{Valid: true, Int64: int64(slid)},
-		StoreLocationName: sql.NullString{Valid: true, String: slname},
-	}
-
 	log.WithFields(log.Fields{"sl": sl}).Debug("UpdateStoreLocationHandler")
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
@@ -193,7 +210,13 @@ func (env *Env) UpdateStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 			Code:    http.StatusInternalServerError}
 	}
 
-	updatedsl, _ := env.DB.GetStoreLocation(id)
+	updatedsl, err := env.DB.GetStoreLocation(id)
+	if err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "get store location error",
+			Code:    http.StatusInternalServerError}
+	}
 	updatedsl.StoreLocationName = sl.StoreLocationName
 	updatedsl.StoreLocationColor = sl.StoreLocationColor
 	updatedsl.StoreLocationCanStore = sl.StoreLocationCanStore

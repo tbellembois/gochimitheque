@@ -14,6 +14,10 @@
                 +select
         .form-group.row
             .form-group.col-sm-12
+                | {{$label := "parent"}} {{$name := "storelocation"}}
+                +select 
+        .form-group.row
+            .form-group.col-sm-12
                 | {{$label := "can store?"}} {{$name := "storelocation_canstore"}}
                 +checkbox
         .form-group.row

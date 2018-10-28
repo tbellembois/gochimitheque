@@ -3,9 +3,10 @@ package models
 import (
 	"database/sql"
 	"fmt"
-	"github.com/tbellembois/gochimitheque/helpers"
 	"net/http"
 	"time"
+
+	"github.com/tbellembois/gochimitheque/helpers"
 )
 
 // AppHandlerFunc is an HandlerFunc returning an AppError
@@ -20,6 +21,7 @@ type StoreLocation struct {
 	StoreLocationColor    sql.NullString `db:"storelocation_color" json:"storelocation_color" schema:"storelocation_color"`
 	Entity                `db:"entity" json:"entity" schema:"entity"`
 	StoreLocation         *StoreLocation `db:"storelocation" json:"storelocation" schema:"storelocation"`
+	StoreLocationFullPath string         `db:"storelocation_fullpath" json:"storelocation_fullpath" schema:"storelocation_fullpath"`
 }
 
 // Entity represent a department, a laboratory...
@@ -173,7 +175,7 @@ func (p Person) String() string {
 }
 
 func (s StoreLocation) String() string {
-	return fmt.Sprintf("StoreLocationName: %s | StoreLocationCanStore: %b | StoreLocationColor: %s | Entity: %d | StoreLocation: %d", s.StoreLocationName, s.StoreLocationCanStore, s.StoreLocationColor, s.EntityID, s.StoreLocation.StoreLocationID)
+	return fmt.Sprintf("StoreLocationName: %s | StoreLocationCanStore: Valid:%t Bool:%t | StoreLocationColor: %s | Entity: %d | StoreLocation: %v", s.StoreLocationName, s.StoreLocationCanStore.Valid, s.StoreLocationCanStore.Bool, s.StoreLocationColor, s.EntityID, s.StoreLocation)
 }
 
 func (p Permission) String() string {
