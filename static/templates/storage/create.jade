@@ -8,12 +8,33 @@
         input#product_id(type='hidden', name='product_id', value='')
 
         .form-group.row
-            | {{$label := "store location"}} {{$name := "storelocation"}}
-            +select
+            .col-sm-12
+                | {{$label := "store location"}} {{$name := "storelocation"}}
+                +select
         .form-group.row
-            | {{$label := "comment"}} {{$name := "storage_comment"}}
-            +inputtext
-    
+            .col-sm-12
+                | {{$label := "nb items"}} {{$name := "storage_nbitem"}} {{$step := "1"}} {{$min := "1"}} {{$max := "30"}} {{$value := "1"}}
+                +inputnumber
+        .form-group.row
+            .col-sm-6
+                | {{$label := "quantity"}} {{$name := "storage_quantity"}} {{$step := "any"}} {{$min := "1"}} {{$max := "10000000"}} {{$value := ""}}
+                +inputnumber
+            .col-sm-6
+                | {{$label := "unit"}} {{$name := "unit"}}
+                +select 
+        .form-group.row
+            .col-sm-12
+                | {{$label := "supplier"}} {{$name := "supplier"}}
+                +select
+        .form-group.row
+            .col-sm-12
+                | {{$label := "barecode"}} {{$name := "storage_barecode"}}
+                +inputtext
+        .form-group.row
+            .col-sm-12
+                | {{$label := "comment"}} {{$name := "storage_comment"}}
+                +inputtext        
+
     button#save.btn.btn-primary(type='button', onclick='saveStorage()') save changes
 | {{end}}
 | {{define "CONTENTJS"}}

@@ -220,13 +220,28 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		storelocation integer,
 		FOREIGN KEY(storelocation) references storelocation(storelocation_id),
 		FOREIGN KEY(entity) references entity(entity_id));
+	CREATE TABLE IF NOT EXISTS supplier (
+		supplier_id integer PRIMARY KEY,
+		supplier_label string NOT NULL);
+	CREATE TABLE IF NOT EXISTS unit (
+		unit_id integer PRIMARY KEY,
+		unit_label string NOT NULL,
+		unit_multiplier integer NOT NULL default 1,
+		unit integer,
+		FOREIGN KEY(unit) references unit(unit_id));
 	CREATE TABLE IF NOT EXISTS storage (
 		storage_id integer PRIMARY KEY,
 		storage_creationdate datetime NOT NULL,
+		storage_quantity integer,
+		storage_barecode string,
 		storage_comment string,
 		person integer NOT NULL,
 		product integer NOT NULL,
 		storelocation integer NOT NULL,
+		unit integer,
+		supplier integer,
+		FOREIGN KEY(unit) references unit(unit_id),
+		FOREIGN KEY(supplier) references supplier(supplier_id),
 		FOREIGN KEY(person) references person(person_id),
 		FOREIGN KEY(product) references product(product_id),
 		FOREIGN KEY(storelocation) references storelocation(storelocation_id));

@@ -62,6 +62,9 @@ func (db *SQLiteDataStore) GetStoreLocations(p helpers.DbselectparamStoreLocatio
 	if p.GetEntity() != -1 {
 		comreq.WriteString(" AND s.entity = :entity")
 	}
+	if p.GetStoreLocationCanStore() {
+		comreq.WriteString(" AND s.storelocation_canstore = :storelocation_canstore")
+	}
 	postsreq.WriteString(" GROUP BY s.storelocation_id")
 	postsreq.WriteString(" ORDER BY " + p.GetOrderBy() + " " + p.GetOrder())
 
@@ -80,12 +83,13 @@ func (db *SQLiteDataStore) GetStoreLocations(p helpers.DbselectparamStoreLocatio
 
 	// building argument map
 	m := map[string]interface{}{
-		"search":   p.GetSearch(),
-		"personid": p.GetLoggedPersonID(),
-		"order":    p.GetOrder(),
-		"limit":    p.GetLimit(),
-		"offset":   p.GetOffset(),
-		"entity":   p.GetEntity(),
+		"search":                 p.GetSearch(),
+		"storelocation_canstore": p.GetStoreLocationCanStore(),
+		"personid":               p.GetLoggedPersonID(),
+		"order":                  p.GetOrder(),
+		"limit":                  p.GetLimit(),
+		"offset":                 p.GetOffset(),
+		"entity":                 p.GetEntity(),
 	}
 
 	// select

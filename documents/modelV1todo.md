@@ -1,19 +1,5 @@
 ```bash
 
-db.define_table('supplier',
-                Field('label',
-                      'string',
-                      length=255,
-                      label=cc.get_string("DB_SUPPLIER_LABEL"),
-                      comment=cc.get_string("DB_SUPPLIER_COMMENT"),
-                      required=True,
-                      notnull=True,
-                      unique=True),
-                format=lambda r: r.label)
-
-db.supplier.label.requires = [IS_NOT_EMPTY(), IS_NOT_IN_DB(db, db.supplier.label), IS_UPPER()]
-db.supplier.nb_linked_storage = Field.Method(lambda row: db(db.storage.supplier == row.supplier.id).count())
-
 db.define_table('person',
                 Field('creator',
                       'reference person',
@@ -109,49 +95,6 @@ db.person.last_name.requires = IS_NOT_EMPTY()
 db.person.email.requires = [IS_NOT_EMPTY(), IS_EMAIL(), IS_NOT_IN_DB(db, db.person.email)]
 db.person.password.requires = [IS_NOT_EMPTY(), CRYPT(key=settings['hmac_key'])]
 db.person.registration_key.requires = [IS_ONE_SELECTED(tuple_list=[('unactive', 'unactive'), ('active', 'active')])]
-
-db.define_table('store_location',
-                Field('label',
-                      'string',
-                      label=cc.get_string("DB_STORE_LOCATION_LABEL"),
-                      comment=cc.get_string("DB_STORE_LOCATION_COMMENT"),
-                      default='My store location', # to fix a migration problem
-                      required=True,
-                      notnull=True,
-                      unique=False),
-                Field('entity',
-                      db.entity,
-                      label=cc.get_string("DB_STORE_LOCATION_ENTITY_LABEL"),
-                      comment=cc.get_string("DB_STORE_LOCATION_ENTITY_COMMENT")),
-                Field('parent',
-                      'reference store_location',
-                      label=cc.get_string("DB_STORE_LOCATION_PARENT_LABEL"),
-                      comment=cc.get_string("DB_STORE_LOCATION_PARENT_COMMENT")),
-                Field('can_store',
-                      'boolean',
-                      label=cc.get_string("DB_STORE_LOCATION_CAN_STORE_LABEL"),
-                      comment=cc.get_string("DB_STORE_LOCATION_CAN_STORE_COMMENT"),
-                      default=True),
-                Field('color',
-                      'string',
-                      label=cc.get_string("DB_STORE_LOCATION_COLOR_LABEL"),
-                      comment=cc.get_string("DB_STORE_LOCATION_COLOR_COMMENT"),
-                      default='#FFFFFF'),
-                Field('label_full_path',
-                      compute=lambda r: cc.label_full_path(r)),
-format=lambda r: r.label_full_path)
-
-db.store_location.label.requires = [IS_NOT_EMPTY(), IS_NOT_IN_DB(subset, db.store_location.label)]
-db.store_location.entity.requires = IS_IN_DB_AND_USER_ENTITY(db(db.entity.id > 0), db.entity.id, db.entity._format)
-db.store_location.parent.requires = IS_EMPTY_OR(IS_IN_DB_AND_SELECTED_ENTITY(db, db.store_location.id, db.store_location._format, orderby=db.store_location.label_full_path))
-
-db.define_table('unit',
-                Field('label', 'string', length=255, label=cc.get_string("DB_UNIT_LABEL"), comment=cc.get_string("DB_UNIT_COMMENT"), required=True, notnull=True, unique=True),
-                Field('reference', 'reference unit', label=cc.get_string("DB_UNIT_REFERENCE_LABEL"), comment=cc.get_string("DB_UNIT_REFERENCE_COMMENT")),
-                Field('multiplier_for_reference', 'double', label=cc.get_string("DB_UNIT_MULTIPLIER_FOR_REFERENCE_LABEL"), comment=cc.get_string("DB_UNIT_MULTIPLIER_FOR_REFERENCE_COMMENT")),
-                format=lambda r: r.label)
-
-db.unit.label.requires = IS_NOT_EMPTY()
 
 db.define_table('product',
                 Field('cas_number',

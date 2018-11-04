@@ -1,9 +1,10 @@
 package helpers
 
 import (
-	"github.com/tbellembois/gochimitheque/constants"
 	"net/http"
 	"strconv"
+
+	"github.com/tbellembois/gochimitheque/constants"
 )
 
 // dbselectparam contains the common parameters
@@ -40,9 +41,8 @@ type DbselectparamProduct interface {
 }
 type dbselectparamProduct struct {
 	dbselectparam
-	Entity    int // id
-	Product   int // id
-	CasNumber int // id
+	Entity  int // id
+	Product int // id
 }
 
 // dbselectparamStorage contains the parameters of the GetStorages function
@@ -84,12 +84,15 @@ type dbselectparamEntity struct {
 type DbselectparamStoreLocation interface {
 	Dbselectparam
 	SetEntity(int)
+	SetStoreLocationCanStore(bool)
 
 	GetEntity() int
+	GetStoreLocationCanStore() bool
 }
 type dbselectparamStoreLocation struct {
 	dbselectparam
-	Entity int
+	Entity                int
+	StoreLocationCanStore bool
 }
 
 //
@@ -147,6 +150,14 @@ func (d *dbselectparamStoreLocation) SetEntity(i int) {
 
 func (d *dbselectparamStoreLocation) GetEntity() int {
 	return d.Entity
+}
+
+func (d *dbselectparamStoreLocation) GetStoreLocationCanStore() bool {
+	return d.StoreLocationCanStore
+}
+
+func (d *dbselectparamStoreLocation) SetStoreLocationCanStore(b bool) {
+	d.StoreLocationCanStore = b
 }
 
 //
@@ -279,26 +290,22 @@ func NewdbselectparamProduct(r *http.Request, f func(string) (string, error)) (*
 			dspp.OrderBy = "product_id"
 		}
 		if entityid, ok := r.URL.Query()["entity"]; ok {
-			var eid int
-			if eid, err = strconv.Atoi(entityid[0]); err != nil {
+			if dspp.Entity, err = strconv.Atoi(entityid[0]); err != nil {
 				return nil, &AppError{
 					Error:   err,
 					Code:    http.StatusInternalServerError,
 					Message: "limit atoi conversion",
 				}
 			}
-			dspp.Entity = eid
 		}
 		if productid, ok := r.URL.Query()["product"]; ok {
-			var pid int
-			if pid, err = strconv.Atoi(productid[0]); err != nil {
+			if dspp.Product, err = strconv.Atoi(productid[0]); err != nil {
 				return nil, &AppError{
 					Error:   err,
 					Code:    http.StatusInternalServerError,
 					Message: "limit atoi conversion",
 				}
 			}
-			dspp.Product = pid
 		}
 	}
 	return &dspp, nil
@@ -336,26 +343,22 @@ func NewdbselectparamStorage(r *http.Request, f func(string) (string, error)) (*
 			dsps.OrderBy = "storage_id"
 		}
 		if entityid, ok := r.URL.Query()["entity"]; ok {
-			var eid int
-			if eid, err = strconv.Atoi(entityid[0]); err != nil {
+			if dsps.Entity, err = strconv.Atoi(entityid[0]); err != nil {
 				return nil, &AppError{
 					Error:   err,
 					Code:    http.StatusInternalServerError,
 					Message: "limit atoi conversion",
 				}
 			}
-			dsps.Entity = eid
 		}
 		if productid, ok := r.URL.Query()["product"]; ok {
-			var pid int
-			if pid, err = strconv.Atoi(productid[0]); err != nil {
+			if dsps.Product, err = strconv.Atoi(productid[0]); err != nil {
 				return nil, &AppError{
 					Error:   err,
 					Code:    http.StatusInternalServerError,
 					Message: "limit atoi conversion",
 				}
 			}
-			dsps.Product = pid
 		}
 	}
 	return &dsps, nil
@@ -387,15 +390,22 @@ func NewdbselectparamStoreLocation(r *http.Request, f func(string) (string, erro
 			dspsl.OrderBy = "storelocation_id"
 		}
 		if entityid, ok := r.URL.Query()["entity"]; ok {
-			var eid int
-			if eid, err = strconv.Atoi(entityid[0]); err != nil {
+			if dspsl.Entity, err = strconv.Atoi(entityid[0]); err != nil {
 				return nil, &AppError{
 					Error:   err,
 					Code:    http.StatusInternalServerError,
 					Message: "limit atoi conversion",
 				}
 			}
-			dspsl.Entity = eid
+		}
+		if c, ok := r.URL.Query()["storelocation_canstore"]; ok {
+			if dspsl.StoreLocationCanStore, err = strconv.ParseBool(c[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "storelocation_canstore bool conversion",
+				}
+			}
 		}
 	}
 	return &dspsl, nil
@@ -427,15 +437,13 @@ func NewdbselectparamPerson(r *http.Request, f func(string) (string, error)) (*d
 			dspp.OrderBy = "person_id"
 		}
 		if entityid, ok := r.URL.Query()["entity"]; ok {
-			var eid int
-			if eid, err = strconv.Atoi(entityid[0]); err != nil {
+			if dspp.Entity, err = strconv.Atoi(entityid[0]); err != nil {
 				return nil, &AppError{
 					Error:   err,
 					Code:    http.StatusInternalServerError,
 					Message: "limit atoi conversion",
 				}
 			}
-			dspp.Entity = eid
 		}
 	}
 	return &dspp, nil
