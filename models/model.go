@@ -41,14 +41,33 @@ type Person struct {
 	Entities       []Entity     `db:"-" schema:"entities"`
 }
 
+// Unit is a volume or weight unit
+type Unit struct {
+	UnitID         sql.NullInt64  `db:"unit_id" json:"unit_id" schema:"unit_id"`
+	UnitLabel      sql.NullString `db:"unit_label" json:"unit_label" schema:"unit_label"`
+	Unit           *Unit          `db:"unit" json:"unit" schema:"unit"` // reference
+	UnitMultiplier int            `db:"unit_multiplier" json:"-" schema:"-"`
+}
+
+// Supplier is a product supplier
+type Supplier struct {
+	SupplierID    sql.NullInt64  `db:"supplier_id" json:"supplier_id" schema:"supplier_id"`
+	SupplierLabel sql.NullString `db:"supplier_label" json:"supplier_label" schema:"supplier_label"`
+}
+
 // Storage is a product storage in a store location
 type Storage struct {
-	StorageID           int       `db:"storage_id" json:"storage_id" schema:"storage_id"`
-	StorageCreationDate time.Time `db:"storage_creationdate" json:"storage_creationdate" schema:"storage_creationdate"`
-	StorageComment      string    `db:"storage_comment" json:"storage_comment" schema:"storage_comment"`
+	StorageID           int             `db:"storage_id" json:"storage_id" schema:"storage_id"`
+	StorageCreationDate time.Time       `db:"storage_creationdate" json:"storage_creationdate" schema:"storage_creationdate"`
+	StorageComment      string          `db:"storage_comment" json:"storage_comment" schema:"storage_comment"`
+	StorageQuantity     sql.NullFloat64 `db:"storage_quantity" json:"storage_quantity" schema:"storage_quantity"`
+	StorageNbItem       int             `db:"-" json:"storage_nbitem" schema:"storage_nbitem"`
+	StorageBarecode     string          `db:"storage_barecode" json:"storage_barecode" schema:"storage_barecode"`
 	Person              `db:"person" json:"person" schema:"person"`
 	Product             `db:"product" json:"product" schema:"product"`
 	StoreLocation       `db:"storelocation" json:"storelocation" schema:"storelocation"`
+	Unit                `db:"unit" json:"unit" schema:"unit"`
+	Supplier            `db:"supplier" json:"supplier" schema:"supplier"`
 }
 
 // Permission represent who is able to do what on something
