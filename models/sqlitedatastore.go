@@ -101,12 +101,12 @@ func (db *SQLiteDataStore) InsertSamples() error {
 		_, e2.EntityID = db.CreateEntity(e2)
 		_, e3.EntityID = db.CreateEntity(e3)
 
-		sl1 := StoreLocation{StoreLocationName: sql.NullString{Valid: true, String: "fridgeA1"}, Entity: e1}
-		sl2 := StoreLocation{StoreLocationName: sql.NullString{Valid: true, String: "fridgeB1"}, Entity: e1}
-		sl3 := StoreLocation{StoreLocationName: sql.NullString{Valid: true, String: "fridgeA2"}, Entity: e2}
-		sl4 := StoreLocation{StoreLocationName: sql.NullString{Valid: true, String: "fridgeB2"}, Entity: e2}
-		sl5 := StoreLocation{StoreLocationName: sql.NullString{Valid: true, String: "fridgeA3"}, Entity: e3}
-		sl6 := StoreLocation{StoreLocationName: sql.NullString{Valid: true, String: "fridgeB3"}, Entity: e3}
+		sl1 := StoreLocation{StoreLocationName: sql.NullString{Valid: true, String: "fridgeA1"}, Entity: e1, StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true}}
+		sl2 := StoreLocation{StoreLocationName: sql.NullString{Valid: true, String: "fridgeB1"}, Entity: e1, StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true}}
+		sl3 := StoreLocation{StoreLocationName: sql.NullString{Valid: true, String: "fridgeA2"}, Entity: e2, StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true}}
+		sl4 := StoreLocation{StoreLocationName: sql.NullString{Valid: true, String: "fridgeB2"}, Entity: e2, StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true}}
+		sl5 := StoreLocation{StoreLocationName: sql.NullString{Valid: true, String: "fridgeA3"}, Entity: e3, StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true}}
+		sl6 := StoreLocation{StoreLocationName: sql.NullString{Valid: true, String: "fridgeB3"}, Entity: e3, StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true}}
 
 		log.Debug("- 3 storelocations")
 		db.CreateStoreLocation(sl1)
@@ -375,6 +375,10 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	("sgh09", "image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAI8SURBVFiFzdi7a1VBEMDhb0EjYhFfaCEICopBi4haWUiqqGgQW1OKaBpNIQEVvREi2lhaWCiC/4CSImgv2IgQELSSdKKlMUKEtTgr3jxuPI+9iQMD5+y9u/NjdmbO7IYYoywSQgvE2MqyXoyxudKKxKStHGvmhsoGl9dTGT2Xf/syweWFygiXHyoTXHegMsDVgprjLk5hS4wRenLD1fYUhjGans9jF/rRlwOuMhS2Yz924F0CO4EBjOTyXK0YwUVcwAcEHMJr9OaKudqLYBA/cQx7cT+NB1xrCld5cvLOGA7gqSIRricv7sED9Df1XB1PbcVOXMZnzOA7pvEcg3UTqjNY1QDlKmLSsRX+14NNlXamLlQyeDJBfenw+xmcxQ3cxunSCVYpINmYatUfHUlg3xaN9+MmjqR5uxPkaNltrZbChcFYUi8tmjuOqbIxt25pT7uifMThtvcBPMS84kvwKY2fizE+hhDCBkXGzuBZaUsN4qtPUVQj3uOJIhmGFSXlOO4loEmsr5KhtYIfvRjCUTxS1K8reKnIwAkLt/UHhqqUjUblIkFuxi18TRCv8KsNah5v8UbqRqqVi5JwOKhI/ym8wKzlg3+xzmGyrJ2QjC2U4ox4J72NS2fFEMI27CsdwEtlNsY43Wn9BVIlILNoo494t+CytD254bI2irngutJaN4Xr6mGkrpFVOb5VNbaqB96yRtfkiuBfxtf0UqUTxH9xDbU8XBaoPGAZt69dq3awy0uMLSH8fc4gvwFyuYuihNiCxwAAAABJRU5ErkJggg==");`
 	insphysicalstate := `INSERT INTO physicalstate (physicalstate_label) VALUES ("gaz"), ("liquid"), ("solid")`
 	inssignalword := `INSERT INTO signalword (signalword_label) VALUES ("danger"), ("warning")`
+	insunit := `INSERT INTO unit (unit_label, unit_multiplier, unit) VALUES 
+	("l", 1, NULL), ("ml", 0.001, 1), ("µl", 0.00001, 1),
+	("g", 1, NULL), ("kg", 1000, 2), ("mg", 0.001, 2), ("µg", 0.00001, 2),
+	("m", 1, NULL), ("dm", 0.1, 3), ("cm", 0.01, 3)`
 
 	// tables creation
 	log.Debug("creating tables")
@@ -398,6 +402,16 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	}
 	if c == 0 {
 		if _, err = db.Exec(inssignalword); err != nil {
+			return err
+		}
+	}
+
+	// signal units
+	if err = db.Get(&c, `SELECT count(*) FROM unit`); err != nil {
+		return err
+	}
+	if c == 0 {
+		if _, err = db.Exec(insunit); err != nil {
 			return err
 		}
 	}

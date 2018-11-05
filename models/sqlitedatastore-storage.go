@@ -27,8 +27,12 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 	// pre request: select or count
 	precreq.WriteString(" SELECT count(DISTINCT storage.storage_id)")
 	presreq.WriteString(` SELECT storage.storage_id,
-		storage.storage_creationdate AS "storage_creationdate",
+		storage.storage_creationdate,
+		storage.storage_quantity,
+		storage.storage_barecode,
 		storage.storage_comment,
+		unit.unit_label AS "unit.unit_label",
+		supplier.supplier_label AS "supplier.supplier_label",
 		person.person_email AS "person.person_email", 
 		product.product_id AS "product.product_id",
 		name.name_label AS "product.name.name_label",	 
@@ -48,6 +52,10 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 	comreq.WriteString(" JOIN storelocation ON storage.storelocation = storelocation.storelocation_id")
 	// get entity
 	comreq.WriteString(" JOIN entity ON storelocation.entity = entity.entity_id")
+	// get unit
+	comreq.WriteString(" LEFT JOIN unit ON storage.unit = unit.unit_id")
+	// get supplier
+	comreq.WriteString(" LEFT JOIN supplier ON storage.supplier = supplier.supplier_id")
 	// filter by permissions
 	comreq.WriteString(` JOIN permission AS perm, entity as e ON
 		(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
@@ -112,7 +120,13 @@ func (db *SQLiteDataStore) GetStorage(id int) (Storage, error) {
 	)
 	log.WithFields(log.Fields{"id": id}).Debug("GetStorage")
 
-	sqlr = `SELECT storage.storage_id, storage.storage_creationdate, storage.storage_comment,
+	sqlr = `SELECT storage.storage_id,
+	storage.storage_creationdate,
+	storage.storage_quantity,
+	storage.storage_barecode,
+	storage.storage_comment,
+	unit.unit_label AS "unit.unit_label",
+	supplier.supplier_label AS "supplier.supplier_label",
 	person.person_email AS "person.person_email",
 	name.name_label AS "product.name.name_label",
 	casnumber.casnumber_label AS "product.casnumber.casnumber_label",
@@ -120,6 +134,8 @@ func (db *SQLiteDataStore) GetStorage(id int) (Storage, error) {
 	storelocation.storelocation_name AS "storelocation.storelocation_name"
 	FROM storage
 	JOIN storelocation ON storage.storelocation = storelocation.storelocation_id
+	LEFT JOIN unit ON storage.unit = unit.unit_id
+	LEFT JOIN supplier ON storage.supplier = supplier.supplier_id
 	JOIN person ON storage.person = person.person_id
 	JOIN product ON storage.product = product.product_id
 	JOIN casnumber ON product.casnumber = casnumber.casnumber_id

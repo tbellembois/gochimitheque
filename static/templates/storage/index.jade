@@ -28,7 +28,7 @@
                                 th(data-field='storage_id' data-sortable='true') ID
                                 th(data-field='storage_creationdate' data-formatter='dateFormatter' data-sortable='true') creation date
                                 th(data-field='product.name.name_label' data-sortable='true') product
-                                th(data-field='storelocation.storelocation_name' data-sortable='true') store location
+                                th(data-field='storelocation.storelocation_name' data-sortable='true' data-formatter='storelocation_nameFormatter') store location
                                 th(data-field='storelocation.entity.entity_id' data-sortable='true') entity id
                                 th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') actions
 
@@ -38,11 +38,28 @@
                 input#storage_id(type='hidden', name='storage_id', value='')
 
                 .form-group.row
-                    | {{$label := "store location"}} {{$name := "storelocation"}}
-                    +select
+                    .col-sm-12
+                        | {{$label := "store location"}} {{$name := "storelocation"}}
+                        +select
                 .form-group.row
-                    | {{$label := "comment"}} {{$name := "storage_comment"}}
-                    +inputtext
+                    .col-sm-6
+                        | {{$label := "quantity"}} {{$name := "storage_quantity"}} {{$step := "any"}} {{$min := "1"}} {{$max := "10000000"}} {{$value := ""}}
+                        +inputnumber
+                    .col-sm-6
+                        | {{$label := "unit"}} {{$name := "unit"}}
+                        +select 
+                .form-group.row
+                    .col-sm-12
+                        | {{$label := "supplier"}} {{$name := "supplier"}}
+                        +select
+                .form-group.row
+                    .col-sm-12
+                        | {{$label := "barecode"}} {{$name := "storage_barecode"}}
+                        +inputtext
+                .form-group.row
+                    .col-sm-12
+                        | {{$label := "comment"}} {{$name := "storage_comment"}}
+                        +inputtext  
 
             button#save.btn.btn-primary(type='button', onclick='saveStorage()') save changes
             button.btn.btn-secondary(type='button', onclick='closeEdit();') close
@@ -108,7 +125,7 @@
         function detailFormatter(index, row) {
             var html = [];
             html.push("<p><b>product</b>: " + row["product"]["name"]["name_label"] + "</p>")
-            html.push("<p><b>store location</b>: " + row["storelocation"]["storelocation_name"] + "</p>")
+            html.push("<p><b>store location</b>: " + row["storelocation"]["storelocation_name"]["String"] + "</p>")
             html.push("<p><b>created at</b>: " + dateFormatter(row["storage_creationdate"], null, null, null) + "</p>")
             html.push("<p><b>by</b>: " + row["person"]["person_email"] + "</p>")
             html.push("<p><b>comment</b>: " + row["storage_comment"] + "</p>")
@@ -120,6 +137,16 @@
         function dateFormatter(value, row, index, field) {
             date = new Date(value);
             return date.toLocaleString();
+        }
+        //
+        // storelocation_name formatter
+        //
+        function storelocation_nameFormatter(value, row, index, field) {
+            if (value.Valid) {
+                return value.String;
+            } else {
+                return "";
+            }
         }
 
         //
@@ -166,7 +193,7 @@
                 // setting index hidden input
                 $("input#index").val(index);
                 // select2 is not autofilled - we need a special operation
-                var newOption = new Option(data.storelocation.storelocation_name, data.storelocation.storelocation_id, true, true);
+                var newOption = new Option(data.storelocation.storelocation_name.String, data.storelocation.storelocation_id.Int64, true, true);
                 $('select#storelocation').append(newOption).trigger('change');
             }).fail(function(jqXHR, textStatus, errorThrown) {
                 handleHTTPError(jqXHR.statusText, jqXHR.status)

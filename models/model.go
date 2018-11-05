@@ -59,10 +59,10 @@ type Supplier struct {
 type Storage struct {
 	StorageID           int             `db:"storage_id" json:"storage_id" schema:"storage_id"`
 	StorageCreationDate time.Time       `db:"storage_creationdate" json:"storage_creationdate" schema:"storage_creationdate"`
-	StorageComment      string          `db:"storage_comment" json:"storage_comment" schema:"storage_comment"`
+	StorageComment      sql.NullString  `db:"storage_comment" json:"storage_comment" schema:"storage_comment"`
 	StorageQuantity     sql.NullFloat64 `db:"storage_quantity" json:"storage_quantity" schema:"storage_quantity"`
 	StorageNbItem       int             `db:"-" json:"storage_nbitem" schema:"storage_nbitem"`
-	StorageBarecode     string          `db:"storage_barecode" json:"storage_barecode" schema:"storage_barecode"`
+	StorageBarecode     sql.NullString  `db:"storage_barecode" json:"storage_barecode" schema:"storage_barecode"`
 	Person              `db:"person" json:"person" schema:"person"`
 	Product             `db:"product" json:"product" schema:"product"`
 	StoreLocation       `db:"storelocation" json:"storelocation" schema:"storelocation"`
