@@ -32,6 +32,7 @@ var normalizeSqlNull = function(obj) {
   $.each(obj, function(k, v) {
     matchs = k.match(/(.+)\.String/);
     matchi = k.match(/(.+)\.Int64/);
+    matchf = k.match(/(.+)\.Float64/);
     matchb = k.match(/(.+)\.Bool/);
     if (matchs !== null) {
         fieldname = matchs[1];
@@ -51,12 +52,30 @@ var normalizeSqlNull = function(obj) {
         if (valid) {
             newfdata[fieldname] = v;
         }
-    } else {
+    } else if (matchf !== null) {
+        fieldname = matchf[1];
+        valid = fdata[fieldname+".Valid"] == true;
+        if (valid) {
+            newfdata[fieldname] = v;
+        }
+    }
+    else {
         newfdata[k] = v;
     }
   });
   return newfdata;
 };
+
+function createTitle(msgText) {
+    var d1 = $("<div>");
+    var d2 = $("<div>");
+    var h = $("<h5>");
+    d1.addClass("card bg-info text-center mx-auto mt-md-5 mb-md-5");
+    d2.addClass("card-body");
+    h.addClass("card-title text-light");
+    h.text(msgText);
+    return d1.append(d2.append(h));
+}
 
 // displays and fadeout the given message
 function displayMessage(msgText, type) {
@@ -65,4 +84,13 @@ function displayMessage(msgText, type) {
     d.addClass("alert alert-" + type);
     d.text(msgText);
     $("body").prepend(d.delay(800).fadeOut("slow"));
+}
+
+function highlightRow(attr, id) {
+    $("tr[" + attr + "=" + id + "]").fadeTo("slow", 0.30);
+    $("tr[" + attr + "=" + id + "]").fadeTo("slow", 1);
+    $("tr[" + attr + "=" + id + "]").fadeTo("slow", 0.30);
+    $("tr[" + attr + "=" + id + "]").fadeTo("slow", 1);
+    $("tr[" + attr + "=" + id + "]").fadeTo("slow", 0.30);
+    $("tr[" + attr + "=" + id + "]").fadeTo("slow", 1);
 }

@@ -2,7 +2,7 @@
 
     .row
         .col-sm-4
-            button.btn.btn-dark(type="button" onclick="location.href='/v/products';") switch to product view
+            button.btn.btn-dark#switchview(type="button" onclick="location.href='/v/products';") switch to product view
         .col-sm-4
             #filter-product
         .col-sm-4
@@ -22,20 +22,22 @@
                                 data-query-params='queryParams',
                                 data-sort-name='name.name_label',
                                 data-detail-view="true",
-                                data-detail-formatter="detailFormatter")
+                                data-detail-formatter="detailFormatter",
+                                data-row-attributes="rowAttributes")
                         thead
                             tr
                                 th(data-field='storage_id' data-sortable='true') ID
                                 th(data-field='storage_creationdate' data-formatter='dateFormatter' data-sortable='true') creation date
                                 th(data-field='product.name.name_label' data-sortable='true') product
-                                th(data-field='storelocation.storelocation_name' data-sortable='true' data-formatter='storelocation_nameFormatter') store location
-                                th(data-field='storelocation.entity.entity_id' data-sortable='true') entity id
+                                th(data-field='storelocation.storelocation_fullpath' data-sortable='true' data-formatter='storelocation_fullpathFormatter') store location
                                 th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') actions
 
         #edit-collapse.collapse(data-parent='#accordion')
             form#storage
                 input#index(type='hidden', name='index', value='')
                 input#storage_id(type='hidden', name='storage_id', value='')
+
+                input#exactMatchSupplier(type="hidden")
 
                 .form-group.row
                     .col-sm-12
@@ -70,15 +72,28 @@
         //
         // close buttons actions
         //
-        function closeEdit() { $("#list-collapse").collapse("show"); $("#edit-collapse").collapse("hide"); }
-        
-        $( document ).ready(function() {           
+        function closeEdit() { 
+            $("#list-collapse").collapse("show"); 
+            $("#edit-collapse").collapse("hide"); 
+            $("#switchview").show();
+        }
 
+        //
+        // startup actions
+        //
+        $( document ).ready(function() {           
+        });
+        $('#table').on('load-success.bs.table', function () {
             // populating search input if needed
             if (URLValues.has("search")) {
                 $('#table').bootstrapTable('resetSearch', URLValues.get("search")[0]);
             }
-
+            // highlight row if needed
+            if (URLValues.has("hl")) {
+                console.log("foo")
+                console.log(URLValues.get("hl"))
+                highlightRow("storage_id", URLValues.get("hl")[0]);
+            }            
         });
 
         //
@@ -88,6 +103,7 @@
             if (URLValues.has("entity")) {
                 params["entity"] = URLValues.get("entity")[0];
                 displayFilterEntity(params["entity"]);
+                $("#switchview").hide();
             }
             if (URLValues.has("product")) {
                 params["product"] = URLValues.get("product")[0];
@@ -95,10 +111,11 @@
                     url: "/products/" + params["product"],
                     method: "GET",
                 }).done(function(data, textStatus, jqXHR) {
-                   $("#filter-product").html("<div class='card'><div class='card-body'>" + data.name.name_label + " (" + data.casnumber.casnumber_label + ")</div></div>")
+                    $("#filter-product").html(createTitle(data.name.name_label + " (" + data.casnumber.casnumber_label + ") " + data.product_specificity.String));
                 }).fail(function(jqXHR, textStatus, errorThrown) {
                     handleHTTPError(jqXHR.statusText, jqXHR.status)
                 });
+                $("#switchview").hide();
             }
             return params;
         }
@@ -120,6 +137,12 @@
         }
 
         //
+        // table row attributes
+        //
+        function rowAttributes(row, index) {
+            return {"storage_id":row["storage_id"]}
+        }
+        //
         // table detail formatter
         //
         function detailFormatter(index, row) {
@@ -128,7 +151,10 @@
             html.push("<p><b>store location</b>: " + row["storelocation"]["storelocation_name"]["String"] + "</p>")
             html.push("<p><b>created at</b>: " + dateFormatter(row["storage_creationdate"], null, null, null) + "</p>")
             html.push("<p><b>by</b>: " + row["person"]["person_email"] + "</p>")
-            html.push("<p><b>comment</b>: " + row["storage_comment"] + "</p>")
+            html.push("<p><b>comment</b>: " + row["storage_comment"]["String"] + "</p>")
+            html.push("<p><b>barecode</b>: " + row["storage_barecode"]["String"] + "</p>")
+            html.push("<p><b>quantity</b>: " + row["storage_quantity"]["Float64"] + " " + row["unit"]["unit_label"]["String"] + "</p>")
+            html.push("<p><b>supplier</b>: " + row["supplier"]["supplier_label"]["String"] + "</p>")
             return html.join('');
         }
         //
@@ -141,11 +167,11 @@
         //
         // storelocation_name formatter
         //
-        function storelocation_nameFormatter(value, row, index, field) {
-            if (value.Valid) {
-                return value.String;
+        function storelocation_fullpathFormatter(value, row, index, field) {
+            if (row.storelocation.storelocation_color.Valid) {
+                return "<span style='color:" + row.storelocation.storelocation_color.String + ";'>" + value + "</span>";
             } else {
-                return "";
+                return "<span>" + value + "</span>";
             }
         }
 
@@ -165,11 +191,11 @@
 
             // buttons are hidden by default
             var actions = [
-            '<button id="edit' + sid + '" class="edit btn btn-secondary" style="display: none;" title="edit" type="button">',
-                '<i class="fas fa-edit"></i>',
+            '<button id="edit' + sid + '" class="edit btn btn-link" style="display: none;" title="edit" type="button">',
+                '<i class="material-icons">edit</i>',
             '</button>',
-            '<button id="delete' + sid + '" class="delete btn btn-secondary" style="display: none;" title="delete" type="button">',
-                '<i class="fas fa-trash-alt"></i>',
+            '<button id="delete' + sid + '" class="delete btn btn-link" style="display: none;" title="delete" type="button">',
+                '<i class="material-icons">delete</i>',
             '</button>'];
 
             return actions.join('&nbsp;')    
@@ -180,7 +206,11 @@
             // clearing selections
             $('select#storelocation').val(null).trigger('change');
             $('select#storelocation').find('option').remove();
-            
+            $('select#unit').val(null).trigger('change');
+            $('select#unit').find('option').remove();
+            $('select#supplier').val(null).trigger('change');
+            $('select#supplier').find('option').remove();
+
             // getting the storage
             $.ajax({
                 url: "/storages/" + row['storage_id'],
@@ -188,13 +218,21 @@
             }).done(function(data, textStatus, jqXHR) {
                 // flattening response data
                 fdata = flatten(data);
+
+                // processing sqlNull values
+                newfdata = normalizeSqlNull(fdata)
+
                 // autofilling form
-                $("#edit-collapse").autofill( fdata, {"findbyname": false } );
+                $("#edit-collapse").autofill( newfdata, {"findbyname": false } );
                 // setting index hidden input
                 $("input#index").val(index);
                 // select2 is not autofilled - we need a special operation
                 var newOption = new Option(data.storelocation.storelocation_name.String, data.storelocation.storelocation_id.Int64, true, true);
                 $('select#storelocation').append(newOption).trigger('change');
+                var newOption = new Option(data.unit.unit_label.String, data.unit.unit_id.Int64, true, true);
+                $('select#unit').append(newOption).trigger('change');
+                var newOption = new Option(data.supplier.supplier_label.String, data.supplier.supplier_id.Int64, true, true);
+                $('select#supplier').append(newOption).trigger('change');
             }).fail(function(jqXHR, textStatus, errorThrown) {
                 handleHTTPError(jqXHR.statusText, jqXHR.status)
             });
@@ -202,6 +240,7 @@
             // finally collapsing the view
             $('#edit-collapse').collapse('show');
             $('#list-collapse').collapse('hide');
+            $("#switchview").hide();
         }
         window.operateEvents = {
             'click .edit': function (e, value, row, index) {

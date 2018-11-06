@@ -50,6 +50,76 @@ func (env *Env) VCreateStorageHandler(w http.ResponseWriter, r *http.Request) *h
 	REST handlers
 */
 
+// GetStoragesUnitsHandler returns a json list of the units matching the search criteria
+func (env *Env) GetStoragesUnitsHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	log.Debug("GetStoragesUnitsHandler")
+
+	var (
+		err  error
+		aerr *helpers.AppError
+		dsp  helpers.Dbselectparam
+	)
+
+	// init db request parameters
+	if dsp, aerr = helpers.Newdbselectparam(r, nil); err != nil {
+		return aerr
+	}
+
+	units, count, err := env.DB.GetStoragesUnits(dsp)
+	if err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the units",
+		}
+	}
+
+	type resp struct {
+		Rows  []models.Unit `json:"rows"`
+		Total int           `json:"total"`
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resp{Rows: units, Total: count})
+	return nil
+}
+
+// GetStoragesSuppliersHandler returns a json list of the suppliers matching the search criteria
+func (env *Env) GetStoragesSuppliersHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	log.Debug("GetStoragesSuppliersHandler")
+
+	var (
+		err  error
+		aerr *helpers.AppError
+		dsp  helpers.Dbselectparam
+	)
+
+	// init db request parameters
+	if dsp, aerr = helpers.Newdbselectparam(r, nil); err != nil {
+		return aerr
+	}
+
+	suppliers, count, err := env.DB.GetStoragesSuppliers(dsp)
+	if err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the suppliers",
+		}
+	}
+
+	type resp struct {
+		Rows  []models.Supplier `json:"rows"`
+		Total int               `json:"total"`
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resp{Rows: suppliers, Total: count})
+	return nil
+}
+
 // GetStoragesHandler returns a json list of the storages matching the search criteria
 func (env *Env) GetStoragesHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	log.Debug("GetStoragesHandler")
@@ -149,6 +219,10 @@ func (env *Env) UpdateStorageHandler(w http.ResponseWriter, r *http.Request) *he
 			Code:    http.StatusInternalServerError}
 	}
 	updateds, _ := env.DB.GetStorage(id)
+	updateds.StorageBarecode = s.StorageBarecode
+	updateds.StorageQuantity = s.StorageQuantity
+	updateds.Supplier = s.Supplier
+	updateds.Unit = s.Unit
 	updateds.StorageComment = s.StorageComment
 	updateds.StoreLocation = s.StoreLocation
 	updateds.PersonID = c.PersonID

@@ -18,7 +18,8 @@
                                 data-query-params='queryParams',
                                 data-sort-name='name.name_label',
                                 data-detail-view="true",
-                                data-detail-formatter="detailFormatter")
+                                data-detail-formatter="detailFormatter",
+                                data-row-attributes="rowAttributes")
                         thead
                             tr
                                 th(data-field='product_id' data-sortable='true') ID
@@ -138,7 +139,7 @@
         function closeEdit() { 
             $("#list-collapse").collapse("show");
             $("#edit-collapse").collapse("hide"); 
-            $("#switchview").toggle("show");
+            $("#switchview").show();
         }
         
         $( document ).ready(function() {           
@@ -179,6 +180,12 @@
             });
         }
 
+        //
+        // table row attributes
+        //
+        function rowAttributes(row, index) {
+            return {"product_id":row["product_id"]}
+        }
         //
         // table detail formatter
         //
@@ -415,7 +422,7 @@
             // finally collapsing the view
             $('#edit-collapse').collapse('show');
             $('#list-collapse').collapse('hide');
-            $("#switchview").toggle("hide");
+            $("#switchview").hide();
         }
         window.operateEvents = {
             'click .store': function (e, value, row, index) {
