@@ -55,6 +55,112 @@ script.
                 $(this).valid(); // FIXME: see https://github.com/select2/select2/issues/3901
             });
 
+            //
+            // unit select2
+            //
+            $('select#unit').select2({
+                allowClear: true,
+                placeholder: "select a unit",
+                ajax: {
+                    url: '/storages/units',
+                        data: function (params) {
+                        var query = {
+                            search: params.term,
+                            page: params.page || 1,
+                            offset: params.page*10 || 0,
+                            limit: 10
+                        }
+
+                        // Query parameters will be ?search=[term]&page=[page]
+                        return query;
+                    },
+                    dataType: 'json',
+                    processResults: function (data) {
+                        // replacing name by text expected by select2
+                        var newdata = $.map(data.rows, function (obj) {
+                            obj.text = obj.text || obj.unit_label.String;
+                            obj.id = obj.id || obj.unit_id.Int64;
+                            return obj;
+                        });
+                        // getting the number of loaded select elements
+                        selectnbitems = $("ul#select2-unit-results li").length + 10;
+
+                        return {
+                            results: newdata,
+                            pagination: {more: selectnbitems<data.total}
+                        };
+                    }
+                }
+            }).on("change", function (e) {
+                $(this).valid(); // FIXME: see https://github.com/select2/select2/issues/3901
+            });
+
+            //
+            // suppliers select2
+            //
+            $('select#supplier').select2({
+                allowClear: true,
+                tags: true,
+                placeholder: "select or enter a supplier",
+                createTag: function (params) {
+                    if ($("input#exactMatchSupplier").val() == "true") {
+                        return null
+                    }
+                    return {
+                        id: params.term,
+                        text: params.term,
+                    }
+                },
+                ajax: {
+                    url: '/storages/suppliers',
+                        data: function (params) {
+                        var query = {
+                            search: params.term,
+                            page: params.page || 1,
+                            offset: params.page*10 || 0,
+                            limit: 10
+                        }
+
+                        // Query parameters will be ?search=[term]&page=[page]
+                        return query;
+                    },
+                    dataType: 'json',
+                    processResults: function (data) {
+                        isExactMatch=false;
+                        
+                        // looking for an exact match
+                        $.each(data.rows, function( index, value ) {
+                            if(value.c == 1) {
+                                isExactMatch=true;
+                            }
+                        });
+                        
+                        // there is a match: setting the input field
+                        if (isExactMatch) {
+                            $("input#exactMatchSupplier").val("true");
+                        } else {
+                            $("input#exactMatchSupplier").val("false");
+                        }
+
+                        // replacing name by text expected by select2
+                        var newdata = $.map(data.rows, function (obj) {
+                            obj.text = obj.text || obj.supplier_label.String;
+                            obj.id = obj.id || obj.supplier_id.Int64;
+                            return obj;
+                        });
+                        // getting the number of loaded select elements
+                        selectnbitems = $("ul#select2-supplier-results li").length + 10;
+
+                        return {
+                            results: newdata,
+                            pagination: {more: selectnbitems<data.total}
+                        };
+                    }
+                }
+            }).on("change", function (e) {
+                $(this).valid(); // FIXME: see https://github.com/select2/select2/issues/3901
+            });
+
     });
 
     //
@@ -81,6 +187,10 @@ script.
         var product_id = $("input#product_id").val(),
             storage_id = $("input#storage_id").val(),
             storage_comment = $("input#storage_comment").val(),
+            storage_quantity = $("input#storage_quantity").val(),
+            storage_barecode = $("input#storage_barecode").val(),
+            unit = $('select#unit').select2('data')[0],
+            supplier = $('select#supplier').select2('data')[0],
             storelocation = $('select#storelocation').select2('data')[0],
             ajax_url = "/storages",
             ajax_method = "POST",
@@ -97,8 +207,22 @@ script.
                 "product.product_id": product_id,
                 "storage_id": storage_id,
                 "storage_comment": storage_comment,
+                "storage_quantity": storage_quantity == "" ? 1 : storage_quantity,
+                "storage_barecode": storage_barecode,
                 "storelocation.storelocation_id": storelocation.id,
             });
+            if (supplier !== undefined) {
+                $.extend(data, {
+                    "supplier.supplier_id": supplier.id == supplier.text ? -1 : supplier.id,
+                    "supplier.supplier_label": supplier === undefined ? "" : supplier.text,
+                });                    
+            }
+            if (unit !== undefined) {
+                $.extend(data, {
+                    "unit.unit_id": unit.id,
+                    "unit.unit_label": unit.text,
+                });                    
+            }
             $.ajax({
                 url: ajax_url,
                 method: ajax_method,

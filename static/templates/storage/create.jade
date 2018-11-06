@@ -7,14 +7,17 @@
         input#index(type='hidden', name='index', value='')
         input#product_id(type='hidden', name='product_id', value='')
 
+        input#exactMatchSupplier(type="hidden")
+
+        .form-group.row
+            .col-sm-4
+                | {{$label := "nb duplicates"}} {{$name := "storage_nbitem"}} {{$step := "1"}} {{$min := "1"}} {{$max := "50"}} {{$value := ""}}
+                +inputnumber
+        hr
         .form-group.row
             .col-sm-12
                 | {{$label := "store location"}} {{$name := "storelocation"}}
                 +select
-        .form-group.row
-            .col-sm-12
-                | {{$label := "nb items"}} {{$name := "storage_nbitem"}} {{$step := "1"}} {{$min := "1"}} {{$max := "30"}} {{$value := "1"}}
-                +inputnumber
         .form-group.row
             .col-sm-6
                 | {{$label := "quantity"}} {{$name := "storage_quantity"}} {{$step := "any"}} {{$min := "1"}} {{$max := "10000000"}} {{$value := ""}}
@@ -33,7 +36,7 @@
         .form-group.row
             .col-sm-12
                 | {{$label := "comment"}} {{$name := "storage_comment"}}
-                +inputtext        
+                +inputtext  
 
     button#save.btn.btn-primary(type='button', onclick='saveStorage()') save changes
 | {{end}}
@@ -57,7 +60,7 @@
                 method: "GET",
             }).done(function(data, textStatus, jqXHR) {
                 $("input#product_id").val(p);
-                $("#filter-product").html("<div class='card'><div class='card-body'>" + data.name.name_label + " (" + data.casnumber.casnumber_label + ")</div></div>")
+                $("#filter-product").html(createTitle(data.name.name_label + " (" + data.casnumber.casnumber_label + ") " + data.product_specificity.String));
             }).fail(function(jqXHR, textStatus, errorThrown) {
                 handleHTTPError(jqXHR.statusText, jqXHR.status)
             });

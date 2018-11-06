@@ -286,6 +286,15 @@ script.
         $('select#classofcompound').select2({
             allowClear: true,
             tags: true,
+            createTag: function (params) {
+                if ($("input#exactMatchClassofcompounds").val() == "true") {
+                    return null
+                }
+                return {
+                    id: params.term,
+                    text: params.term,
+                }
+            },
             placeholder: "select class of compound",
             ajax: {
                 url: '/products/classofcompounds',
@@ -776,7 +785,7 @@ script.
             }
             if (physicalstate !== undefined) {
                 $.extend(data, {
-                    "physicalstate.physicalstate_id": physicalstate.id == physicalstate.text ? -1 : physicalstate.id,
+                    "physicalstate.physicalstate_id": physicalstate.id,
                     "physicalstate.physicalstate_label": physicalstate.text,
                 });                    
             }
