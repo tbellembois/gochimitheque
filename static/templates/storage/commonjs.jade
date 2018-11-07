@@ -168,13 +168,15 @@ script.
     //
     var createCallBack = function createCallback(data, textStatus, jqXHR) {
         displayMessage("storage created", "success");
-        setTimeout(function(){ window.location = "/v/storages?product="+data.product.product_id; }, 1000);
+        setTimeout(function(){ window.location = "/v/storages?product="+data.product.product_id+"&hl="+data.product.product_id; }, 1000);
     }
     var updateCallBack = function updateCallback(data, textStatus, jqXHR) {
         $('#list-collapse').collapse('show');
         $('#edit-collapse').collapse('hide');
         var $table = $('#table');
         var index = $('input#index').val();
+        // appending hl parameter to highlight updated row
+        updateQueryStringParam("hl", data.storage_id);
         $table.bootstrapTable('refresh');
         displayMessage("storage " + data.storage_id + " updated", "success");
     }
@@ -186,6 +188,7 @@ script.
 
         var product_id = $("input#product_id").val(),
             storage_id = $("input#storage_id").val(),
+            storage_nbitem = $("input#storage_nbitem").val(),
             storage_comment = $("input#storage_comment").val(),
             storage_quantity = $("input#storage_quantity").val(),
             storage_barecode = $("input#storage_barecode").val(),
@@ -206,6 +209,7 @@ script.
             $.extend(data, {
                 "product.product_id": product_id,
                 "storage_id": storage_id,
+                "storage_nbitem": storage_nbitem == 0 ? 1 : storage_nbitem,
                 "storage_comment": storage_comment,
                 "storage_quantity": storage_quantity == "" ? 1 : storage_quantity,
                 "storage_barecode": storage_barecode,

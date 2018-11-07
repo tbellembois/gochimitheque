@@ -35,6 +35,7 @@ type Datastore interface {
 	DeleteStorage(id int) error
 	CreateStorage(s Storage) (error, int)
 	UpdateStorage(s Storage) error
+	GenerateAndUpdateStorageBarecode(s *Storage) error
 
 	// store locations
 	GetStoreLocations(helpers.DbselectparamStoreLocation) ([]StoreLocation, int, error)

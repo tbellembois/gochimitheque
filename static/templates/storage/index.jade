@@ -1,12 +1,15 @@
 | {{define "CONTENT"}}
 
     .row
-        .col-sm-4
-            button.btn.btn-dark#switchview(type="button" onclick="location.href='/v/products';") switch to product view
-        .col-sm-4
+        .col-sm-6
             #filter-product
-        .col-sm-4
+        .col-sm-6
             #filter-entity
+    .row
+        .col-sm-6
+            button.btn.btn-dark#switchview(type="button" onclick="location.href='/v/products';") switch to product view
+        .col-sm-6
+            #button-store
 
     #accordion
         #list-collapse.collapse.show(data-parent='#accordion')
@@ -28,6 +31,7 @@
                             tr
                                 th(data-field='storage_id' data-sortable='true') ID
                                 th(data-field='storage_creationdate' data-formatter='dateFormatter' data-sortable='true') creation date
+                                th(data-field='storage_barecode' data-formatter='storage_barecodeFormatter') barecode
                                 th(data-field='product.name.name_label' data-sortable='true') product
                                 th(data-field='storelocation.storelocation_fullpath' data-sortable='true' data-formatter='storelocation_fullpathFormatter') store location
                                 th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') actions
@@ -83,17 +87,39 @@
         //
         $( document ).ready(function() {           
         });
-        $('#table').on('load-success.bs.table', function () {
+        $('#table').on('load-success.bs.table refresh.bs.table', function () {
             // populating search input if needed
             if (URLValues.has("search")) {
                 $('#table').bootstrapTable('resetSearch', URLValues.get("search")[0]);
             }
             // highlight row if needed
             if (URLValues.has("hl")) {
-                console.log("foo")
-                console.log(URLValues.get("hl"))
                 highlightRow("storage_id", URLValues.get("hl")[0]);
-            }            
+            }
+            // display titles, switch products<>storages selector
+            if (URLValues.has("entity")) {
+                e = URLValues.get("entity")[0];
+            }
+            if (URLValues.has("product")) {
+                p = URLValues.get("product")[0];
+                // setting the title
+                $.ajax({
+                    url: "/products/" + p,
+                    method: "GET",
+                }).done(function(data, textStatus, jqXHR) {
+                    $("#filter-product").html(createTitle(data.name.name_label + " (" + data.casnumber.casnumber_label + ") " + data.product_specificity.String));
+                }).fail(function(jqXHR, textStatus, errorThrown) {
+                    handleHTTPError(jqXHR.statusText, jqXHR.status)
+                });
+                // hiding the storage<>product view switch
+                $("#switchview").hide();
+                // adding a create storage button for the product
+                b = $("<button>").addClass("store btn btn-link").attr("title", "store this product").attr("type", "button");
+                b.attr("onclick", "window.location.href = '/vc/storages?product=" + p + "'");
+                i = $("<i>").addClass("material-icons").text("move_to_inbox");
+                b.append(i);
+                $("#button-store").html(b);
+            }
         });
 
         //
@@ -102,20 +128,9 @@
         function queryParams(params) {
             if (URLValues.has("entity")) {
                 params["entity"] = URLValues.get("entity")[0];
-                displayFilterEntity(params["entity"]);
-                $("#switchview").hide();
             }
             if (URLValues.has("product")) {
                 params["product"] = URLValues.get("product")[0];
-                $.ajax({
-                    url: "/products/" + params["product"],
-                    method: "GET",
-                }).done(function(data, textStatus, jqXHR) {
-                    $("#filter-product").html(createTitle(data.name.name_label + " (" + data.casnumber.casnumber_label + ") " + data.product_specificity.String));
-                }).fail(function(jqXHR, textStatus, errorThrown) {
-                    handleHTTPError(jqXHR.statusText, jqXHR.status)
-                });
-                $("#switchview").hide();
             }
             return params;
         }
@@ -174,6 +189,16 @@
                 return "<span>" + value + "</span>";
             }
         }
+        //
+        // storage_barecode formatter
+        //
+        function storage_barecodeFormatter(value, row, index, field) {
+            if (row.storage_barecode.Valid) {
+                return row.storage_barecode.String;
+            } else {
+                return "";
+            }
+        }
 
         //
         // table items actions
@@ -224,15 +249,24 @@
 
                 // autofilling form
                 $("#edit-collapse").autofill( newfdata, {"findbyname": false } );
+
                 // setting index hidden input
                 $("input#index").val(index);
+
                 // select2 is not autofilled - we need a special operation
                 var newOption = new Option(data.storelocation.storelocation_name.String, data.storelocation.storelocation_id.Int64, true, true);
                 $('select#storelocation').append(newOption).trigger('change');
-                var newOption = new Option(data.unit.unit_label.String, data.unit.unit_id.Int64, true, true);
-                $('select#unit').append(newOption).trigger('change');
-                var newOption = new Option(data.supplier.supplier_label.String, data.supplier.supplier_id.Int64, true, true);
-                $('select#supplier').append(newOption).trigger('change');
+
+                if (data.unit.unit_id.Valid) {
+                    var newOption = new Option(data.unit.unit_label.String, data.unit.unit_id.Int64, true, true);
+                    $('select#unit').append(newOption).trigger('change');
+                }
+
+                if (data.supplier.supplier_id.Valid) {
+                    var newOption = new Option(data.supplier.supplier_label.String, data.supplier.supplier_id.Int64, true, true);
+                    $('select#supplier').append(newOption).trigger('change');
+                }
+
             }).fail(function(jqXHR, textStatus, errorThrown) {
                 handleHTTPError(jqXHR.statusText, jqXHR.status)
             });

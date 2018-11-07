@@ -1,11 +1,12 @@
 package models
 
 import (
-	"strings"
-
 	"database/sql"
-
 	"github.com/jmoiron/sqlx"
+	"reflect"
+	"regexp"
+	"strconv"
+	"strings"
 
 	sq "github.com/Masterminds/squirrel"
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
@@ -275,6 +276,7 @@ func (db *SQLiteDataStore) GetStorage(id int) (Storage, error) {
 }
 
 func (db *SQLiteDataStore) DeleteStorage(id int) error {
+
 	var (
 		sqlr string
 		err  error
@@ -287,27 +289,155 @@ func (db *SQLiteDataStore) DeleteStorage(id int) error {
 	return nil
 }
 
+func (db *SQLiteDataStore) GenerateAndUpdateStorageBarecode(s *Storage) error {
+
+	var (
+		err    error
+		prefix string
+		m      []string
+	)
+
+	// compiling regex
+	r := regexp.MustCompile("^\\[(?P<groupone>[a-zA-Z]{1})\\].*$")
+	// finding group names
+	n := r.SubexpNames()
+	// finding matches
+	ms := r.FindAllStringSubmatch(s.StoreLocationName.String, -1)
+	// then building a map of matches
+	md := map[string]string{}
+	if len(ms) != 0 {
+		m = ms[0]
+		for i, j := range m {
+			md[n[i]] = j
+		}
+	}
+	if len(m) > 0 {
+		prefix = md["groupone"]
+	}
+
+	sqlr := `UPDATE storage 
+	SET storage_barecode = '` + prefix + `' || storage.product || '.' || (select count(*) from storage join storelocation on storage.storelocation = storelocation.storelocation_id join entity on storelocation.entity = entity.entity_id where storage.product = ? and entity_id = ?) 
+	WHERE storage_id = ?`
+	if _, err = db.Exec(sqlr, s.ProductID, s.EntityID, s.StorageID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (db *SQLiteDataStore) CreateStorage(s Storage) (error, int) {
 
 	var (
-		sqlr   string
-		res    sql.Result
-		lastid int64
-		err    error
+		lastid   int64
+		tx       *sql.Tx
+		sqlr     string
+		res      sql.Result
+		sqla     []interface{}
+		ibuilder sq.InsertBuilder
+		err      error
 	)
-	// FIXME: use a transaction here
-	sqlr = `INSERT INTO storage(storage_creationdate, storage_comment, person, product, storelocation) VALUES (?, ?, ?, ?, ?)`
-	if res, err = db.Exec(sqlr, s.StorageCreationDate, s.StorageComment, s.PersonID, s.ProductID, s.StoreLocationID); err != nil {
+
+	// beginning transaction
+	if tx, err = db.Begin(); err != nil {
+		return err, 0
+	}
+
+	// if SupplierID = -1 then it is a new supplier
+	if v, err := s.Supplier.SupplierID.Value(); s.Supplier.SupplierID.Valid && err == nil && v.(int64) == -1 {
+		sqlr = `INSERT INTO supplier (supplier_label) VALUES (?)`
+		if res, err = tx.Exec(sqlr, s.Supplier.SupplierLabel); err != nil {
+			tx.Rollback()
+			return err, 0
+		}
+		// getting the last inserted id
+		if lastid, err = res.LastInsertId(); err != nil {
+			tx.Rollback()
+			return err, 0
+		}
+		// updating the storage SupplierId (SupplierLabel already set)
+		s.Supplier.SupplierID = sql.NullInt64{Int64: lastid}
+	}
+	if err != nil {
+		log.Error("supplier error - " + err.Error())
+		tx.Rollback()
+		return err, 0
+	}
+
+	// finally updating the storage
+	m := make(map[string]interface{})
+	if s.StorageComment.Valid {
+		m["storage_comment"] = s.StorageComment.String
+	}
+	if s.StorageQuantity.Valid {
+		m["storage_quantity"] = s.StorageQuantity.Float64
+	}
+	if s.StorageBarecode.Valid {
+		m["storage_barecode"] = s.StorageBarecode.String
+	}
+	if s.UnitID.Valid {
+		m["unit"] = s.UnitID.Int64
+	}
+	if s.SupplierID.Valid {
+		m["supplier"] = s.SupplierID.Int64
+	}
+	m["person"] = s.PersonID
+	m["storelocation"] = s.StoreLocationID.Int64
+	m["product"] = s.ProductID
+	m["storage_creationdate"] = s.StorageCreationDate.String()
+
+	// building column names/values
+	col := make([]string, 0, len(m))
+	val := make([]interface{}, 0, len(m))
+	for k, v := range m {
+		col = append(col, k)
+		rt := reflect.TypeOf(v)
+		rv := reflect.ValueOf(v)
+		switch rt.Kind() {
+		case reflect.Int:
+			val = append(val, strconv.Itoa(int(rv.Int())))
+		case reflect.Float64:
+			val = append(val, rv.Float())
+		case reflect.Int64:
+			val = append(val, rv.Int())
+		case reflect.String:
+			val = append(val, rv.String())
+		case reflect.Bool:
+			val = append(val, rv.Bool())
+		default:
+			panic("unknown type:" + rt.String() + " for " + k)
+		}
+	}
+
+	ibuilder = sq.Insert("storage").Columns(col...).Values(val...)
+	if sqlr, sqla, err = ibuilder.ToSql(); err != nil {
+		tx.Rollback()
+		return err, 0
+	}
+
+	if res, err = tx.Exec(sqlr, sqla...); err != nil {
+		log.Error("storage error - " + err.Error())
+		log.Error("sql:" + sqlr)
+		tx.Rollback()
+		return err, 0
+	}
+
+	// committing changes
+	if err = tx.Commit(); err != nil {
+		tx.Rollback()
 		return err, 0
 	}
 
 	// getting the last inserted id
 	if lastid, err = res.LastInsertId(); err != nil {
+		tx.Rollback()
 		return err, 0
 	}
+	s.StorageID = int(lastid)
+	log.WithFields(log.Fields{"s": s}).Debug("CreateStorage")
 
-	return nil, int(lastid)
+	return nil, s.StorageID
 }
+
 func (db *SQLiteDataStore) UpdateStorage(s Storage) error {
 
 	var (
