@@ -283,15 +283,29 @@ func (env *Env) CreateStorageHandler(w http.ResponseWriter, r *http.Request) *he
 			Message: "form decoding error",
 			Code:    http.StatusBadRequest}
 	}
+
+	// retrieving the full store location
+	// we need its entity id to compute the barecode
+	if s.StoreLocation, err = env.DB.GetStoreLocation(int(s.StoreLocationID.Int64)); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "error retrieving the storage store location",
+			Code:    http.StatusInternalServerError}
+	}
+
 	s.StorageCreationDate = time.Now()
 	s.PersonID = c.PersonID
 	log.WithFields(log.Fields{"s": s}).Debug("CreateStorageHandler")
 
-	if err, s.StorageID = env.DB.CreateStorage(s); err != nil {
-		return &helpers.AppError{
-			Error:   err,
-			Message: "create storage error",
-			Code:    http.StatusInternalServerError}
+	for i := 1; i <= s.StorageNbItem; i++ {
+		if err, s.StorageID = env.DB.CreateStorage(s); err != nil {
+			return &helpers.AppError{
+				Error:   err,
+				Message: "create storage error",
+				Code:    http.StatusInternalServerError}
+		}
+		// TODO: move it in the DB CreateStorage method?
+		env.DB.GenerateAndUpdateStorageBarecode(&s)
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")

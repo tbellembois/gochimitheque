@@ -67,14 +67,15 @@ var normalizeSqlNull = function(obj) {
 };
 
 function createTitle(msgText) {
-    var d1 = $("<div>");
-    var d2 = $("<div>");
-    var h = $("<h5>");
-    d1.addClass("card bg-info text-center mx-auto mt-md-5 mb-md-5");
-    d2.addClass("card-body");
-    h.addClass("card-title text-light");
+    var d = $("<div>");
+    var i = $("<i>");
+    var h = $("<h6>");
+    d.addClass("text-center mx-auto mt-md-5 mb-md-5");
+    i.addClass("material-icons").text("keyboard_tab");
     h.text(msgText);
-    return d1.append(d2.append(h));
+    d.append(i);
+    d.append(h);
+    return d;
 }
 
 // displays and fadeout the given message
@@ -94,3 +95,34 @@ function highlightRow(attr, id) {
     $("tr[" + attr + "=" + id + "]").fadeTo("slow", 0.30);
     $("tr[" + attr + "=" + id + "]").fadeTo("slow", 1);
 }
+
+// https://gist.github.com/excalq/2961415
+var updateQueryStringParam = function (key, value) {
+
+    var baseUrl = [location.protocol, '//', location.host, location.pathname].join(''),
+        urlQueryString = document.location.search,
+        newParam = key + '=' + value,
+        params = '?' + newParam;
+
+    // If the "search" string exists, then build params from it
+    if (urlQueryString) {
+        var updateRegex = new RegExp('([\?&])' + key + '[^&]*');
+        var removeRegex = new RegExp('([\?&])' + key + '=[^&;]+[&;]?');
+
+        if( typeof value == 'undefined' || value == null || value == '' ) { // Remove param if value is empty
+            params = urlQueryString.replace(removeRegex, "$1");
+            params = params.replace( /[&;]$/, "" );
+
+        } else if (urlQueryString.match(updateRegex) !== null) { // If param exists already, update it
+            params = urlQueryString.replace(updateRegex, "$1" + newParam);
+
+        } else { // Otherwise, add it to end of query string
+            params = urlQueryString + '&' + newParam;
+        }
+    }
+
+    // no parameter was set so we don't need the question mark
+    params = params == '?' ? '' : params;
+
+    window.history.replaceState({}, "", baseUrl + params);
+};

@@ -142,13 +142,20 @@
             $("#switchview").show();
         }
         
+        //
+        // startup actions
+        //
         $( document ).ready(function() {           
-            
+        });
+        $('#table').on('load-success.bs.table refresh.bs.table', function () {
             // populating search input if needed
             if (URLValues.has("search")) {
                 $('#table').bootstrapTable('resetSearch', URLValues.get("search")[0]);
             }
-
+            // highlight row if needed
+            if (URLValues.has("hl")) {
+                highlightRow("product_id", URLValues.get("hl")[0]);
+            }            
         });
         
         //
