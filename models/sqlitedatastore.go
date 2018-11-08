@@ -58,7 +58,7 @@ func (db *SQLiteDataStore) InsertSamples() error {
 
 		scanner := bufio.NewScanner(scas)
 		scanner.Split(bufio.ScanLines)
-		log.Debug("- cas")
+		log.Debug("- creating sample cas")
 		for scanner.Scan() {
 			if _, err = db.Exec(`INSERT OR IGNORE INTO casnumber ("casnumber_label") VALUES ("` + scanner.Text() + `");`); err != nil {
 				return err
@@ -67,7 +67,7 @@ func (db *SQLiteDataStore) InsertSamples() error {
 
 		scanner = bufio.NewScanner(sname)
 		scanner.Split(bufio.ScanLines)
-		log.Debug("- names")
+		log.Debug("- creating sample names")
 		for scanner.Scan() {
 			if _, err = db.Exec(`INSERT OR IGNORE INTO name ("name_label") VALUES ("` + scanner.Text() + `");`); err != nil {
 				return err
@@ -76,7 +76,7 @@ func (db *SQLiteDataStore) InsertSamples() error {
 
 		scanner = bufio.NewScanner(sempiricalformula)
 		scanner.Split(bufio.ScanLines)
-		log.Debug("- empirical formulas")
+		log.Debug("- creating sample empirical formulas")
 		for scanner.Scan() {
 			if _, err = db.Exec(`INSERT OR IGNORE INTO empiricalformula ("empiricalformula_label") VALUES ("` + scanner.Text() + `");`); err != nil {
 				return err
@@ -87,7 +87,7 @@ func (db *SQLiteDataStore) InsertSamples() error {
 		m2 := Person{PersonEmail: "manager@lab-two.com"}
 		m3 := Person{PersonEmail: "manager@lab-three.com"}
 
-		log.Debug("- 3 managers")
+		log.Debug("- creating 3 sample managers")
 		_, m1.PersonID = db.CreatePerson(m1)
 		_, m2.PersonID = db.CreatePerson(m1)
 		_, m3.PersonID = db.CreatePerson(m1)
@@ -96,25 +96,33 @@ func (db *SQLiteDataStore) InsertSamples() error {
 		e2 := Entity{EntityName: "lab two", EntityDescription: "the lab two", Managers: []Person{m2}}
 		e3 := Entity{EntityName: "lab three", EntityDescription: "the lab three", Managers: []Person{m3}}
 
-		log.Debug("- 3 entities")
+		log.Debug("- creating 3 sample entities")
 		_, e1.EntityID = db.CreateEntity(e1)
 		_, e2.EntityID = db.CreateEntity(e2)
 		_, e3.EntityID = db.CreateEntity(e3)
 
-		sl1 := StoreLocation{StoreLocationName: sql.NullString{Valid: true, String: "fridgeA1"}, Entity: e1, StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true}}
-		sl2 := StoreLocation{StoreLocationName: sql.NullString{Valid: true, String: "fridgeB1"}, Entity: e1, StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true}}
-		sl3 := StoreLocation{StoreLocationName: sql.NullString{Valid: true, String: "fridgeA2"}, Entity: e2, StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true}}
-		sl4 := StoreLocation{StoreLocationName: sql.NullString{Valid: true, String: "fridgeB2"}, Entity: e2, StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true}}
-		sl5 := StoreLocation{StoreLocationName: sql.NullString{Valid: true, String: "fridgeA3"}, Entity: e3, StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true}}
-		sl6 := StoreLocation{StoreLocationName: sql.NullString{Valid: true, String: "fridgeB3"}, Entity: e3, StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true}}
+		sl1 := StoreLocation{StoreLocationColor: sql.NullString{Valid: true, String: "rgb(255, 38, 38)"}, StoreLocationName: sql.NullString{Valid: true, String: "fridgeE1-A"}, Entity: e1, StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true}}
+		sl2 := StoreLocation{StoreLocationColor: sql.NullString{Valid: true, String: "rgb(255, 129, 129)"}, StoreLocationName: sql.NullString{Valid: true, String: "fridgeE1-B"}, Entity: e1, StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true}}
+		sl3 := StoreLocation{StoreLocationColor: sql.NullString{Valid: true, String: "rgb(33, 185, 102)"}, StoreLocationName: sql.NullString{Valid: true, String: "fridgeE2-A"}, Entity: e2, StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true}}
+		sl4 := StoreLocation{StoreLocationColor: sql.NullString{Valid: true, String: "rgb(99, 232, 159)"}, StoreLocationName: sql.NullString{Valid: true, String: "fridgeE2-B"}, Entity: e2, StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true}}
+		sl5 := StoreLocation{StoreLocationColor: sql.NullString{Valid: true, String: "rgb(32, 103, 208)"}, StoreLocationName: sql.NullString{Valid: true, String: "fridgeE3-A"}, Entity: e3, StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true}}
+		sl6 := StoreLocation{StoreLocationColor: sql.NullString{Valid: true, String: "rgb(255, 38, 38)"}, StoreLocationName: sql.NullString{Valid: true, String: "roomE3-B"}, Entity: e3, StoreLocationCanStore: sql.NullBool{Valid: true, Bool: false}}
 
-		log.Debug("- 3 storelocations")
+		log.Debug("- creating 8 sample storelocations")
 		db.CreateStoreLocation(sl1)
 		db.CreateStoreLocation(sl2)
 		db.CreateStoreLocation(sl3)
 		db.CreateStoreLocation(sl4)
 		db.CreateStoreLocation(sl5)
-		db.CreateStoreLocation(sl6)
+		var i int
+		_, i = db.CreateStoreLocation(sl6)
+		sl6.StoreLocationID = sql.NullInt64{Valid: true, Int64: int64(i)}
+
+		sl7 := StoreLocation{StoreLocationColor: sql.NullString{Valid: true, String: "rgb(100, 159, 248)"}, StoreLocationName: sql.NullString{Valid: true, String: "[P]E3-B1"}, Entity: e3, StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true}, StoreLocation: &sl6}
+		sl8 := StoreLocation{StoreLocationColor: sql.NullString{Valid: true, String: "rgb(188, 212, 248)"}, StoreLocationName: sql.NullString{Valid: true, String: "[S]E3-B2"}, Entity: e3, StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true}, StoreLocation: &sl6}
+
+		db.CreateStoreLocation(sl7)
+		db.CreateStoreLocation(sl8)
 
 		m1.Entities = []Entity{e1}
 		m2.Entities = []Entity{e2}
@@ -140,7 +148,7 @@ func (db *SQLiteDataStore) InsertSamples() error {
 		p9 := Person{PersonEmail: "harrison@lab-three.com", Entities: []Entity{e3}}
 		p10 := Person{PersonEmail: "alone@no-entity.com"}
 
-		log.Debug("- 10 users")
+		log.Debug("- creating 10 sample users")
 		db.CreatePerson(p0)
 		db.CreatePerson(p1)
 		db.CreatePerson(p2)
@@ -155,7 +163,7 @@ func (db *SQLiteDataStore) InsertSamples() error {
 
 		// inserting sample products
 		// attention: values are wrongs, just for devel purposes
-		log.Debug("- sample products")
+		log.Debug("- creating sample products")
 		for i := 1; i <= 100; i++ {
 			ins := fmt.Sprintf("(\"spec%d\", \"%d\", \"%d\", 1, \"%d\")", i, i, i, i)
 			if _, err = db.Exec(`INSERT INTO product ("product_specificity", "casnumber", "name", "person", "empiricalformula") VALUES ` + ins + `;`); err != nil {
@@ -169,13 +177,16 @@ func (db *SQLiteDataStore) InsertSamples() error {
 
 		// inserting sample storages
 		// attention: values are wrongs, just for devel purposes
-		log.Debug("- sample storages")
+		log.Debug("- creating sample storages")
 		for i := 1; i <= 200; i++ {
 			comment := fmt.Sprintf("(\"comment%d\", \"%d\", \"%d\")", i, i, i)
 			datetime := time.Now()
 			person := i%9 + 1
 			product := i%99 + 1
-			storelocation := i%5 + 1
+			storelocation := i%6 + 1
+			if storelocation == int(sl6.StoreLocationID.Int64) {
+				storelocation = int(sl6.StoreLocationID.Int64) + 1
+			}
 			if _, err = db.Exec(`INSERT INTO storage ("storage_creationdate", "storage_comment", "person", "product", "storelocation") VALUES (?,?,?,?,?);`, datetime, comment, person, product, storelocation); err != nil {
 				return err
 			}

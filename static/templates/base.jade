@@ -73,12 +73,14 @@ html
             | {{template "FOOTER"}}
 
         | {{template "FOOT"}}
-        | {{template "CONTENTJS"}}
-
+        
         script.
             //
             // common javascript
             //
+
+            // query parameters saved - used for the storages<>products views switch
+            var lastQueryParams;
 
             // logged user email and permissions
             var container = {{ . }};
@@ -96,4 +98,6 @@ html
                 email = readCookie("email")
                 document.getElementById("logged").innerHTML = email;
            };
+        
+        | {{template "CONTENTJS"}}
 | {{end}}

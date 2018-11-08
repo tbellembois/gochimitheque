@@ -677,6 +677,12 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	comreq.WriteString(" LEFT JOIN classofcompound ON product.classofcompound = classofcompound.classofcompound_id")
 	// get empirical formula
 	comreq.WriteString(" JOIN empiricalformula ON product.empiricalformula = empiricalformula.empiricalformula_id")
+	// get storages and entities
+	if p.GetEntity() != -1 {
+		comreq.WriteString(" JOIN storage ON storage.product = product.product_id")
+		comreq.WriteString(" JOIN storelocation ON storage.storelocation = storelocation.storelocation_id")
+		comreq.WriteString(" JOIN entity ON storelocation.entity = entity.entity_id")
+	}
 	// filter by permissions
 	comreq.WriteString(` JOIN permission AS perm, entity as e ON
 	(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
@@ -690,6 +696,9 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	comreq.WriteString(" WHERE name.name_label LIKE :search")
 	if p.GetProduct() != -1 {
 		comreq.WriteString(" AND product.product_id = :product")
+	}
+	if p.GetEntity() != -1 {
+		comreq.WriteString(" AND entity.entity_id = :entity")
 	}
 
 	// post select request
