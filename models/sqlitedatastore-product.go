@@ -677,8 +677,8 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	comreq.WriteString(" LEFT JOIN classofcompound ON product.classofcompound = classofcompound.classofcompound_id")
 	// get empirical formula
 	comreq.WriteString(" JOIN empiricalformula ON product.empiricalformula = empiricalformula.empiricalformula_id")
-	// get storages and entities
-	if p.GetEntity() != -1 {
+	// get storages, store locations and entities
+	if p.GetEntity() != -1 || p.GetStorelocation() != -1 {
 		comreq.WriteString(" JOIN storage ON storage.product = product.product_id")
 		comreq.WriteString(" JOIN storelocation ON storage.storelocation = storelocation.storelocation_id")
 		comreq.WriteString(" JOIN entity ON storelocation.entity = entity.entity_id")
@@ -700,6 +700,9 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	if p.GetEntity() != -1 {
 		comreq.WriteString(" AND entity.entity_id = :entity")
 	}
+	if p.GetStorelocation() != -1 {
+		comreq.WriteString(" AND storelocation.storelocation_id = :storelocation")
+	}
 
 	// post select request
 	postsreq.WriteString(" GROUP BY product.product_id")
@@ -720,13 +723,14 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 
 	// building argument map
 	m := map[string]interface{}{
-		"search":   p.GetSearch(),
-		"personid": p.GetLoggedPersonID(),
-		"order":    p.GetOrder(),
-		"limit":    p.GetLimit(),
-		"offset":   p.GetOffset(),
-		"entity":   p.GetEntity(),
-		"product":  p.GetProduct(),
+		"search":        p.GetSearch(),
+		"personid":      p.GetLoggedPersonID(),
+		"order":         p.GetOrder(),
+		"limit":         p.GetLimit(),
+		"offset":        p.GetOffset(),
+		"entity":        p.GetEntity(),
+		"product":       p.GetProduct(),
+		"storelocation": p.GetStorelocation(),
 	}
 
 	// select

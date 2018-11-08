@@ -2,11 +2,12 @@ package models
 
 import (
 	"database/sql"
-	"github.com/jmoiron/sqlx"
 	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/jmoiron/sqlx"
 
 	sq "github.com/Masterminds/squirrel"
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
@@ -198,6 +199,9 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 	if p.GetEntity() != -1 {
 		comreq.WriteString(" AND entity.entity_id = :entity")
 	}
+	if p.GetStorelocation() != -1 {
+		comreq.WriteString(" AND storelocation.storelocation_id = :storelocation")
+	}
 
 	// post select request
 	postsreq.WriteString(" GROUP BY storage.storage_id")
@@ -218,13 +222,14 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 
 	// building argument map
 	m := map[string]interface{}{
-		"search":   p.GetSearch(),
-		"personid": p.GetLoggedPersonID(),
-		"order":    p.GetOrder(),
-		"limit":    p.GetLimit(),
-		"offset":   p.GetOffset(),
-		"entity":   p.GetEntity(),
-		"product":  p.GetProduct(),
+		"search":        p.GetSearch(),
+		"personid":      p.GetLoggedPersonID(),
+		"order":         p.GetOrder(),
+		"limit":         p.GetLimit(),
+		"offset":        p.GetOffset(),
+		"entity":        p.GetEntity(),
+		"product":       p.GetProduct(),
+		"storelocation": p.GetStorelocation(),
 	}
 
 	// select

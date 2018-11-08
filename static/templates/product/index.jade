@@ -1,12 +1,16 @@
 | {{define "CONTENT"}}
 
     .row
-        .col-sm-5.offset-md-5
-            #filter-entity
+        .col-sm-10
+            #filter-item
         .col-sm-2.d-flex.justify-content-end
             #button-store
     .row
-        .col-sm-12.d-flex.justify-content-end
+        .col-sm-6
+            #storelocation-selector
+                | {{$label := ""}} {{$name := "storelocationselector"}}
+                +select
+        .col-sm-6.d-flex.justify-content-end
             button.btn.btn-dark#switchview(type="button" onclick="switchProductStorageView()") switch to storage view
 
     #accordion
@@ -150,6 +154,7 @@
             $("#edit-collapse").collapse("hide"); 
             if (!urlParams.get("product") && !urlParams.get("entity")) {
                 $("#switchview").show();
+                $("#storelocation-selector").show();
             }
         }
         
@@ -185,7 +190,19 @@
                     url: "/entities/" + e,
                     method: "GET",
                 }).done(function(data, textStatus, jqXHR) {
-                    $("#filter-entity").html(createTitle(data.entity_name));
+                    $("#filter-item").html(createTitle(data.entity_name));
+                }).fail(function(jqXHR, textStatus, errorThrown) {
+                    handleHTTPError(jqXHR.statusText, jqXHR.status)
+                });
+            }
+            if (urlParams.has("storelocation")) {
+                //e = URLValues.get("entity")[0];
+                s = urlParams.get("storelocation");
+                $.ajax({
+                    url: "/storelocations/" + s,
+                    method: "GET",
+                }).done(function(data, textStatus, jqXHR) {
+                    $("#filter-item").html(createTitle(data.storelocation_name.String));
                 }).fail(function(jqXHR, textStatus, errorThrown) {
                     handleHTTPError(jqXHR.statusText, jqXHR.status)
                 });
@@ -202,14 +219,13 @@
             // getting request parameters
             var urlParams = new URLSearchParams(window.location.search);
 
-            //if (URLValues.has("entity")) {
             if (urlParams.has("entity")) {
-                //params["entity"] = URLValues.get("entity")[0];
                 params["entity"] = urlParams.get("entity");
             }
-            //if (URLValues.has("product")) {
+            if (urlParams.has("storelocation")) {
+                params["storelocation"] = urlParams.get("storelocation");
+            }
             if (urlParams.has("product")) {
-                //params["product"] = URLValues.get("product")[0];
                 params["product"] = urlParams.get("product");
             }
             return params;
@@ -476,6 +492,7 @@
             $('#edit-collapse').collapse('show');
             $('#list-collapse').collapse('hide');
             $("#switchview").hide();
+            $("#storelocation-selector").hide();
         }
         window.operateEvents = {
             'click .store': function (e, value, row, index) {

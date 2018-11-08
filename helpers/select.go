@@ -35,14 +35,17 @@ type DbselectparamProduct interface {
 	Dbselectparam
 	SetEntity(int)
 	SetProduct(int)
+	SetStorelocation(int)
 
 	GetEntity() int
 	GetProduct() int
+	GetStorelocation() int
 }
 type dbselectparamProduct struct {
 	dbselectparam
-	Entity  int // id
-	Product int // id
+	Entity        int // id
+	Product       int // id
+	Storelocation int // id
 }
 
 // dbselectparamStorage contains the parameters of the GetStorages function
@@ -50,14 +53,17 @@ type DbselectparamStorage interface {
 	Dbselectparam
 	SetEntity(int)
 	SetProduct(int)
+	SetStorelocation(int)
 
 	GetEntity() int
 	GetProduct() int
+	GetStorelocation() int
 }
 type dbselectparamStorage struct {
 	dbselectparam
-	Entity  int // id
-	Product int // id
+	Entity        int // id
+	Product       int // id
+	Storelocation int // id
 }
 
 // dbselectparamPerson contains the parameters of the GetPeople function
@@ -179,6 +185,14 @@ func (d dbselectparamProduct) GetProduct() int {
 	return d.Product
 }
 
+func (d *dbselectparamProduct) SetStorelocation(i int) {
+	d.Storelocation = i
+}
+
+func (d dbselectparamProduct) GetStorelocation() int {
+	return d.Storelocation
+}
+
 //
 // dbselectparamStorage functions
 //
@@ -196,6 +210,14 @@ func (d *dbselectparamStorage) SetProduct(i int) {
 
 func (d dbselectparamStorage) GetProduct() int {
 	return d.Product
+}
+
+func (d *dbselectparamStorage) SetStorelocation(i int) {
+	d.Storelocation = i
+}
+
+func (d dbselectparamStorage) GetStorelocation() int {
+	return d.Storelocation
 }
 
 // Newdbselectparam returns a dbselectparam struct
@@ -278,6 +300,7 @@ func NewdbselectparamProduct(r *http.Request, f func(string) (string, error)) (*
 	// init defaults
 	dspp.Entity = -1
 	dspp.Product = -1
+	dspp.Storelocation = -1
 	if dsp, aerr = Newdbselectparam(r, f); aerr != nil {
 		return nil, aerr
 	}
@@ -294,7 +317,7 @@ func NewdbselectparamProduct(r *http.Request, f func(string) (string, error)) (*
 				return nil, &AppError{
 					Error:   err,
 					Code:    http.StatusInternalServerError,
-					Message: "limit atoi conversion",
+					Message: "entity atoi conversion",
 				}
 			}
 		}
@@ -303,7 +326,16 @@ func NewdbselectparamProduct(r *http.Request, f func(string) (string, error)) (*
 				return nil, &AppError{
 					Error:   err,
 					Code:    http.StatusInternalServerError,
-					Message: "limit atoi conversion",
+					Message: "product atoi conversion",
+				}
+			}
+		}
+		if storelocationid, ok := r.URL.Query()["storelocation"]; ok {
+			if dspp.Storelocation, err = strconv.Atoi(storelocationid[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "storelocation atoi conversion",
 				}
 			}
 		}
@@ -326,6 +358,7 @@ func NewdbselectparamStorage(r *http.Request, f func(string) (string, error)) (*
 	// init defaults
 	dsps.Entity = -1
 	dsps.Product = -1
+	dsps.Storelocation = -1
 	if dsp, aerr = Newdbselectparam(r, f); aerr != nil {
 		return nil, aerr
 	}
@@ -353,6 +386,15 @@ func NewdbselectparamStorage(r *http.Request, f func(string) (string, error)) (*
 		}
 		if productid, ok := r.URL.Query()["product"]; ok {
 			if dsps.Product, err = strconv.Atoi(productid[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "limit atoi conversion",
+				}
+			}
+		}
+		if storelocationid, ok := r.URL.Query()["storelocation"]; ok {
+			if dsps.Storelocation, err = strconv.Atoi(storelocationid[0]); err != nil {
 				return nil, &AppError{
 					Error:   err,
 					Code:    http.StatusInternalServerError,
