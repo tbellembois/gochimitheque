@@ -195,6 +195,9 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 	if p.GetProduct() != -1 {
 		comreq.WriteString(" AND product.product_id = :product")
 	}
+	if p.GetEntity() != -1 {
+		comreq.WriteString(" AND entity.entity_id = :entity")
+	}
 
 	// post select request
 	postsreq.WriteString(" GROUP BY storage.storage_id")

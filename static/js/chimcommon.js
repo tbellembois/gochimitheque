@@ -69,10 +69,10 @@ var normalizeSqlNull = function(obj) {
 function createTitle(msgText) {
     var d = $("<div>");
     var i = $("<i>");
-    var h = $("<h6>");
-    d.addClass("text-center mx-auto mt-md-5 mb-md-5");
-    i.addClass("material-icons").text("keyboard_tab");
-    h.text(msgText);
+    var h = $("<span>");
+    d.addClass("mt-md-3 mb-md-3 row");
+    i.addClass("material-icons col-sm-1").text("keyboard_tab");
+    h.addClass("col-sm-11 align-bottom").text(msgText);
     d.append(i);
     d.append(h);
     return d;
@@ -126,3 +126,40 @@ var updateQueryStringParam = function (key, value) {
 
     window.history.replaceState({}, "", baseUrl + params);
 };
+
+function cleanQueryParams() {
+    // root url
+    var root = window.location.protocol + '//' + window.location.hostname + ":" + window.location.port + window.location.pathname;
+    var urlParams = new URLSearchParams(window.location.search);
+    urlParams.delete("search");
+    urlParams.delete("sort");
+    urlParams.delete("order");
+    urlParams.delete("offset");
+    urlParams.delete("limit");
+    window.history.replaceState("", "", root + "?" + urlParams.toString());
+}
+
+function switchProductStorageView() {
+    // root path
+    path = window.location.pathname
+    // replacing path element
+    if (path.indexOf("storages") >= 0) {
+        path = path.replace("storages", "products");
+    } else {
+        path = path.replace("products", "storages");
+    }
+    // root url
+    root = window.location.protocol + '//' + window.location.hostname + ":" + window.location.port + path;
+    // building url parameters from last AJAX query parameters
+    p = lastQueryParams.data;
+    // filtering empty values
+    newp = {};
+    $.each(p, function(k, v) {
+        if (v !== "") {
+            newp[k] = v;
+        }
+    });
+
+    // redirecting
+    window.location.href = root + "?" + $.param(p);
+}
