@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"encoding/csv"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -202,7 +203,6 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		err     error
 		c       int
 		r       *csv.Reader
-		f       *os.File
 		records [][]string
 	)
 
@@ -442,11 +442,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		return err
 	}
 	if c == 0 {
-		if f, err = os.Open("models/data-hazardstatement.csv"); err != nil {
-			return err
-		}
-		defer f.Close()
-		r = csv.NewReader(f)
+		r = csv.NewReader(strings.NewReader(HAZARDSTATEMENT))
 		r.Comma = '\t'
 		if records, err = r.ReadAll(); err != nil {
 			return err
@@ -463,10 +459,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		return err
 	}
 	if c == 0 {
-		if f, err = os.Open("models/data-precautionarystatement.csv"); err != nil {
-			return err
-		}
-		r = csv.NewReader(f)
+		r = csv.NewReader(strings.NewReader(PRECAUTIONARYSTATEMENT))
 		r.Comma = '\t'
 		if records, err = r.ReadAll(); err != nil {
 			return err
