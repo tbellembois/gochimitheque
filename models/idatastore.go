@@ -8,7 +8,6 @@ import (
 // to store data
 type Datastore interface {
 	CreateDatabase() error
-	InsertSamples() error
 
 	// products
 	GetProducts(helpers.DbselectparamProduct) ([]Product, int, error)

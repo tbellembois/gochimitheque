@@ -1,4 +1,6 @@
 #!/bin/bash
+rm dist/*
+
 echo "generating rice"
 go generate
 

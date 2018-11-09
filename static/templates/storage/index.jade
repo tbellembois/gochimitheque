@@ -11,7 +11,8 @@
                 | {{$label := ""}} {{$name := "storelocationselector"}}
                 +select
         .col-sm-6.d-flex.justify-content-end
-            button.btn.btn-dark#switchview(type="button" onclick="switchProductStorageView()") switch to product view
+            button.btn.btn-dark#switchview(type="button" title="switch to product view" onclick="switchProductStorageView()")
+                i.material-icons local_offer
 
     #accordion
         #list-collapse.collapse.show(data-parent='#accordion')

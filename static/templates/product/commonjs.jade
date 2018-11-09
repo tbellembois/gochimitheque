@@ -81,12 +81,12 @@ script.
         // store locations selector select2
         //
         $('select#storelocationselector').select2({
+            templateResult: formatStorelocation,
             placeholder: "direct access to a store location",
             ajax: {
                 url: '/storelocations',
                     data: function (params) {
                     var query = {
-                        storelocation_canstore: true,
                         search: params.term,
                         page: params.page || 1,
                         offset: params.page*10 || 0,
@@ -679,6 +679,22 @@ script.
 
     });
 
+    //
+    // store location select2 formatter
+    //
+    function formatStorelocation (sl) {
+        if (!sl.storelocation_id) {
+            return sl.storelocation_fullpath;
+        }
+        var canstore = '<i class="material-icons">close</i>';
+        if (sl.storelocation_canstore.Valid && sl.storelocation_canstore.Bool) {
+            canstore = '<i class="material-icons">check</i>'
+        }
+        var s = $(
+            '<div><span style="color:' + sl.storelocation_color.String + '">' + sl.storelocation_fullpath + '</span>' + canstore + '</div>'
+        );
+        return s;
+    };
     //
     // symbols select2 formatter
     //
