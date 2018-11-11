@@ -1,10 +1,32 @@
 package main
 
 import (
+	"database/sql"
+	"log"
 	"testing"
 
+	"github.com/tbellembois/gochimitheque/models"
 	"github.com/tbellembois/gochimitheque/utils"
 )
+
+func TestComputeStockStorelocation(t *testing.T) {
+	var (
+		datastore *models.SQLiteDataStore
+		err       error
+		m         models.StockMap
+	)
+
+	m = make(models.StockMap)
+
+	s := models.StoreLocation{StoreLocationID: sql.NullInt64{Valid: true, Int64: 1}}
+	p := models.Product{ProductID: 8}
+	u := models.Unit{UnitID: sql.NullInt64{Valid: true, Int64: 8}}
+
+	if datastore, err = models.NewDBstore("/home/bellembois/workspace/workspace_Go/src/github.com/tbellembois/gochimitheque/storage.db"); err != nil {
+		log.Panic(err)
+	}
+	datastore.ComputeStockStorelocation(p, s, u, &m)
+}
 
 func TestIsCasNumber(t *testing.T) {
 	c := "7732-18-5"

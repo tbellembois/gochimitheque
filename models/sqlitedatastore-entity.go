@@ -1,9 +1,9 @@
 package models
 
 import (
-	"strings"
-
 	"database/sql"
+	"fmt"
+	"strings"
 
 	"github.com/jmoiron/sqlx"
 
@@ -13,6 +13,44 @@ import (
 	"github.com/tbellembois/gochimitheque/constants"
 	"github.com/tbellembois/gochimitheque/helpers"
 )
+
+type stockMapKey struct {
+	sid int // store location id
+	uid int // init id
+}
+
+type stockMapValue struct {
+	t int // total
+	c int // current
+}
+
+type StockMap map[stockMapKey]stockMapValue
+
+func (db *SQLiteDataStore) ComputeStockStorelocation(p Product, s StoreLocation, u Unit, m *StockMap) int {
+
+	var (
+		i   int
+		err error
+	)
+
+	sqlr := `SELECT storage.storage_quantity FROM storage
+	WHERE storage.storelocation = ? AND
+	storage.product = ? AND
+	storage.unit = ?`
+
+	fmt.Println(s.StoreLocationID.Int64)
+	fmt.Println(p.ProductID)
+	fmt.Println(u.UnitID.Int64)
+
+	if err = db.Get(&i, sqlr, s.StoreLocationID.Int64, p.ProductID, u.UnitID.Int64); err != nil {
+		fmt.Println(err.Error())
+		return 0
+	}
+
+	log.Info(i)
+
+	return i
+}
 
 // GetEntities returns the entities matching the search criteria
 // order, offset and limit are passed to the sql request

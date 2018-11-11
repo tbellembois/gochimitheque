@@ -149,7 +149,7 @@ func (db *SQLiteDataStore) InsertSamples() error {
 		p9 := Person{PersonEmail: "harrison@lab-three.com", Entities: []Entity{e3}}
 		p10 := Person{PersonEmail: "alone@no-entity.com"}
 
-		log.Debug("- creating 10 sample users")
+		log.Debug("- creating 11 sample users")
 		db.CreatePerson(p0)
 		db.CreatePerson(p1)
 		db.CreatePerson(p2)
@@ -165,7 +165,7 @@ func (db *SQLiteDataStore) InsertSamples() error {
 		// inserting sample products
 		// attention: values are wrongs, just for devel purposes
 		log.Debug("- creating sample products")
-		for i := 1; i <= 100; i++ {
+		for i := 1; i <= 20; i++ {
 			ins := fmt.Sprintf("(\"spec%d\", \"%d\", \"%d\", 1, \"%d\")", i, i, i, i)
 			if _, err = db.Exec(`INSERT INTO product ("product_specificity", "casnumber", "name", "person", "empiricalformula") VALUES ` + ins + `;`); err != nil {
 				return err
@@ -179,16 +179,18 @@ func (db *SQLiteDataStore) InsertSamples() error {
 		// inserting sample storages
 		// attention: values are wrongs, just for devel purposes
 		log.Debug("- creating sample storages")
-		for i := 1; i <= 200; i++ {
+		for i := 1; i <= 500; i++ {
 			comment := fmt.Sprintf("(\"comment%d\", \"%d\", \"%d\")", i, i, i)
 			datetime := time.Now()
-			person := i%9 + 1
-			product := i%99 + 1
-			storelocation := i%6 + 1
+			person := i%10 + 1
+			product := i%19 + 1
+			storelocation := i%7 + 1
+			unit := i%9 + 1
+			quantity := i
 			if storelocation == int(sl6.StoreLocationID.Int64) {
 				storelocation = int(sl6.StoreLocationID.Int64) + 1
 			}
-			if _, err = db.Exec(`INSERT INTO storage ("storage_creationdate", "storage_comment", "person", "product", "storelocation") VALUES (?,?,?,?,?);`, datetime, comment, person, product, storelocation); err != nil {
+			if _, err = db.Exec(`INSERT INTO storage ("storage_creationdate", "storage_comment", "person", "product", "storelocation", "storage_quantity", "unit") VALUES (?,?,?,?,?,?,?);`, datetime, comment, person, product, storelocation, quantity, unit); err != nil {
 				return err
 			}
 		}
