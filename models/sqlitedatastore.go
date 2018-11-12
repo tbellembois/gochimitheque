@@ -87,20 +87,24 @@ func (db *SQLiteDataStore) InsertSamples() error {
 		m1 := Person{PersonEmail: "manager@lab-one.com"}
 		m2 := Person{PersonEmail: "manager@lab-two.com"}
 		m3 := Person{PersonEmail: "manager@lab-three.com"}
+		m4 := Person{PersonEmail: "delphine.pitrat@ens-lyon.fr"}
 
-		log.Debug("- creating 3 sample managers")
+		log.Debug("- creating 4 sample managers")
 		_, m1.PersonID = db.CreatePerson(m1)
-		_, m2.PersonID = db.CreatePerson(m1)
-		_, m3.PersonID = db.CreatePerson(m1)
+		_, m2.PersonID = db.CreatePerson(m2)
+		_, m3.PersonID = db.CreatePerson(m3)
+		_, m4.PersonID = db.CreatePerson(m4)
 
 		e1 := Entity{EntityName: "lab one", EntityDescription: "the lab one", Managers: []Person{m1}}
 		e2 := Entity{EntityName: "lab two", EntityDescription: "the lab two", Managers: []Person{m2}}
 		e3 := Entity{EntityName: "lab three", EntityDescription: "the lab three", Managers: []Person{m3}}
+		e4 := Entity{EntityName: "laboratoire de chimie", EntityDescription: "laboratoire de chimie de l'ENS de Lyon", Managers: []Person{m4}}
 
-		log.Debug("- creating 3 sample entities")
+		log.Debug("- creating 4 sample entities")
 		_, e1.EntityID = db.CreateEntity(e1)
 		_, e2.EntityID = db.CreateEntity(e2)
 		_, e3.EntityID = db.CreateEntity(e3)
+		_, e4.EntityID = db.CreateEntity(e4)
 
 		sl1 := StoreLocation{StoreLocationColor: sql.NullString{Valid: true, String: "rgb(255, 38, 38)"}, StoreLocationName: sql.NullString{Valid: true, String: "fridgeE1-A"}, Entity: e1, StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true}}
 		sl2 := StoreLocation{StoreLocationColor: sql.NullString{Valid: true, String: "rgb(255, 129, 129)"}, StoreLocationName: sql.NullString{Valid: true, String: "fridgeE1-B"}, Entity: e1, StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true}}
@@ -109,21 +113,127 @@ func (db *SQLiteDataStore) InsertSamples() error {
 		sl5 := StoreLocation{StoreLocationColor: sql.NullString{Valid: true, String: "rgb(32, 103, 208)"}, StoreLocationName: sql.NullString{Valid: true, String: "fridgeE3-A"}, Entity: e3, StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true}}
 		sl6 := StoreLocation{StoreLocationColor: sql.NullString{Valid: true, String: "rgb(255, 38, 38)"}, StoreLocationName: sql.NullString{Valid: true, String: "roomE3-B"}, Entity: e3, StoreLocationCanStore: sql.NullBool{Valid: true, Bool: false}}
 
-		log.Debug("- creating 8 sample storelocations")
+		log.Debug("- creating 5 sample storelocations")
 		db.CreateStoreLocation(sl1)
 		db.CreateStoreLocation(sl2)
 		db.CreateStoreLocation(sl3)
 		db.CreateStoreLocation(sl4)
 		db.CreateStoreLocation(sl5)
-		var i int
-		_, i = db.CreateStoreLocation(sl6)
-		sl6.StoreLocationID = sql.NullInt64{Valid: true, Int64: int64(i)}
 
-		sl7 := StoreLocation{StoreLocationColor: sql.NullString{Valid: true, String: "rgb(100, 159, 248)"}, StoreLocationName: sql.NullString{Valid: true, String: "[P]E3-B1"}, Entity: e3, StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true}, StoreLocation: &sl6}
-		sl8 := StoreLocation{StoreLocationColor: sql.NullString{Valid: true, String: "rgb(188, 212, 248)"}, StoreLocationName: sql.NullString{Valid: true, String: "[S]E3-B2"}, Entity: e3, StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true}, StoreLocation: &sl6}
+		log.Debug("- creating laboratoire de chimie sample storelocations")
+		var lastid int
+		slch1 := StoreLocation{
+			StoreLocationColor:    sql.NullString{Valid: true, String: "rgb(0, 139, 139)"},
+			StoreLocationName:     sql.NullString{Valid: true, String: "[P]M6"},
+			Entity:                e4,
+			StoreLocationCanStore: sql.NullBool{Valid: true, Bool: false},
+		}
+		_, lastid = db.CreateStoreLocation(slch1)
+		slch1.StoreLocationID = sql.NullInt64{Valid: true, Int64: int64(lastid)}
+		slch2 := StoreLocation{
+			StoreLocationColor:    sql.NullString{Valid: true, String: "rgb(0, 206, 209)"},
+			StoreLocationName:     sql.NullString{Valid: true, String: "[I]Inflammable"},
+			Entity:                e4,
+			StoreLocation:         &slch1,
+			StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true},
+		}
+		slch3 := StoreLocation{
+			StoreLocationColor:    sql.NullString{Valid: true, String: "rgb(32, 178, 170)"},
+			StoreLocationName:     sql.NullString{Valid: true, String: "Labo central"},
+			Entity:                e4,
+			StoreLocation:         &slch1,
+			StoreLocationCanStore: sql.NullBool{Valid: true, Bool: false},
+		}
+		_, lastid = db.CreateStoreLocation(slch3)
+		slch3.StoreLocationID = sql.NullInt64{Valid: true, Int64: int64(lastid)}
+		slch4 := StoreLocation{
+			StoreLocationColor:    sql.NullString{Valid: true, String: "rgb(72, 209, 204)"},
+			StoreLocationName:     sql.NullString{Valid: true, String: "[A]Acides"},
+			Entity:                e4,
+			StoreLocation:         &slch3,
+			StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true},
+		}
+		slch5 := StoreLocation{
+			StoreLocationColor:    sql.NullString{Valid: true, String: "rgb(72, 209, 204)"},
+			StoreLocationName:     sql.NullString{Valid: true, String: "[C]Congélateur"},
+			Entity:                e4,
+			StoreLocation:         &slch3,
+			StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true},
+		}
+		slch6 := StoreLocation{
+			StoreLocationColor:    sql.NullString{Valid: true, String: "rgb(72, 209, 204)"},
+			StoreLocationName:     sql.NullString{Valid: true, String: "[D]Dessicateur"},
+			Entity:                e4,
+			StoreLocation:         &slch3,
+			StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true},
+		}
+		slch7 := StoreLocation{
+			StoreLocationColor:    sql.NullString{Valid: true, String: "rgb(72, 209, 204)"},
+			StoreLocationName:     sql.NullString{Valid: true, String: "[F]Frigo"},
+			Entity:                e4,
+			StoreLocation:         &slch3,
+			StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true},
+		}
+		slch8 := StoreLocation{
+			StoreLocationColor:    sql.NullString{Valid: true, String: "rgb(72, 209, 204)"},
+			StoreLocationName:     sql.NullString{Valid: true, String: "[P]Placard"},
+			Entity:                e4,
+			StoreLocation:         &slch3,
+			StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true},
+		}
+		slch9 := StoreLocation{
+			StoreLocationColor:    sql.NullString{Valid: true, String: "rgb(72, 209, 204)"},
+			StoreLocationName:     sql.NullString{Valid: true, String: "[S]Placard sels et solides"},
+			Entity:                e4,
+			StoreLocation:         &slch3,
+			StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true},
+		}
+		slch10 := StoreLocation{
+			StoreLocationColor:    sql.NullString{Valid: true, String: "rgb(255, 0, 255)"},
+			StoreLocationName:     sql.NullString{Valid: true, String: "[P]M6.072"},
+			Entity:                e4,
+			StoreLocation:         &slch1,
+			StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true},
+		}
+		slch11 := StoreLocation{
+			StoreLocationColor:    sql.NullString{Valid: true, String: "rgb(255, 0, 255)"},
+			StoreLocationName:     sql.NullString{Valid: true, String: "[P]M6.121"},
+			Entity:                e4,
+			StoreLocation:         &slch1,
+			StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true},
+		}
+		slch12 := StoreLocation{
+			StoreLocationColor:    sql.NullString{Valid: true, String: "rgb(255, 0, 255)"},
+			StoreLocationName:     sql.NullString{Valid: true, String: "[P]M6.156"},
+			Entity:                e4,
+			StoreLocation:         &slch1,
+			StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true},
+		}
+		slch13 := StoreLocation{
+			StoreLocationColor:    sql.NullString{Valid: true, String: "rgb(139, 0, 139)"},
+			StoreLocationName:     sql.NullString{Valid: true, String: "Soute - local déchets"},
+			Entity:                e4,
+			StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true},
+		}
+		slch14 := StoreLocation{
+			StoreLocationColor:    sql.NullString{Valid: true, String: "rgb(139, 0, 139)"},
+			StoreLocationName:     sql.NullString{Valid: true, String: "[T]Frigo CMR/Toxiques"},
+			Entity:                e4,
+			StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true},
+		}
 
-		db.CreateStoreLocation(sl7)
-		db.CreateStoreLocation(sl8)
+		db.CreateStoreLocation(slch2)
+		db.CreateStoreLocation(slch4)
+		db.CreateStoreLocation(slch5)
+		db.CreateStoreLocation(slch6)
+		db.CreateStoreLocation(slch7)
+		db.CreateStoreLocation(slch8)
+		db.CreateStoreLocation(slch9)
+		db.CreateStoreLocation(slch10)
+		db.CreateStoreLocation(slch11)
+		db.CreateStoreLocation(slch12)
+		db.CreateStoreLocation(slch13)
+		db.CreateStoreLocation(slch14)
 
 		m1.Entities = []Entity{e1}
 		m2.Entities = []Entity{e2}
@@ -179,12 +289,12 @@ func (db *SQLiteDataStore) InsertSamples() error {
 		// inserting sample storages
 		// attention: values are wrongs, just for devel purposes
 		log.Debug("- creating sample storages")
-		for i := 1; i <= 500; i++ {
+		for i := 1; i <= 300; i++ {
 			comment := fmt.Sprintf("(\"comment%d\", \"%d\", \"%d\")", i, i, i)
 			datetime := time.Now()
 			person := i%10 + 1
 			product := i%19 + 1
-			storelocation := i%7 + 1
+			storelocation := i%18 + 1
 			unit := i%6 + 1
 			quantity := i
 			if storelocation == int(sl6.StoreLocationID.Int64) {

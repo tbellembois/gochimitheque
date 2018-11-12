@@ -2,8 +2,10 @@ package models
 
 import (
 	"database/sql"
-	"github.com/jmoiron/sqlx"
+	"net/http"
 	"strings"
+
+	"github.com/jmoiron/sqlx"
 
 	sq "github.com/Masterminds/squirrel"
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
@@ -78,13 +80,25 @@ func (db *SQLiteDataStore) ComputeStockStorelocation(p Product, s *StoreLocation
 	return c
 }
 
-func (db *SQLiteDataStore) ComputeStockEntity(p Product, e Entity) []StoreLocation {
+func (db *SQLiteDataStore) ComputeStockEntity(p Product, r *http.Request) []StoreLocation {
 
 	var (
 		units          []Unit          // reference units
 		storelocations []StoreLocation // e root storelocations
+		entities       []Entity        // entities
+		eids           []int           // entities ids
 		err            error
 	)
+
+	// getting the entities (GetEntities returns only entities the connected user can see)
+	h, _ := helpers.NewdbselectparamEntity(r, nil)
+	if entities, _, err = db.GetEntities(h); err != nil {
+		log.WithFields(log.Fields{"err": err.Error()}).Error("ComputeStockEntity")
+		return []StoreLocation{}
+	}
+	for _, e := range entities {
+		eids = append(eids, e.EntityID)
+	}
 
 	// getting the reference units
 	sqlr := `SELECT unit.unit_id, unit.unit_label FROM unit
@@ -94,11 +108,11 @@ func (db *SQLiteDataStore) ComputeStockEntity(p Product, e Entity) []StoreLocati
 		return []StoreLocation{}
 	}
 
-	// getting e root store locations
-	sqlr = `SELECT storelocation.storelocation_id, storelocation.storelocation_name, storelocation.storelocation_color
+	// getting the root store locations
+	q, args, err := sqlx.In(`SELECT storelocation.storelocation_id, storelocation.storelocation_name, storelocation.storelocation_color
 	FROM storelocation
-	WHERE storelocation.storelocation IS NULL AND storelocation.entity = ?`
-	if err = db.Select(&storelocations, sqlr, e.EntityID); err != nil {
+	WHERE storelocation.storelocation IS NULL AND storelocation.entity IN (?)`, eids)
+	if err = db.Select(&storelocations, q, args...); err != nil {
 		log.WithFields(log.Fields{"err": err.Error()}).Error("ComputeStockEntity")
 		return []StoreLocation{}
 	}
