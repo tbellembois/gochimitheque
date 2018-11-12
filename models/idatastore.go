@@ -39,12 +39,16 @@ type Datastore interface {
 	// store locations
 	GetStoreLocations(helpers.DbselectparamStoreLocation) ([]StoreLocation, int, error)
 	GetStoreLocation(id int) (StoreLocation, error)
+	GetStoreLocationChildren(id int) ([]StoreLocation, error)
 	GetStoreLocationEntity(id int) (Entity, error)
 	DeleteStoreLocation(id int) error
 	CreateStoreLocation(s StoreLocation) (error, int)
 	UpdateStoreLocation(s StoreLocation) error
 
 	// entities
+	//ComputeStockEntity(p Product, e Entity) StockMap
+	ComputeStockEntity(p Product, e Entity) []StoreLocation
+
 	GetEntities(helpers.DbselectparamEntity) ([]Entity, int, error)
 	GetEntity(id int) (Entity, error)
 	GetEntityPeople(id int) ([]Person, error)

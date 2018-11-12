@@ -129,6 +129,32 @@ func (db *SQLiteDataStore) GetStoreLocation(id int) (StoreLocation, error) {
 	return storelocation, nil
 }
 
+// GetStoreLocationChildren returns the children of the store location with id "id"
+func (db *SQLiteDataStore) GetStoreLocationChildren(id int) ([]StoreLocation, error) {
+	var (
+		storelocations []StoreLocation
+		sqlr           string
+		err            error
+	)
+	log.WithFields(log.Fields{"id": id}).Debug("GetStoreLocationChildren")
+
+	sqlr = `SELECT s.storelocation_id, s.storelocation_name, s.storelocation_canstore, s.storelocation_color, s.storelocation_fullpath,
+	storelocation.storelocation_id AS "storelocation.storelocation_id",
+	storelocation.storelocation_name AS "storelocation.storelocation_name",
+	entity.entity_id AS "entity.entity_id",
+	entity.entity_name AS "entity.entity_name"
+	FROM storelocation AS s
+	JOIN entity ON s.entity = entity.entity_id
+	LEFT JOIN storelocation on s.storelocation = storelocation.storelocation_id
+	WHERE s.storelocation = ?`
+	if err = db.Select(&storelocations, sqlr, id); err != nil {
+		return []StoreLocation{}, err
+	}
+
+	log.WithFields(log.Fields{"ID": id, "storelocations": storelocations}).Debug("GetStoreLocationChildren")
+	return storelocations, nil
+}
+
 // GetStoreLocationEntity returns the entity of the store location with id "id"
 func (db *SQLiteDataStore) GetStoreLocationEntity(id int) (Entity, error) {
 	var (

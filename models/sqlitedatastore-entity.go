@@ -2,10 +2,8 @@ package models
 
 import (
 	"database/sql"
-	"fmt"
-	"strings"
-
 	"github.com/jmoiron/sqlx"
+	"strings"
 
 	sq "github.com/Masterminds/squirrel"
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
@@ -14,43 +12,200 @@ import (
 	"github.com/tbellembois/gochimitheque/helpers"
 )
 
-type stockMapKey struct {
-	sid int // store location id
-	uid int // init id
-}
-
-type stockMapValue struct {
-	t int // total
-	c int // current
-}
-
-type StockMap map[stockMapKey]stockMapValue
-
-func (db *SQLiteDataStore) ComputeStockStorelocation(p Product, s StoreLocation, u Unit, m *StockMap) int {
+func (db *SQLiteDataStore) ComputeStockStorelocation(p Product, s *StoreLocation, u Unit) float64 {
 
 	var (
-		i   int
-		err error
+		c           float64 // current s stock for p
+		nullc       sql.NullFloat64
+		sdbchildren []StoreLocation
+		t           float64 // total s stock for p
+		err         error
 	)
 
-	sqlr := `SELECT storage.storage_quantity FROM storage
+	sqlr := `SELECT SUM(storage.storage_quantity * unit_multiplier) FROM storage
+	JOIN unit on storage.unit = unit.unit_id
 	WHERE storage.storelocation = ? AND
+	storage.storage_quantity IS NOT NULL AND
 	storage.product = ? AND
-	storage.unit = ?`
+	(storage.unit = ? OR storage.unit IN (select unit_id FROM unit WHERE unit.unit = ?))`
 
-	fmt.Println(s.StoreLocationID.Int64)
-	fmt.Println(p.ProductID)
-	fmt.Println(u.UnitID.Int64)
+	// getting current s stock
+	if err = db.Get(&nullc, sqlr, s.StoreLocationID.Int64, p.ProductID, u.UnitID.Int64, u.UnitID.Int64); err != nil {
+		log.WithFields(log.Fields{"err": err.Error()}).Error("ComputeStockStorelocation")
+		return 0
+	}
+	if nullc.Valid {
+		c = nullc.Float64
+		t = nullc.Float64
+	}
 
-	if err = db.Get(&i, sqlr, s.StoreLocationID.Int64, p.ProductID, u.UnitID.Int64); err != nil {
-		fmt.Println(err.Error())
+	// getting s children
+	if sdbchildren, err = db.GetStoreLocationChildren(int(s.StoreLocationID.Int64)); err != nil {
+		log.WithFields(log.Fields{"err": err.Error()}).Error("ComputeStockStorelocation")
 		return 0
 	}
 
-	log.Info(i)
+	// retrieving or appending children to s and computing their stocks
+	for _, sdbchild := range sdbchildren {
+		var (
+			child      *StoreLocation
+			childfound bool
+		)
+		childfound = false
+		for i, schild := range (*s).Children {
+			if schild.StoreLocationID == sdbchild.StoreLocationID {
+				// child found
+				child = (*s).Children[i]
+				childfound = true
+				break
+			}
+		}
+		if !childfound {
+			// child not found
+			child = &StoreLocation{
+				StoreLocationID:   sdbchild.StoreLocationID,
+				StoreLocationName: sdbchild.StoreLocationName,
+				Entity:            sdbchild.Entity,
+			}
+			(*s).Children = append((*s).Children, child)
+		}
 
-	return i
+		t += db.ComputeStockStorelocation(p, child, u)
+	}
+
+	(*s).Stocks = append((*s).Stocks, Stock{Total: t, Current: c, Unit: u})
+
+	return c
 }
+
+func (db *SQLiteDataStore) ComputeStockEntity(p Product, e Entity) []StoreLocation {
+
+	var (
+		units          []Unit          // reference units
+		storelocations []StoreLocation // e root storelocations
+		err            error
+	)
+
+	// getting the reference units
+	sqlr := `SELECT unit.unit_id, unit.unit_label FROM unit
+	WHERE unit.unit IS NULL`
+	if err = db.Select(&units, sqlr); err != nil {
+		log.WithFields(log.Fields{"err": err.Error()}).Error("ComputeStockEntity")
+		return []StoreLocation{}
+	}
+
+	// getting e root store locations
+	sqlr = `SELECT storelocation.storelocation_id, storelocation.storelocation_name, storelocation.storelocation_color
+	FROM storelocation
+	WHERE storelocation.storelocation IS NULL AND storelocation.entity = ?`
+	if err = db.Select(&storelocations, sqlr, e.EntityID); err != nil {
+		log.WithFields(log.Fields{"err": err.Error()}).Error("ComputeStockEntity")
+		return []StoreLocation{}
+	}
+
+	// computing stocks
+	for i := range storelocations {
+		for _, u := range units {
+			db.ComputeStockStorelocation(p, &storelocations[i], u)
+		}
+	}
+
+	return storelocations
+}
+
+// type stockMapKey struct {
+// 	sid int64 // store location id
+// 	uid int64 // init id
+// }
+
+// type stockMapValue struct {
+// 	t float64 // total
+// 	c float64 // current
+// }
+
+// type StockMap map[stockMapKey]stockMapValue
+
+// func (db *SQLiteDataStore) ComputeStockStorelocation(p Product, s StoreLocation, u Unit, m *StockMap) float64 {
+
+// 	var (
+// 		c     float64 // current s stock for p
+// 		nullc sql.NullFloat64
+// 		t     float64 // total s stock for p
+// 		err   error
+// 		sc    []StoreLocation // s children
+// 	)
+
+// 	sqlr := `SELECT SUM(storage.storage_quantity * unit_multiplier) FROM storage
+// 	JOIN unit on storage.unit = unit.unit_id
+// 	WHERE storage.storelocation = ? AND
+// 	storage.storage_quantity IS NOT NULL AND
+// 	storage.product = ? AND
+// 	(storage.unit = ? OR storage.unit IN (select unit_id FROM unit WHERE unit.unit = ?))`
+
+// 	// getting current s stock
+// 	if err = db.Get(&nullc, sqlr, s.StoreLocationID.Int64, p.ProductID, u.UnitID.Int64, u.UnitID.Int64); err != nil {
+// 		log.WithFields(log.Fields{"err": err.Error()}).Error("ComputeStockStorelocation")
+// 		return 0
+// 	}
+// 	if nullc.Valid {
+// 		c = nullc.Float64
+// 	}
+
+// 	// getting s children
+// 	if sc, err = db.GetStoreLocationChildren(int(s.StoreLocationID.Int64)); err != nil {
+// 		log.WithFields(log.Fields{"err": err.Error()}).Error("ComputeStockStorelocation")
+// 		return 0
+// 	}
+
+// 	// parsing the children
+// 	for _, sci := range sc {
+// 		t += db.ComputeStockStorelocation(p, sci, u, m)
+// 	}
+
+// 	k := stockMapKey{sid: s.StoreLocationID.Int64, uid: u.UnitID.Int64}
+// 	v := stockMapValue{t: t, c: c}
+// 	(*m)[k] = v
+
+// 	return c
+// }
+
+// func (db *SQLiteDataStore) ComputeStockEntity(p Product, e Entity) StockMap {
+
+// 	var (
+// 		m              StockMap
+// 		units          []Unit          // reference units
+// 		storelocations []StoreLocation // e root storelocations
+// 		err            error
+// 	)
+
+// 	m = make(StockMap)
+
+// 	// getting the reference units
+// 	sqlr := `SELECT unit.unit_id FROM unit
+// 	WHERE unit.unit = 1`
+// 	if err = db.Select(&units, sqlr); err != nil {
+// 		log.WithFields(log.Fields{"err": err.Error()}).Error("ComputeStockEntity")
+// 		return StockMap{}
+// 	}
+
+// 	// getting e root store locations
+// 	sqlr = `SELECT storelocation.storelocation_id
+// 	FROM storelocation
+// 	WHERE storelocation.storelocation IS NULL AND storelocation.entity = ?`
+// 	if err = db.Select(&storelocations, sqlr, e.EntityID); err != nil {
+// 		log.WithFields(log.Fields{"err": err.Error()}).Error("ComputeStockEntity")
+// 		return StockMap{}
+// 	}
+
+// 	// computing stocks
+// 	for _, sl := range storelocations {
+// 		for _, u := range units {
+// 			db.ComputeStockStorelocation(p, sl, u, &m)
+// 		}
+// 	}
+
+// 	return m
+// }
 
 // GetEntities returns the entities matching the search criteria
 // order, offset and limit are passed to the sql request
