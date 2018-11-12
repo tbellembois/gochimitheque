@@ -20,12 +20,27 @@ func TestComputeStockStorelocation(t *testing.T) {
 
 	s := models.StoreLocation{StoreLocationID: sql.NullInt64{Valid: true, Int64: 1}}
 	p := models.Product{ProductID: 8}
-	u := models.Unit{UnitID: sql.NullInt64{Valid: true, Int64: 8}}
+	u := models.Unit{UnitID: sql.NullInt64{Valid: true, Int64: 1}}
 
-	if datastore, err = models.NewDBstore("/home/bellembois/workspace/workspace_Go/src/github.com/tbellembois/gochimitheque/storage.db"); err != nil {
+	if datastore, err = models.NewDBstore("/home/thbellem/workspace/workspace_Go/src/github.com/tbellembois/gochimitheque/storage.db"); err != nil {
 		log.Panic(err)
 	}
 	datastore.ComputeStockStorelocation(p, s, u, &m)
+
+}
+
+func TestComputeStockEntity(t *testing.T) {
+	var (
+		datastore *models.SQLiteDataStore
+		err       error
+	)
+
+	s := models.Entity{EntityID: 1}
+	p := models.Product{ProductID: 8}
+	if datastore, err = models.NewDBstore("/home/thbellem/workspace/workspace_Go/src/github.com/tbellembois/gochimitheque/storage.db"); err != nil {
+		log.Panic(err)
+	}
+	datastore.ComputeStockEntity(p, s)
 }
 
 func TestIsCasNumber(t *testing.T) {

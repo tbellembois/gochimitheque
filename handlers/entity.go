@@ -89,6 +89,50 @@ func (env *Env) GetEntitiesHandler(w http.ResponseWriter, r *http.Request) *help
 	return nil
 }
 
+// GetEntityHandler returns a json of the stock of the entity with the requested id
+func (env *Env) GetEntityStockHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	vars := mux.Vars(r)
+	var (
+		eid int
+		pid int
+		p   models.Product
+		e   models.Entity
+		err error
+	)
+
+	if pid, err = strconv.Atoi(vars["id"]); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "id atoi conversion",
+			Code:    http.StatusBadRequest}
+	}
+
+	if p, err = env.DB.GetProduct(pid); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the product",
+		}
+	}
+
+	eid = 3
+	if e, err = env.DB.GetEntity(eid); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the entity",
+		}
+	}
+
+	m := env.DB.ComputeStockEntity(p, e)
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(m)
+
+	return nil
+}
+
 // GetEntityHandler returns a json of the entity with the requested id
 func (env *Env) GetEntityHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	vars := mux.Vars(r)

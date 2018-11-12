@@ -12,6 +12,13 @@ import (
 // AppHandlerFunc is an HandlerFunc returning an AppError
 type AppHandlerFunc func(http.ResponseWriter, *http.Request) *helpers.AppError
 
+// Stock is a store location stock for a given product
+type Stock struct {
+	Total   float64 `json:"total"`
+	Current float64 `json:"current"`
+	Unit    Unit    `json:"unit"`
+}
+
 // StoreLocation is where products are stored in entities
 type StoreLocation struct {
 	// nullable values to handle optional StoreLocation foreign key (gorilla shema nil values)
@@ -22,6 +29,9 @@ type StoreLocation struct {
 	Entity                `db:"entity" json:"entity" schema:"entity"`
 	StoreLocation         *StoreLocation `db:"storelocation" json:"storelocation" schema:"storelocation"`
 	StoreLocationFullPath string         `db:"storelocation_fullpath" json:"storelocation_fullpath" schema:"storelocation_fullpath"`
+
+	Children []*StoreLocation `db:"-" json:"children" schema:"-"`
+	Stocks   []Stock          `db:"-" json:"stock" schema:"-"`
 }
 
 // Entity represent a department, a laboratory...
@@ -195,7 +205,12 @@ func (p Person) String() string {
 }
 
 func (s StoreLocation) String() string {
-	return fmt.Sprintf("StoreLocationName: %s | StoreLocationCanStore: Valid:%t Bool:%t | StoreLocationColor: %s | Entity: %d | StoreLocation: %v", s.StoreLocationName, s.StoreLocationCanStore.Valid, s.StoreLocationCanStore.Bool, s.StoreLocationColor, s.EntityID, s.StoreLocation)
+	return fmt.Sprintf(`StoreLocationName: %s | 
+	StoreLocationCanStore: Valid:%t Bool:%t | 
+	StoreLocationColor: %s | 
+	Entity: %d | 
+	Stocks: %v
+	`, s.StoreLocationName.String, s.StoreLocationCanStore.Valid, s.StoreLocationCanStore.Bool, s.StoreLocationColor.String, s.EntityID, s.Stocks)
 }
 
 func (p Permission) String() string {

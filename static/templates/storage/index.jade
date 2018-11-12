@@ -1,10 +1,14 @@
 | {{define "CONTENT"}}
 
     .row
-        .col-sm-10
+        .col-sm-8
             #filter-item
         .col-sm-2.d-flex.justify-content-end
             #button-store
+        .col-sm-2.d-flex.justify-content-end
+            #button-stock
+    .row
+        .col-sm-12#stock
     .row
         .col-sm-6
             #storelocation-selector
@@ -164,10 +168,72 @@
                 i = $("<i>").addClass("material-icons").text("move_to_inbox");
                 b.append(i);
                 $("#button-store").html(b);
+
+                // adding a create show stock button for the product
+                b = $("<button>").addClass("store btn btn-link").attr("title", "show stock of this product").attr("type", "button");
+                b.attr("onclick", "showStock(" + p + ")");
+                i = $("<i>").addClass("material-icons").text("functions");
+                b.append(i);
+                $("#button-stock").html(b);
             }
 
             cleanQueryParams();
         });
+
+        //
+        // stock
+        //
+        function showStockRecursive(sl, depth) {
+            
+            $("#stock").append("<div class='row'>");
+
+            var stockwidget = $("<div>").addClass("row");
+
+
+            for (var i in sl.stock) {
+                var stock = sl.stock[i];
+                
+                if (stock.total === 0 && stock.current === 0) {
+                    b = [""];
+                } else {
+                    b = ["<div class='w-100'></div>"];
+                    b.push("<div class='col'><i title='total stock including sub store locations' class='material-icons'>functions</i> " + stock.total + " <b>" + stock.unit.unit_label.String + "</b></div>");
+                    b.push("<div class='col'><i title='total in this store location' class='material-icons'>extensions</i> " + stock.current + " <b>" + stock.unit.unit_label.String + "</b></div>");
+                   
+                }
+                stockwidget.append(b.join(""));
+                
+            }
+            
+            var slname = $("<span>").css("color", sl.storelocation_color.String).html(sl.storelocation_name.String);
+            if (depth > 0) {
+                slname = $("<span>").css("color", sl.storelocation_color.String).html("<i class='material-icons'>subdirectory_arrow_right</i>" + sl.storelocation_name.String);
+            }
+            var title = $("<div>").addClass("row").append($("<div>").addClass("col-sm6").html(slname)).append($("<div>").addClass("col-sm-auto").html(stockwidget));
+
+            $("#stock").append($("<div class='col-sm-12 ml-" + 4 * depth + "'>").html(title));
+
+            if (sl.children !== null) {
+                depth++;
+                for  (var key in sl.children) {
+                    showStockRecursive(sl.children[key], depth);
+                }
+            }
+
+            $("#stock").append("</div>");
+        }
+        function showStock(pid) {
+            $.ajax({
+                url: "/stock/" + pid,
+                method: "GET",
+            }).done(function(data, textStatus, jqXHR) {
+                for (var key in data) {
+                    showStockRecursive(data[key], 0)
+                }
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                handleHTTPError(jqXHR.statusText, jqXHR.status);
+            });
+        }
 
         //
         // table data loading

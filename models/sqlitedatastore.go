@@ -185,7 +185,7 @@ func (db *SQLiteDataStore) InsertSamples() error {
 			person := i%10 + 1
 			product := i%19 + 1
 			storelocation := i%7 + 1
-			unit := i%9 + 1
+			unit := i%6 + 1
 			quantity := i
 			if storelocation == int(sl6.StoreLocationID.Int64) {
 				storelocation = int(sl6.StoreLocationID.Int64) + 1
@@ -390,7 +390,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	inssignalword := `INSERT INTO signalword (signalword_label) VALUES ("danger"), ("warning")`
 	insunit := `INSERT INTO unit (unit_label, unit_multiplier, unit) VALUES 
 	("l", 1, NULL), ("ml", 0.001, 1), ("µl", 0.00001, 1),
-	("g", 1, NULL), ("kg", 1000, 2), ("mg", 0.001, 2), ("µg", 0.00001, 2),
+	("kg", 1000, 2), ("g", 1, NULL), ("mg", 0.001, 2), ("µg", 0.00001, 2),
 	("m", 1, NULL), ("dm", 0.1, 3), ("cm", 0.01, 3)`
 
 	// tables creation
