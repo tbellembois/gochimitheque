@@ -24,11 +24,11 @@ script.
                 placeholder: "direct access to a store location",
                 ajax: {
                     url: '/storelocations',
-                        data: function (params) {
+                    data: function (params) {
                         var query = {
                             search: params.term,
                             page: params.page || 1,
-                            offset: params.page*10 || 0,
+                            offset: (params.page-1)*10 || 0,
                             limit: 10
                         }
 
@@ -44,8 +44,8 @@ script.
                             return obj;
                         });
                         // getting the number of loaded select elements
-                        selectnbitems = $("ul#select2-storelocation-results li").length + 10;
-
+                        selectnbitems = $("ul#select2-storelocationselector-results li").length + 10;
+                        
                         return {
                             results: newdata,
                             pagination: {more: selectnbitems<data.total}
@@ -65,12 +65,12 @@ script.
                 templateResult: formatStorelocation,
                 ajax: {
                     url: '/storelocations',
-                        data: function (params) {
+                    data: function (params) {
                         var query = {
                             storelocation_canstore: true,
                             search: params.term,
                             page: params.page || 1,
-                            offset: params.page*10 || 0,
+                            offset: (params.page-1)*10 || 0,
                             limit: 10
                         }
 
@@ -87,7 +87,7 @@ script.
                         });
                         // getting the number of loaded select elements
                         selectnbitems = $("ul#select2-storelocation-results li").length + 10;
-
+                        
                         return {
                             results: newdata,
                             pagination: {more: selectnbitems<data.total}
@@ -106,11 +106,11 @@ script.
                 placeholder: "select a unit",
                 ajax: {
                     url: '/storages/units',
-                        data: function (params) {
+                    data: function (params) {
                         var query = {
                             search: params.term,
                             page: params.page || 1,
-                            offset: params.page*10 || 0,
+                            offset: (params.page-1)*10 || 0,
                             limit: 10
                         }
 
@@ -160,7 +160,7 @@ script.
                         var query = {
                             search: params.term,
                             page: params.page || 1,
-                            offset: params.page*10 || 0,
+                            offset: (params.page-1)*10 || 0,
                             limit: 10
                         }
 

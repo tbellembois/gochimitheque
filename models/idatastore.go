@@ -1,6 +1,8 @@
 package models
 
 import (
+	"net/http"
+
 	"github.com/tbellembois/gochimitheque/helpers"
 )
 
@@ -46,8 +48,7 @@ type Datastore interface {
 	UpdateStoreLocation(s StoreLocation) error
 
 	// entities
-	//ComputeStockEntity(p Product, e Entity) StockMap
-	ComputeStockEntity(p Product, e Entity) []StoreLocation
+	ComputeStockEntity(p Product, r *http.Request) []StoreLocation
 
 	GetEntities(helpers.DbselectparamEntity) ([]Entity, int, error)
 	GetEntity(id int) (Entity, error)

@@ -93,10 +93,8 @@ func (env *Env) GetEntitiesHandler(w http.ResponseWriter, r *http.Request) *help
 func (env *Env) GetEntityStockHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	vars := mux.Vars(r)
 	var (
-		eid int
 		pid int
 		p   models.Product
-		e   models.Entity
 		err error
 	)
 
@@ -115,16 +113,7 @@ func (env *Env) GetEntityStockHandler(w http.ResponseWriter, r *http.Request) *h
 		}
 	}
 
-	eid = 3
-	if e, err = env.DB.GetEntity(eid); err != nil {
-		return &helpers.AppError{
-			Error:   err,
-			Code:    http.StatusInternalServerError,
-			Message: "error getting the entity",
-		}
-	}
-
-	m := env.DB.ComputeStockEntity(p, e)
+	m := env.DB.ComputeStockEntity(p, r)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
