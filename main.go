@@ -23,7 +23,7 @@ func main() {
 	var (
 		err       error
 		logf      *os.File
-		dbname    = "/mnt/ramdisk/storage.db"
+		dbname    = "./storage.db"
 		datastore *models.SQLiteDataStore
 	)
 

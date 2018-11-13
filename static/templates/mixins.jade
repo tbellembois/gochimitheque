@@ -40,6 +40,11 @@ mixin inputtext
         label(for='{{$name}}') {{$label}}
         input.form-control(type='text' id='{{$name}}' name='{{$name}}' title='{{$name}}')
 
+mixin inputdate
+    .form-group.col-sm-12
+        label(for='{{$name}}') {{$label}}
+        input.form-control(type='date' id='{{$name}}' name='{{$name}}' title='{{$name}}')
+
 mixin inputnumber
     .form-group.col-sm-12
         label(for='{{$name}}') {{$label}}

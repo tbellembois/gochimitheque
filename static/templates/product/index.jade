@@ -182,6 +182,8 @@
                 //highlightRow("product_id", URLValues.get("hl")[0]);
                 highlightRow("product_id", urlParams.get("hl"));
             }
+            // clean titles
+            $("#filter-item").html("");
             // display titles, switch products<>storages selector
             //if (URLValues.has("entity")) {
             if (urlParams.has("entity")) {
@@ -191,11 +193,26 @@
                     url: "/entities/" + e,
                     method: "GET",
                 }).done(function(data, textStatus, jqXHR) {
-                    $("#filter-item").html(createTitle(data.entity_name));
+                    $("#filter-item").append(createTitle(data.entity_name), "entity");
                 }).fail(function(jqXHR, textStatus, errorThrown) {
                     handleHTTPError(jqXHR.statusText, jqXHR.status)
                 });
             }
+            if (urlParams.has("product")) {
+                //e = URLValues.get("entity")[0];
+                s = urlParams.get("product");
+                $.ajax({
+                    url: "/products/" + s,
+                    method: "GET",
+                }).done(function(data, textStatus, jqXHR) {
+                    $("#filter-item").append(createTitle(data.name.name_label + " (" + data.casnumber.casnumber_label + ") " + data.product_specificity.String, "product"));
+                }).fail(function(jqXHR, textStatus, errorThrown) {
+                    handleHTTPError(jqXHR.statusText, jqXHR.status)
+                });
+                // hiding the storage<>product view switch
+                $("#switchview").hide();
+                $("#storelocation-selector").hide();
+            } 
             if (urlParams.has("storelocation")) {
                 //e = URLValues.get("entity")[0];
                 s = urlParams.get("storelocation");
@@ -203,7 +220,7 @@
                     url: "/storelocations/" + s,
                     method: "GET",
                 }).done(function(data, textStatus, jqXHR) {
-                    $("#filter-item").html(createTitle(data.storelocation_name.String));
+                    $("#filter-item").append(createTitle(data.storelocation_name.String, "storelocation"));
                 }).fail(function(jqXHR, textStatus, errorThrown) {
                     handleHTTPError(jqXHR.statusText, jqXHR.status)
                 });
@@ -500,7 +517,13 @@
                 window.location.href = "/vc/storages?product=" + row['product_id'];
             },
             'click .storages': function (e, value, row, index) {
-                window.location.href = "/v/storages?product=" + row['product_id'];
+                var urlParams = new URLSearchParams(window.location.search);
+                var url = "/v/storages?product=" + row['product_id'];
+                if (urlParams.has("storelocation")) {
+                    s = urlParams.get("storelocation");
+                    url = url + "&storelocation=" + s;
+                }
+                window.location.href = url;
             },
             'click .edit': function (e, value, row, index) {
                 operateEdit(e, value, row, index)

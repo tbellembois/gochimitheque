@@ -151,6 +151,13 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 	// pre request: select or count
 	precreq.WriteString(" SELECT count(DISTINCT storage.storage_id)")
 	presreq.WriteString(` SELECT storage.storage_id,
+		storage.storage_entrydate,
+		storage.storage_exitdate,
+		storage.storage_openingdate,
+		storage.storage_expirationdate,
+		storage.storage_reference,
+		storage.storage_batchnumber,
+		storage.storage_todestroy,
 		storage.storage_creationdate,
 		storage.storage_quantity,
 		storage.storage_barecode,
@@ -202,6 +209,9 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 	if p.GetStorelocation() != -1 {
 		comreq.WriteString(" AND storelocation.storelocation_id = :storelocation")
 	}
+	if p.GetStorage() != -1 {
+		comreq.WriteString(" AND storage.storage_id = :storage")
+	}
 
 	// post select request
 	postsreq.WriteString(" GROUP BY storage.storage_id")
@@ -230,6 +240,7 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 		"entity":        p.GetEntity(),
 		"product":       p.GetProduct(),
 		"storelocation": p.GetStorelocation(),
+		"storage":       p.GetStorage(),
 	}
 
 	// select
@@ -254,6 +265,13 @@ func (db *SQLiteDataStore) GetStorage(id int) (Storage, error) {
 	log.WithFields(log.Fields{"id": id}).Debug("GetStorage")
 
 	sqlr = `SELECT storage.storage_id,
+	storage.storage_entrydate,
+	storage.storage_exitdate,
+	storage.storage_openingdate,
+	storage.storage_expirationdate,
+	storage.storage_reference,
+	storage.storage_batchnumber,
+	storage.storage_todestroy,
 	storage.storage_creationdate,
 	storage.storage_quantity,
 	storage.storage_barecode,
@@ -388,6 +406,28 @@ func (db *SQLiteDataStore) CreateStorage(s Storage) (error, int) {
 	if s.SupplierID.Valid {
 		m["supplier"] = s.SupplierID.Int64
 	}
+	if s.StorageEntryDate.Valid {
+		m["storage_entrydate"] = s.StorageEntryDate.Time
+	}
+	if s.StorageExitDate.Valid {
+		m["storage_exitdate"] = s.StorageExitDate.Time
+	}
+	if s.StorageOpeningDate.Valid {
+		m["storage_openingdate"] = s.StorageOpeningDate.Time
+	}
+	if s.StorageExpirationDate.Valid {
+		m["storage_expirationdate"] = s.StorageExpirationDate.Time
+	}
+	if s.StorageReference.Valid {
+		m["storage_reference"] = s.StorageReference.String
+	}
+	if s.StorageBatchNumber.Valid {
+		m["storage_batchnumber"] = s.StorageBatchNumber.String
+	}
+	if s.StorageToDestroy.Valid {
+		m["storage_todestroy"] = s.StorageToDestroy.Bool
+	}
+
 	m["person"] = s.PersonID
 	m["storelocation"] = s.StoreLocationID.Int64
 	m["product"] = s.ProductID
@@ -495,6 +535,34 @@ func (db *SQLiteDataStore) UpdateStorage(s Storage) error {
 	if s.StorageBarecode.Valid {
 		m["storage_barecode"] = s.StorageBarecode.String
 	}
+	if s.UnitID.Valid {
+		m["unit"] = s.UnitID.Int64
+	}
+	if s.SupplierID.Valid {
+		m["supplier"] = s.SupplierID.Int64
+	}
+	if s.StorageEntryDate.Valid {
+		m["storage_entrydate"] = s.StorageEntryDate.Time
+	}
+	if s.StorageExitDate.Valid {
+		m["storage_exitdate"] = s.StorageExitDate.Time
+	}
+	if s.StorageOpeningDate.Valid {
+		m["storage_openingdate"] = s.StorageOpeningDate.Time
+	}
+	if s.StorageExpirationDate.Valid {
+		m["storage_expirationdate"] = s.StorageExpirationDate.Time
+	}
+	if s.StorageReference.Valid {
+		m["storage_reference"] = s.StorageReference.String
+	}
+	if s.StorageBatchNumber.Valid {
+		m["storage_batchnumber"] = s.StorageBatchNumber.String
+	}
+	if s.StorageToDestroy.Valid {
+		m["storage_todestroy"] = s.StorageToDestroy.Bool
+	}
+
 	m["person"] = s.PersonID
 	m["storelocation"] = s.StoreLocationID
 	m["unit"] = s.UnitID
