@@ -51,7 +51,9 @@
                 input#exactMatchSupplier(type="hidden")
 
                 .form-group.row
-                    .col-sm-12
+                    .form-group.col-sm-auto
+                        span.badge.badge-pill.badge-danger &nbsp;
+                    .form-group.col-sm-11
                         | {{$label := "store location"}} {{$name := "storelocation"}}
                         +select
                 .form-group.row
@@ -66,6 +68,26 @@
                         | {{$label := "supplier"}} {{$name := "supplier"}}
                         +select
                 .form-group.row
+                    .col-sm-3
+                        | {{$label := "entry date"}} {{$name := "storage_entrydate"}}
+                        +inputdate
+                    .col-sm-3
+                        | {{$label := "exit date"}} {{$name := "storage_exitdate"}}
+                        +inputdate
+                    .col-sm-3
+                        | {{$label := "opening date"}} {{$name := "storage_openingdate"}}
+                        +inputdate
+                    .col-sm-3
+                        | {{$label := "expiration date"}} {{$name := "storage_expirationdate"}}
+                        +inputdate
+                .form-group.row
+                    .col-sm-6
+                        | {{$label := "reference"}} {{$name := "storage_reference"}}
+                        +inputtext
+                    .col-sm-6
+                        | {{$label := "batch number"}} {{$name := "storage_batchnumber"}}
+                        +inputtext
+                .form-group.row
                     .col-sm-12
                         | {{$label := "barecode"}} {{$name := "storage_barecode"}}
                         +inputtext
@@ -73,6 +95,10 @@
                     .col-sm-12
                         | {{$label := "comment"}} {{$name := "storage_comment"}}
                         +inputtext  
+                .form-group.row
+                    .col-sm-12
+                        | {{$label := "to destroy"}} {{$name := "storage_todestroy"}}
+                        +checkbox
 
             button#save.btn.btn-primary(type='button', onclick='saveStorage()') save changes
             button.btn.btn-secondary(type='button', onclick='closeEdit();') close
@@ -111,6 +137,7 @@
             //if (URLValues.has("search")) {
             if (urlParams.has("search")) {
                 //$('#table').bootstrapTable('resetSearch', URLValues.get("search")[0]);
+                console.log("aaa")
                 $('#table').bootstrapTable('resetSearch', urlParams.get("search"));
             }
             // highlight row if needed
@@ -119,6 +146,8 @@
                 //highlightRow("storage_id", URLValues.get("hl")[0]);
                 highlightRow("storage_id", urlParams.get("hl"));
             }
+            // clean titles
+            $("#filter-item").html("");
             // display titles, switch products<>storages selector
             //if (URLValues.has("entity")) {
             if (urlParams.has("entity")) {
@@ -128,7 +157,7 @@
                     url: "/entities/" + e,
                     method: "GET",
                 }).done(function(data, textStatus, jqXHR) {
-                    $("#filter-item").html(createTitle(data.entity_name));
+                    $("#filter-item").append(createTitle(data.entity_name, "entity"));
                 }).fail(function(jqXHR, textStatus, errorThrown) {
                     handleHTTPError(jqXHR.statusText, jqXHR.status)
                 });
@@ -140,10 +169,26 @@
                     url: "/storelocations/" + s,
                     method: "GET",
                 }).done(function(data, textStatus, jqXHR) {
-                    $("#filter-item").html(createTitle(data.storelocation_name.String));
+                    $("#filter-item").append(createTitle(data.storelocation_name.String, "storelocation"));
                 }).fail(function(jqXHR, textStatus, errorThrown) {
                     handleHTTPError(jqXHR.statusText, jqXHR.status)
                 });
+            }
+            if (urlParams.has("storage")) {
+                //e = URLValues.get("entity")[0];
+                s = urlParams.get("storage");
+                $.ajax({
+                    url: "/storages/" + s,
+                    method: "GET",
+                }).done(function(data, textStatus, jqXHR) {
+                    console.log(data)
+                    $("#filter-item").append(createTitle(data.product.name.name_label + " " + data.product.product_specificity.String + " (" + data.product.casnumber.casnumber_label + ") - " + data.storelocation.storelocation_fullpath, "storage"));
+                }).fail(function(jqXHR, textStatus, errorThrown) {
+                    handleHTTPError(jqXHR.statusText, jqXHR.status)
+                });
+                // hiding the storage<>product view switch
+                $("#switchview").hide();
+                $("#storelocation-selector").hide();
             }
             //if (URLValues.has("product")) {
             if (urlParams.has("product")) {
@@ -154,7 +199,7 @@
                     url: "/products/" + p,
                     method: "GET",
                 }).done(function(data, textStatus, jqXHR) {
-                    $("#filter-item").html(createTitle(data.name.name_label + " (" + data.casnumber.casnumber_label + ") " + data.product_specificity.String));
+                    $("#filter-item").append(createTitle(data.name.name_label + " (" + data.casnumber.casnumber_label + ") " + data.product_specificity.String, "product"));
                 }).fail(function(jqXHR, textStatus, errorThrown) {
                     handleHTTPError(jqXHR.statusText, jqXHR.status)
                 });
@@ -184,34 +229,37 @@
         // stock
         //
         function showStockRecursive(sl, depth) {
-            
-            $("#stock").append("<div class='row'>");
-
-            var stockwidget = $("<div>").addClass("row");
-
-
-            for (var i in sl.stock) {
+            // pre checking if there is a stock or not for sl
+            var hasStock = false;
+            for (var i in sl.stock) { 
                 var stock = sl.stock[i];
-                
-                if (stock.total === 0 && stock.current === 0) {
-                    b = [""];
-                } else {
-                    b = ["<div class='w-100'></div>"];
-                    b.push("<div class='col'><i title='total stock including sub store locations' class='material-icons'>functions</i> " + stock.total + " <b>" + stock.unit.unit_label.String + "</b></div>");
-                    b.push("<div class='col'><i title='total in this store location' class='material-icons'>extensions</i> " + stock.current + " <b>" + stock.unit.unit_label.String + "</b></div>");
-                   
+                if (stock.total !== 0 || stock.current !== 0) {
+                    hasStock = true;
+                    break;
                 }
-                stockwidget.append(b.join(""));
-                
             }
-            
-            var slname = $("<span>").css("color", sl.storelocation_color.String).html(sl.storelocation_name.String);
-            if (depth > 0) {
-                slname = $("<span>").css("color", sl.storelocation_color.String).html("<i class='material-icons'>subdirectory_arrow_right</i>" + sl.storelocation_name.String);
-            }
-            var title = $("<div>").addClass("row").append($("<div>").addClass("col-sm6").html(slname)).append($("<div>").addClass("col-sm-auto").html(stockwidget));
 
-            $("#stock").append($("<div class='col-sm-12 ml-" + 4 * depth + "'>").html(title));
+            if (hasStock) {
+                var html = [("<div class='row mt-sm-3'>")];
+                for (i=1; i<=depth; i++) {
+                    html.push("<div class='col-sm-1'>&nbsp;</div>");
+                }
+                html.push("<div class='col' style='color: " + sl.storelocation_color.String + "'>" + sl.storelocation_name.String + "</div>");
+
+                for (var i in sl.stock) {
+                    var stock = sl.stock[i];
+                    
+                    if (stock.total === 0 && stock.current === 0) {
+                    } else {
+                        html.push("<div class='col'><i title='total stock including sub store locations' class='material-icons'>functions</i> " + stock.total + " <b>" + stock.unit.unit_label.String + "</b></div>");
+                        html.push("<div class='col'><i title='total in this store location' class='material-icons'>extensions</i> " + stock.current + " <b>" + stock.unit.unit_label.String + "</b></div>");
+                    
+                    }
+                }
+                
+                $("#stock").append(html.join(""));
+                $("#stock").append("</div>");
+            }
 
             if (sl.children !== null) {
                 depth++;
@@ -219,10 +267,9 @@
                     showStockRecursive(sl.children[key], depth);
                 }
             }
-
-            $("#stock").append("</div>");
         }
         function showStock(pid) {
+            $("#stock").html("");
             $.ajax({
                 url: "/stock/" + pid,
                 method: "GET",
@@ -250,6 +297,9 @@
             }
             if (urlParams.has("product")) {
                 params["product"] = urlParams.get("product");
+            }
+            if (urlParams.has("storage")) {
+                params["storage"] = urlParams.get("storage");
             }
             return params;
         }

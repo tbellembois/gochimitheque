@@ -54,16 +54,19 @@ type DbselectparamStorage interface {
 	SetEntity(int)
 	SetProduct(int)
 	SetStorelocation(int)
+	SetStorage(int)
 
 	GetEntity() int
 	GetProduct() int
 	GetStorelocation() int
+	GetStorage() int
 }
 type dbselectparamStorage struct {
 	dbselectparam
 	Entity        int // id
 	Product       int // id
 	Storelocation int // id
+	Storage       int // id
 }
 
 // dbselectparamPerson contains the parameters of the GetPeople function
@@ -220,6 +223,14 @@ func (d dbselectparamStorage) GetStorelocation() int {
 	return d.Storelocation
 }
 
+func (d *dbselectparamStorage) SetStorage(i int) {
+	d.Storage = i
+}
+
+func (d dbselectparamStorage) GetStorage() int {
+	return d.Storage
+}
+
 // Newdbselectparam returns a dbselectparam struct
 // with values populated from the request parameters
 func Newdbselectparam(r *http.Request, f func(string) (string, error)) (*dbselectparam, *AppError) {
@@ -359,6 +370,7 @@ func NewdbselectparamStorage(r *http.Request, f func(string) (string, error)) (*
 	dsps.Entity = -1
 	dsps.Product = -1
 	dsps.Storelocation = -1
+	dsps.Storage = -1
 	if dsp, aerr = Newdbselectparam(r, f); aerr != nil {
 		return nil, aerr
 	}
@@ -380,7 +392,7 @@ func NewdbselectparamStorage(r *http.Request, f func(string) (string, error)) (*
 				return nil, &AppError{
 					Error:   err,
 					Code:    http.StatusInternalServerError,
-					Message: "limit atoi conversion",
+					Message: "entity atoi conversion",
 				}
 			}
 		}
@@ -389,7 +401,7 @@ func NewdbselectparamStorage(r *http.Request, f func(string) (string, error)) (*
 				return nil, &AppError{
 					Error:   err,
 					Code:    http.StatusInternalServerError,
-					Message: "limit atoi conversion",
+					Message: "product atoi conversion",
 				}
 			}
 		}
@@ -398,7 +410,16 @@ func NewdbselectparamStorage(r *http.Request, f func(string) (string, error)) (*
 				return nil, &AppError{
 					Error:   err,
 					Code:    http.StatusInternalServerError,
-					Message: "limit atoi conversion",
+					Message: "storelocation atoi conversion",
+				}
+			}
+		}
+		if storageid, ok := r.URL.Query()["storage"]; ok {
+			if dsps.Storage, err = strconv.Atoi(storageid[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "storage atoi conversion",
 				}
 			}
 		}

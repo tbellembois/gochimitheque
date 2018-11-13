@@ -66,12 +66,28 @@ var normalizeSqlNull = function(obj) {
   return newfdata;
 };
 
-function createTitle(msgText) {
+function createTitle(msgText, type) {
+    var i=$("<i>").addClass("material-icons");
+    switch (type) {
+        case 'entity':
+            i.text("store");
+            break;
+        case 'storelocation':
+            i.text("extension");
+            break;
+        case 'product':
+            i.text("local_offer");
+            break;
+        case 'storage':
+            i.text("inbox");
+            break;
+        default:
+            i.text("keyboard_tab");
+    }
+
     var d = $("<div>");
-    var i = $("<i>");
     var h = $("<span>");
     d.addClass("mt-md-3 mb-md-3 row");
-    i.addClass("material-icons col-sm-1").text("keyboard_tab");
     h.addClass("col-sm-11 align-bottom").text(msgText);
     d.append(i);
     d.append(h);

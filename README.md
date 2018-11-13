@@ -135,3 +135,7 @@ A custom middleware. Look at `func (env *Env) AuthorizeMiddleware(h http.Handler
 >     MinGW-w64 headers for Windows (pre-compiled)
 > local/mingw-w64-winpthreads-bin 6.0.0-1 (mingw-w64-toolchain mingw-w64)
 >     MinGW-w64 winpthreads library (pre-compiled)
+
+# ENS-Lyon testers
+
+delphine.pitrat@ens-lyon.fr, laurelise.chapellet@ens-lyon.fr, guillaume.george@ens-lyon.fr, sylvain.david@ens-lyon.fr, laure.guy@ens-lyon.fr

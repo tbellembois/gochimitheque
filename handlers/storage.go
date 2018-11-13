@@ -226,6 +226,13 @@ func (env *Env) UpdateStorageHandler(w http.ResponseWriter, r *http.Request) *he
 	updateds.StorageComment = s.StorageComment
 	updateds.StoreLocation = s.StoreLocation
 	updateds.PersonID = c.PersonID
+	updateds.StorageEntryDate = s.StorageEntryDate
+	updateds.StorageExitDate = s.StorageExitDate
+	updateds.StorageOpeningDate = s.StorageOpeningDate
+	updateds.StorageExpirationDate = s.StorageExpirationDate
+	updateds.StorageReference = s.StorageReference
+	updateds.StorageBatchNumber = s.StorageBatchNumber
+	updateds.StorageToDestroy = s.StorageToDestroy
 	log.WithFields(log.Fields{"updateds": updateds}).Debug("UpdateStorageHandler")
 
 	if err := env.DB.UpdateStorage(updateds); err != nil {
