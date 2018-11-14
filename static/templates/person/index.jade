@@ -181,7 +181,7 @@
                 handleHTTPError(jqXHR.statusText, jqXHR.status)
             });
 
-            $.when(personpromise, managerpromise, entitypromise, permissionpromise).done(function(firstData, secondData) {
+            $.when(personpromise, managerpromise, entitypromise, permissionpromise).done(function() {
                 // flattening person response data
                 fdata = flatten(persondata);
                 // autofilling form

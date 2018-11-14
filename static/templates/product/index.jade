@@ -184,47 +184,70 @@
             }
             // clean titles
             $("#filter-item").html("");
+
+            var storelocationpromise = $.Deferred();
+            var entitypromise = $.Deferred();
+            var productpromise = $.Deferred();
+            var productData, storelocationData, entityData;
             // display titles, switch products<>storages selector
             //if (URLValues.has("entity")) {
             if (urlParams.has("entity")) {
                 //e = URLValues.get("entity")[0];
                 e = urlParams.get("entity");
-                $.ajax({
+                entitypromise = $.ajax({
                     url: "/entities/" + e,
                     method: "GET",
                 }).done(function(data, textStatus, jqXHR) {
-                    $("#filter-item").append(createTitle(data.entity_name), "entity");
+                    entityData = data;
                 }).fail(function(jqXHR, textStatus, errorThrown) {
                     handleHTTPError(jqXHR.statusText, jqXHR.status)
                 });
+            } else {
+                entitypromise.resolve();
             }
             if (urlParams.has("product")) {
                 //e = URLValues.get("entity")[0];
                 s = urlParams.get("product");
-                $.ajax({
+                productpromise = $.ajax({
                     url: "/products/" + s,
                     method: "GET",
                 }).done(function(data, textStatus, jqXHR) {
-                    $("#filter-item").append(createTitle(data.name.name_label + " (" + data.casnumber.casnumber_label + ") " + data.product_specificity.String, "product"));
+                    productData = data;
                 }).fail(function(jqXHR, textStatus, errorThrown) {
                     handleHTTPError(jqXHR.statusText, jqXHR.status)
                 });
                 // hiding the storage<>product view switch
                 $("#switchview").hide();
                 $("#storelocation-selector").hide();
-            } 
+            } else {
+                productpromise.resolve();
+            }
             if (urlParams.has("storelocation")) {
                 //e = URLValues.get("entity")[0];
                 s = urlParams.get("storelocation");
-                $.ajax({
+                storelocationpromise = $.ajax({
                     url: "/storelocations/" + s,
                     method: "GET",
                 }).done(function(data, textStatus, jqXHR) {
-                    $("#filter-item").append(createTitle(data.storelocation_name.String, "storelocation"));
+                    storelocationData = data;
                 }).fail(function(jqXHR, textStatus, errorThrown) {
                     handleHTTPError(jqXHR.statusText, jqXHR.status)
                 });
-            } 
+            } else {
+                storelocationpromise.resolve();
+            }
+
+            $.when(entitypromise, storelocationpromise, productpromise).done(function() {
+                if (entityData !== undefined) {
+                    $("#filter-item").append(createTitle(entityData.entity_name, "entity"));
+                };
+                if (storelocationData !== undefined) {
+                    $("#filter-item").append(createTitle(storelocationData.storelocation_name.String, "storelocation"));
+                };
+                if (productData !== undefined) {
+                    $("#filter-item").append(createTitle(productData.name.name_label + " (" + productData.casnumber.casnumber_label + ") " + productData.product_specificity.String, "product"));
+                };
+            });
 
             cleanQueryParams();
 
