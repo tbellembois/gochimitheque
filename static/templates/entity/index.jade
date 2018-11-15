@@ -94,16 +94,16 @@
         function operateFormatter(value, row, index) {
             // show action buttons if permitted
             eid = row.entity_id
-            hasPermission("/f/entities/" + eid, "GET", eid).done(function(){
+            hasPermission(proxyPath + "f/entities/" + eid, "GET", eid).done(function(){
                     $("#storelocations"+this.itemId).fadeIn();
             })
-            hasPermission("/f/entities/" + eid, "GET", eid).done(function(){
+            hasPermission(proxyPath + "f/entities/" + eid, "GET", eid).done(function(){
                     $("#members"+this.itemId).fadeIn();
             })
-            hasPermission("/f/entities/" + eid, "PUT", eid).done(function(){
+            hasPermission(proxyPath + "f/entities/" + eid, "PUT", eid).done(function(){
                     $("#edit"+this.itemId).fadeIn();
             })
-            hasPermission("/f/entities/" + eid, "DELETE", eid).done(function(){
+            hasPermission(proxyPath + "f/entities/" + eid, "DELETE", eid).done(function(){
                     $("#delete"+this.itemId).fadeIn();
             })
 

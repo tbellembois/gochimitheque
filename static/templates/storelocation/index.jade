@@ -141,10 +141,10 @@
         function operateFormatter(value, row, index) {
             // show action buttons if permitted
             slid = row.storelocation_id.Int64
-            hasPermission("/f/storelocations/" + slid, "PUT", slid).done(function(){
+            hasPermission(proxyPath + "f/storelocations/" + slid, "PUT", slid).done(function(){
                     $("#edit"+this.itemId).fadeIn();
             })
-            hasPermission("/f/storelocations/" + slid, "DELETE", slid).done(function(){
+            hasPermission(proxyPath + "f/storelocations/" + slid, "DELETE", slid).done(function(){
                     $("#delete"+this.itemId).fadeIn();
             })
 
