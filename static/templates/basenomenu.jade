@@ -9,9 +9,14 @@ html
         | <link href="{{.ProxyPath}}css/bootstrap-colorpicker.min.css" rel="stylesheet"/>
         | <link href="{{.ProxyPath}}css/fontawesome.all.min.css" rel="stylesheet"/>
         | <link href="{{.ProxyPath}}css/chimitheque.css" rel="stylesheet"/>
+
+        link(href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet")
     body
         div.container
             | {{template "HEADER"}}
+            header.row.justify-content-left
+                div.col-sm-12
+                    img(src="{{.ProxyPath}}img/chimitheque_logo.png", alt="chimitheque_logo")
             | {{template "CONTENT"}}
             | {{template "FOOTER"}}
 
@@ -35,14 +40,29 @@ html
             // common javascript
             //
 
+            // query parameters saved - used for the storages<>products views switch
+            var lastQueryParams;
+
+            // proxy path
+            var proxyPath = {{ .ProxyPath }};
+
             // logged user email and permissions
             var container = {{ . }};
+
+            // url parameters
+            var URLValues = new Map();
+
+            // initializing query parameters map
+            {{ range $key, $value := .URLValues }}
+                URLValues.set({{ $key }}, {{ $value }});
+            {{ end }}
 
             // setting up logged user
             window.onload = function() {
                 email = readCookie("email")
                 document.getElementById("logged").innerHTML = email;
            };
+           
         | {{template "CONTENTJS"}}
 
 | {{end}}

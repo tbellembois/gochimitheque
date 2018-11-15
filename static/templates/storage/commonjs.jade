@@ -255,13 +255,13 @@ script.
             unit = $('select#unit').select2('data')[0],
             supplier = $('select#supplier').select2('data')[0],
             storelocation = $('select#storelocation').select2('data')[0],
-            ajax_url = "/storages",
+            ajax_url = proxyPath + "storages",
             ajax_method = "POST",
             ajax_callback = createCallBack,
             data = {};
 
             if ($("form#storage input#storage_id").length) {
-                ajax_url = "/storages/" + storage_id
+                ajax_url = proxyPath + "storages/" + storage_id
                 ajax_method = "PUT"
                 ajax_callback = updateCallBack
             }

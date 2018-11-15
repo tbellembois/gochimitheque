@@ -82,7 +82,7 @@
             }
             // getting the product
             $.ajax({
-                url: "/products/" + p,
+                url: proxyPath + "products/" + p,
                 method: "GET",
             }).done(function(data, textStatus, jqXHR) {
                 $("input#product_id").val(p);

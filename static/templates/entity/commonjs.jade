@@ -80,13 +80,13 @@ script.
                 entity_name = $("input#entity_name").val(),
                 entity_description = $("input#entity_description").val(),
                 managers = $('select#managers').select2('data'),
-                ajax_url = "/entities",
+                ajax_url = proxyPath + "entities",
                 ajax_method = "POST",
                 ajax_callback = createCallBack,
                 data = {};
 
                 if ($("form#entity input#entity_id").length) {
-                    ajax_url = "/entities/" + entity_id
+                    ajax_url = proxyPath + "/entities/" + entity_id
                     ajax_method = "PUT"
                     ajax_callback = updateCallBack
                 }

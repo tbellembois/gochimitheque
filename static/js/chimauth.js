@@ -25,7 +25,7 @@ function getToken() {
         password = $("#person_password").val();
 
     $.ajax({
-        url: "/get-token",
+        url: proxyPath + "get-token",
         method: 'POST',
         data: {
             person_email: email,

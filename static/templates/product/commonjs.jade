@@ -775,13 +775,13 @@ script.
             symbols = $('select#symbols').select2('data'),
             hazardstatements = $('select#hazardstatements').select2('data'),
             precautionarystatements = $('select#precautionarystatements').select2('data'),
-            ajax_url = "/products",
+            ajax_url = proxyPath + "products",
             ajax_method = "POST",
             ajax_callback = createCallBack,
             data = {};
 
             if ($("form#product input#product_id").length) {
-                ajax_url = "/products/" + product_id
+                ajax_url = proxyPath + "products/" + product_id
                 ajax_method = "PUT"
                 ajax_callback = updateCallBack
             }

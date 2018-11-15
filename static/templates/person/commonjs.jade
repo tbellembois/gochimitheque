@@ -109,13 +109,13 @@ script.
                 person_email = $("input#person_email").val(),
                 entities = $('select#entities').select2('data'),
                 permissions = $("input[type=radio]:checked"),
-                ajax_url = "/people",
+                ajax_url = proxyPath + "people",
                 ajax_method = "POST",
                 ajax_callback = createCallBack,
                 data = {};
 
                 if ($("form#person input#person_id").length) {
-                    ajax_url = "/people/" + person_id
+                    ajax_url = proxyPath + "people/" + person_id
                     ajax_method = "PUT"
                     ajax_callback = updateCallBack
                 }

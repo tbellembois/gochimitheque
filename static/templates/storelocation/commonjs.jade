@@ -105,7 +105,7 @@ script.
             storelocation_canstore = $("input#storelocation_canstore:CHECKED").val(),
             entity = $('select#entity').select2('data')[0],
             storelocation = $('select#storelocation').select2('data')[0],
-            ajax_url = "/storelocations",
+            ajax_url = proxyPath + "storelocations",
             ajax_method = "POST",
             ajax_callback = createCallBack,
             data = {};
@@ -118,7 +118,7 @@ script.
             }
 
             if ($("form#storelocation input#storelocation_id").length) {
-                ajax_url = "/storelocations/" + storelocation_id
+                ajax_url = proxyPath + "storelocations/" + storelocation_id
                 ajax_method = "PUT"
                 ajax_callback = updateCallBack
             }
