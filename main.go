@@ -93,17 +93,17 @@ func main() {
 		"header.jade",
 		"footer.jade",
 		"foot.jade"}
-	basejadess := ""
-	basenomenujadess := ""
+	basejadess := []byte{}
+	basenomenujadess := []byte{}
 	for _, s := range basejades {
-		basejadess += "\r\n" + b.MustString(s)
+		basejadess = append(basejadess, b.MustBytes(s)...)
 	}
 	for _, s := range basenomenujades {
-		basenomenujadess += "\r\n" + b.MustString(s)
+		basenomenujadess = append(basenomenujadess, b.MustBytes(s)...)
 	}
 
 	// test
-	testtmpl, e := jade.Parse("test", basenomenujadess+"\r\n"+b.MustString("test.jade"))
+	testtmpl, e := jade.Parse("test", append(basenomenujadess, b.MustBytes("test.jade")...))
 	if e != nil {
 		log.Fatal("testtmpl jade:" + e.Error())
 	}
@@ -112,7 +112,7 @@ func main() {
 		log.Fatal("testtmpl parse:" + e.Error())
 	}
 	// home
-	hometmpl, e := jade.Parse("home_index", basejadess+"\r\n"+b.MustString("home/index.jade"))
+	hometmpl, e := jade.Parse("home_index", append(basejadess, b.MustBytes("home/index.jade")...))
 	if e != nil {
 		log.Fatal("hometmpl jade:" + e.Error())
 	}
@@ -121,7 +121,7 @@ func main() {
 		log.Fatal("hometmpl parse:" + e.Error())
 	}
 	// login
-	logintmpl, e := jade.Parse("login_index", basenomenujadess+"\r\n"+b.MustString("login/index.jade"))
+	logintmpl, e := jade.Parse("login_index", append(basenomenujadess, b.MustBytes("login/index.jade")...))
 	if e != nil {
 		log.Fatal("logintmpl jade:" + e.Error())
 	}
@@ -130,7 +130,7 @@ func main() {
 		log.Fatal("logintmpl parse:" + e.Error())
 	}
 	// entity
-	entityindextmpl, e := jade.Parse("entity_index", basejadess+"\r\n"+b.MustString("entity/commonjs.jade")+"\r\n"+b.MustString("entity/index.jade"))
+	entityindextmpl, e := jade.Parse("entity_index", append(append(basejadess, b.MustString("entity/commonjs.jade")...), b.MustString("entity/index.jade")...))
 	if e != nil {
 		log.Fatal("entityindextmpl jade:" + e.Error())
 	}
@@ -138,7 +138,7 @@ func main() {
 	if err != nil {
 		log.Fatal("entityindextmpl parse:" + e.Error())
 	}
-	entitycreatetmpl, e := jade.Parse("entity_create", basejadess+"\r\n"+b.MustString("entity/commonjs.jade")+"\r\n"+b.MustString("entity/create.jade"))
+	entitycreatetmpl, e := jade.Parse("entity_create", append(append(basejadess, b.MustString("entity/commonjs.jade")...), b.MustString("entity/create.jade")...))
 	if e != nil {
 		log.Fatal("entitycreatetmpl jade:" + e.Error())
 	}
@@ -147,7 +147,7 @@ func main() {
 		log.Fatal("entitycreatetmpl parse:" + e.Error())
 	}
 	// store location
-	storelocationindextmpl, e := jade.Parse("storelocation_index", basejadess+"\r\n"+b.MustString("storelocation/commonjs.jade")+"\r\n"+b.MustString("storelocation/index.jade"))
+	storelocationindextmpl, e := jade.Parse("storelocation_index", append(append(basejadess, b.MustString("storelocation/commonjs.jade")...), b.MustString("storelocation/index.jade")...))
 	if e != nil {
 		log.Fatal("storelocationindextmpl jade:" + e.Error())
 	}
@@ -155,7 +155,7 @@ func main() {
 	if err != nil {
 		log.Fatal("storelocationtmpl parse:" + e.Error())
 	}
-	storelocationcreatetmpl, e := jade.Parse("storelocation_create", basejadess+"\r\n"+b.MustString("storelocation/commonjs.jade")+"\r\n"+b.MustString("storelocation/create.jade"))
+	storelocationcreatetmpl, e := jade.Parse("storelocation_create", append(append(basejadess, b.MustString("storelocation/commonjs.jade")...), b.MustString("storelocation/create.jade")...))
 	if e != nil {
 		log.Fatal("storelocationcreatetmpl jade:" + e.Error())
 	}
@@ -164,7 +164,7 @@ func main() {
 		log.Fatal("storelocationcreatetmpl parse:" + e.Error())
 	}
 	// person
-	personindextmpl, e := jade.Parse("person_index", basejadess+"\r\n"+b.MustString("person/commonjs.jade")+"\r\n"+b.MustString("person/index.jade"))
+	personindextmpl, e := jade.Parse("person_index", append(append(basejadess, b.MustString("person/commonjs.jade")...), b.MustString("person/index.jade")...))
 	if e != nil {
 		log.Fatal("personindextmpl jade:" + e.Error())
 	}
@@ -172,7 +172,7 @@ func main() {
 	if err != nil {
 		log.Fatal("personindextmpl parse:" + e.Error())
 	}
-	personcreatetmpl, e := jade.Parse("person_create", basejadess+"\r\n"+b.MustString("person/commonjs.jade")+"\r\n"+b.MustString("person/create.jade"))
+	personcreatetmpl, e := jade.Parse("person_create", append(append(basejadess, b.MustString("person/commonjs.jade")...), b.MustString("person/create.jade")...))
 	if e != nil {
 		log.Fatal("personcreatetmpl jade:" + e.Error())
 	}
@@ -181,7 +181,7 @@ func main() {
 		log.Fatal("personcreatetmpl parse:" + e.Error())
 	}
 	// product
-	productindextmpl, e := jade.Parse("product_index", basejadess+"\r\n"+b.MustString("product/commonjs.jade")+"\r\n"+b.MustString("product/index.jade"))
+	productindextmpl, e := jade.Parse("product_index", append(append(basejadess, b.MustString("product/commonjs.jade")...), b.MustString("product/index.jade")...))
 	if e != nil {
 		log.Fatal("productindextmpl jade:" + e.Error())
 	}
@@ -189,8 +189,8 @@ func main() {
 	if err != nil {
 		log.Fatal("productindextmpl parse:" + e.Error())
 	}
-	productcreatetmpl, e := jade.Parse("product_create", basejadess+"\r\n"+b.MustString("product/commonjs.jade")+"\r\n"+b.MustString("product/create.jade"))
-	if e != nil {
+	productcreatetmpl, e := jade.Parse("product_create", append(append(basejadess, b.MustString("product/commonjs.jade")...), b.MustString("product/create.jade")...))
+	if err != nil {
 		log.Fatal("productcreatetmpl jade:" + e.Error())
 	}
 	env.Templates["productcreate"], err = template.New("productcreate").Funcs(funcMap).Parse(productcreatetmpl)
@@ -198,7 +198,7 @@ func main() {
 		log.Fatal("productcreatetmpl parse:" + e.Error())
 	}
 	// storage
-	storageindextmpl, e := jade.Parse("storage_index", basejadess+"\r\n"+b.MustString("storage/commonjs.jade")+"\r\n"+b.MustString("storage/index.jade"))
+	storageindextmpl, e := jade.Parse("storage_index", append(append(basejadess, b.MustString("storage/commonjs.jade")...), b.MustString("storage/index.jade")...))
 	if e != nil {
 		log.Fatal("storageindextmpl jade:" + e.Error())
 	}
@@ -206,7 +206,7 @@ func main() {
 	if err != nil {
 		log.Fatal("storageindextmpl parse:" + e.Error())
 	}
-	storagecreatetmpl, e := jade.Parse("storage_create", basejadess+"\r\n"+b.MustString("storage/commonjs.jade")+"\r\n"+b.MustString("storage/create.jade"))
+	storagecreatetmpl, e := jade.Parse("storage_create", append(append(basejadess, b.MustString("storage/commonjs.jade")...), b.MustString("storage/create.jade")...))
 	if e != nil {
 		log.Fatal("storagecreatetmpl jade:" + e.Error())
 	}
