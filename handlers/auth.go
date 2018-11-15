@@ -20,7 +20,9 @@ import (
 // VLoginHandler returns the login page
 func (env *Env) VLoginHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 
-	if e := env.Templates["login"].ExecuteTemplate(w, "BASE", nil); e != nil {
+	c := helpers.ContainerFromRequestContext(r)
+
+	if e := env.Templates["login"].ExecuteTemplate(w, "BASE", c); e != nil {
 		return &helpers.AppError{
 			Error:   e,
 			Code:    http.StatusInternalServerError,

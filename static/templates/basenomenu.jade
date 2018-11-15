@@ -16,20 +16,19 @@ html
             | {{template "FOOTER"}}
 
         | {{template "FOOT"}}
-        | <script src="{{.ProxyPath}}js/jquery-3.3.1.min.js"/>
-        | <script src="{{.ProxyPath}}js/jquery.formautofill.min.js"/>
-        | <script src="{{.ProxyPath}}js/jquery.validate.min.js"/>
-        | <script src="{{.ProxyPath}}js/jquery.validate.additional-methods.min.js"/>
-        | <script src="{{.ProxyPath}}js/select2.full.min.js"/>
-        | <script src="{{.ProxyPath}}js/popper.min.js"/>
-        | <script src="{{.ProxyPath}}js/bootstrap.min.js"/>
-        | <script src="{{.ProxyPath}}js/bootstrap-table.min.js"/>
-        | <script src="{{.ProxyPath}}js/bootstrap-confirmation.min.js"/>
-        | <script src="{{.ProxyPath}}js/bootstrap-colorpicker.min.js"/>
-        | <script src="{{.ProxyPath}}js/gjs-common.js"/>
-        | <script src="{{.ProxyPath}}js/chimcommon.js"/>
-        | <script src="{{.ProxyPath}}js/chimauth.js"/>
-        | {{template "CONTENTJS"}}
+        | <script src="{{.ProxyPath}}js/jquery-3.3.1.min.js"></script>
+        | <script src="{{.ProxyPath}}js/jquery.formautofill.min.js"></script>
+        | <script src="{{.ProxyPath}}js/jquery.validate.min.js"></script>
+        | <script src="{{.ProxyPath}}js/jquery.validate.additional-methods.min.js"></script>
+        | <script src="{{.ProxyPath}}js/select2.full.min.js"></script>
+        | <script src="{{.ProxyPath}}js/popper.min.js"></script>
+        | <script src="{{.ProxyPath}}js/bootstrap.min.js"></script>
+        | <script src="{{.ProxyPath}}js/bootstrap-table.min.js"></script>
+        | <script src="{{.ProxyPath}}js/bootstrap-confirmation.min.js"></script>
+        | <script src="{{.ProxyPath}}js/bootstrap-colorpicker.min.js"></script>
+        | <script src="{{.ProxyPath}}js/gjs-common.js"></script>
+        | <script src="{{.ProxyPath}}js/chimcommon.js"></script>
+        | <script src="{{.ProxyPath}}js/chimauth.js"></script>
 
         script.
             //
@@ -44,4 +43,6 @@ html
                 email = readCookie("email")
                 document.getElementById("logged").innerHTML = email;
            };
+        | {{template "CONTENTJS"}}
+
 | {{end}}

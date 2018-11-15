@@ -42,6 +42,14 @@ func (env *Env) HeadersMiddleware(h http.Handler) http.Handler {
 	})
 }
 
+// ContextMiddleware initialize the request context and setup initial variables
+func (env *Env) ContextMiddleware(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.WithValue(r.Context(), "container", helpers.ViewContainer{ProxyPath: env.ProxyPath})
+		h.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
 // AuthenticateMiddleware check that a valid JWT token is in the request, extract and store user informations in the Go http context
 func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -113,7 +121,15 @@ func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 		// 	http.Error(w, "can not get logged user permissions", http.StatusBadRequest)
 		// }
 
-		ctx := context.WithValue(r.Context(), "container", helpers.ViewContainer{PersonEmail: person.PersonEmail, PersonID: person.PersonID, ProxyPath: env.ProxyPath})
+		//ctx := context.WithValue(r.Context(), "container", helpers.ViewContainer{PersonEmail: person.PersonEmail, PersonID: person.PersonID, ProxyPath: env.ProxyPath})
+		// getting the request context
+		ctx := r.Context()
+		ctxcontainer := ctx.Value("container")
+		container := ctxcontainer.(helpers.ViewContainer)
+		// setting up auth person informations
+		container.PersonEmail = person.PersonEmail
+		container.PersonID = person.PersonID
+		ctx = context.WithValue(r.Context(), "container", helpers.ViewContainer{PersonEmail: container.PersonEmail, PersonID: container.PersonID, ProxyPath: container.ProxyPath})
 
 		h.ServeHTTP(w, r.WithContext(ctx))
 	})
