@@ -217,7 +217,7 @@
                 
                 // adding a create storage button for the product
                 b = $("<button>").addClass("store btn btn-link").attr("title", "store this product").attr("type", "button");
-                b.attr("onclick", "window.location.href = '/vc/storages?product=" + p + "'");
+                b.attr("onclick", "window.location.href = '" + proxyPath + "vc/storages?product=" + p + "'");
                 i = $("<i>").addClass("material-icons").text("move_to_inbox");
                 b.append(i);
                 $("#button-store").html(b);

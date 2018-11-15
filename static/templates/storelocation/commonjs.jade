@@ -26,7 +26,7 @@ script.
             //
             $('select#entity').select2({
                 ajax: {
-                    url: '/entities',
+                    url: proxyPath + 'entities',
                     dataType: 'json',
                     processResults: function (data) {
                     // replacing email by text expected by select2
@@ -47,7 +47,7 @@ script.
             //
             $('select#storelocation').select2({
                 ajax: {
-                    url: '/storelocations',
+                    url: proxyPath + 'storelocations',
                     dataType: 'json',
                     processResults: function (data) {
                     // replacing email by text expected by select2

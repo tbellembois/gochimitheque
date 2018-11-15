@@ -536,11 +536,11 @@
         }
         window.operateEvents = {
             'click .store': function (e, value, row, index) {
-                window.location.href = "/vc/storages?product=" + row['product_id'];
+                window.location.href = proxyPath + "vc/storages?product=" + row['product_id'];
             },
             'click .storages': function (e, value, row, index) {
                 var urlParams = new URLSearchParams(window.location.search);
-                var url = "/v/storages?product=" + row['product_id'];
+                var url = proxyPath + "v/storages?product=" + row['product_id'];
                 if (urlParams.has("storelocation")) {
                     s = urlParams.get("storelocation");
                     url = url + "&storelocation=" + s;

@@ -23,7 +23,7 @@ script.
                 templateResult: formatStorelocation,
                 placeholder: "direct access to a store location",
                 ajax: {
-                    url: '/storelocations',
+                    url: proxyPath + 'storelocations',
                     data: function (params) {
                         var query = {
                             search: params.term,
@@ -55,7 +55,7 @@ script.
             }).on("select2:select", function (e) {
                 var data = e.params.data;
                 var slid = data.storelocation_id.Int64;
-                window.location.href = "/v/products?storelocation=" + slid;
+                window.location.href = proxyPath + "v/products?storelocation=" + slid;
             });
 
             //
@@ -64,7 +64,7 @@ script.
             $('select#storelocation').select2({
                 templateResult: formatStorelocation,
                 ajax: {
-                    url: '/storelocations',
+                    url: proxyPath + 'storelocations',
                     data: function (params) {
                         var query = {
                             storelocation_canstore: true,
@@ -105,7 +105,7 @@ script.
                 allowClear: true,
                 placeholder: "select a unit",
                 ajax: {
-                    url: '/storages/units',
+                    url: proxyPath + 'storages/units',
                     data: function (params) {
                         var query = {
                             search: params.term,
@@ -155,7 +155,7 @@ script.
                     }
                 },
                 ajax: {
-                    url: '/storages/suppliers',
+                    url: proxyPath + 'storages/suppliers',
                         data: function (params) {
                         var query = {
                             search: params.term,

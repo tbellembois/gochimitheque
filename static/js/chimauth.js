@@ -35,7 +35,7 @@ function getToken() {
         //console.log(token);
         // store in web storage
         //window.localStorage.setItem('token', token);
-        window.location.replace("/v/products");
+        window.location.replace(proxyPath + "v/products");
     });
 }
 

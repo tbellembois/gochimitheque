@@ -166,10 +166,10 @@
         }
         window.operateEvents = {
             'click .storelocations': function (e, value, row, index) {
-                window.location.href = "/v/storelocations?entity=" + row['entity_id'];
+                window.location.href = proxyPath + "v/storelocations?entity=" + row['entity_id'];
             },
             'click .members': function (e, value, row, index) {
-                window.location.href = "/v/people?entity=" + row['entity_id'];
+                window.location.href = proxyPath + "v/people?entity=" + row['entity_id'];
             },
             'click .edit': function (e, value, row, index) {
                 operateEdit(e, value, row, index)

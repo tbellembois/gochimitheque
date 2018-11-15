@@ -20,7 +20,7 @@ script.
                                 if ($("form#person input#person_id").length) {
                                     id = $("form#person input#person_id").val()
                                 }
-                                settings.url = "/validate/person/" + id + "/email/";
+                                settings.url = proxyPath + "validate/person/" + id + "/email/";
                             },
                         },
                     },
@@ -33,7 +33,7 @@ script.
             $('select#entities').select2({
                 dropdownParent: $('#viewedit-collapse'),
                 ajax: {
-                    url: '/entities',
+                    url: proxyPath + 'entities',
                     dataType: 'json',
                     processResults: function (data) {
                         // replacing email by text expected by select2

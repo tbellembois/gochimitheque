@@ -32,14 +32,14 @@ html
                     ul.navbar-nav.mr-auto
                         if HasPermission .PersonID "r" "products" -2
                             li.nav-item.active
-                                a(href="/v/products" title="home").nav-link
+                                a(href="{{.ProxyPath}}v/products" title="home").nav-link
                                     i.material-icons home
                         //li.nav-item
                         //    a(href="/login").nav-link login
 
                         if HasPermission .PersonID "w" "products" -2
                             li.nav-item
-                                a(href="/vc/products" title="create product card").nav-link
+                                a(href="{{.ProxyPath}}vc/products" title="create product card").nav-link
                                     i.material-icons local_offer
                         if HasPermission .PersonID "r" "entities" -2
                             li.nav-item.dropdown
@@ -50,9 +50,9 @@ html
                                     aria-expanded="false")
                                     i.material-icons store
                                 div.dropdown-menu(aria-labelledby="navbarDropdown")
-                                    a(href="/v/entities", title="list").dropdown-item list
+                                    a(href="{{.ProxyPath}}v/entities", title="list").dropdown-item list
                                     if HasPermission .PersonID "all" "all" -1
-                                        a(href="/vc/entities", title="create").dropdown-item create
+                                        a(href="{{.ProxyPath}}vc/entities", title="create").dropdown-item create
 
                         if HasPermission .PersonID "r" "storelocations" -2
                             li.nav-item.dropdown
@@ -63,9 +63,9 @@ html
                                     aria-expanded="false")
                                     i.material-icons extension
                                 div.dropdown-menu(aria-labelledby="navbarDropdown")
-                                    a(href="/v/storelocations", title="list").dropdown-item list
+                                    a(href="{{.ProxyPath}}v/storelocations", title="list").dropdown-item list
                                     if HasPermission .PersonID "all" "all" -2
-                                        a(href="/vc/storelocations", title="create").dropdown-item create
+                                        a(href="{{.ProxyPath}}vc/storelocations", title="create").dropdown-item create
 
                         if HasPermission .PersonID "r" "people" -2
                             li.nav-item.dropdown
@@ -76,9 +76,9 @@ html
                                     aria-expanded="false")
                                     i.material-icons supervisor_account
                                 div.dropdown-menu(aria-labelledby="navbarDropdown")
-                                    a(href="/v/people", title="list").dropdown-item list
+                                    a(href="{{.ProxyPath}}v/people", title="list").dropdown-item list
                                     if HasPermission .PersonID "w" "people" -2
-                                        a(href="/vc/people", title="create").dropdown-item create
+                                        a(href="{{.ProxyPath}}vc/people", title="create").dropdown-item create
 
                         li.nav-item
                             a.nav-link.disabled(href="#")

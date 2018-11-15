@@ -25,7 +25,7 @@ script.
                             if ($("form#product input#product_id").length) {
                                 id = $("form#product input#product_id").val()
                             }
-                            settings.url = "/validate/product/" + id + "/empiricalformula/";
+                            settings.url = proxyPath + "validate/product/" + id + "/empiricalformula/";
                         },
                         data: {
                             empiricalformula: function() {
@@ -44,7 +44,7 @@ script.
                             if ($("form#product input#product_id").length) {
                                 id = $("form#product input#product_id").val()
                             }
-                            settings.url = "/validate/product/" + id + "/casnumber/";
+                            settings.url = proxyPath + "validate/product/" + id + "/casnumber/";
                         },
                         data: {
                             casnumber: function() {
@@ -65,7 +65,7 @@ script.
                             if ($("form#product input#product_id").length) {
                                 id = $("form#product input#product_id").val()
                             }
-                            settings.url = "/validate/product/" + id + "/cenumber/";
+                            settings.url = proxyPath + "validate/product/" + id + "/cenumber/";
                         },
                         data: {
                             cenumber: function() {
@@ -84,7 +84,7 @@ script.
             templateResult: formatStorelocation,
             placeholder: "direct access to a store location",
             ajax: {
-                url: '/storelocations',
+                url: proxyPath + 'storelocations',
                     data: function (params) {
                     var query = {
                         search: params.term,
@@ -116,7 +116,7 @@ script.
         }).on("select2:select", function (e) {
             var data = e.params.data;
             var slid = data.storelocation_id.Int64;
-            window.location.href = "/v/products?storelocation=" + slid;
+            window.location.href = proxyPath + "v/products?storelocation=" + slid;
         });
 
         //
@@ -134,7 +134,7 @@ script.
                 }
             },
             ajax: {
-                url: '/products/casnumbers',
+                url: proxyPath + 'products/casnumbers',
                 data: function (params) {
                     var query = {
                         search: params.term,
@@ -201,7 +201,7 @@ script.
             },
             placeholder: "select or enter a CE number",
             ajax: {
-                url: '/products/cenumbers',
+                url: proxyPath + 'products/cenumbers',
                 data: function (params) {
                     var query = {
                         search: params.term,
@@ -257,7 +257,7 @@ script.
             allowClear: true,
             placeholder: "select physical state",
             ajax: {
-                url: '/products/physicalstates',
+                url: proxyPath + 'products/physicalstates',
                 data: function (params) {
                     var query = {
                         search: params.term,
@@ -293,7 +293,7 @@ script.
             allowClear: true,
             placeholder: "select signal word",
             ajax: {
-                url: '/products/signalwords',
+                url: proxyPath + 'products/signalwords',
                 data: function (params) {
                     var query = {
                         search: params.term,
@@ -339,7 +339,7 @@ script.
             },
             placeholder: "select class of compound",
             ajax: {
-                url: '/products/classofcompounds',
+                url: proxyPath + 'products/classofcompounds',
                 data: function (params) {
                     var query = {
                         search: params.term,
@@ -403,7 +403,7 @@ script.
                 }
             },
             ajax: {
-                url: '/products/names',
+                url: proxyPath + 'products/names',
                 data: function (params) {
                     var query = {
                         search: params.term,
@@ -468,7 +468,7 @@ script.
                 }
             },
             ajax: {
-                url: '/products/empiricalformulas',
+                url: proxyPath + 'products/empiricalformulas',
                 data: function (params) {
                     var query = {
                         search: params.term,
@@ -533,7 +533,7 @@ script.
                 }
             },
             ajax: {
-                url: '/products/synonyms',
+                url: proxyPath + 'products/synonyms',
                 data: function (params) {
                     var query = {
                         search: params.term,
@@ -587,7 +587,7 @@ script.
         $('select#symbols').select2({
             templateResult: formatSymbol,
             ajax: {
-                url: '/products/symbols',
+                url: proxyPath + 'products/symbols',
                 dataType: 'json',
                 processResults: function (data) {
                     // replacing name by text expected by select2
@@ -609,7 +609,7 @@ script.
         $('select#hazardstatements').select2({
             templateResult: formatHazardStatement,
             ajax: {
-                url: '/products/hazardstatements',
+                url: proxyPath + 'products/hazardstatements',
                 data: function (params) {
                     var query = {
                         search: params.term,
@@ -646,7 +646,7 @@ script.
         $('select#precautionarystatements').select2({
             templateResult: formatPrecautionaryStatement,
             ajax: {
-                url: '/products/precautionarystatements',
+                url: proxyPath + 'products/precautionarystatements',
                 data: function (params) {
                     var query = {
                         search: params.term,
