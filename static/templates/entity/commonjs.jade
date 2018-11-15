@@ -19,7 +19,7 @@ script.
                             if ($("form#entity input#entity_id").length) {
                                 id = $("form#entity input#entity_id").val()
                             }
-                            settings.url = "/validate/entity/" + id + "/name/";
+                            settings.url = proxyPath + "validate/entity/" + id + "/name/";
                         },
                     },
                 },
@@ -32,7 +32,7 @@ script.
             //
             $('select#managers').select2({
             ajax: {
-                url: '/people',
+                url: proxyPath + 'people',
                 dataType: 'json',
                 processResults: function (data) {
                 // replacing email by text expected by select2
@@ -86,7 +86,7 @@ script.
                 data = {};
 
                 if ($("form#entity input#entity_id").length) {
-                    ajax_url = proxyPath + "/entities/" + entity_id
+                    ajax_url = proxyPath + "entities/" + entity_id
                     ajax_method = "PUT"
                     ajax_callback = updateCallBack
                 }
