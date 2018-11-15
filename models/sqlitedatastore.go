@@ -306,6 +306,7 @@ func (db *SQLiteDataStore) InsertSamples() error {
 		}
 
 	}
+	log.Debug("done")
 	return nil
 }
 

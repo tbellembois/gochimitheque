@@ -113,7 +113,7 @@ func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 		// 	http.Error(w, "can not get logged user permissions", http.StatusBadRequest)
 		// }
 
-		ctx := context.WithValue(r.Context(), "container", helpers.ViewContainer{PersonEmail: person.PersonEmail, PersonID: person.PersonID})
+		ctx := context.WithValue(r.Context(), "container", helpers.ViewContainer{PersonEmail: person.PersonEmail, PersonID: person.PersonID, ProxyPath: env.ProxyPath})
 
 		h.ServeHTTP(w, r.WithContext(ctx))
 	})

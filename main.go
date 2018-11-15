@@ -29,6 +29,7 @@ func main() {
 
 	// getting the program parameters
 	listenPort := flag.String("port", "8081", "the port to listen")
+	proxypath := flag.String("proxypath", "/", "the application path if behind a proxy, with the trailing /")
 	logfile := flag.String("logfile", "", "log to the given file")
 	debug := flag.Bool("debug", false, "debug (verbose log), default is error")
 	flag.Parse()
@@ -63,6 +64,7 @@ func main() {
 	// environment creation
 	env := handlers.Env{
 		DB:        datastore,
+		ProxyPath: *proxypath,
 		Templates: make(map[string]*template.Template),
 	}
 
