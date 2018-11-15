@@ -400,16 +400,16 @@
             // show action buttons if permitted
             pid = row.product_id
             // FIXME: perms
-            hasPermission("/f/storages", "POST", pid).done(function(){
+            hasPermission(proxyPath + "f/storages", "POST", pid).done(function(){
                     $("#store"+this.itemId).fadeIn();
             })
-            hasPermission("/f/storages/-2", "GET", pid).done(function(){
+            hasPermission(proxyPath + "f/storages/-2", "GET", pid).done(function(){
                     $("#storages"+this.itemId).fadeIn();
             })
-            hasPermission("/f/products/-1", "PUT", pid).done(function(){
+            hasPermission(proxyPath + "f/products/-1", "PUT", pid).done(function(){
                     $("#edit"+this.itemId).fadeIn();
             })
-            hasPermission("/f/products/-1", "DELETE", pid).done(function(){
+            hasPermission(proxyPath + "f/products/-1", "DELETE", pid).done(function(){
                     $("#delete"+this.itemId).fadeIn();
             })
 

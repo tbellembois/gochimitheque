@@ -404,10 +404,10 @@
             // show action buttons if permitted
             sid = row.storage_id
             eid = row.storelocation.entity.entity_id
-            hasPermission("/f/storages/" + eid, "PUT", sid).done(function(){
+            hasPermission(proxyPath + "f/storages/" + eid, "PUT", sid).done(function(){
                     $("#edit"+this.itemId).fadeIn();
             })
-            hasPermission("/f/storages/" + eid, "DELETE", sid).done(function(){
+            hasPermission(proxyPath + "f/storages/" + eid, "DELETE", sid).done(function(){
                     $("#delete"+this.itemId).fadeIn();
             })
 
