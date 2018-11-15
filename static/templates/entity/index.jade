@@ -61,7 +61,7 @@
         //
         function getData(params) {
             $.ajax({
-                url: "/entities",
+                url: proxyPath + "entities",
                 method: "GET",
                 dataType: "JSON",
                 data: params.data,
@@ -133,7 +133,7 @@
 
             // getting the entity
             $.ajax({
-                url: "/entities/" + row['entity_id'],
+                url: proxyPath + "entities/" + row['entity_id'],
                 method: "GET",
             }).done(function(data, textStatus, jqXHR) {
                 // flattening response data
@@ -148,7 +148,7 @@
 
             // getting the entity managers
             $.ajax({
-                url: "/entities/" + row['entity_id'] + "/people",
+                url: proxyPath + "entities/" + row['entity_id'] + "/people",
                 method: "GET",
             }).done(function(data, textStatus, jqXHR) {
                 // select2 is not autofilled - we need a special operation
@@ -182,7 +182,7 @@
                 // ask for confirmation and then delete
                 $(this).confirmation("show").on( "confirmed.bs.confirmation", function() {
                     $.ajax({
-                        url: "/entities/" + row['entity_id'],
+                        url: proxyPath + "entities/" + row['entity_id'],
                         method: "DELETE",
                     }).done(function(data, textStatus, jqXHR) {
                         displayMessage("entity deleted", "success");

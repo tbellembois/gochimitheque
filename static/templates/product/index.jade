@@ -182,8 +182,6 @@
                 //highlightRow("product_id", URLValues.get("hl")[0]);
                 highlightRow("product_id", urlParams.get("hl"));
             }
-            // clean titles
-            $("#filter-item").html("");
 
             var storelocationpromise = $.Deferred();
             var entitypromise = $.Deferred();
@@ -195,7 +193,7 @@
                 //e = URLValues.get("entity")[0];
                 e = urlParams.get("entity");
                 entitypromise = $.ajax({
-                    url: "/entities/" + e,
+                    url: proxyPath + "entities/" + e,
                     method: "GET",
                 }).done(function(data, textStatus, jqXHR) {
                     entityData = data;
@@ -209,7 +207,7 @@
                 //e = URLValues.get("entity")[0];
                 s = urlParams.get("product");
                 productpromise = $.ajax({
-                    url: "/products/" + s,
+                    url: proxyPath + "products/" + s,
                     method: "GET",
                 }).done(function(data, textStatus, jqXHR) {
                     productData = data;
@@ -226,7 +224,7 @@
                 //e = URLValues.get("entity")[0];
                 s = urlParams.get("storelocation");
                 storelocationpromise = $.ajax({
-                    url: "/storelocations/" + s,
+                    url: proxyPath + "storelocations/" + s,
                     method: "GET",
                 }).done(function(data, textStatus, jqXHR) {
                     storelocationData = data;
@@ -238,6 +236,7 @@
             }
 
             $.when(entitypromise, storelocationpromise, productpromise).done(function() {
+                $("#filter-item").html("");
                 if (entityData !== undefined) {
                     $("#filter-item").append(createTitle(entityData.entity_name, "entity"));
                 };
@@ -275,7 +274,7 @@
             // saving the query parameters
             lastQueryParams = params;
             $.ajax({
-                url: "/products",
+                url: proxyPath + "products",
                 method: "GET",
                 dataType: "JSON",
                 data: params.data,
@@ -462,7 +461,7 @@
 
             // getting the product
             $.ajax({
-                url: "/products/" + row['product_id'],
+                url: proxyPath + "products/" + row['product_id'],
                 method: "GET",
             }).done(function(data, textStatus, jqXHR) {
                 // flattening response data
@@ -559,7 +558,7 @@
                 // ask for confirmation and then delete
                 $(this).confirmation("show").on( "confirmed.bs.confirmation", function() {
                     $.ajax({
-                        url: "/products/" + row['product_id'],
+                        url: proxyPath + "products/" + row['product_id'],
                         method: "DELETE",
                     }).done(function(data, textStatus, jqXHR) {
                         displayMessage("product deleted", "success");

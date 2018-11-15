@@ -14,6 +14,9 @@ html
     body
         div.container
             | {{template "HEADER"}}
+            header.row.justify-content-left
+                div.col-sm-12
+                    img(src="{{.ProxyPath}}img/chimitheque_logo.png", alt="chimitheque_logo")
 
             nav.navbar.navbar-expand-lg.navbar-light.bg-light
                 button.navbar-toggler(
@@ -106,6 +109,9 @@ html
 
             // query parameters saved - used for the storages<>products views switch
             var lastQueryParams;
+
+            // proxy path
+            var proxyPath = {{ .ProxyPath }};
 
             // logged user email and permissions
             var container = {{ . }};
