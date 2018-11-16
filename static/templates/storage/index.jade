@@ -216,18 +216,23 @@
                 $("#storelocation-selector").hide();
                 
                 // adding a create storage button for the product
-                b = $("<button>").addClass("store btn btn-link").attr("title", "store this product").attr("type", "button");
-                b.attr("onclick", "window.location.href = '" + proxyPath + "vc/storages?product=" + p + "'");
-                i = $("<i>").addClass("material-icons").text("move_to_inbox");
-                b.append(i);
-                $("#button-store").html(b);
+                hasPermission(proxyPath + "f/storages/-2", "POST").done(function(){
+                    b = $("<button>").addClass("store btn btn-link").attr("title", "store this product").attr("type", "button");
+                    b.attr("onclick", "window.location.href = '" + proxyPath + "vc/storages?product=" + p + "'");
+                    i = $("<i>").addClass("material-icons").text("move_to_inbox");
+                    b.append(i);
+                    $("#button-store").html(b);
+                })
 
-                // adding a create show stock button for the product
-                b = $("<button>").addClass("store btn btn-link").attr("title", "show stock of this product").attr("type", "button");
-                b.attr("onclick", "showStock(" + p + ")");
-                i = $("<i>").addClass("material-icons").text("functions");
-                b.append(i);
-                $("#button-stock").html(b);
+                hasPermission(proxyPath + "f/storages/-2", "GET").done(function(){
+                    // adding a create show stock button for the product
+                    b = $("<button>").addClass("store btn btn-link").attr("title", "show stock of this product").attr("type", "button");
+                    b.attr("onclick", "showStock(" + p + ")");
+                    i = $("<i>").addClass("material-icons").text("functions");
+                    b.append(i);
+                    $("#button-stock").html(b);
+                })
+
             } else {
                 productpromise.resolve();
             }
@@ -297,7 +302,7 @@
         function showStock(pid) {
             $("#stock").html("");
             $.ajax({
-                url: proxyPath + "stock/" + pid,
+                url: proxyPath + "stocks/" + pid,
                 method: "GET",
             }).done(function(data, textStatus, jqXHR) {
                 for (var key in data) {
