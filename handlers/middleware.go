@@ -167,6 +167,12 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 		id := vars["id"]
 		log.WithFields(log.Fields{"id": id, "item": item, "view": view, "personemail": personemail}).Debug("AuthorizeMiddleware")
 
+		// id and item translations
+		if item == "stocks" {
+			// to access a stock, one need permission on storage
+			item = "storages"
+			id = "-2"
+		}
 		if id == "" {
 			itemid = -2
 		} else {
@@ -191,7 +197,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 				perm = "w"
 			}
 		case "POST", "PUT", "DELETE":
-			//REST update, delete, create methods
+			// REST update, delete, create methods
 			// TODO: we need to perform more permission check here
 			// to ensure that values in the request body
 			// are allowed for the auth user
