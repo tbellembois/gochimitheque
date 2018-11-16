@@ -214,6 +214,13 @@ type Product struct {
 	PrecautionaryStatements []PrecautionaryStatement `db:"-" schema:"precautionarystatements" json:"precautionarystatements"`
 }
 
+// Bookmark is a product person bookmark
+type Bookmark struct {
+	BookmarkID int `db:"bookmark_id" json:"bookmark_id" schema:"bookmark_id"`
+	Person     `db:"person" json:"person" schema:"person"`
+	Product    `db:"product" json:"product" schema:"product"`
+}
+
 func (p Product) String() string {
 	return fmt.Sprintf(`ProductID:%d | 
 	ProductSpecificity:%s | 

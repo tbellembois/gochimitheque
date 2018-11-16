@@ -491,6 +491,12 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		PRIMARY KEY(productprecautionarystatements_product_id, productprecautionarystatements_precautionarystatement_id),
 		FOREIGN KEY(productprecautionarystatements_product_id) references product(product_id),
 		FOREIGN KEY(productprecautionarystatements_precautionarystatement_id) references precautionarystatement(precautionarystatement_id));
+	CREATE TABLE IF NOT EXISTS bookmark (
+		bookmark_id integer PRIMARY KEY,
+		person integer NOT NULL,
+		product integer NOT NULL,
+		FOREIGN KEY(person) references person(person_id),
+		FOREIGN KEY(product) references product(product_id));	
 		`
 
 	// values definition

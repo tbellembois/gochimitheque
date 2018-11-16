@@ -27,6 +27,8 @@ type Datastore interface {
 	DeleteProduct(id int) error
 	CreateProduct(p Product) (error, int)
 	UpdateProduct(p Product) error
+	CreateProductBookmark(pr Product, pe Person) error
+	DeleteProductBookmark(pr Product, pe Person) error
 
 	// storages
 	GetStorages(helpers.DbselectparamStorage) ([]Storage, int, error)
