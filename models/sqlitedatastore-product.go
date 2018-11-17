@@ -14,6 +14,46 @@ import (
 	"github.com/tbellembois/gochimitheque/helpers"
 )
 
+// IsProductBookmark returns true if there is a bookmark for the product pr for the person pe
+func (db *SQLiteDataStore) IsProductBookmark(pr Product, pe Person) (bool, error) {
+	var (
+		sqlr string
+		err  error
+		i    int
+	)
+	sqlr = `SELECT count(*) FROM bookmark WHERE person = ? AND product = ?`
+	if err = db.Get(&i, sqlr, pe.PersonID, pr.ProductID); err != nil {
+		return false, err
+	}
+	return i != 0, err
+}
+
+// CreateProductBookmark bookmarks the product pr for the person pe
+func (db *SQLiteDataStore) CreateProductBookmark(pr Product, pe Person) error {
+	var (
+		sqlr string
+		err  error
+	)
+	sqlr = `INSERT into bookmark(person, product) VALUES (? , ?)`
+	if _, err = db.Exec(sqlr, pe.PersonID, pr.ProductID); err != nil {
+		return err
+	}
+	return nil
+}
+
+// DeleteProductBookmark remove the bookmark for the product pr and the person pe
+func (db *SQLiteDataStore) DeleteProductBookmark(pr Product, pe Person) error {
+	var (
+		sqlr string
+		err  error
+	)
+	sqlr = `DELETE from bookmark WHERE person = ? AND product = ?`
+	if _, err = db.Exec(sqlr, pe.PersonID, pr.ProductID); err != nil {
+		return err
+	}
+	return nil
+}
+
 // GetProductsCasNumbers return the cas numbers matching the search criteria
 func (db *SQLiteDataStore) GetProductsCasNumbers(p helpers.Dbselectparam) ([]CasNumber, int, error) {
 	var (
@@ -632,16 +672,16 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	log.WithFields(log.Fields{"p": p}).Debug("GetProducts")
 
 	// pre request: select or count
-	precreq.WriteString(" SELECT count(DISTINCT product.product_id)")
-	presreq.WriteString(` SELECT product.product_id, 
-	product.product_specificity, 
-	product_msds,
-	product_restricted,
-	product_radioactive,
-	product_linearformula,
-	product_threedformula,
-	product_disposalcomment,
-	product_remark,
+	precreq.WriteString(" SELECT count(DISTINCT p.product_id)")
+	presreq.WriteString(` SELECT p.product_id, 
+	p.product_specificity, 
+	p.product_msds,
+	p.product_restricted,
+	p.product_radioactive,
+	p.product_linearformula,
+	p.product_threedformula,
+	p.product_disposalcomment,
+	p.product_remark,
 	empiricalformula.empiricalformula_id AS "empiricalformula.empiricalformula_id",
 	empiricalformula.empiricalformula_label AS "empiricalformula.empiricalformula_label",
 	physicalstate.physicalstate_id AS "physicalstate.physicalstate_id",
@@ -654,32 +694,35 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	person.person_email AS "person.person_email",
 	name.name_id AS "name.name_id",
 	name.name_label AS "name.name_label",
+	bookmark.bookmark_id AS "bookmark.bookmark_id",
 	cenumber.cenumber_id AS "cenumber.cenumber_id",
 	cenumber.cenumber_label AS "cenumber.cenumber_label",
 	casnumber.casnumber_id AS "casnumber.casnumber_id",
 	casnumber.casnumber_label AS "casnumber.casnumber_label"`)
 
 	// common parts
-	comreq.WriteString(" FROM product")
+	comreq.WriteString(" FROM product as p")
 	// get name
-	comreq.WriteString(" JOIN name ON product.name = name.name_id")
+	comreq.WriteString(" JOIN name ON p.name = name.name_id")
 	// get casnumber
-	comreq.WriteString(" JOIN casnumber ON product.casnumber = casnumber.casnumber_id")
+	comreq.WriteString(" JOIN casnumber ON p.casnumber = casnumber.casnumber_id")
 	// get cenumber
-	comreq.WriteString(" LEFT JOIN cenumber ON product.cenumber = cenumber.cenumber_id")
+	comreq.WriteString(" LEFT JOIN cenumber ON p.cenumber = cenumber.cenumber_id")
 	// get person
-	comreq.WriteString(" JOIN person ON product.person = person.person_id")
+	comreq.WriteString(" JOIN person ON p.person = person.person_id")
 	// get physical state
-	comreq.WriteString(" LEFT JOIN physicalstate ON product.physicalstate = physicalstate.physicalstate_id")
+	comreq.WriteString(" LEFT JOIN physicalstate ON p.physicalstate = physicalstate.physicalstate_id")
 	// get signal word
-	comreq.WriteString(" LEFT JOIN signalword ON product.signalword = signalword.signalword_id")
+	comreq.WriteString(" LEFT JOIN signalword ON p.signalword = signalword.signalword_id")
 	// get class of compound
-	comreq.WriteString(" LEFT JOIN classofcompound ON product.classofcompound = classofcompound.classofcompound_id")
+	comreq.WriteString(" LEFT JOIN classofcompound ON p.classofcompound = classofcompound.classofcompound_id")
 	// get empirical formula
-	comreq.WriteString(" JOIN empiricalformula ON product.empiricalformula = empiricalformula.empiricalformula_id")
+	comreq.WriteString(" JOIN empiricalformula ON p.empiricalformula = empiricalformula.empiricalformula_id")
+	// get bookmark
+	comreq.WriteString(" LEFT JOIN bookmark ON (bookmark.product = p.product_id AND bookmark.person = :personid)")
 	// get storages, store locations and entities
 	if p.GetEntity() != -1 || p.GetStorelocation() != -1 {
-		comreq.WriteString(" JOIN storage ON storage.product = product.product_id")
+		comreq.WriteString(" JOIN storage ON storage.product = p.product_id")
 		comreq.WriteString(" JOIN storelocation ON storage.storelocation = storelocation.storelocation_id")
 		comreq.WriteString(" JOIN entity ON storelocation.entity = entity.entity_id")
 	}
@@ -695,7 +738,7 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	`)
 	comreq.WriteString(" WHERE name.name_label LIKE :search")
 	if p.GetProduct() != -1 {
-		comreq.WriteString(" AND product.product_id = :product")
+		comreq.WriteString(" AND p.product_id = :product")
 	}
 	if p.GetEntity() != -1 {
 		comreq.WriteString(" AND entity.entity_id = :entity")
@@ -705,7 +748,7 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	}
 
 	// post select request
-	postsreq.WriteString(" GROUP BY product.product_id")
+	postsreq.WriteString(" GROUP BY p.product_id")
 	postsreq.WriteString(" ORDER BY " + p.GetOrderBy() + " " + p.GetOrder())
 
 	// limit

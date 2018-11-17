@@ -23,7 +23,7 @@ func main() {
 	var (
 		err       error
 		logf      *os.File
-		dbname    = "./storage.db"
+		dbname    = "/mnt/ramdisk/storage.db"
 		datastore *models.SQLiteDataStore
 	)
 
@@ -305,6 +305,7 @@ func main() {
 	r.Handle("/{item:products}/{id}", securechain.Then(env.AppMiddleware(env.UpdateProductHandler))).Methods("PUT")
 	r.Handle("/{item:products}", securechain.Then(env.AppMiddleware(env.CreateProductHandler))).Methods("POST")
 	r.Handle("/{item:products}/{id}", securechain.Then(env.AppMiddleware(env.DeleteProductHandler))).Methods("DELETE")
+	r.Handle("/{item:bookmarks}/{id}", securechain.Then(env.AppMiddleware(env.ToogleProductBookmarkHandler))).Methods("PUT")
 
 	r.Handle("/f/{view:v}/{item:products}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 	r.Handle("/f/{view:vc}/{item:products}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")

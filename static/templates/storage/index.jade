@@ -7,16 +7,14 @@
             #button-store
         .col-sm-2.d-flex.justify-content-end
             #button-stock
-    .row
-        .col-sm-12#stock
-    .row
-        .col-sm-6
-            #storelocation-selector
-                | {{$label := ""}} {{$name := "storelocationselector"}}
-                +select
-        .col-sm-6.d-flex.justify-content-end
+
+    #toolbar.row
+        .col
             button.btn.btn-dark#switchview(type="button" title="switch to product view" onclick="switchProductStorageView()")
                 i.material-icons local_offer
+        .col#storelocation-selector
+            | {{$label := ""}} {{$name := "storelocationselector"}}
+            +select
 
     #accordion
         #list-collapse.collapse.show(data-parent='#accordion')
@@ -25,6 +23,7 @@
                     table#table(data-toggle='table', 
                                 data-striped='true', 
                                 data-search='true', 
+                                data-toolbar="#toolbar",
                                 data-side-pagination='server', 
                                 data-page-list="[10, 20, 50, 100]",
                                 data-pagination='true', 
