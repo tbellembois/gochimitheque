@@ -41,7 +41,11 @@ func (db *SQLiteDataStore) GetStoreLocations(p helpers.DbselectparamStoreLocatio
 	log.WithFields(log.Fields{"p": p}).Debug("GetStoreLocations")
 
 	precreq.WriteString(" SELECT count(DISTINCT s.storelocation_id)")
-	presreq.WriteString(` SELECT s.storelocation_id AS "storelocation_id", s.storelocation_name AS "storelocation_name", s.storelocation_canstore, s.storelocation_color, s.storelocation_fullpath AS "storelocation_fullpath",
+	presreq.WriteString(` SELECT s.storelocation_id AS "storelocation_id", 
+	s.storelocation_name AS "storelocation_name", 
+	s.storelocation_canstore, 
+	s.storelocation_color, 
+	s.storelocation_fullpath AS "storelocation_fullpath",
 	storelocation.storelocation_id AS "storelocation.storelocation_id",
 	storelocation.storelocation_name AS "storelocation.storelocation_name",
 	entity.entity_id AS "entity.entity_id", 

@@ -5,14 +5,14 @@
             #filter-item
         .col-sm-2.d-flex.justify-content-end
             #button-store
-    .row
-        .col-sm-6
-            #storelocation-selector
-                | {{$label := ""}} {{$name := "storelocationselector"}}
-                +select
-        .col-sm-6.d-flex.justify-content-end
+
+    #toolbar.row
+        .col
             button.btn.btn-dark#switchview(type="button" title="switch to storage view" onclick="switchProductStorageView()")
                 i.material-icons all_inbox
+        .col#storelocation-selector
+            | {{$label := ""}} {{$name := "storelocationselector"}}
+            +select
 
     #accordion
         #list-collapse.collapse.show(data-parent='#accordion')
@@ -21,6 +21,7 @@
                     table#table(data-toggle='table', 
                                 data-striped='true', 
                                 data-search='true', 
+                                data-toolbar="#toolbar",
                                 data-side-pagination='server', 
                                 data-page-list="[10, 20, 50, 100]",
                                 data-pagination='true', 
@@ -413,6 +414,11 @@
                     $("#delete"+this.itemId).fadeIn();
             })
 
+            var bookmarkicon = "star_border"
+            if (row.bookmark.bookmark_id.Valid) {
+                bookmarkicon = "star"
+            }
+
             // buttons are hidden by default
             var actions = [
             '<button id="store' + pid + '" class="store btn btn-link" style="display: none;" title="store" type="button">',
@@ -426,12 +432,31 @@
             '</button>',
             '<button id="delete' + pid + '" class="delete btn btn-link" style="display: none;" title="delete" type="button">',
                 '<i class="material-icons">delete</i>',
-            '</button>'];
+            '</button>',
+            '<button id="bookmark' + pid + '" class="bookmark btn btn-link" title="(un)bookmark" type="button">',
+                '<i id="bookmark' + pid + '" class="material-icons">' + bookmarkicon + '</i>',
+            '</button>',
+            ];
 
             return actions.join('&nbsp;')    
         }
 
         // items actions callback
+        function operateBookmark(e, value, row, index) {
+            // toggling the bookmark
+            $.ajax({
+                url: proxyPath + "bookmarks/" + row['product_id'],
+                method: "PUT",
+            }).done(function(data, textStatus, jqXHR) {
+                if ($("i#bookmark" + data.product_id).text() == "star") {
+                    $("i#bookmark" + data.product_id).text("star_border")
+                } else {
+                    $("i#bookmark" + data.product_id).text("star")
+                }
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                handleHTTPError(jqXHR.statusText, jqXHR.status)
+            });
+        }
         function operateEdit(e, value, row, index) {
             // clearing selections
             $('select#casnumber').val(null).trigger('change');
@@ -535,6 +560,9 @@
             $("#storelocation-selector").hide();
         }
         window.operateEvents = {
+            'click .bookmark': function (e, value, row, index) {
+                operateBookmark(e, value, row, index)
+            },
             'click .store': function (e, value, row, index) {
                 window.location.href = proxyPath + "vc/storages?product=" + row['product_id'];
             },

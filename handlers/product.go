@@ -2,9 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/tbellembois/gochimitheque/utils"
 	"net/http"
 	"strconv"
+
+	"github.com/tbellembois/gochimitheque/utils"
 
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
@@ -49,6 +50,56 @@ func (env *Env) VCreateProductHandler(w http.ResponseWriter, r *http.Request) *h
 /*
 	REST handlers
 */
+
+func (env *Env) ToogleProductBookmarkHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+
+	var (
+		err        error
+		isbookmark bool
+	)
+
+	product := models.Product{}
+	person := models.Person{}
+	vars := mux.Vars(r)
+
+	if product.ProductID, err = strconv.Atoi(vars["id"]); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "id atoi conversion",
+			Code:    http.StatusInternalServerError}
+	}
+
+	// retrieving the logged user id from request context
+	c := helpers.ContainerFromRequestContext(r)
+	person.PersonID = c.PersonID
+
+	if isbookmark, err = env.DB.IsProductBookmark(product, person); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting bookmark status",
+		}
+	}
+
+	// toggling the bookmark
+	if isbookmark {
+		err = env.DB.DeleteProductBookmark(product, person)
+	} else {
+		err = env.DB.CreateProductBookmark(product, person)
+	}
+	if err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error creating the bookmark",
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	json.NewEncoder(w).Encode(product)
+	w.WriteHeader(http.StatusOK)
+	return nil
+}
 
 // GetProductsCasNumbersHandler returns a json list of the cas numbers matching the search criteria
 func (env *Env) GetProductsCasNumbersHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {

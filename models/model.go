@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"database/sql/driver"
+
 	"github.com/tbellembois/gochimitheque/helpers"
 )
 
@@ -212,11 +213,13 @@ type Product struct {
 	Symbols                 []Symbol                 `db:"-" schema:"symbols" json:"symbols"`
 	HazardStatements        []HazardStatement        `db:"-" schema:"hazardstatements" json:"hazardstatements"`
 	PrecautionaryStatements []PrecautionaryStatement `db:"-" schema:"precautionarystatements" json:"precautionarystatements"`
+
+	Bookmark *Bookmark `db:"bookmark" json:"bookmark" schema:"bookmark"` // not un db but sqlx requires the "db" entry
 }
 
 // Bookmark is a product person bookmark
 type Bookmark struct {
-	BookmarkID int `db:"bookmark_id" json:"bookmark_id" schema:"bookmark_id"`
+	BookmarkID sql.NullInt64 `db:"bookmark_id" json:"bookmark_id" schema:"bookmark_id"`
 	Person     `db:"person" json:"person" schema:"person"`
 	Product    `db:"product" json:"product" schema:"product"`
 }
