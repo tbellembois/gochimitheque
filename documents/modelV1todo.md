@@ -108,13 +108,6 @@ db.define_table('product_history',
                 Field('modification_datetime', 'datetime', writable=False, default=datetime.now()),
                 db.product)
 
-db.define_table('bookmark',
-                Field('person',
-                      db.person,
-                      compute=lambda r: db.person[auth.user.id] if auth.user else None),
-                Field('product',
-                      db.product))
-
 db.define_table('storage',
                 Field('archive',
                       'boolean',
