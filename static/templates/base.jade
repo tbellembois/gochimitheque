@@ -34,6 +34,10 @@ html
                             li.nav-item.active
                                 a(href="{{.ProxyPath}}v/products" title="home").nav-link
                                     i.material-icons home
+                        if HasPermission .PersonID "r" "products" -2
+                            li.nav-item.active
+                                a(href="{{.ProxyPath}}v/products?bookmark=true" title="my bookmarked products").nav-link
+                                    i.material-icons star
                         //li.nav-item
                         //    a(href="/login").nav-link login
 

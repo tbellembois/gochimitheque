@@ -36,16 +36,19 @@ type DbselectparamProduct interface {
 	SetEntity(int)
 	SetProduct(int)
 	SetStorelocation(int)
+	SetBookmark(bool)
 
 	GetEntity() int
 	GetProduct() int
 	GetStorelocation() int
+	GetBookmark() bool
 }
 type dbselectparamProduct struct {
 	dbselectparam
 	Entity        int // id
 	Product       int // id
 	Storelocation int // id
+	Bookmark      bool
 }
 
 // dbselectparamStorage contains the parameters of the GetStorages function
@@ -196,6 +199,14 @@ func (d dbselectparamProduct) GetStorelocation() int {
 	return d.Storelocation
 }
 
+func (d *dbselectparamProduct) SetBookmark(b bool) {
+	d.Bookmark = b
+}
+
+func (d dbselectparamProduct) GetBookmark() bool {
+	return d.Bookmark
+}
+
 //
 // dbselectparamStorage functions
 //
@@ -312,6 +323,7 @@ func NewdbselectparamProduct(r *http.Request, f func(string) (string, error)) (*
 	dspp.Entity = -1
 	dspp.Product = -1
 	dspp.Storelocation = -1
+	dspp.Bookmark = false
 	if dsp, aerr = Newdbselectparam(r, f); aerr != nil {
 		return nil, aerr
 	}
@@ -347,6 +359,15 @@ func NewdbselectparamProduct(r *http.Request, f func(string) (string, error)) (*
 					Error:   err,
 					Code:    http.StatusInternalServerError,
 					Message: "storelocation atoi conversion",
+				}
+			}
+		}
+		if bookmark, ok := r.URL.Query()["bookmark"]; ok {
+			if dspp.Bookmark, err = strconv.ParseBool(bookmark[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "bookmark bool conversion",
 				}
 			}
 		}

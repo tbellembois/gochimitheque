@@ -187,7 +187,8 @@
             var storelocationpromise = $.Deferred();
             var entitypromise = $.Deferred();
             var productpromise = $.Deferred();
-            var productData, storelocationData, entityData;
+            var bookmarkpromise = $.Deferred();
+            var productData, storelocationData, entityData, bookmarkData;
             // display titles, switch products<>storages selector
             //if (URLValues.has("entity")) {
             if (urlParams.has("entity")) {
@@ -235,9 +236,16 @@
             } else {
                 storelocationpromise.resolve();
             }
-
-            $.when(entitypromise, storelocationpromise, productpromise).done(function() {
+            if (urlParams.has("bookmark")) {
+                bookmarkData = true;
+            }
+            bookmarkpromise.resolve();
+            
+            $.when(entitypromise, storelocationpromise, productpromise, bookmarkpromise).done(function() {
                 $("#filter-item").html("");
+                if (bookmarkData !== undefined) {
+                    $("#filter-item").append(createTitle("my bookmarked products", "bookmark"));
+                };
                 if (entityData !== undefined) {
                     $("#filter-item").append(createTitle(entityData.entity_name, "entity"));
                 };
@@ -268,6 +276,9 @@
             }
             if (urlParams.has("product")) {
                 params["product"] = urlParams.get("product");
+            }
+            if (urlParams.has("bookmark")) {
+                params["bookmark"] = urlParams.get("bookmark");
             }
             return params;
         }

@@ -69,6 +69,9 @@ var normalizeSqlNull = function(obj) {
 function createTitle(msgText, type) {
     var i=$("<i>").addClass("material-icons");
     switch (type) {
+        case 'bookmark':
+            i.text("star");
+            break;
         case 'entity':
             i.text("store");
             break;
