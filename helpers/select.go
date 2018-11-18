@@ -58,11 +58,13 @@ type DbselectparamStorage interface {
 	SetProduct(int)
 	SetStorelocation(int)
 	SetStorage(int)
+	SetHistory(bool)
 
 	GetEntity() int
 	GetProduct() int
 	GetStorelocation() int
 	GetStorage() int
+	GetHistory() bool
 }
 type dbselectparamStorage struct {
 	dbselectparam
@@ -70,6 +72,7 @@ type dbselectparamStorage struct {
 	Product       int // id
 	Storelocation int // id
 	Storage       int // id
+	History       bool
 }
 
 // dbselectparamPerson contains the parameters of the GetPeople function
@@ -242,6 +245,14 @@ func (d dbselectparamStorage) GetStorage() int {
 	return d.Storage
 }
 
+func (d dbselectparamStorage) GetHistory() bool {
+	return d.History
+}
+
+func (d *dbselectparamStorage) SetHistory(b bool) {
+	d.History = b
+}
+
 // Newdbselectparam returns a dbselectparam struct
 // with values populated from the request parameters
 func Newdbselectparam(r *http.Request, f func(string) (string, error)) (*dbselectparam, *AppError) {
@@ -392,6 +403,7 @@ func NewdbselectparamStorage(r *http.Request, f func(string) (string, error)) (*
 	dsps.Product = -1
 	dsps.Storelocation = -1
 	dsps.Storage = -1
+	dsps.History = false
 	if dsp, aerr = Newdbselectparam(r, f); aerr != nil {
 		return nil, aerr
 	}
@@ -441,6 +453,15 @@ func NewdbselectparamStorage(r *http.Request, f func(string) (string, error)) (*
 					Error:   err,
 					Code:    http.StatusInternalServerError,
 					Message: "storage atoi conversion",
+				}
+			}
+		}
+		if history, ok := r.URL.Query()["history"]; ok {
+			if dsps.History, err = strconv.ParseBool(history[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "history bool conversion",
 				}
 			}
 		}

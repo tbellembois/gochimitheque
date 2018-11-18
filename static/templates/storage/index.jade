@@ -149,7 +149,8 @@
             var entitypromise = $.Deferred();
             var storagepromise = $.Deferred();
             var productpromise = $.Deferred();
-            var productData, storageData, storelocationData, entityData;
+            var historypromise = $.Deferred();
+            var productData, storageData, storelocationData, entityData, historyData;
             // display titles, switch products<>storages selector
             //if (URLValues.has("entity")) {
             if (urlParams.has("entity")) {
@@ -235,9 +236,16 @@
             } else {
                 productpromise.resolve();
             }
+            if (urlParams.has("history")) {
+                historyData = true;
+            }
+            historypromise.resolve();
 
             $.when(entitypromise, storelocationpromise, storagepromise, productpromise).done(function() {
                 $("#filter-item").html("");
+                if (historyData !== undefined) {
+                    $("#filter-item").append(createTitle("history", "history"));
+                };
                 if (entityData !== undefined) {
                     $("#filter-item").append(createTitle(entityData.entity_name, "entity"));
                 };
@@ -330,6 +338,9 @@
             }
             if (urlParams.has("storage")) {
                 params["storage"] = urlParams.get("storage");
+            }
+            if (urlParams.has("history")) {
+                params["history"] = urlParams.get("history");
             }
             return params;
         }

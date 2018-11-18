@@ -212,6 +212,11 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 	if p.GetStorage() != -1 {
 		comreq.WriteString(" AND storage.storage_id = :storage")
 	}
+	if p.GetHistory() {
+		comreq.WriteString(" AND storage.storage IS NOT NULL")
+	} else {
+		comreq.WriteString(" AND storage.storage IS NULL")
+	}
 
 	// post select request
 	postsreq.WriteString(" GROUP BY storage.storage_id")
@@ -500,6 +505,45 @@ func (db *SQLiteDataStore) UpdateStorage(s Storage) error {
 
 	// beginning transaction
 	if tx, err = db.Begin(); err != nil {
+		return err
+	}
+
+	// create an history of the storage
+	sqlr = `INSERT into storage (storage_creationdate, 
+		storage_entrydate, 
+		storage_exitdate, 
+		storage_openingdate, 
+		storage_expirationdate,
+		storage_comment,
+		storage_reference,
+		storage_batchnumber,
+		storage_quantity,
+		storage_barecode,
+		storage_todestroy,
+		person,
+		product,
+		storelocation,
+		unit,
+		supplier,
+		storage) select storage_creationdate, 
+				storage_entrydate, 
+				storage_exitdate, 
+				storage_openingdate, 
+				storage_expirationdate,
+				storage_comment,
+				storage_reference,
+				storage_batchnumber,
+				storage_quantity,
+				storage_barecode,
+				storage_todestroy,
+				person,
+				product,
+				storelocation,
+				unit,
+				supplier,
+				? FROM storage WHERE storage_id = ?`
+	if res, err = tx.Exec(sqlr, s.StorageID, s.StorageID); err != nil {
+		tx.Rollback()
 		return err
 	}
 
