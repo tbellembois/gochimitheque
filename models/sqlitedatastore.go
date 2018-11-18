@@ -371,6 +371,8 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		storelocation integer NOT NULL,
 		unit integer,
 		supplier integer,
+		storage integer,
+		FOREIGN KEY(storage) references storage(storage_id),
 		FOREIGN KEY(unit) references unit(unit_id),
 		FOREIGN KEY(supplier) references supplier(supplier_id),
 		FOREIGN KEY(person) references person(person_id),

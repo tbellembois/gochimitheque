@@ -108,6 +108,7 @@ type Storage struct {
 	StoreLocation         `db:"storelocation" json:"storelocation" schema:"storelocation"`
 	Unit                  `db:"unit" json:"unit" schema:"unit"`
 	Supplier              `db:"supplier" json:"supplier" schema:"supplier"`
+	Storage               *Storage `db:"storage" json:"storage" schema:"storage"`
 }
 
 // Permission represent who is able to do what on something
