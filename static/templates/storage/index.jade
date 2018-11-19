@@ -374,15 +374,26 @@
         //
         function detailFormatter(index, row) {
             var html = [];
-            html.push("<p><b>product</b>: " + row["product"]["name"]["name_label"] + "</p>")
-            html.push("<p><b>store location</b>: " + row["storelocation"]["storelocation_name"]["String"] + "</p>")
-            html.push("<p><b>created at</b>: " + dateFormatter(row["storage_creationdate"], null, null, null) + "</p>")
-            html.push("<p><b>modified at</b>: " + dateFormatter(row["storage_modificationdate"], null, null, null) + "</p>")
-            html.push("<p><b>by</b>: " + row["person"]["person_email"] + "</p>")
-            html.push("<p><b>comment</b>: " + row["storage_comment"]["String"] + "</p>")
-            html.push("<p><b>barecode</b>: " + row["storage_barecode"]["String"] + "</p>")
-            html.push("<p><b>quantity</b>: " + row["storage_quantity"]["Float64"] + " " + row["unit"]["unit_label"]["String"] + "</p>")
-            html.push("<p><b>supplier</b>: " + row["supplier"]["supplier_label"]["String"] + "</p>")
+            html.push("<div class='row mt-md-3'>")
+            html.push("<div class='col-sm-6'><p><b>product</b>: " + row["product"]["name"]["name_label"] + "</p></div>")
+            html.push("<div class='col-sm-6'><b>store location</b>: " + row["storelocation"]["storelocation_name"]["String"] + "</p></div>")
+            html.push("</div>")            
+
+            html.push("<div class='row mt-md-3'>")
+            html.push("<div class='col-sm-4'><p><b>quantity</b>: " + row["storage_quantity"]["Float64"] + " " + row["unit"]["unit_label"]["String"] + "</p></div>")
+            html.push("<div class='col-sm-4'><b>barecode</b>: " + row["storage_barecode"]["String"] + "</p></div>")
+            html.push("<div class='col-sm-4'><p><b>supplier</b>: " + row["supplier"]["supplier_label"]["String"] + "</p></div>")
+            html.push("</div>")    
+
+            html.push("<div class='row mt-md-3'>")
+            html.push("<div class='col-sm-4'><b>created at</b>: " + dateFormatter(row["storage_creationdate"], null, null, null) + "</p></div>")
+            html.push("<div class='col-sm-4'><b>modified at</b>: " + dateFormatter(row["storage_modificationdate"], null, null, null) + "</p></div>")
+            html.push("<div class='col-sm-4'><p><b>by</b>: " + row["person"]["person_email"] + "</p></div>")
+            html.push("</div>")   
+
+            html.push("<div class='row mt-md-3'>")
+            html.push("<div class='col-sm-12'><b>comment</b>: " + row["storage_comment"]["String"] + "</p></div>")
+            html.push("</div>")  
             return html.join('');
         }
         //
