@@ -539,7 +539,7 @@
                 operateEdit(e, value, row, index)
             },
             'click .history': function (e, value, row, index) {
-                window.location = "/v/storages?storage="+row['storage_id'].Int64+"&history=true";
+                window.location = proxyPath + "v/storages?storage="+row['storage_id'].Int64+"&history=true";
             },
             'click .delete': function (e, value, row, index) {
                 // hiding possible previous confirmation button
