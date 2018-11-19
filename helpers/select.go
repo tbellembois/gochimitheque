@@ -20,6 +20,8 @@ type Dbselectparam interface {
 	GetOrderBy() string
 	GetOffset() uint64
 	GetLimit() uint64
+
+	SetOrderBy(string)
 }
 type dbselectparam struct {
 	LoggedPersonID int // logged person, used to filter results
@@ -135,6 +137,10 @@ func (d dbselectparam) GetOrder() string {
 
 func (d dbselectparam) GetOrderBy() string {
 	return d.OrderBy
+}
+
+func (d *dbselectparam) SetOrderBy(o string) {
+	d.OrderBy = o
 }
 
 func (d dbselectparam) GetOffset() uint64 {

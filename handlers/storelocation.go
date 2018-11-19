@@ -122,6 +122,7 @@ func (env *Env) CreateStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 	var (
 		sl  models.StoreLocation
 		err error
+		id  int
 	)
 	if err := r.ParseForm(); err != nil {
 		return &helpers.AppError{
@@ -153,12 +154,13 @@ func (env *Env) CreateStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 	}
 	log.WithFields(log.Fields{"sl": sl}).Debug("CreateStoreLocationHandler")
 
-	if err, _ := env.DB.CreateStoreLocation(sl); err != nil {
+	if err, id = env.DB.CreateStoreLocation(sl); err != nil {
 		return &helpers.AppError{
 			Error:   err,
 			Message: "create store location error",
 			Code:    http.StatusInternalServerError}
 	}
+	sl.StoreLocationID = sql.NullInt64{Valid: true, Int64: int64(id)}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
