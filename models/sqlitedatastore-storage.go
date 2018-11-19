@@ -148,20 +148,26 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 	)
 	log.WithFields(log.Fields{"p": p}).Debug("GetStorages")
 
+	if strings.HasPrefix(p.GetOrderBy(), "storage_") {
+		p.SetOrderBy("s." + p.GetOrderBy())
+	}
+
 	// pre request: select or count
 	precreq.WriteString(" SELECT count(DISTINCT storage.storage_id)")
-	presreq.WriteString(` SELECT storage.storage_id,
-		storage.storage_entrydate,
-		storage.storage_exitdate,
-		storage.storage_openingdate,
-		storage.storage_expirationdate,
-		storage.storage_reference,
-		storage.storage_batchnumber,
-		storage.storage_todestroy,
-		storage.storage_creationdate,
-		storage.storage_quantity,
-		storage.storage_barecode,
-		storage.storage_comment,
+	presreq.WriteString(` SELECT s.storage_id AS "storage_id",
+		s.storage_entrydate,
+		s.storage_exitdate,
+		s.storage_openingdate,
+		s.storage_expirationdate,
+		s.storage_reference,
+		s.storage_batchnumber,
+		s.storage_todestroy,
+		s.storage_creationdate,
+		s.storage_modificationdate,
+		s.storage_quantity,
+		s.storage_barecode,
+		s.storage_comment,
+		storage.storage_id AS "storage.storage_id",
 		unit.unit_label AS "unit.unit_label",
 		supplier.supplier_label AS "supplier.supplier_label",
 		person.person_email AS "person.person_email", 
@@ -174,21 +180,23 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 		`)
 
 	// common parts
-	comreq.WriteString(" FROM storage")
+	comreq.WriteString(" FROM storage as s")
+	// get storage history parent
+	comreq.WriteString(" LEFT JOIN storage ON s.storage = storage.storage_id")
 	// get product
-	comreq.WriteString(" JOIN product ON storage.product = product.product_id")
+	comreq.WriteString(" JOIN product ON s.product = product.product_id")
 	// get names
 	comreq.WriteString(" JOIN name ON product.name = name.name_id")
 	// get person
-	comreq.WriteString(" JOIN person ON storage.person = person.person_id")
+	comreq.WriteString(" JOIN person ON s.person = person.person_id")
 	// get store location
-	comreq.WriteString(" JOIN storelocation ON storage.storelocation = storelocation.storelocation_id")
+	comreq.WriteString(" JOIN storelocation ON s.storelocation = storelocation.storelocation_id")
 	// get entity
 	comreq.WriteString(" JOIN entity ON storelocation.entity = entity.entity_id")
 	// get unit
-	comreq.WriteString(" LEFT JOIN unit ON storage.unit = unit.unit_id")
+	comreq.WriteString(" LEFT JOIN unit ON s.unit = unit.unit_id")
 	// get supplier
-	comreq.WriteString(" LEFT JOIN supplier ON storage.supplier = supplier.supplier_id")
+	comreq.WriteString(" LEFT JOIN supplier ON s.supplier = supplier.supplier_id")
 	// filter by permissions
 	comreq.WriteString(` JOIN permission AS perm, entity as e ON
 		(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
@@ -210,16 +218,18 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 		comreq.WriteString(" AND storelocation.storelocation_id = :storelocation")
 	}
 	if p.GetStorage() != -1 {
-		comreq.WriteString(" AND storage.storage_id = :storage")
+		if p.GetHistory() {
+			comreq.WriteString(" AND (s.storage = :storage OR s.storage_id = :storage)")
+		} else {
+			comreq.WriteString(" AND s.storage_id = :storage")
+		}
 	}
-	if p.GetHistory() {
-		comreq.WriteString(" AND storage.storage IS NOT NULL")
-	} else {
-		comreq.WriteString(" AND storage.storage IS NULL")
+	if !p.GetHistory() {
+		comreq.WriteString(" AND s.storage IS NULL")
 	}
 
 	// post select request
-	postsreq.WriteString(" GROUP BY storage.storage_id")
+	postsreq.WriteString(" GROUP BY s.storage_id")
 	postsreq.WriteString(" ORDER BY " + p.GetOrderBy() + " " + p.GetOrder())
 
 	// limit
@@ -278,6 +288,7 @@ func (db *SQLiteDataStore) GetStorage(id int) (Storage, error) {
 	storage.storage_batchnumber,
 	storage.storage_todestroy,
 	storage.storage_creationdate,
+	storage.storage_modificationdate,
 	storage.storage_quantity,
 	storage.storage_barecode,
 	storage.storage_comment,
@@ -436,7 +447,8 @@ func (db *SQLiteDataStore) CreateStorage(s Storage) (error, int) {
 	m["person"] = s.PersonID
 	m["storelocation"] = s.StoreLocationID.Int64
 	m["product"] = s.ProductID
-	m["storage_creationdate"] = s.StorageCreationDate.String()
+	m["storage_creationdate"] = s.StorageCreationDate
+	m["storage_modificationdate"] = s.StorageModificationDate
 
 	// building column names/values
 	col := make([]string, 0, len(m))
@@ -485,10 +497,10 @@ func (db *SQLiteDataStore) CreateStorage(s Storage) (error, int) {
 		tx.Rollback()
 		return err, 0
 	}
-	s.StorageID = int(lastid)
+	s.StorageID = sql.NullInt64{Valid: true, Int64: lastid}
 	log.WithFields(log.Fields{"s": s}).Debug("CreateStorage")
 
-	return nil, s.StorageID
+	return nil, int(s.StorageID.Int64)
 }
 
 func (db *SQLiteDataStore) UpdateStorage(s Storage) error {
@@ -510,6 +522,7 @@ func (db *SQLiteDataStore) UpdateStorage(s Storage) error {
 
 	// create an history of the storage
 	sqlr = `INSERT into storage (storage_creationdate, 
+		storage_modificationdate,
 		storage_entrydate, 
 		storage_exitdate, 
 		storage_openingdate, 
@@ -526,6 +539,7 @@ func (db *SQLiteDataStore) UpdateStorage(s Storage) error {
 		unit,
 		supplier,
 		storage) select storage_creationdate, 
+				storage_modificationdate,
 				storage_entrydate, 
 				storage_exitdate, 
 				storage_openingdate, 
@@ -606,7 +620,7 @@ func (db *SQLiteDataStore) UpdateStorage(s Storage) error {
 	if s.StorageToDestroy.Valid {
 		m["storage_todestroy"] = s.StorageToDestroy.Bool
 	}
-
+	m["storage_modificationdate"] = s.StorageModificationDate
 	m["person"] = s.PersonID
 	m["storelocation"] = s.StoreLocationID
 	m["unit"] = s.UnitID

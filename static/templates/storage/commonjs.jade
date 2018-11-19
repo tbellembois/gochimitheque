@@ -236,9 +236,9 @@ script.
         var $table = $('#table');
         var index = $('input#index').val();
         // appending hl parameter to highlight updated row
-        updateQueryStringParam("hl", data.storage_id);
+        updateQueryStringParam("hl", data.storage_id.Int64);
         $table.bootstrapTable('refresh');
-        displayMessage("storage " + data.storage_id + " updated", "success");
+        displayMessage("storage " + data.storage_id.Int64 + " updated", "success");
     }
     function saveStorage() {
         var form = $("#storage");

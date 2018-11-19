@@ -35,8 +35,8 @@
                                 data-row-attributes="rowAttributes")
                         thead
                             tr
-                                th(data-field='storage_id' data-sortable='true') ID
-                                th(data-field='storage_creationdate' data-formatter='dateFormatter' data-sortable='true') creation date
+                                th(data-field='storage_id' data-formatter='storage_idFormatter' data-sortable='true') ID
+                                th(data-field='storage_modificationdate' data-formatter='dateFormatter' data-sortable='true') modification date
                                 th(data-field='storage_barecode' data-formatter='storage_barecodeFormatter') barecode
                                 th(data-field='product.name.name_label' data-sortable='true') product
                                 th(data-field='storelocation.storelocation_fullpath' data-sortable='true' data-formatter='storelocation_fullpathFormatter') store location
@@ -377,6 +377,7 @@
             html.push("<p><b>product</b>: " + row["product"]["name"]["name_label"] + "</p>")
             html.push("<p><b>store location</b>: " + row["storelocation"]["storelocation_name"]["String"] + "</p>")
             html.push("<p><b>created at</b>: " + dateFormatter(row["storage_creationdate"], null, null, null) + "</p>")
+            html.push("<p><b>modified at</b>: " + dateFormatter(row["storage_modificationdate"], null, null, null) + "</p>")
             html.push("<p><b>by</b>: " + row["person"]["person_email"] + "</p>")
             html.push("<p><b>comment</b>: " + row["storage_comment"]["String"] + "</p>")
             html.push("<p><b>barecode</b>: " + row["storage_barecode"]["String"] + "</p>")
@@ -390,6 +391,16 @@
         function dateFormatter(value, row, index, field) {
             date = new Date(value);
             return date.toLocaleString();
+        }
+        //
+        // storage_idFormatter
+        //
+        function storage_idFormatter(value, row, index, field) {
+            if (row.storage_id.Valid) {
+                return row.storage_id.Int64;
+            } else {
+                return value;
+            }            
         }
         //
         // storelocation_name formatter
@@ -417,7 +428,7 @@
         //
         function operateFormatter(value, row, index) {
             // show action buttons if permitted
-            sid = row.storage_id
+            sid = row.storage_id.Int64
             eid = row.storelocation.entity.entity_id
             hasPermission(proxyPath + "f/storages/" + eid, "PUT", sid).done(function(){
                     $("#edit"+this.itemId).fadeIn();
@@ -426,14 +437,25 @@
                     $("#delete"+this.itemId).fadeIn();
             })
 
-            // buttons are hidden by default
-            var actions = [
-            '<button id="edit' + sid + '" class="edit btn btn-link" style="display: none;" title="edit" type="button">',
-                '<i class="material-icons">edit</i>',
-            '</button>',
-            '<button id="delete' + sid + '" class="delete btn btn-link" style="display: none;" title="delete" type="button">',
-                '<i class="material-icons">delete</i>',
-            '</button>'];
+            if (row.storage.storage_id.Valid) {
+                // this is an history
+                var actions = ['<i title="history card" class="material-icons">alarm</i>'];
+            } else {
+                // buttons are hidden by default
+                var actions = [
+                '<button id="edit' + sid + '" class="edit btn btn-link" style="display: none;" title="edit" type="button">',
+                    '<i class="material-icons">edit</i>',
+                '</button>',
+                '<button id="delete' + sid + '" class="delete btn btn-link" style="display: none;" title="delete" type="button">',
+                    '<i class="material-icons">delete</i>',
+                '</button>'];
+            }
+
+            if (row.storage_creationdate != row.storage_modificationdate && !row.storage.storage_id.Valid) {
+                actions.push('<button id="history' + sid + '" class="history btn btn-link" title="show history" type="button">');
+                actions.push('<i class="material-icons">alarm</i>');
+                actions.push('</button>');
+            }
 
             return actions.join('&nbsp;')    
         }
@@ -450,7 +472,7 @@
 
             // getting the storage
             $.ajax({
-                url: proxyPath + "storages/" + row['storage_id'],
+                url: proxyPath + "storages/" + row['storage_id'].Int64,
                 method: "GET",
             }).done(function(data, textStatus, jqXHR) {
                 // flattening response data
@@ -493,6 +515,9 @@
             'click .edit': function (e, value, row, index) {
                 operateEdit(e, value, row, index)
             },
+            'click .history': function (e, value, row, index) {
+                window.location = "/v/storages?storage="+row['storage_id'].Int64+"&history=true";
+            },
             'click .delete': function (e, value, row, index) {
                 // hiding possible previous confirmation button
                 $(this).confirmation("show").off( "confirmed.bs.confirmation");
@@ -501,7 +526,7 @@
                 // ask for confirmation and then delete
                 $(this).confirmation("show").on( "confirmed.bs.confirmation", function() {
                     $.ajax({
-                        url: proxyPath + "storages/" + row['storage_id'],
+                        url: proxyPath + "storages/" + row['storage_id'].Int64,
                         method: "DELETE",
                     }).done(function(data, textStatus, jqXHR) {
                         displayMessage("storage deleted", "success");

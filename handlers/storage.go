@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -219,6 +220,7 @@ func (env *Env) UpdateStorageHandler(w http.ResponseWriter, r *http.Request) *he
 			Code:    http.StatusInternalServerError}
 	}
 	updateds, _ := env.DB.GetStorage(id)
+	updateds.StorageModificationDate = time.Now()
 	updateds.StorageBarecode = s.StorageBarecode
 	updateds.StorageQuantity = s.StorageQuantity
 	updateds.Supplier = s.Supplier
@@ -273,6 +275,7 @@ func (env *Env) CreateStorageHandler(w http.ResponseWriter, r *http.Request) *he
 	var (
 		s   models.Storage
 		err error
+		id  int
 	)
 	if err := r.ParseForm(); err != nil {
 		return &helpers.AppError{
@@ -301,11 +304,12 @@ func (env *Env) CreateStorageHandler(w http.ResponseWriter, r *http.Request) *he
 	}
 
 	s.StorageCreationDate = time.Now()
+	s.StorageModificationDate = time.Now()
 	s.PersonID = c.PersonID
 	log.WithFields(log.Fields{"s": s}).Debug("CreateStorageHandler")
 
 	for i := 1; i <= s.StorageNbItem; i++ {
-		if err, s.StorageID = env.DB.CreateStorage(s); err != nil {
+		if err, id = env.DB.CreateStorage(s); err != nil {
 			return &helpers.AppError{
 				Error:   err,
 				Message: "create storage error",
@@ -314,6 +318,7 @@ func (env *Env) CreateStorageHandler(w http.ResponseWriter, r *http.Request) *he
 		// TODO: move it in the DB CreateStorage method?
 		env.DB.GenerateAndUpdateStorageBarecode(&s)
 	}
+	s.StorageID = sql.NullInt64{Valid: true, Int64: int64(id)}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)

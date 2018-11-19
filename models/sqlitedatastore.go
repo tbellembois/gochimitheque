@@ -300,7 +300,7 @@ func (db *SQLiteDataStore) InsertSamples() error {
 			if storelocation == int(sl6.StoreLocationID.Int64) {
 				storelocation = int(sl6.StoreLocationID.Int64) + 1
 			}
-			if _, err = db.Exec(`INSERT INTO storage ("storage_creationdate", "storage_comment", "person", "product", "storelocation", "storage_quantity", "unit") VALUES (?,?,?,?,?,?,?);`, datetime, comment, person, product, storelocation, quantity, unit); err != nil {
+			if _, err = db.Exec(`INSERT INTO storage ("storage_creationdate", "storage_modificationdate", "storage_comment", "person", "product", "storelocation", "storage_quantity", "unit") VALUES (?,?,?,?,?,?,?,?);`, datetime, datetime, comment, person, product, storelocation, quantity, unit); err != nil {
 				return err
 			}
 		}
@@ -356,6 +356,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	CREATE TABLE IF NOT EXISTS storage (
 		storage_id integer PRIMARY KEY,
 		storage_creationdate datetime NOT NULL,
+		storage_modificationdate datetime NOT NULL,
 		storage_entrydate datetime,
 		storage_exitdate datetime,
 		storage_openingdate datetime,
