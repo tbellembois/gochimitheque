@@ -5,6 +5,7 @@ import (
 	"reflect"
 
 	"github.com/gorilla/schema"
+	"github.com/tbellembois/gochimitheque/models"
 )
 
 // TokenSignKey is the JWT token signing key
@@ -18,12 +19,22 @@ func init() {
 }
 
 func SchemaRegisterSQLNulls(d *schema.Decoder) {
-	nullString, nullBool, nullInt64, nullFloat64 := sql.NullString{}, sql.NullBool{}, sql.NullInt64{}, sql.NullFloat64{}
+	nullString, nullBool, nullInt64, nullFloat64, nullTime := sql.NullString{}, sql.NullBool{}, sql.NullInt64{}, sql.NullFloat64{}, models.NullTime{}
 
 	d.RegisterConverter(nullString, ConvertSQLNullString)
 	d.RegisterConverter(nullBool, ConvertSQLNullBool)
 	d.RegisterConverter(nullInt64, ConvertSQLNullInt64)
 	d.RegisterConverter(nullFloat64, ConvertSQLNullFloat64)
+	d.RegisterConverter(nullTime, ConvertSQLNullTime)
+}
+
+func ConvertSQLNullTime(value string) reflect.Value {
+	v := models.NullTime{}
+	if err := v.Scan(value); err != nil {
+		return reflect.Value{}
+	}
+
+	return reflect.ValueOf(v)
 }
 
 func ConvertSQLNullString(value string) reflect.Value {

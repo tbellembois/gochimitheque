@@ -240,6 +240,45 @@ func (p Product) String() string {
 	Remark:%+v |`, p.ProductID, p.ProductSpecificity, p.EmpiricalFormula, p.Person, p.CasNumber, p.CeNumber, p.Name, p.Synonyms, p.Symbols, p.ProductDisposalComment, p.ProductRemark)
 }
 
+func (s Storage) String() string {
+	return fmt.Sprintf(`StorageID:%d | 
+	StorageCreationDate:%s | 
+	StorageModificationDate:%+v | 
+	StorageEntryDate:%+v | 
+	StorageExitDate:%s | 
+	StorageOpeningDate:%s | 
+	StorageExpirationDate:%s | 
+	StorageComment:%+v | 
+	StorageReference:%+v |
+	StorageBatchNumber:%+v |
+	StorageQuantity:%+v |
+	StorageNbItem:%+v |
+	StorageBarecode:%+v |
+	StorageToDestroy:%+v |
+	Product:%+v |
+	StoreLocation:%+v |
+	Unit:%+v |
+	Supplier:%+v |
+	`, s.StorageID,
+		s.StorageCreationDate,
+		s.StorageModificationDate,
+		s.StorageEntryDate,
+		s.StorageExitDate,
+		s.StorageOpeningDate,
+		s.StorageExpirationDate,
+		s.StorageComment,
+		s.StorageReference,
+		s.StorageBatchNumber,
+		s.StorageQuantity,
+		s.StorageNbItem,
+		s.StorageBarecode,
+		s.StorageToDestroy,
+		s.Product,
+		s.StoreLocation,
+		s.Unit,
+		s.Supplier)
+}
+
 func (p Person) String() string {
 	return fmt.Sprintf("PersonEmail: %s", p.PersonEmail)
 }

@@ -91,6 +91,41 @@
                 handleHTTPError(jqXHR.statusText, jqXHR.status)
             });
 
+            // clone mode
+            s = urlParams.get("storage");
+            if (s !== null) {
+            // getting the storage
+            $.ajax({
+                url: proxyPath + "storages/" + s,
+                method: "GET",
+            }).done(function(data, textStatus, jqXHR) {
+                // flattening response data
+                fdata = flatten(data);
+
+                // processing sqlNull values
+                newfdata = normalizeSqlNull(fdata)
+            
+                // autofilling form
+                $("form#storage").autofill( newfdata, {"findbyname": false } );
+
+                // select2 is not autofilled - we need a special operation
+                var newOption = new Option(data.storelocation.storelocation_name.String, data.storelocation.storelocation_id.Int64, true, true);
+                $('select#storelocation').append(newOption).trigger('change');
+
+                if (data.unit.unit_id.Valid) {
+                    var newOption = new Option(data.unit.unit_label.String, data.unit.unit_id.Int64, true, true);
+                    $('select#unit').append(newOption).trigger('change');
+                }
+
+                if (data.supplier.supplier_id.Valid) {
+                    var newOption = new Option(data.supplier.supplier_label.String, data.supplier.supplier_id.Int64, true, true);
+                    $('select#supplier').append(newOption).trigger('change');
+                }         
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                handleHTTPError(jqXHR.statusText, jqXHR.status)
+            });
+            }
+
         });
 
 | {{end}}
