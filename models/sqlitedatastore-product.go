@@ -750,6 +750,9 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	if p.GetStorelocation() != -1 {
 		comreq.WriteString(" AND storelocation.storelocation_id = :storelocation")
 	}
+	if p.GetName() != -1 {
+		comreq.WriteString(" AND name.name_id = :name")
+	}
 
 	// post select request
 	postsreq.WriteString(" GROUP BY p.product_id")
@@ -778,6 +781,7 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 		"entity":        p.GetEntity(),
 		"product":       p.GetProduct(),
 		"storelocation": p.GetStorelocation(),
+		"name":          p.GetName(),
 	}
 
 	// select

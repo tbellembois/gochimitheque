@@ -6,6 +6,23 @@
         .col-sm-2.d-flex.justify-content-end
             #button-store
 
+    #search.row.pt-sm-4.pb-sm-4.pl-sm-5.pr-sm-5.ml-sm-5.mr-sm-5.mt-sm-2.mb-sm-2.bg-light.border
+        .col-sm-6
+            | {{$label := "name"}} {{$name := "s_name"}}
+            +selectcompact
+        .col-sm-6
+            | {{$label := "cas number"}} {{$name := "s_casnumber"}}
+            +selectcompact
+        .col-sm-6
+            | {{$label := "empirical formula"}} {{$name := "s_empiricalformula"}}
+            +selectcompact
+        .col-sm-6
+            | {{$label := "barecode"}} {{$name := "s_storage_barecode"}}
+            +inputtextcompact
+        .col
+            button#search(title="search" type="button" onclick="search();")
+                i.material-icons youtube_searched_for
+
     #toolbar.row
         .col
             button.btn.btn-dark#switchview(type="button" title="switch to storage view" onclick="switchProductStorageView()")

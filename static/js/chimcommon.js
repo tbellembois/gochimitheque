@@ -185,3 +185,10 @@ function switchProductStorageView() {
     // redirecting
     window.location.href = root + "?" + $.param(p);
 }
+
+function search() {
+    // name_id
+    var s_name = $('select#s_name').select2('data')[0].id;
+    var $table = $('#table');
+    $table.bootstrapTable('refresh', {query: {name: s_name}}); 
+}

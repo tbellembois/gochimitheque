@@ -39,11 +39,13 @@ type DbselectparamProduct interface {
 	SetProduct(int)
 	SetStorelocation(int)
 	SetBookmark(bool)
+	SetName(int)
 
 	GetEntity() int
 	GetProduct() int
 	GetStorelocation() int
 	GetBookmark() bool
+	GetName() int
 }
 type dbselectparamProduct struct {
 	dbselectparam
@@ -51,6 +53,7 @@ type dbselectparamProduct struct {
 	Product       int // id
 	Storelocation int // id
 	Bookmark      bool
+	Name          int // id
 }
 
 // dbselectparamStorage contains the parameters of the GetStorages function
@@ -216,6 +219,14 @@ func (d dbselectparamProduct) GetBookmark() bool {
 	return d.Bookmark
 }
 
+func (d *dbselectparamProduct) SetName(n int) {
+	d.Name = n
+}
+
+func (d dbselectparamProduct) GetName() int {
+	return d.Name
+}
+
 //
 // dbselectparamStorage functions
 //
@@ -341,6 +352,7 @@ func NewdbselectparamProduct(r *http.Request, f func(string) (string, error)) (*
 	dspp.Product = -1
 	dspp.Storelocation = -1
 	dspp.Bookmark = false
+	dspp.Name = -1
 	if dsp, aerr = Newdbselectparam(r, f); aerr != nil {
 		return nil, aerr
 	}
@@ -385,6 +397,15 @@ func NewdbselectparamProduct(r *http.Request, f func(string) (string, error)) (*
 					Error:   err,
 					Code:    http.StatusInternalServerError,
 					Message: "bookmark bool conversion",
+				}
+			}
+		}
+		if nameid, ok := r.URL.Query()["name"]; ok {
+			if dspp.Name, err = strconv.Atoi(nameid[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "name atoi conversion",
 				}
 			}
 		}

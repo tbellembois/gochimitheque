@@ -69,19 +69,23 @@ func (db *SQLiteDataStore) InsertSamples() error {
 		scanner = bufio.NewScanner(sname)
 		scanner.Split(bufio.ScanLines)
 		log.Debug("- creating sample names")
-		for scanner.Scan() {
+		i := 0
+		for scanner.Scan() && i < 50 {
 			if _, err = db.Exec(`INSERT OR IGNORE INTO name ("name_label") VALUES ("` + scanner.Text() + `");`); err != nil {
 				return err
 			}
+			i++
 		}
 
 		scanner = bufio.NewScanner(sempiricalformula)
 		scanner.Split(bufio.ScanLines)
 		log.Debug("- creating sample empirical formulas")
-		for scanner.Scan() {
+		i = 0
+		for scanner.Scan() && i < 50 {
 			if _, err = db.Exec(`INSERT OR IGNORE INTO empiricalformula ("empiricalformula_label") VALUES ("` + scanner.Text() + `");`); err != nil {
 				return err
 			}
+			i++
 		}
 
 		m1 := Person{PersonEmail: "manager@lab-one.com"}
@@ -275,7 +279,7 @@ func (db *SQLiteDataStore) InsertSamples() error {
 		// inserting sample products
 		// attention: values are wrongs, just for devel purposes
 		log.Debug("- creating sample products")
-		for i := 1; i <= 20; i++ {
+		for i := 1; i <= 50; i++ {
 			ins := fmt.Sprintf("(\"spec%d\", \"%d\", \"%d\", 1, \"%d\")", i, i, i, i)
 			if _, err = db.Exec(`INSERT INTO product ("product_specificity", "casnumber", "name", "person", "empiricalformula") VALUES ` + ins + `;`); err != nil {
 				return err
