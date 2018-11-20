@@ -30,6 +30,12 @@ mixin select
         label(for='{{$name}}') {{$label}}
         select.form-control(style='width: 100% !important;' id='{{$name}}' name='{{$name}}')
 
+mixin selectcompact
+    .form-group.row
+        label.col-sm-2.col-form-label(for='{{$name}}') {{$label}}
+        .col-sm-10
+            select.form-control(style='width: 100% !important;' id='{{$name}}' name='{{$name}}')
+
 mixin selectmultiple
     .form-group.col-sm-12
         label(for='{{$name}}') {{$label}}
@@ -39,6 +45,12 @@ mixin inputtext
     .form-group.col-sm-12
         label(for='{{$name}}') {{$label}}
         input.form-control(type='text' id='{{$name}}' name='{{$name}}' title='{{$name}}')
+
+mixin inputtextcompact
+    .form-group.row
+        label.col-sm-2.col-form-label(for='{{$name}}') {{$label}}
+        .col-sm-10
+            input.form-control(type='text' id='{{$name}}' name='{{$name}}' title='{{$name}}')
 
 mixin inputdate
     .form-group.col-sm-12

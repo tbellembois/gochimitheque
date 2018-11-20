@@ -153,7 +153,7 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 	}
 
 	// pre request: select or count
-	precreq.WriteString(" SELECT count(DISTINCT storage.storage_id)")
+	precreq.WriteString(" SELECT count(DISTINCT s.storage_id)")
 	presreq.WriteString(` SELECT s.storage_id AS "storage_id",
 		s.storage_entrydate,
 		s.storage_exitdate,
