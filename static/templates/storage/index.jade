@@ -25,7 +25,7 @@
                                 data-search='true', 
                                 data-toolbar="#toolbar",
                                 data-side-pagination='server', 
-                                data-page-list="[10, 20, 50, 100]",
+                                data-page-list="[5, 10, 20, 50, 100]",
                                 data-pagination='true', 
                                 data-ajax='getData', 
                                 data-query-params='queryParams',
@@ -455,6 +455,7 @@
             eid = row.storelocation.entity.entity_id
             hasPermission(proxyPath + "f/storages/" + eid, "PUT", sid).done(function(){
                     $("#edit"+this.itemId).fadeIn();
+                    $("#clone"+this.itemId).fadeIn();
             })
             hasPermission(proxyPath + "f/storages/" + eid, "DELETE", sid).done(function(){
                     $("#delete"+this.itemId).fadeIn();
@@ -468,6 +469,9 @@
                 var actions = [
                 '<button id="edit' + sid + '" class="edit btn btn-link" style="display: none;" title="edit" type="button">',
                     '<i class="material-icons">edit</i>',
+                '</button>',
+                '<button id="clone' + sid + '" class="clone btn btn-link" style="display: none;" title="clone" type="button">',
+                    '<i class="material-icons">filter_none</i>',
                 '</button>',
                 '<button id="delete' + sid + '" class="delete btn btn-link" style="display: none;" title="delete" type="button">',
                     '<i class="material-icons">delete</i>',
@@ -486,6 +490,16 @@
         // items actions callback
         function operateEdit(e, value, row, index) {
             // clearing selections
+            $('input#storage_quantity').val(null);
+            $('input#storage_entrydate').val(null);
+            $('input#storage_exitdate').val(null);
+            $('input#storage_openingdate').val(null);
+            $('input#storage_expirationdate').val(null);
+            $('input#storage_reference').val(null);
+            $('input#storage_batchnumber').val(null);
+            $('input#storage_barecode').val(null);
+            $('input#storage_comment').val(null);
+
             $('select#storelocation').val(null).trigger('change');
             $('select#storelocation').find('option').remove();
             $('select#unit').val(null).trigger('change');
@@ -540,6 +554,9 @@
             },
             'click .history': function (e, value, row, index) {
                 window.location = proxyPath + "v/storages?storage="+row['storage_id'].Int64+"&history=true";
+            },
+            'click .clone': function (e, value, row, index) {
+                window.location = proxyPath + "vc/storages?storage="+row['storage_id'].Int64+"&product="+row['product']['product_id'];
             },
             'click .delete': function (e, value, row, index) {
                 // hiding possible previous confirmation button

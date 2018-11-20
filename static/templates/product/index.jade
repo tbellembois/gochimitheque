@@ -23,7 +23,7 @@
                                 data-search='true', 
                                 data-toolbar="#toolbar",
                                 data-side-pagination='server', 
-                                data-page-list="[10, 20, 50, 100]",
+                                data-page-list="[5, 10, 20, 50, 100]",
                                 data-pagination='true', 
                                 data-ajax='getData', 
                                 data-query-params='queryParams',
@@ -432,11 +432,11 @@
 
             // buttons are hidden by default
             var actions = [
-            '<button id="store' + pid + '" class="store btn btn-link" style="display: none;" title="store" type="button">',
-                '<i class="material-icons">move_to_inbox</i>',
-            '</button>',
             '<button id="storages' + pid + '" class="storages btn btn-link" style="display: none;" title="storages" type="button">',
                 '<i class="material-icons">all_inbox</i>',
+            '</button>',
+            '<button id="store' + pid + '" class="store btn btn-link" style="display: none;" title="store" type="button">',
+                '<i class="material-icons">move_to_inbox</i>',
             '</button>',
             '<button id="edit' + pid + '" class="edit btn btn-link" style="display: none;" title="edit" type="button">',
                 '<i class="material-icons">edit</i>',
@@ -470,6 +470,13 @@
         }
         function operateEdit(e, value, row, index) {
             // clearing selections
+            $('textarea#product_remark').val(null);
+            $('textarea#product_disposalcomment').val(null);
+            $('input#product_specificity').val(null);
+            $('input#product_linearformula').val(null);
+            $('input#product_msds').val(null);
+            $('input#product_threedformula').val(null);
+
             $('select#casnumber').val(null).trigger('change');
             $('select#casnumber').find('option').remove();
             $('select#cenumber').val(null).trigger('change');
