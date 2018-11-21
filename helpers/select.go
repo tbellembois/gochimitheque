@@ -40,20 +40,29 @@ type DbselectparamProduct interface {
 	SetStorelocation(int)
 	SetBookmark(bool)
 	SetName(int)
+	SetEmpiricalFormula(int)
+	SetCasNumber(int)
+	SetStorageBarecode(string)
 
 	GetEntity() int
 	GetProduct() int
 	GetStorelocation() int
 	GetBookmark() bool
 	GetName() int
+	GetEmpiricalFormula() int
+	GetCasNumber() int
+	GetStorageBarecode() string
 }
 type dbselectparamProduct struct {
 	dbselectparam
-	Entity        int // id
-	Product       int // id
-	Storelocation int // id
-	Bookmark      bool
-	Name          int // id
+	Entity           int // id
+	Product          int // id
+	Storelocation    int // id
+	Bookmark         bool
+	Name             int // id
+	EmpiricalFormula int // id
+	CasNumber        int // id
+	StorageBarecode  string
 }
 
 // dbselectparamStorage contains the parameters of the GetStorages function
@@ -227,6 +236,30 @@ func (d dbselectparamProduct) GetName() int {
 	return d.Name
 }
 
+func (d *dbselectparamProduct) SetEmpiricalFormula(n int) {
+	d.Name = n
+}
+
+func (d dbselectparamProduct) GetEmpiricalFormula() int {
+	return d.EmpiricalFormula
+}
+
+func (d *dbselectparamProduct) SetCasNumber(n int) {
+	d.CasNumber = n
+}
+
+func (d dbselectparamProduct) GetCasNumber() int {
+	return d.CasNumber
+}
+
+func (d *dbselectparamProduct) SetStorageBarecode(n string) {
+	d.StorageBarecode = n
+}
+
+func (d dbselectparamProduct) GetStorageBarecode() string {
+	return d.StorageBarecode
+}
+
 //
 // dbselectparamStorage functions
 //
@@ -353,6 +386,9 @@ func NewdbselectparamProduct(r *http.Request, f func(string) (string, error)) (*
 	dspp.Storelocation = -1
 	dspp.Bookmark = false
 	dspp.Name = -1
+	dspp.CasNumber = -1
+	dspp.EmpiricalFormula = -1
+	dspp.StorageBarecode = ""
 	if dsp, aerr = Newdbselectparam(r, f); aerr != nil {
 		return nil, aerr
 	}
@@ -408,6 +444,27 @@ func NewdbselectparamProduct(r *http.Request, f func(string) (string, error)) (*
 					Message: "name atoi conversion",
 				}
 			}
+		}
+		if casnumberid, ok := r.URL.Query()["casnumber"]; ok {
+			if dspp.CasNumber, err = strconv.Atoi(casnumberid[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "casnumber atoi conversion",
+				}
+			}
+		}
+		if empiricalformulaid, ok := r.URL.Query()["empiricalformula"]; ok {
+			if dspp.EmpiricalFormula, err = strconv.Atoi(empiricalformulaid[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "empiricalformula atoi conversion",
+				}
+			}
+		}
+		if storage_barecode, ok := r.URL.Query()["storage_barecode"]; ok {
+			dspp.StorageBarecode = storage_barecode[0]
 		}
 	}
 	return &dspp, nil

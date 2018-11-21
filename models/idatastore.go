@@ -14,10 +14,13 @@ type Datastore interface {
 	// products
 	GetProducts(helpers.DbselectparamProduct) ([]Product, int, error)
 	GetProductsCasNumbers(helpers.Dbselectparam) ([]CasNumber, int, error)
+	GetProductsCasNumber(id int) (CasNumber, error)
 	GetProductsCeNumbers(helpers.Dbselectparam) ([]CeNumber, int, error)
 	GetProductsNames(helpers.Dbselectparam) ([]Name, int, error)
+	GetProductsName(id int) (Name, error)
 	GetProductsSymbols(helpers.Dbselectparam) ([]Symbol, int, error)
 	GetProductsEmpiricalFormulas(helpers.Dbselectparam) ([]EmpiricalFormula, int, error)
+	GetProductsEmpiricalFormula(id int) (EmpiricalFormula, error)
 	GetProductsPhysicalStates(helpers.Dbselectparam) ([]PhysicalState, int, error)
 	GetProductsSignalWords(helpers.Dbselectparam) ([]SignalWord, int, error)
 	GetProductsClassOfCompounds(helpers.Dbselectparam) ([]ClassOfCompound, int, error)

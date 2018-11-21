@@ -316,7 +316,13 @@ func (env *Env) CreateStorageHandler(w http.ResponseWriter, r *http.Request) *he
 				Code:    http.StatusInternalServerError}
 		}
 		// TODO: move it in the DB CreateStorage method?
-		env.DB.GenerateAndUpdateStorageBarecode(&s)
+		s.StorageID = sql.NullInt64{Valid: true, Int64: int64(id)}
+		if err = env.DB.GenerateAndUpdateStorageBarecode(&s); err != nil {
+			return &helpers.AppError{
+				Error:   err,
+				Message: "generate storage barecode error",
+				Code:    http.StatusInternalServerError}
+		}
 	}
 	s.StorageID = sql.NullInt64{Valid: true, Int64: int64(id)}
 
