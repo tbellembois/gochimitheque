@@ -52,6 +52,7 @@
                             tr
                                 th(data-field='product_id' data-sortable='true') ID
                                 th(data-field='name.name_label' data-sortable='true') name
+                                th(data-field='empiricalformula.empiricalformula_label' data-sortable='true') empirical formula
                                 th(data-field='casnumber.casnumber_label' data-sortable='true') CAS
                                 th(data-field='product_specificity' data-sortable='false' data-formatter='product_specificityFormatter') specificity
                                 th(data-field='operate' data-formatter='operateFormatter' data-events='operateEvents') actions
@@ -180,7 +181,7 @@
         //
         // startup actions
         //
-        $( document ).ready(function() {     
+        $( document ).ready(function() {
         });
         $('#table').on('load-success.bs.table refresh.bs.table', function () {
             
@@ -285,6 +286,43 @@
             // getting request parameters
             var urlParams = new URLSearchParams(window.location.search);
 
+            var name = urlParams.get("name");
+            var casnumber = urlParams.get("casnumber");
+            var empiricalformula = urlParams.get("empiricalformula");
+            if (name != null) {
+                $.ajax({
+                    url: proxyPath + "products/names/" + name,
+                    method: "GET",
+                }).done(function(data, textStatus, jqXHR) {
+                    var newOption = new Option(data.name_label, data.name_id, false, false);
+                    $('#s_name').append(newOption).trigger('change');
+                }).fail(function(jqXHR, textStatus, errorThrown) {
+                    handleHTTPError(jqXHR.statusText, jqXHR.status)
+                });
+            }
+            if (casnumber != null) {
+                $.ajax({
+                    url: proxyPath + "products/casnumbers/" + casnumber,
+                    method: "GET",
+                }).done(function(data, textStatus, jqXHR) {
+                    var newOption = new Option(data.casnumber_label, data.casnumber_id, false, false);
+                    $('#s_casnumber').append(newOption).trigger('change');
+                }).fail(function(jqXHR, textStatus, errorThrown) {
+                    handleHTTPError(jqXHR.statusText, jqXHR.status)
+                });
+            }
+            if (empiricalformula != null) {
+                $.ajax({
+                    url: proxyPath + "products/empiricalformulas/" + empiricalformula,
+                    method: "GET",
+                }).done(function(data, textStatus, jqXHR) {
+                    var newOption = new Option(data.empiricalformula_label, data.empiricalformula_id, false, false);
+                    $('#s_empiricalformula').append(newOption).trigger('change');
+                }).fail(function(jqXHR, textStatus, errorThrown) {
+                    handleHTTPError(jqXHR.statusText, jqXHR.status)
+                });
+            }           
+
             if (urlParams.has("entity")) {
                 params["entity"] = urlParams.get("entity");
             }
@@ -297,6 +335,17 @@
             if (urlParams.has("bookmark")) {
                 params["bookmark"] = urlParams.get("bookmark");
             }
+
+            if (name != null) {
+                params["name"] = name;
+            }
+            if (casnumber != null) {
+                params["casnumber"] = casnumber;
+            }
+            if (empiricalformula != null) {
+                params["empiricalformula"] = empiricalformula;
+            }
+
             return params;
         }
         function getData(params) {

@@ -362,9 +362,14 @@ func (db *SQLiteDataStore) GenerateAndUpdateStorageBarecode(s *Storage) error {
 	sqlr := `UPDATE storage 
 	SET storage_barecode = '` + prefix + `' || storage.product || '.' || (select count(*) from storage join storelocation on storage.storelocation = storelocation.storelocation_id join entity on storelocation.entity = entity.entity_id where storage.product = ? and entity_id = ?) 
 	WHERE storage_id = ?`
-	if _, err = db.Exec(sqlr, s.ProductID, s.EntityID, s.StorageID); err != nil {
+	if _, err = db.Exec(sqlr, s.ProductID, s.EntityID, s.StorageID.Int64); err != nil {
 		return err
 	}
+
+	log.Debug(sqlr)
+	log.Debug(s.ProductID)
+	log.Debug(s.EntityID)
+	log.Debug(s.StorageID)
 
 	return nil
 }
@@ -471,7 +476,8 @@ func (db *SQLiteDataStore) CreateStorage(s Storage) (error, int) {
 		case reflect.Bool:
 			val = append(val, rv.Bool())
 		default:
-			panic("unknown type:" + rt.String() + " for " + k)
+			val = append(val, rv.String())
+			//panic("unknown type:" + rt.String() + " for " + k)
 		}
 	}
 

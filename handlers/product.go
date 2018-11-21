@@ -346,6 +346,102 @@ func (env *Env) GetProductsNamesHandler(w http.ResponseWriter, r *http.Request) 
 	return nil
 }
 
+// GetProductsNameHandler returns a json of the name matching the id
+func (env *Env) GetProductsNameHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	log.Debug("GetProductsNameHandler")
+
+	vars := mux.Vars(r)
+	var (
+		id  int
+		err error
+	)
+
+	if id, err = strconv.Atoi(vars["id"]); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "id atoi conversion",
+			Code:    http.StatusInternalServerError}
+	}
+
+	name, err := env.DB.GetProductsName(id)
+	if err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the name",
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(name)
+	return nil
+}
+
+// GetProductsEmpiricalFormulaHandler returns a json of the formula matching the id
+func (env *Env) GetProductsEmpiricalFormulaHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	log.Debug("GetProductsEmpiricalFormulaHandler")
+
+	vars := mux.Vars(r)
+	var (
+		id  int
+		err error
+	)
+
+	if id, err = strconv.Atoi(vars["id"]); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "id atoi conversion",
+			Code:    http.StatusInternalServerError}
+	}
+
+	ef, err := env.DB.GetProductsEmpiricalFormula(id)
+	if err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the empirical formula",
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(ef)
+	return nil
+}
+
+// GetProductsCasNumberHandler returns a json of the formula matching the id
+func (env *Env) GetProductsCasNumberHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	log.Debug("GetProductsCasNumberHandler")
+
+	vars := mux.Vars(r)
+	var (
+		id  int
+		err error
+	)
+
+	if id, err = strconv.Atoi(vars["id"]); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "id atoi conversion",
+			Code:    http.StatusInternalServerError}
+	}
+
+	cas, err := env.DB.GetProductsCasNumber(id)
+	if err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the cas number",
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(cas)
+	return nil
+}
+
 // GetProductsSymbolsHandler returns a json list of the symbols matching the search criteria
 func (env *Env) GetProductsSymbolsHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	log.Debug("GetProductsSymbolsHandler")

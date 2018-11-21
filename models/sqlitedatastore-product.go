@@ -330,6 +330,66 @@ func (db *SQLiteDataStore) GetProductsClassOfCompounds(p helpers.Dbselectparam) 
 	return classofcompounds, count, nil
 }
 
+// GetProductsName return the name matching the given id
+func (db *SQLiteDataStore) GetProductsName(id int) (Name, error) {
+
+	var (
+		name Name
+		sqlr string
+		err  error
+	)
+	log.WithFields(log.Fields{"id": id}).Debug("GetProductsName")
+
+	sqlr = `SELECT name.name_id, name.name_label
+	FROM name
+	WHERE name_id = ?`
+	if err = db.Get(&name, sqlr, id); err != nil {
+		return Name{}, err
+	}
+	log.WithFields(log.Fields{"ID": id, "name": name}).Debug("GetProductsName")
+	return name, nil
+}
+
+// GetProductsEmpiricalFormula return the formula matching the given id
+func (db *SQLiteDataStore) GetProductsEmpiricalFormula(id int) (EmpiricalFormula, error) {
+
+	var (
+		ef   EmpiricalFormula
+		sqlr string
+		err  error
+	)
+	log.WithFields(log.Fields{"id": id}).Debug("GetProductsEmpiricalFormula")
+
+	sqlr = `SELECT empiricalformula.empiricalformula_id, empiricalformula.empiricalformula_label
+	FROM empiricalformula
+	WHERE empiricalformula_id = ?`
+	if err = db.Get(&ef, sqlr, id); err != nil {
+		return EmpiricalFormula{}, err
+	}
+	log.WithFields(log.Fields{"ID": id, "ef": ef}).Debug("GetProductsEmpiricalFormula")
+	return ef, nil
+}
+
+// GetProductsCasNumber return the name matching the given id
+func (db *SQLiteDataStore) GetProductsCasNumber(id int) (CasNumber, error) {
+
+	var (
+		cas  CasNumber
+		sqlr string
+		err  error
+	)
+	log.WithFields(log.Fields{"id": id}).Debug("GetProductsCasNumber")
+
+	sqlr = `SELECT casnumber.casnumber_id, casnumber.casnumber_label
+	FROM casnumber
+	WHERE casnumber_id = ?`
+	if err = db.Get(&cas, sqlr, id); err != nil {
+		return CasNumber{}, err
+	}
+	log.WithFields(log.Fields{"ID": id, "cas": cas}).Debug("GetProductsCasNumber")
+	return cas, nil
+}
+
 // GetProductsNames return the names matching the search criteria
 func (db *SQLiteDataStore) GetProductsNames(p helpers.Dbselectparam) ([]Name, int, error) {
 	var (
@@ -753,6 +813,15 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	if p.GetName() != -1 {
 		comreq.WriteString(" AND name.name_id = :name")
 	}
+	if p.GetCasNumber() != -1 {
+		comreq.WriteString(" AND casnumber.casnumber_id = :casnumber")
+	}
+	if p.GetEmpiricalFormula() != -1 {
+		comreq.WriteString(" AND empiricalformula.empiricalformula_id = :empiricalformula")
+	}
+	if p.GetStorageBarecode() != "" {
+		comreq.WriteString(" AND storage.storage_barecode = :storage_barecode")
+	}
 
 	// post select request
 	postsreq.WriteString(" GROUP BY p.product_id")
@@ -773,15 +842,18 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 
 	// building argument map
 	m := map[string]interface{}{
-		"search":        p.GetSearch(),
-		"personid":      p.GetLoggedPersonID(),
-		"order":         p.GetOrder(),
-		"limit":         p.GetLimit(),
-		"offset":        p.GetOffset(),
-		"entity":        p.GetEntity(),
-		"product":       p.GetProduct(),
-		"storelocation": p.GetStorelocation(),
-		"name":          p.GetName(),
+		"search":           p.GetSearch(),
+		"personid":         p.GetLoggedPersonID(),
+		"order":            p.GetOrder(),
+		"limit":            p.GetLimit(),
+		"offset":           p.GetOffset(),
+		"entity":           p.GetEntity(),
+		"product":          p.GetProduct(),
+		"storelocation":    p.GetStorelocation(),
+		"name":             p.GetName(),
+		"casnumber":        p.GetCasNumber(),
+		"empiricalformula": p.GetEmpiricalFormula(),
+		"storage_barecode": p.GetStorageBarecode(),
 	}
 
 	// select
