@@ -3,13 +3,14 @@
 html
     head
         | {{template "HEAD"}}
+
         | <link href="{{.ProxyPath}}css/bootstrap.min.css" rel="stylesheet"/>
         | <link href="{{.ProxyPath}}css/bootstrap-table.min.css" rel="stylesheet"/>
         | <link href="{{.ProxyPath}}css/select2.min.css" rel="stylesheet"/>
         | <link href="{{.ProxyPath}}css/bootstrap-colorpicker.min.css" rel="stylesheet"/>
         | <link href="{{.ProxyPath}}css/fontawesome.all.min.css" rel="stylesheet"/>
         | <link href="{{.ProxyPath}}css/chimitheque.css" rel="stylesheet"/>
-
+        
         link(href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet")
     body
         div.container
@@ -105,7 +106,7 @@ html
         | <script src="{{.ProxyPath}}js/gjs-common.js"></script>
         | <script src="{{.ProxyPath}}js/chimcommon.js"></script>
         | <script src="{{.ProxyPath}}js/chimauth.js"></script>
-
+        
         script.
             //
             // common javascript

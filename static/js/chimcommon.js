@@ -186,6 +186,13 @@ function switchProductStorageView() {
     window.location.href = root + "?" + $.param(p);
 }
 
+function clearsearch() {
+    $('#s_name').val(null).trigger('change');
+    $('#s_casnumber').val(null).trigger('change');
+    $('#s_empiricalformula').val(null).trigger('change');
+    $("#s_storage_barecode").val("");
+}
+
 function search() {
     var s_name;
     var s_empiricalformula;

@@ -8,8 +8,12 @@
         .col-sm-2.d-flex.justify-content-end
             #button-stock
 
-    #search.row.pt-sm-4.pb-sm-4.pl-sm-5.pr-sm-5.ml-sm-5.mr-sm-5.mt-sm-2.mb-sm-2.bg-light.border.toggleable
+    #search.row.pt-sm-4.pb-sm-4.pl-sm-2.pr-sm-2.mt-sm-2.mb-sm-2.ml-sm-5.mr-sm-5.bg-light.border.toggleable.shadow.rounded
         .col
+            .row
+                .col-sm-4
+                    | {{$label := ""}} {{$name := "storelocationselector"}}
+                    +select
             .row
                 .col-sm-6
                     | {{$label := "name"}} {{$name := "s_name"}}
@@ -27,6 +31,8 @@
                 .col
                     button#search(title="search" type="button" onclick="search();")
                         i.material-icons youtube_searched_for
+                    button#search(title="clear search form" type="button" onclick="clearsearch();")
+                        i.material-icons check_box_outline_blank
             .row.justify-content-end
                 .col.col-sm-1
                     a.btn.btn-primary(data-toggle="collapse" href="#advancedsearch" role="button" aria-expanded="false" title="advanced search")
@@ -39,12 +45,16 @@
         .col.toggleable
             button.btn.btn-dark#switchview(type="button" title="switch to product view" onclick="switchProductStorageView()")
                 i.material-icons local_offer
-        .col.toggleable
-            | {{$label := ""}} {{$name := "storelocationselector"}}
-            +select
         .col
-            | {{$label := "view archives?"}} {{$name := "s_storage_archive"}}
-            +checkbox
+            | {{$icon := "delete"}} {{$name := "s_storage_archive"}} {{$title := "view archives"}}
+            +checkboxicon
+    
+    #stock.modal.fade(role="dialog" tabindex="-1" aria-labelledby="stockLabel" aria-hidden="true")
+        .modal-dialog.modal-lg(role="document")
+            .modal-content
+                .modal-body#stock-body
+                .modal-footer
+                    button.btn.btn-secondary(type="button" data-dismiss="modal") close
 
     #accordion
         #list-collapse.collapse.show(data-parent='#accordion')
@@ -267,7 +277,7 @@
 
                 hasPermission(proxyPath + "f/storages/-2", "GET").done(function(){
                     // adding a create show stock button for the product
-                    b = $("<button>").addClass("store btn btn-link").attr("title", "show stock of this product").attr("type", "button");
+                    b = $("<button>").addClass("store btn btn-link").attr("title", "show stock of this product").attr("type", "button").attr("data-toggle", "modal").attr("data-target", "#stock");
                     b.attr("onclick", "showStock(" + p + ")");
                     i = $("<i>").addClass("material-icons").text("functions");
                     b.append(i);
@@ -336,8 +346,8 @@
                     }
                 }
                 
-                $("#stock").append(html.join(""));
-                $("#stock").append("</div>");
+                $("#stock-body").append(html.join(""));
+                $("#stock-body").append("</div>");
             }
 
             if (sl.children !== null) {
@@ -348,7 +358,7 @@
             }
         }
         function showStock(pid) {
-            $("#stock").html("");
+            $("#stock-body").html("");
             $.ajax({
                 url: proxyPath + "stocks/" + pid,
                 method: "GET",
