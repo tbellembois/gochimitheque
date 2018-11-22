@@ -40,6 +40,7 @@ type Datastore interface {
 	GetStoragesUnits(helpers.Dbselectparam) ([]Unit, int, error)
 	GetStoragesSuppliers(helpers.Dbselectparam) ([]Supplier, int, error)
 	DeleteStorage(id int) error
+	ArchiveStorage(id int) error
 	CreateStorage(s Storage) (error, int)
 	UpdateStorage(s Storage) error
 	GenerateAndUpdateStorageBarecode(s *Storage) error

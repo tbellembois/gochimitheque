@@ -6,7 +6,7 @@
         .col-sm-2.d-flex.justify-content-end
             #button-store
 
-    #search.row.pt-sm-4.pb-sm-4.pl-sm-5.pr-sm-5.ml-sm-5.mr-sm-5.mt-sm-2.mb-sm-2.bg-light.border
+    #search.row.pt-sm-4.pb-sm-4.pl-sm-5.pr-sm-5.ml-sm-5.mr-sm-5.mt-sm-2.mb-sm-2.bg-light.border.toggleable
         .col
             .row
                 .col-sm-6
@@ -34,10 +34,10 @@
                     span coming soon !
 
     #toolbar.row
-        .col
+        .col.toggleable
             button.btn.btn-dark#switchview(type="button" title="switch to storage view" onclick="switchProductStorageView()")
                 i.material-icons all_inbox
-        .col#storelocation-selector
+        .col.toggleable
             | {{$label := ""}} {{$name := "storelocationselector"}}
             +select
 
@@ -65,7 +65,7 @@
                                 th(data-field='empiricalformula.empiricalformula_label' data-sortable='true') empirical formula
                                 th(data-field='casnumber.casnumber_label' data-sortable='true') CAS
                                 th(data-field='product_specificity' data-sortable='false' data-formatter='product_specificityFormatter') specificity
-                                th(data-field='operate' data-formatter='operateFormatter' data-events='operateEvents') actions
+                                th(data-field='operate' data-formatter='operateFormatter' data-events='operateEvents') 
 
         #edit-collapse.collapse(data-parent='#accordion')
             form#product
@@ -183,8 +183,7 @@
             $("#list-collapse").collapse("show");
             $("#edit-collapse").collapse("hide"); 
             if (!urlParams.get("product") && !urlParams.get("entity")) {
-                $("#switchview").show();
-                $("#storelocation-selector").show();
+                $(".toggleable").show();
             }
         }
         
@@ -245,8 +244,7 @@
                     handleHTTPError(jqXHR.statusText, jqXHR.status)
                 });
                 // hiding the storage<>product view switch
-                $("#switchview").hide();
-                $("#storelocation-selector").hide();
+                $(".toggleable").hide();
             } else {
                 productpromise.resolve();
             }
@@ -518,7 +516,7 @@
                 '<i class="material-icons">edit</i>',
             '</button>',
             '<button id="delete' + pid + '" class="delete btn btn-link" style="display: none;" title="delete" type="button">',
-                '<i class="material-icons">delete</i>',
+                '<i class="material-icons">clear</i>',
             '</button>',
             '<button id="bookmark' + pid + '" class="bookmark btn btn-link" title="(un)bookmark" type="button">',
                 '<i id="bookmark' + pid + '" class="material-icons">' + bookmarkicon + '</i>',
@@ -650,8 +648,7 @@
             // finally collapsing the view
             $('#edit-collapse').collapse('show');
             $('#list-collapse').collapse('hide');
-            $("#switchview").hide();
-            $("#storelocation-selector").hide();
+            $(".toggleable").hide();
         }
         window.operateEvents = {
             'click .bookmark': function (e, value, row, index) {

@@ -8,7 +8,7 @@
         .col-sm-2.d-flex.justify-content-end
             #button-stock
 
-    #search.row.pt-sm-4.pb-sm-4.pl-sm-5.pr-sm-5.ml-sm-5.mr-sm-5.mt-sm-2.mb-sm-2.bg-light.border
+    #search.row.pt-sm-4.pb-sm-4.pl-sm-5.pr-sm-5.ml-sm-5.mr-sm-5.mt-sm-2.mb-sm-2.bg-light.border.toggleable
         .col
             .row
                 .col-sm-6
@@ -36,12 +36,15 @@
                     span coming soon !
 
     #toolbar.row
-        .col
+        .col.toggleable
             button.btn.btn-dark#switchview(type="button" title="switch to product view" onclick="switchProductStorageView()")
                 i.material-icons local_offer
-        .col#storelocation-selector
+        .col.toggleable
             | {{$label := ""}} {{$name := "storelocationselector"}}
             +select
+        .col
+            | {{$label := "view archives?"}} {{$name := "s_storage_archive"}}
+            +checkbox
 
     #accordion
         #list-collapse.collapse.show(data-parent='#accordion')
@@ -67,7 +70,7 @@
                                 th(data-field='storage_barecode' data-formatter='storage_barecodeFormatter') barecode
                                 th(data-field='product.name.name_label' data-sortable='true') product
                                 th(data-field='storelocation.storelocation_fullpath' data-sortable='true' data-formatter='storelocation_fullpathFormatter') store location
-                                th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') actions
+                                th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') 
 
         #edit-collapse.collapse(data-parent='#accordion')
             form#storage
@@ -143,10 +146,23 @@
             $("#list-collapse").collapse("show"); 
             $("#edit-collapse").collapse("hide"); 
             if (!urlParams.get("product") && !urlParams.get("entity")) {
-                $("#switchview").show();
-                $("#storelocation-selector").show();
+                $(".toggleable").show();
             }
         }
+
+        //
+        // view storages button
+        //
+        $('#s_storage_archive').on('click', function () {
+            var $table = $('#table');
+
+            if($("#s_storage_archive").prop('checked') == true){
+                updateQueryStringParam("storage_archive", "true");
+            } else {
+                updateQueryStringParam("storage_archive", "false");
+            }
+            $table.bootstrapTable('refresh');
+        });
 
         //
         // startup actions
@@ -220,8 +236,7 @@
                     handleHTTPError(jqXHR.statusText, jqXHR.status)
                 });
                 // hiding the storage<>product view switch
-                $("#switchview").hide();
-                $("#storelocation-selector").hide();
+                $(".toggleable").hide();
             } else {
                 storagepromise.resolve();
             }
@@ -239,8 +254,7 @@
                     handleHTTPError(jqXHR.statusText, jqXHR.status)
                 });
                 // hiding the storage<>product view switch
-                $("#switchview").hide();
-                $("#storelocation-selector").hide();
+                $(".toggleable").hide();
                 
                 // adding a create storage button for the product
                 hasPermission(proxyPath + "f/storages/-2", "POST").done(function(){
@@ -357,6 +371,7 @@
             var name = urlParams.get("name");
             var casnumber = urlParams.get("casnumber");
             var empiricalformula = urlParams.get("empiricalformula");
+            var storage_archive = urlParams.get("storage_archive");
             if (name != null) {
                 $.ajax({
                     url: proxyPath + "products/names/" + name,
@@ -390,6 +405,9 @@
                     handleHTTPError(jqXHR.statusText, jqXHR.status)
                 });
             }        
+            if (storage_archive != null) {
+                $("#s_storage_archive").prop( "checked", true );
+            }
 
             if (urlParams.has("entity")) {
                 params["entity"] = urlParams.get("entity");
@@ -405,6 +423,9 @@
             }
             if (urlParams.has("history")) {
                 params["history"] = urlParams.get("history");
+            }
+            if (urlParams.has("storage_archive")) {
+                params["storage_archive"] = urlParams.get("storage_archive");
             }
 
             if (name != null) {
@@ -534,11 +555,18 @@
             })
             hasPermission(proxyPath + "f/storages/" + eid, "DELETE", sid).done(function(){
                     $("#delete"+this.itemId).fadeIn();
+                    $("#archive"+this.itemId).fadeIn();
             })
 
-            if (row.storage.storage_id.Valid) {
-                // this is an history
-                var actions = ['<i title="history card" class="material-icons">alarm</i>'];
+            if (row.storage_archive.Valid && row.storage_archive.Bool) {
+                // this is an archive
+                var actions = [
+                '<button id="clone' + sid + '" class="clone btn btn-link" style="display: none;" title="clone" type="button">',
+                    '<i class="material-icons">filter_none</i>',
+                '</button>',
+                '<button id="delete' + sid + '" class="delete btn btn-link" style="display: none;" title="delete" type="button">',
+                    '<i class="material-icons">clear</i>',
+                '</button>']; 
             } else {
                 // buttons are hidden by default
                 var actions = [
@@ -548,9 +576,17 @@
                 '<button id="clone' + sid + '" class="clone btn btn-link" style="display: none;" title="clone" type="button">',
                     '<i class="material-icons">filter_none</i>',
                 '</button>',
-                '<button id="delete' + sid + '" class="delete btn btn-link" style="display: none;" title="delete" type="button">',
+                '<button id="archive' + sid + '" class="archive btn btn-link" style="display: none;" title="archive" type="button">',
                     '<i class="material-icons">delete</i>',
                 '</button>'];
+            }
+
+            if (row.storage.storage_id.Valid) {
+                // this is an history
+                actions.push('<i title="history card" class="material-icons">alarm</i>');
+            }
+            if (row.storage_archive.Valid && row.storage_archive.Bool) {
+                actions.push('<i title="archive card" class="material-icons">delete</i>');
             }
 
             if (row.storage_creationdate != row.storage_modificationdate && !row.storage.storage_id.Valid) {
@@ -620,18 +656,38 @@
             // finally collapsing the view
             $('#edit-collapse').collapse('show');
             $('#list-collapse').collapse('hide');
-            $("#switchview").hide();
-            $("#storelocation-selector").hide();
+            $(".toggleable").hide();
         }
         window.operateEvents = {
             'click .edit': function (e, value, row, index) {
                 operateEdit(e, value, row, index)
             },
             'click .history': function (e, value, row, index) {
-                window.location = proxyPath + "v/storages?storage="+row['storage_id'].Int64+"&history=true";
+                var urlParams = new URLSearchParams(window.location.search);
+                window.location = proxyPath + "v/storages?storage="+row['storage_id'].Int64+"&history=true&" + urlParams;
             },
             'click .clone': function (e, value, row, index) {
                 window.location = proxyPath + "vc/storages?storage="+row['storage_id'].Int64+"&product="+row['product']['product_id'];
+            },
+            'click .archive': function (e, value, row, index) {
+                // hiding possible previous confirmation button
+                $(this).confirmation("show").off( "confirmed.bs.confirmation");
+                $(this).confirmation("show").off( "canceled.bs.confirmation");
+                
+                // ask for confirmation and then delete
+                $(this).confirmation("show").on( "confirmed.bs.confirmation", function() {
+                    $.ajax({
+                        url: proxyPath + "storages/" + row['storage_id'].Int64 + "/a",
+                        method: "DELETE",
+                    }).done(function(data, textStatus, jqXHR) {
+                        displayMessage("storage trashed", "success");
+                        var $table = $('#table');
+                        $table.bootstrapTable('refresh');
+                    }).fail(function(jqXHR, textStatus, errorThrown) {
+                        handleHTTPError(jqXHR.statusText, jqXHR.status)
+                    });
+                }).on( "canceled.bs.confirmation", function() {
+                });
             },
             'click .delete': function (e, value, row, index) {
                 // hiding possible previous confirmation button
