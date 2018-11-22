@@ -405,7 +405,7 @@
                     handleHTTPError(jqXHR.statusText, jqXHR.status)
                 });
             }        
-            if (storage_archive != null) {
+            if (storage_archive != null && storage_archive == "true") {
                 $("#s_storage_archive").prop( "checked", true );
             }
 
