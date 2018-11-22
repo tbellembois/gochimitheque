@@ -371,6 +371,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		storage_reference string,
 		storage_batchnumber string,
 		storage_todestroy boolean default 0,
+		storage_archive boolean default 0,
 		person integer NOT NULL,
 		product integer NOT NULL,
 		storelocation integer NOT NULL,

@@ -104,6 +104,7 @@ type Storage struct {
 	StorageNbItem           int             `db:"-" json:"storage_nbitem" schema:"storage_nbitem"`
 	StorageBarecode         sql.NullString  `db:"storage_barecode" json:"storage_barecode" schema:"storage_barecode"`
 	StorageToDestroy        sql.NullBool    `db:"storage_todestroy" json:"storage_todestroy" schema:"storage_todestroy"`
+	StorageArchive          sql.NullBool    `db:"storage_archive" json:"storage_archive" schema:"storage_archive"`
 	Person                  `db:"person" json:"person" schema:"person"`
 	Product                 `db:"product" json:"product" schema:"product"`
 	StoreLocation           `db:"storelocation" json:"storelocation" schema:"storelocation"`

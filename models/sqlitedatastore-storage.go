@@ -167,6 +167,7 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 		s.storage_quantity,
 		s.storage_barecode,
 		s.storage_comment,
+		s.storage_archive,
 		storage.storage_id AS "storage.storage_id",
 		unit.unit_label AS "unit.unit_label",
 		supplier.supplier_label AS "supplier.supplier_label",
@@ -226,6 +227,9 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 	}
 	if !p.GetHistory() {
 		comreq.WriteString(" AND s.storage IS NULL")
+	}
+	if !p.GetStorageArchive() {
+		comreq.WriteString(" AND s.storage_archive = false ")
 	}
 
 	// post select request
@@ -292,6 +296,7 @@ func (db *SQLiteDataStore) GetStorage(id int) (Storage, error) {
 	storage.storage_quantity,
 	storage.storage_barecode,
 	storage.storage_comment,
+	storage.storage_archive,
 	unit.unit_id AS "unit.unit_id",
 	unit.unit_label AS "unit.unit_label",
 	supplier.supplier_id AS "supplier.supplier_id",
@@ -330,6 +335,26 @@ func (db *SQLiteDataStore) DeleteStorage(id int) error {
 	if _, err = db.Exec(sqlr, id); err != nil {
 		return err
 	}
+	return nil
+}
+
+func (db *SQLiteDataStore) ArchiveStorage(id int) error {
+
+	var (
+		sqlr string
+		err  error
+	)
+	sqlr = `UPDATE storage SET storage_archive = true 
+	WHERE storage_id = ?`
+	if _, err = db.Exec(sqlr, id); err != nil {
+		return err
+	}
+	sqlr = `UPDATE storage SET storage_archive = true 
+	WHERE storage.storage = ?`
+	if _, err = db.Exec(sqlr, id); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -456,6 +481,7 @@ func (db *SQLiteDataStore) CreateStorage(s Storage) (error, int) {
 	m["product"] = s.ProductID
 	m["storage_creationdate"] = s.StorageCreationDate
 	m["storage_modificationdate"] = s.StorageModificationDate
+	m["storage_archive"] = false
 
 	// building column names/values
 	col := make([]string, 0, len(m))
@@ -541,6 +567,7 @@ func (db *SQLiteDataStore) UpdateStorage(s Storage) error {
 		storage_quantity,
 		storage_barecode,
 		storage_todestroy,
+		storage_archive,
 		person,
 		product,
 		storelocation,
@@ -558,6 +585,7 @@ func (db *SQLiteDataStore) UpdateStorage(s Storage) error {
 				storage_quantity,
 				storage_barecode,
 				storage_todestroy,
+				storage_archive,
 				person,
 				product,
 				storelocation,
@@ -629,6 +657,7 @@ func (db *SQLiteDataStore) UpdateStorage(s Storage) error {
 		m["storage_todestroy"] = s.StorageToDestroy.Bool
 	}
 	m["storage_modificationdate"] = s.StorageModificationDate
+	m["storage_archive"] = s.StorageArchive
 	m["person"] = s.PersonID
 	m["storelocation"] = s.StoreLocationID
 	m["unit"] = s.UnitID
