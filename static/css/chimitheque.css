@@ -1,0 +1,5 @@
+.th-width-200 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}

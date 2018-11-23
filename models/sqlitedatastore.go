@@ -57,16 +57,16 @@ func (db *SQLiteDataStore) InsertSamples() error {
 		defer sname.Close()
 		defer sempiricalformula.Close()
 
-		scanner := bufio.NewScanner(scas)
-		scanner.Split(bufio.ScanLines)
-		log.Debug("- creating sample cas")
-		for scanner.Scan() {
-			if _, err = db.Exec(`INSERT OR IGNORE INTO casnumber ("casnumber_label") VALUES ("` + scanner.Text() + `");`); err != nil {
-				return err
-			}
-		}
+		// scanner := bufio.NewScanner(scas)
+		// scanner.Split(bufio.ScanLines)
+		// log.Debug("- creating sample cas")
+		// for scanner.Scan() {
+		// 	if _, err = db.Exec(`INSERT OR IGNORE INTO casnumber ("casnumber_label") VALUES ("` + scanner.Text() + `");`); err != nil {
+		// 		return err
+		// 	}
+		// }
 
-		scanner = bufio.NewScanner(sname)
+		scanner := bufio.NewScanner(sname)
 		scanner.Split(bufio.ScanLines)
 		log.Debug("- creating sample names")
 		i := 0
@@ -417,7 +417,8 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	-- products cas numbers
 	CREATE TABLE IF NOT EXISTS casnumber (
 		casnumber_id integer PRIMARY KEY,
-		casnumber_label string NOT NULL UNIQUE);
+		casnumber_label string NOT NULL UNIQUE,
+		casnumber_cmr string);
 	-- products ce numbers
 	CREATE TABLE IF NOT EXISTS cenumber (
 		cenumber_id integer PRIMARY KEY,
@@ -568,6 +569,23 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	if c == 0 {
 		if _, err = db.Exec(insphysicalstate); err != nil {
 			return err
+		}
+	}
+
+	// cas numbers
+	if err = db.Get(&c, `SELECT count(*) FROM casnumber`); err != nil {
+		return err
+	}
+	if c == 0 {
+		r = csv.NewReader(strings.NewReader(CMR))
+		r.Comma = ','
+		if records, err = r.ReadAll(); err != nil {
+			return err
+		}
+		for _, record := range records {
+			if _, err = db.Exec(`INSERT INTO casnumber (casnumber_label, casnumber_cmr) VALUES (?, ?)`, record[0], record[1]); err != nil {
+				return err
+			}
 		}
 	}
 

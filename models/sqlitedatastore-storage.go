@@ -358,6 +358,26 @@ func (db *SQLiteDataStore) ArchiveStorage(id int) error {
 	return nil
 }
 
+func (db *SQLiteDataStore) RestoreStorage(id int) error {
+
+	var (
+		sqlr string
+		err  error
+	)
+	sqlr = `UPDATE storage SET storage_archive = false 
+	WHERE storage_id = ?`
+	if _, err = db.Exec(sqlr, id); err != nil {
+		return err
+	}
+	sqlr = `UPDATE storage SET storage_archive = false 
+	WHERE storage.storage = ?`
+	if _, err = db.Exec(sqlr, id); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (db *SQLiteDataStore) GenerateAndUpdateStorageBarecode(s *Storage) error {
 
 	var (

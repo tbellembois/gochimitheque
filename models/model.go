@@ -138,9 +138,10 @@ type Name struct {
 
 // CasNumber is a product CAS number
 type CasNumber struct {
-	C              int    `db:"c" json:"c"` // not stored in db but db:"c" set for sqlx
-	CasNumberID    int    `db:"casnumber_id" json:"casnumber_id" schema:"casnumber_id"`
-	CasNumberLabel string `db:"casnumber_label" json:"casnumber_label" schema:"casnumber_label"`
+	C              int            `db:"c" json:"c"` // not stored in db but db:"c" set for sqlx
+	CasNumberID    int            `db:"casnumber_id" json:"casnumber_id" schema:"casnumber_id"`
+	CasNumberLabel string         `db:"casnumber_label" json:"casnumber_label" schema:"casnumber_label"`
+	CasNumberCMR   sql.NullString `db:"casnumber_cmr" json:"casnumber_cmr" schema:"casnumber_cmr"`
 }
 
 // CeNumber is a product CE number

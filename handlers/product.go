@@ -779,3 +779,23 @@ func (env *Env) DeleteProductHandler(w http.ResponseWriter, r *http.Request) *he
 	env.DB.DeleteProduct(id)
 	return nil
 }
+
+// ConvertProductEmpiricalToLinearFormulaHandler returns the converted formula
+func (env *Env) ConvertProductEmpiricalToLinearFormulaHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	vars := mux.Vars(r)
+	var (
+		l2ef string
+	)
+
+	log.Debug(vars["f"])
+
+	l2ef = utils.LinearToEmpiricalFormula(vars["f"])
+
+	log.Debug(l2ef)
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(l2ef)
+
+	return nil
+}
