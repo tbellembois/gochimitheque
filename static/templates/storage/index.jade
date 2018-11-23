@@ -1,5 +1,37 @@
 | {{define "CONTENT"}}
 
+    #search.row.pt-sm-4.pb-sm-4.pl-sm-2.pr-sm-2.mt-sm-2.mb-sm-2.ml-sm-5.mr-sm-5.bg-light.border.toggleable.shadow.rounded
+        .col
+            .row
+                .col.mb-sm-2
+                    | {{$icon := "extension"}} {{$name := "storelocationselector"}}
+                    +selecticon
+            .row
+                .col-sm-6
+                    | {{$label := "name"}} {{$name := "s_name"}}
+                    +selectcompact
+                .col-sm-6
+                    | {{$label := "cas"}} {{$name := "s_casnumber"}}
+                    +selectcompact
+                .col-sm-6
+                    | {{$label := "emp. formula"}} {{$name := "s_empiricalformula"}}
+                    +selectcompact
+                .col-sm-6
+                    | {{$label := "barecode"}} {{$name := "s_storage_barecode"}}
+                    +inputtextcompact
+            .row
+                .col.col-sm-11
+                    button#clearsearch.btn-sm.btn.btn-primary.mr-sm-2(title="clear search form" type="button" onclick="clearsearch();")
+                        i.material-icons check_box_outline_blank
+                    button#search.btn-lg.btn.btn-primary.mr-sm-2(title="search" type="button" onclick="search();")
+                        i.material-icons youtube_searched_for
+                .col.col-sm-1
+                    button#search.btn.btn-primary.btn-sm(data-toggle="collapse" href="#advancedsearch" role="button" aria-expanded="false" title="advanced search")
+                        i.material-icons add_circle_outline
+            .row.collapse#advancedsearch
+                .col-sm-12
+                    span coming soon !
+
     .row
         .col-sm-8
             #filter-item
@@ -7,39 +39,6 @@
             #button-store
         .col-sm-2.d-flex.justify-content-end
             #button-stock
-
-    #search.row.pt-sm-4.pb-sm-4.pl-sm-2.pr-sm-2.mt-sm-2.mb-sm-2.ml-sm-5.mr-sm-5.bg-light.border.toggleable.shadow.rounded
-        .col
-            .row
-                .col-sm-4
-                    | {{$label := ""}} {{$name := "storelocationselector"}}
-                    +select
-            .row
-                .col-sm-6
-                    | {{$label := "name"}} {{$name := "s_name"}}
-                    +selectcompact
-                .col-sm-6
-                    | {{$label := "cas number"}} {{$name := "s_casnumber"}}
-                    +selectcompact
-                .col-sm-6
-                    | {{$label := "empirical formula"}} {{$name := "s_empiricalformula"}}
-                    +selectcompact
-                .col-sm-6
-                    | {{$label := "barecode"}} {{$name := "s_storage_barecode"}}
-                    +inputtextcompact
-            .row
-                .col
-                    button#search(title="search" type="button" onclick="search();")
-                        i.material-icons youtube_searched_for
-                    button#search(title="clear search form" type="button" onclick="clearsearch();")
-                        i.material-icons check_box_outline_blank
-            .row.justify-content-end
-                .col.col-sm-1
-                    a.btn.btn-primary(data-toggle="collapse" href="#advancedsearch" role="button" aria-expanded="false" title="advanced search")
-                        i.material-icons add_circle_outline
-            .row.collapse#advancedsearch
-                .col-sm-12
-                    span coming soon !
 
     #toolbar.row
         .col.toggleable
@@ -78,7 +77,7 @@
                                 th(data-field='storage_id' data-formatter='storage_idFormatter' data-sortable='true') ID
                                 th(data-field='storage_modificationdate' data-formatter='dateFormatter' data-sortable='true') modification date
                                 th(data-field='storage_barecode' data-formatter='storage_barecodeFormatter') barecode
-                                th(data-field='product.name.name_label' data-sortable='true') product
+                                th.th-width-200(data-field='product.name.name_label' data-sortable='true') product
                                 th(data-field='storelocation.storelocation_fullpath' data-sortable='true' data-formatter='storelocation_fullpathFormatter') store location
                                 th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') 
 
@@ -268,7 +267,7 @@
                 
                 // adding a create storage button for the product
                 hasPermission(proxyPath + "f/storages/-2", "POST").done(function(){
-                    b = $("<button>").addClass("store btn btn-link").attr("title", "store this product").attr("type", "button");
+                    b = $("<button>").addClass("store btn btn-primary btn-sm").attr("title", "store this product").attr("type", "button");
                     b.attr("onclick", "window.location.href = '" + proxyPath + "vc/storages?product=" + p + "'");
                     i = $("<i>").addClass("material-icons").text("move_to_inbox");
                     b.append(i);
@@ -277,7 +276,7 @@
 
                 hasPermission(proxyPath + "f/storages/-2", "GET").done(function(){
                     // adding a create show stock button for the product
-                    b = $("<button>").addClass("store btn btn-link").attr("title", "show stock of this product").attr("type", "button").attr("data-toggle", "modal").attr("data-target", "#stock");
+                    b = $("<button>").addClass("store btn btn-primary btn-sm").attr("title", "show stock of this product").attr("type", "button").attr("data-toggle", "modal").attr("data-target", "#stock");
                     b.attr("onclick", "showStock(" + p + ")");
                     i = $("<i>").addClass("material-icons").text("functions");
                     b.append(i);
@@ -566,27 +565,31 @@
             hasPermission(proxyPath + "f/storages/" + eid, "DELETE", sid).done(function(){
                     $("#delete"+this.itemId).fadeIn();
                     $("#archive"+this.itemId).fadeIn();
+                    $("#restore"+this.itemId).fadeIn();
             })
 
             if (row.storage_archive.Valid && row.storage_archive.Bool) {
                 // this is an archive
                 var actions = [
-                '<button id="clone' + sid + '" class="clone btn btn-link" style="display: none;" title="clone" type="button">',
+                '<button id="clone' + sid + '" class="clone btn btn-primary btn-sm" style="display: none;" title="clone" type="button">',
                     '<i class="material-icons">filter_none</i>',
                 '</button>',
-                '<button id="delete' + sid + '" class="delete btn btn-link" style="display: none;" title="delete" type="button">',
+                '<button id="restore' + sid + '" class="restore btn btn-primary btn-sm" style="display: none;" title="restore" type="button">',
+                    '<i class="material-icons">undo</i>',
+                '</button>',
+                '<button id="delete' + sid + '" class="delete btn btn-primary btn-sm" style="display: none;" title="delete" type="button">',
                     '<i class="material-icons">clear</i>',
                 '</button>']; 
             } else {
                 // buttons are hidden by default
                 var actions = [
-                '<button id="edit' + sid + '" class="edit btn btn-link" style="display: none;" title="edit" type="button">',
+                '<button id="edit' + sid + '" class="edit btn btn-primary btn-sm" style="display: none;" title="edit" type="button">',
                     '<i class="material-icons">edit</i>',
                 '</button>',
-                '<button id="clone' + sid + '" class="clone btn btn-link" style="display: none;" title="clone" type="button">',
+                '<button id="clone' + sid + '" class="clone btn btn-primary btn-sm" style="display: none;" title="clone" type="button">',
                     '<i class="material-icons">filter_none</i>',
                 '</button>',
-                '<button id="archive' + sid + '" class="archive btn btn-link" style="display: none;" title="archive" type="button">',
+                '<button id="archive' + sid + '" class="archive btn btn-primary btn-sm" style="display: none;" title="archive" type="button">',
                     '<i class="material-icons">delete</i>',
                 '</button>'];
             }
@@ -600,7 +603,7 @@
             }
 
             if (row.storage_creationdate != row.storage_modificationdate && !row.storage.storage_id.Valid) {
-                actions.push('<button id="history' + sid + '" class="history btn btn-link" title="show history" type="button">');
+                actions.push('<button id="history' + sid + '" class="history btn btn-primary btn-sm" title="show history" type="button">');
                 actions.push('<i class="material-icons">alarm</i>');
                 actions.push('</button>');
             }
@@ -678,6 +681,26 @@
             },
             'click .clone': function (e, value, row, index) {
                 window.location = proxyPath + "vc/storages?storage="+row['storage_id'].Int64+"&product="+row['product']['product_id'];
+            },
+            'click .restore': function (e, value, row, index) {
+                // hiding possible previous confirmation button
+                $(this).confirmation("show").off( "confirmed.bs.confirmation");
+                $(this).confirmation("show").off( "canceled.bs.confirmation");
+                
+                // ask for confirmation and then restore
+                $(this).confirmation("show").on( "confirmed.bs.confirmation", function() {
+                    $.ajax({
+                        url: proxyPath + "storages/" + row['storage_id'].Int64 + "/r",
+                        method: "PUT",
+                    }).done(function(data, textStatus, jqXHR) {
+                        displayMessage("storage restored", "success");
+                        var $table = $('#table');
+                        $table.bootstrapTable('refresh');
+                    }).fail(function(jqXHR, textStatus, errorThrown) {
+                        handleHTTPError(jqXHR.statusText, jqXHR.status)
+                    });
+                }).on( "canceled.bs.confirmation", function() {
+                });
             },
             'click .archive': function (e, value, row, index) {
                 // hiding possible previous confirmation button

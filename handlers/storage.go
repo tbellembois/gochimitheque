@@ -288,6 +288,25 @@ func (env *Env) ArchiveStorageHandler(w http.ResponseWriter, r *http.Request) *h
 	return nil
 }
 
+// RestoreStorageHandler restores the storage with the requested id
+func (env *Env) RestoreStorageHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	vars := mux.Vars(r)
+	var (
+		id  int
+		err error
+	)
+
+	if id, err = strconv.Atoi(vars["id"]); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "id atoi conversion",
+			Code:    http.StatusInternalServerError}
+	}
+
+	env.DB.RestoreStorage(id)
+	return nil
+}
+
 // CreateStorageHandler creates the storage from the request form
 func (env *Env) CreateStorageHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	log.Debug("CreateStorageHandler")

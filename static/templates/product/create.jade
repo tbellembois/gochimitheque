@@ -28,14 +28,21 @@
 
         .form-row
             .form-group.col-sm-auto
+                span magic selector coming soon
+
+        .form-row
+            .form-group.col-sm-auto
                 span.badge.badge-pill.badge-danger &nbsp;
-            .form-group.col-sm-6
+            .form-group.col-sm-5
                 | {{$label := "empirical formula"}} {{$name := "empiricalformula"}}
                 +select
             .form-group.col-sm-5
                 | {{$label := "linear formula"}} {{$name := "product_linearformula"}}
                 +inputtext
-        
+            .form-group.col-sm-1
+                button#fconverter.btn.btn-primary(type="button" data-toggle="popover" data-content="no result" title="convert linear to empirical formula" onclick="linearToEmpirical();")
+                    i.material-icons loop
+
         .form-row
             .form-group.col-sm-auto
                 span.badge.badge-pill.badge-danger &nbsp;

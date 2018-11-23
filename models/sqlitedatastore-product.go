@@ -758,7 +758,8 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	cenumber.cenumber_id AS "cenumber.cenumber_id",
 	cenumber.cenumber_label AS "cenumber.cenumber_label",
 	casnumber.casnumber_id AS "casnumber.casnumber_id",
-	casnumber.casnumber_label AS "casnumber.casnumber_label"`)
+	casnumber.casnumber_label AS "casnumber.casnumber_label",
+	casnumber.casnumber_cmr AS "casnumber.casnumber_cmr"`)
 
 	// common parts
 	comreq.WriteString(" FROM product as p")
@@ -963,7 +964,8 @@ func (db *SQLiteDataStore) GetProduct(id int) (Product, error) {
 	cenumber.cenumber_id AS "cenumber.cenumber_id",
 	cenumber.cenumber_label AS "cenumber.cenumber_label",
 	casnumber.casnumber_id AS "casnumber.casnumber_id",
-	casnumber.casnumber_label AS "casnumber.casnumber_label"
+	casnumber.casnumber_label AS "casnumber.casnumber_label",
+	casnumber.casnumber_cmr AS "casnumber.casnumber_cmr"
 	FROM product
 	JOIN name ON product.name = name.name_id
 	JOIN casnumber ON product.casnumber = casnumber.casnumber_id

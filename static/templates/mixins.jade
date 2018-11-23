@@ -36,6 +36,14 @@ mixin select
         label(for='{{$name}}') {{$label}}
         select.form-control(style='width: 100% !important;' id='{{$name}}' name='{{$name}}')
 
+mixin selecticon
+    .row
+        .col-sm-1
+            i.material-icons.md-24 {{$icon}}
+        .col-sm-11
+            select(style='width: 100% !important;' id='{{$name}}' name='{{$name}}')
+
+
 mixin selectcompact
     .form-group.row
         label.col-sm-2.col-form-label(for='{{$name}}') {{$label}}

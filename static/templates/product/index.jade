@@ -1,43 +1,42 @@
 | {{define "CONTENT"}}
 
-    .row
-        .col-sm-10
-            #filter-item
-        .col-sm-2.d-flex.justify-content-end
-            #button-store
-
     #search.row.pt-sm-4.pb-sm-4.pl-sm-2.pr-sm-2.mt-sm-2.mb-sm-2.ml-sm-5.mr-sm-5.bg-light.border.toggleable.shadow.rounded
         .col
             .row
-                .col-sm-4
-                    | {{$label := ""}} {{$name := "storelocationselector"}}
-                    +select
+                .col.mb-sm-2
+                    | {{$icon := "extension"}} {{$name := "storelocationselector"}}
+                    +selecticon
             .row
                 .col-sm-6
                     | {{$label := "name"}} {{$name := "s_name"}}
                     +selectcompact
                 .col-sm-6
-                    | {{$label := "cas number"}} {{$name := "s_casnumber"}}
+                    | {{$label := "cas"}} {{$name := "s_casnumber"}}
                     +selectcompact
                 .col-sm-6
-                    | {{$label := "empirical formula"}} {{$name := "s_empiricalformula"}}
+                    | {{$label := "emp. formula"}} {{$name := "s_empiricalformula"}}
                     +selectcompact
                 .col-sm-6
                     | {{$label := "barecode"}} {{$name := "s_storage_barecode"}}
                     +inputtextcompact
             .row
-                .col
-                    button#search(title="search" type="button" onclick="search();")
-                        i.material-icons youtube_searched_for
-                    button#search(title="clear search form" type="button" onclick="clearsearch();")
+                .col.col-sm-11
+                    button#clearsearch.btn-sm.btn.btn-primary.mr-sm-2(title="clear search form" type="button" onclick="clearsearch();")
                         i.material-icons check_box_outline_blank
-            .row.justify-content-end
+                    button#search.btn-lg.btn.btn-primary.mr-sm-2(title="search" type="button" onclick="search();")
+                        i.material-icons youtube_searched_for
                 .col.col-sm-1
-                    a.btn.btn-primary(data-toggle="collapse" href="#advancedsearch" role="button" aria-expanded="false" title="advanced search")
+                    a.btn.btn-primary.btn-sm(data-toggle="collapse" href="#advancedsearch" role="button" aria-expanded="false" title="advanced search")
                         i.material-icons add_circle_outline
             .row.collapse#advancedsearch
                 .col-sm-12
                     span coming soon !
+
+    .row
+        .col-sm-10
+            #filter-item
+        .col-sm-2.d-flex.justify-content-end
+            #button-store
 
     #toolbar.row
         .col.toggleable
@@ -64,7 +63,7 @@
                         thead
                             tr
                                 th(data-field='product_id' data-sortable='true') ID
-                                th(data-field='name.name_label' data-sortable='true') name
+                                th.th-width-200(data-field='name.name_label' data-sortable='true') name
                                 th(data-field='empiricalformula.empiricalformula_label' data-sortable='true') empirical formula
                                 th(data-field='casnumber.casnumber_label' data-sortable='true') CAS
                                 th(data-field='product_specificity' data-sortable='false' data-formatter='product_specificityFormatter') specificity
@@ -99,14 +98,21 @@
 
                 .form-row
                     .form-group.col-sm-auto
+                        span magic selector coming soon
+
+                .form-row
+                    .form-group.col-sm-auto
                         span.badge.badge-pill.badge-danger &nbsp;
-                    .form-group.col-sm-6
+                    .form-group.col-sm-5
                         | {{$label := "empirical formula"}} {{$name := "empiricalformula"}}
                         +select
                     .form-group.col-sm-5
                         | {{$label := "linear formula"}} {{$name := "product_linearformula"}}
                         +inputtext
-                
+                .form-group.col-sm-1
+                    button#fconverter.btn.btn-primary(type="button" data-toggle="popover" data-content="no result" title="convert linear to empirical formula" onclick="linearToEmpirical();")
+                        i.material-icons loop
+
                 .form-row
                     .form-group.col-sm-auto
                         span.badge.badge-pill.badge-danger &nbsp;
@@ -507,24 +513,30 @@
                 bookmarkicon = "star"
             }
 
+            console.log(row.casnumber.casnumber_cmr)
+
             // buttons are hidden by default
             var actions = [
-            '<button id="storages' + pid + '" class="storages btn btn-link" style="display: none;" title="storages" type="button">',
+            '<button id="storages' + pid + '" class="storages btn btn-primary btn-sm" style="display: none;" title="storages" type="button">',
                 '<i class="material-icons">all_inbox</i>',
             '</button>',
-            '<button id="store' + pid + '" class="store btn btn-link" style="display: none;" title="store" type="button">',
+            '<button id="store' + pid + '" class="store btn btn-primary btn-sm" style="display: none;" title="store" type="button">',
                 '<i class="material-icons">move_to_inbox</i>',
             '</button>',
-            '<button id="edit' + pid + '" class="edit btn btn-link" style="display: none;" title="edit" type="button">',
+            '<button id="edit' + pid + '" class="edit btn btn-primary btn-sm" style="display: none;" title="edit" type="button">',
                 '<i class="material-icons">edit</i>',
             '</button>',
-            '<button id="delete' + pid + '" class="delete btn btn-link" style="display: none;" title="delete" type="button">',
+            '<button id="delete' + pid + '" class="delete btn btn-primary btn-sm" style="display: none;" title="delete" type="button">',
                 '<i class="material-icons">clear</i>',
             '</button>',
-            '<button id="bookmark' + pid + '" class="bookmark btn btn-link" title="(un)bookmark" type="button">',
+            '<button id="bookmark' + pid + '" class="bookmark btn btn-primary btn-sm" title="(un)bookmark" type="button">',
                 '<i id="bookmark' + pid + '" class="material-icons">' + bookmarkicon + '</i>',
             '</button>',
             ];
+
+            if (row.casnumber.casnumber_cmr.Valid) {
+                actions.push('<i title="CMR" class="material-icons">warning</i>' + row.casnumber.casnumber_cmr.String);
+            }    
 
             return actions.join('&nbsp;')    
         }
