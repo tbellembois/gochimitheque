@@ -175,6 +175,7 @@ script.
                 templateResult: formatStorelocation,
                 ajax: {
                     url: proxyPath + 'storelocations',
+                    delay: 400,
                     data: function (params) {
                         var query = {
                             storelocation_canstore: true,
@@ -216,6 +217,7 @@ script.
                 placeholder: "select a unit",
                 ajax: {
                     url: proxyPath + 'storages/units',
+                    delay: 400,
                     data: function (params) {
                         var query = {
                             search: params.term,
@@ -266,6 +268,7 @@ script.
                 },
                 ajax: {
                     url: proxyPath + 'storages/suppliers',
+                    delay: 400,
                         data: function (params) {
                         var query = {
                             search: params.term,
