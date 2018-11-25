@@ -195,6 +195,7 @@ script.
             placeholder: "direct store location access",
             ajax: {
                 url: proxyPath + 'storelocations',
+                delay: 400,
                     data: function (params) {
                     var query = {
                         search: params.term,
@@ -245,6 +246,7 @@ script.
             },
             ajax: {
                 url: proxyPath + 'products/casnumbers',
+                delay: 400,
                 data: function (params) {
                     var query = {
                         search: params.term,
@@ -312,6 +314,7 @@ script.
             placeholder: "select or enter a CE number",
             ajax: {
                 url: proxyPath + 'products/cenumbers',
+                delay: 400,
                 data: function (params) {
                     var query = {
                         search: params.term,
@@ -368,6 +371,7 @@ script.
             placeholder: "select physical state",
             ajax: {
                 url: proxyPath + 'products/physicalstates',
+                delay: 400,
                 data: function (params) {
                     var query = {
                         search: params.term,
@@ -404,6 +408,7 @@ script.
             placeholder: "select signal word",
             ajax: {
                 url: proxyPath + 'products/signalwords',
+                delay: 400,
                 data: function (params) {
                     var query = {
                         search: params.term,
@@ -450,6 +455,7 @@ script.
             placeholder: "select class of compound",
             ajax: {
                 url: proxyPath + 'products/classofcompounds',
+                delay: 400,
                 data: function (params) {
                     var query = {
                         search: params.term,
@@ -514,6 +520,7 @@ script.
             },
             ajax: {
                 url: proxyPath + 'products/names',
+                delay: 400,
                 data: function (params) {
                     var query = {
                         search: params.term,
@@ -579,6 +586,7 @@ script.
             },
             ajax: {
                 url: proxyPath + 'products/empiricalformulas',
+                delay: 400,
                 data: function (params) {
                     var query = {
                         search: params.term,
@@ -644,6 +652,7 @@ script.
             },
             ajax: {
                 url: proxyPath + 'products/synonyms',
+                delay: 400,
                 data: function (params) {
                     var query = {
                         search: params.term,
@@ -699,6 +708,7 @@ script.
             closeOnSelect: false,
             ajax: {
                 url: proxyPath + 'products/symbols',
+                delay: 400,
                 dataType: 'json',
                 processResults: function (data) {
                     // replacing name by text expected by select2
@@ -722,6 +732,7 @@ script.
             closeOnSelect: false,
             ajax: {
                 url: proxyPath + 'products/hazardstatements',
+                delay: 400,
                 data: function (params) {
                     var query = {
                         search: params.term,
@@ -760,6 +771,7 @@ script.
             closeOnSelect: false,
             ajax: {
                 url: proxyPath + 'products/precautionarystatements',
+                delay: 400,
                 data: function (params) {
                     var query = {
                         search: params.term,

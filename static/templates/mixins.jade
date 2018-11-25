@@ -4,6 +4,11 @@ mixin title
         .card-body
             h5.card-title.text-light {{$label}}
 
+mixin titleicon
+    .card.bg-light.text-center.w-25.mx-auto.mt-md-5.mb-md-5
+        .card-body
+            i.material-icons {{$icon}}
+
 mixin inlineradio
     .custom-control.custom-radio.custom-control-inline
         input(class='custom-control-input {{$class}}' id='{{$id}}' type='radio' name='{{$name}}' value='{{$value}}')
