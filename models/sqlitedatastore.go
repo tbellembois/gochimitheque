@@ -6,10 +6,6 @@ import (
 	"bufio"
 	"database/sql"
 	"encoding/csv"
-	"github.com/jmoiron/sqlx"
-	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
-	log "github.com/sirupsen/logrus"
-	"github.com/tbellembois/gochimitheque/utils"
 	"io"
 	"os"
 	"path"
@@ -17,6 +13,11 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/jmoiron/sqlx"
+	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
+	log "github.com/sirupsen/logrus"
+	"github.com/tbellembois/gochimitheque/utils"
 )
 
 const (
@@ -255,7 +256,7 @@ func (db *SQLiteDataStore) InsertSamples() error {
 		db.UpdatePerson(m2)
 		db.UpdatePerson(m3)
 
-		p0 := Person{PersonEmail: "user@super.com", Permissions: []Permission{Permission{PermissionPermName: "all", PermissionItemName: "all", PermissionEntityID: -1}}}
+		//p0 := Person{PersonEmail: "user@super.com", Permissions: []Permission{Permission{PermissionPermName: "all", PermissionItemName: "all", PermissionEntityID: -1}}}
 		p1 := Person{PersonEmail: "john@lab-one.com", Entities: []Entity{e1}, Permissions: []Permission{Permission{PermissionPermName: "r", PermissionItemName: "products", PermissionEntityID: -1}}}
 		p2 := Person{PersonEmail: "mickey@lab-one.com", Entities: []Entity{e1}}
 		p3 := Person{PersonEmail: "donald@lab-one.com", Entities: []Entity{e1}}
@@ -268,7 +269,7 @@ func (db *SQLiteDataStore) InsertSamples() error {
 		p10 := Person{PersonEmail: "alone@no-entity.com"}
 
 		log.Debug("- creating 11 sample users")
-		db.CreatePerson(p0)
+		//db.CreatePerson(p0)
 		db.CreatePerson(p1)
 		db.CreatePerson(p2)
 		db.CreatePerson(p3)
@@ -626,6 +627,11 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 			}
 		}
 	}
+
+	// inserting default admin
+	admin := Person{PersonEmail: "user@super.com", Permissions: []Permission{Permission{PermissionPermName: "all", PermissionItemName: "all", PermissionEntityID: -1}}}
+	db.CreatePerson(admin)
+
 	return nil
 }
 
@@ -633,23 +639,25 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 func (db *SQLiteDataStore) Import(dir string) error {
 
 	var (
-		csvFile   *os.File
-		csvReader *csv.Reader
-		err       error
-		res       sql.Result
-		lastid    int64
-		c, i      int                 // count result
-		tx        *sql.Tx             // db transaction
-		sqlr      string              // sql request
-		mperson   map[string]string   // oldid <> newid map for user table
-		mentity   map[string]string   // oldid <> newid map for entity table
-		mmanagers map[string][]string // oldentityid <> oldpersonid
+		csvFile        *os.File
+		csvReader      *csv.Reader
+		err            error
+		res            sql.Result
+		lastid         int64
+		c, i           int                 // count result
+		tx             *sql.Tx             // db transaction
+		sqlr           string              // sql request
+		mperson        map[string]string   // oldid <> newid map for user table
+		mentity        map[string]string   // oldid <> newid map for entity table
+		mstorelocation map[string]string   // oldid <> newid map for storelocation table
+		mentitypeople  map[string][]string // managers, oldentityid <> oldpersonid
 	)
 
 	// init maps
 	mperson = make(map[string]string)
 	mentity = make(map[string]string)
-	mmanagers = make(map[string][]string)
+	mstorelocation = make(map[string]string)
+	mentitypeople = make(map[string][]string)
 
 	// checking tables empty
 	if err = db.Get(&c, `SELECT count(*) FROM person`); err != nil {
@@ -662,7 +670,13 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		return err
 	}
 	if c != 0 {
-		panic("person entity not empty - can not import")
+		panic("entity table not empty - can not import")
+	}
+	if err = db.Get(&c, `SELECT count(*) FROM storelocation`); err != nil {
+		return err
+	}
+	if c != 0 {
+		panic("storelocation table not empty - can not import")
 	}
 
 	// beginning transaction
@@ -704,11 +718,16 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		// finding web2py like manager ids
 		ms := rmanagers.FindAllString(manager, -1)
 		for _, m := range ms {
-			mmanagers[id] = append(mmanagers[id], m)
+			// leaving hardcoded zeros
+			if m != "0" {
+				mentitypeople[id] = append(mentitypeople[id], m)
+				log.Debug("entity with old id " + id + " has manager with old id " + m)
+			}
 		}
 
 		// leaving web2py specific entries
 		if !rentity_name.MatchString(name) {
+			log.Info("  " + name)
 			sqlr = `INSERT INTO entity(entity_name, entity_description) VALUES (?, ?)`
 			if res, err = tx.Exec(sqlr, name, description); err != nil {
 				tx.Rollback()
@@ -720,8 +739,65 @@ func (db *SQLiteDataStore) Import(dir string) error {
 				return err
 			}
 			// populating the map
-			mentity[id] = string(int(lastid))
+			mentity[id] = strconv.FormatInt(lastid, 10)
+			log.Debug("entity with old id " + id + " has new  id " + strconv.FormatInt(lastid, 10))
 		}
+	}
+
+	//
+	// storelocation
+	//
+	log.Info("- importing store locations")
+	if csvFile, err = os.Open(path.Join(dir, "store_location.csv")); err != nil {
+		return (err)
+	}
+	csvReader = csv.NewReader(bufio.NewReader(csvFile))
+	i = 0
+	for {
+		line, error := csvReader.Read()
+
+		// skip header
+		if i == 0 {
+			i++
+			continue
+		}
+
+		if error == io.EOF {
+			break
+		} else if error != nil {
+			tx.Rollback()
+			return err
+		}
+		id := line[0]
+		label := line[1]
+		entity := line[2]
+		parent := line[3]
+		can_store := false
+		if line[4] == "T" {
+			can_store = true
+		}
+		color := line[5]
+
+		newentity := mentity[entity]
+		newparent := sql.NullString{}
+		np := mstorelocation[parent]
+		if np != "" {
+			newparent = sql.NullString{Valid: true, String: np}
+		}
+		log.Info("  " + label)
+		log.Debug("storelocation " + label + ", entity:" + newentity + ", parent:" + newparent.String)
+		sqlr = `INSERT INTO storelocation(storelocation_name, storelocation_color, storelocation_canstore, entity, storelocation) VALUES (?, ?, ?, ?, ?)`
+		if res, err = tx.Exec(sqlr, label, color, can_store, newentity, newparent); err != nil {
+			tx.Rollback()
+			return err
+		}
+		// getting the last inserted id
+		if lastid, err = res.LastInsertId(); err != nil {
+			tx.Rollback()
+			return err
+		}
+		// populating the map
+		mstorelocation[id] = strconv.FormatInt(lastid, 10)
 	}
 
 	//
@@ -781,18 +857,59 @@ func (db *SQLiteDataStore) Import(dir string) error {
 	//
 	// managers
 	//
-	log.Info("- initializing managers")
-	for oldentityid, oldmanagerids := range mmanagers {
+	log.Info("- importing managers")
+	for oldentityid, oldmanagerids := range mentitypeople {
 		for _, oldmanagerid := range oldmanagerids {
 			newentityid := mentity[oldentityid]
 			newmanagerid := mperson[oldmanagerid]
-			sqlr = `INSERT INTO entitypeople(entitypeople_entity_id, entitypeople_person_id) VALUES (?, ?)`
-			if res, err = tx.Exec(sqlr, newentityid, newmanagerid); err != nil {
-				tx.Rollback()
-				return err
+			// silently missing entities with no managers
+			if newmanagerid != "" {
+				sqlr = `INSERT INTO entitypeople(entitypeople_entity_id, entitypeople_person_id) VALUES (?, ?)`
+				if res, err = tx.Exec(sqlr, newentityid, newmanagerid); err != nil {
+					tx.Rollback()
+					return err
+				}
+				sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id) VALUES (?, ?, ?, ?)`
+				if res, err = tx.Exec(sqlr, newmanagerid, "all", "all", newentityid); err != nil {
+					tx.Rollback()
+					return err
+				}
 			}
-			sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id) VALUES (?, ?, ?, ?)`
-			if res, err = tx.Exec(sqlr, newmanagerid, "all", "all", newentityid); err != nil {
+		}
+	}
+
+	//
+	// membership
+	//
+	log.Info("- importing membership")
+	if csvFile, err = os.Open(path.Join(dir, "membership.csv")); err != nil {
+		return (err)
+	}
+	csvReader = csv.NewReader(bufio.NewReader(csvFile))
+	i = 0
+	for {
+		line, error := csvReader.Read()
+
+		// skip header
+		if i == 0 {
+			i++
+			continue
+		}
+
+		if error == io.EOF {
+			break
+		} else if error != nil {
+			tx.Rollback()
+			return err
+		}
+		userid := line[1]
+		groupid := line[2]
+		newuserid := mperson[userid]
+		newgroupid := mentity[groupid]
+
+		if newuserid != "" && newgroupid != "" {
+			sqlr = `INSERT INTO personentities(personentities_person_id, personentities_entity_id) VALUES (?, ?)`
+			if res, err = tx.Exec(sqlr, newuserid, newgroupid); err != nil {
 				tx.Rollback()
 				return err
 			}
