@@ -139,3 +139,9 @@ A custom middleware. Look at `func (env *Env) AuthorizeMiddleware(h http.Handler
 # testers
 
 delphine.pitrat@ens-lyon.fr, laurelise.chapellet@ens-lyon.fr, guillaume.george@ens-lyon.fr, sylvain.david@ens-lyon.fr, laure.guy@ens-lyon.fr, yann.bretonniere@ens-lyon.fr, loic.richard@irstea.fr, christophe.le-bourlot@insa-lyon.fr, julien.devemy@uca.fr
+
+# postgresql to csv
+
+```bash
+SCHEMA="public"; DB="chimitheque"; psql -U [user] -h [host] -p [port] -Atc "select tablename from pg_tables where schemaname='$SCHEMA'" $DB | while read TBL; do psql -U [user] -h [host] -p [port] -c "COPY $SCHEMA.$TBL TO STDOUT WITH CSV HEADER" $DB > $TBL.csv; done;
+```

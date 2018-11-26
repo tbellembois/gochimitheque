@@ -28,10 +28,11 @@ func main() {
 	)
 
 	// getting the program parameters
-	listenPort := flag.String("port", "8081", "the port to listen")
+	listenport := flag.String("port", "8081", "the port to listen")
 	proxypath := flag.String("proxypath", "/", "the application path if behind a proxy, with the trailing /")
 	logfile := flag.String("logfile", "", "log to the given file")
 	debug := flag.Bool("debug", false, "debug (verbose log), default is error")
+	importfrom := flag.String("importfrom", "", "full path of the directory containing the CSV to import")
 	flag.Parse()
 
 	// logging to file if logfile parameter specified
@@ -57,8 +58,16 @@ func main() {
 	if err = datastore.CreateDatabase(); err != nil {
 		log.Panic(err)
 	}
-	if err = datastore.InsertSamples(); err != nil {
-		log.Panic(err)
+	if *importfrom == "" {
+		if err = datastore.InsertSamples(); err != nil {
+			log.Panic(err)
+		}
+	} else {
+		err := datastore.Import(*importfrom)
+		if err != nil {
+			log.Error("an error occured: " + err.Error())
+		}
+		os.Exit(0)
 	}
 
 	// environment creation
@@ -366,7 +375,7 @@ func main() {
 
 	http.Handle("/", r)
 
-	if err = http.ListenAndServe(":"+*listenPort, nil); err != nil {
+	if err = http.ListenAndServe(":"+*listenport, nil); err != nil {
 		panic(err)
 	}
 }

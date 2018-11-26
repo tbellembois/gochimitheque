@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"github.com/tbellembois/gochimitheque/utils"
 	"net/http"
 	"strconv"
 
@@ -220,7 +221,7 @@ func (env *Env) CreatePersonHandler(w http.ResponseWriter, r *http.Request) *hel
 	log.WithFields(log.Fields{"p": p}).Debug("CreatePersonHandler")
 
 	// TODO
-	p.PersonPassword = "TODO"
+	p.PersonPassword = utils.RandStringBytes(64)
 
 	if err, _ := env.DB.CreatePerson(p); err != nil {
 		return &helpers.AppError{

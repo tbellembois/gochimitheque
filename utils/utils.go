@@ -5,11 +5,14 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"math/rand"
 	"regexp"
 	"sort"
 	"strconv"
 	"strings"
 )
+
+const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 var (
 	atoms = map[string]string{
@@ -593,4 +596,13 @@ func SortSimpleFormula(f string) (string, error) {
 	}
 
 	return newf, nil
+}
+
+// RandStringBytes generates a n size random string
+func RandStringBytes(n int) string {
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+	}
+	return string(b)
 }

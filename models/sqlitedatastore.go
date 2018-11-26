@@ -6,13 +6,17 @@ import (
 	"bufio"
 	"database/sql"
 	"encoding/csv"
-	"os"
-	"strings"
-	"time"
-
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
 	log "github.com/sirupsen/logrus"
+	"github.com/tbellembois/gochimitheque/utils"
+	"io"
+	"os"
+	"path"
+	"regexp"
+	"strconv"
+	"strings"
+	"time"
 )
 
 const (
@@ -622,5 +626,184 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 			}
 		}
 	}
+	return nil
+}
+
+// Import import data from CSV
+func (db *SQLiteDataStore) Import(dir string) error {
+
+	var (
+		csvFile   *os.File
+		csvReader *csv.Reader
+		err       error
+		res       sql.Result
+		lastid    int64
+		c, i      int                 // count result
+		tx        *sql.Tx             // db transaction
+		sqlr      string              // sql request
+		mperson   map[string]string   // oldid <> newid map for user table
+		mentity   map[string]string   // oldid <> newid map for entity table
+		mmanagers map[string][]string // oldentityid <> oldpersonid
+	)
+
+	// init maps
+	mperson = make(map[string]string)
+	mentity = make(map[string]string)
+	mmanagers = make(map[string][]string)
+
+	// checking tables empty
+	if err = db.Get(&c, `SELECT count(*) FROM person`); err != nil {
+		return err
+	}
+	if c != 0 {
+		panic("person table not empty - can not import")
+	}
+	if err = db.Get(&c, `SELECT count(*) FROM entity`); err != nil {
+		return err
+	}
+	if c != 0 {
+		panic("person entity not empty - can not import")
+	}
+
+	// beginning transaction
+	if tx, err = db.Begin(); err != nil {
+		return err
+	}
+
+	//
+	// entity
+	//
+	log.Info("- importing entity")
+	rentity_name := regexp.MustCompile("user_[0-9]+|root_entity|all_entity")
+	rmanagers := regexp.MustCompile("([0-9]+)")
+	if csvFile, err = os.Open(path.Join(dir, "entity.csv")); err != nil {
+		return (err)
+	}
+	csvReader = csv.NewReader(bufio.NewReader(csvFile))
+	i = 0
+	for {
+		line, error := csvReader.Read()
+
+		// skip header
+		if i == 0 {
+			i++
+			continue
+		}
+
+		if error == io.EOF {
+			break
+		} else if error != nil {
+			tx.Rollback()
+			return err
+		}
+		id := line[0]
+		name := line[1]
+		description := line[2]
+		manager := line[3]
+
+		// finding web2py like manager ids
+		ms := rmanagers.FindAllString(manager, -1)
+		for _, m := range ms {
+			mmanagers[id] = append(mmanagers[id], m)
+		}
+
+		// leaving web2py specific entries
+		if !rentity_name.MatchString(name) {
+			sqlr = `INSERT INTO entity(entity_name, entity_description) VALUES (?, ?)`
+			if res, err = tx.Exec(sqlr, name, description); err != nil {
+				tx.Rollback()
+				return err
+			}
+			// getting the last inserted id
+			if lastid, err = res.LastInsertId(); err != nil {
+				tx.Rollback()
+				return err
+			}
+			// populating the map
+			mentity[id] = string(int(lastid))
+		}
+	}
+
+	//
+	// person
+	//
+	log.Info("- importing user")
+	if csvFile, err = os.Open(path.Join(dir, "person.csv")); err != nil {
+		return (err)
+	}
+	csvReader = csv.NewReader(bufio.NewReader(csvFile))
+	i = 0
+	for {
+		line, error := csvReader.Read()
+
+		// skip header
+		if i == 0 {
+			i++
+			continue
+		}
+
+		if error == io.EOF {
+			break
+		} else if error != nil {
+			tx.Rollback()
+			return err
+		}
+		id := line[0]
+		email := line[3]
+		password := utils.RandStringBytes(64)
+
+		sqlr = `INSERT INTO person(person_email, person_password) VALUES (?, ?)`
+		if res, err = tx.Exec(sqlr, email, password); err != nil {
+			tx.Rollback()
+			return err
+		}
+		// getting the last inserted id
+		if lastid, err = res.LastInsertId(); err != nil {
+			tx.Rollback()
+			return err
+		}
+		// populating the map
+		mperson[id] = strconv.FormatInt(lastid, 10)
+	}
+
+	//
+	// permissions
+	//
+	log.Info("- initializing default permissions (r products)")
+	for _, newpid := range mperson {
+		sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id) VALUES (?, ?, ?, ?)`
+		if res, err = tx.Exec(sqlr, newpid, "r", "products", -1); err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	//
+	// managers
+	//
+	log.Info("- initializing managers")
+	for oldentityid, oldmanagerids := range mmanagers {
+		for _, oldmanagerid := range oldmanagerids {
+			newentityid := mentity[oldentityid]
+			newmanagerid := mperson[oldmanagerid]
+			sqlr = `INSERT INTO entitypeople(entitypeople_entity_id, entitypeople_person_id) VALUES (?, ?)`
+			if res, err = tx.Exec(sqlr, newentityid, newmanagerid); err != nil {
+				tx.Rollback()
+				return err
+			}
+			sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id) VALUES (?, ?, ?, ?)`
+			if res, err = tx.Exec(sqlr, newmanagerid, "all", "all", newentityid); err != nil {
+				tx.Rollback()
+				return err
+			}
+		}
+	}
+
+	// committing changes
+	if err = tx.Commit(); err != nil {
+		tx.Rollback()
+		return err
+	}
+
 	return nil
 }
