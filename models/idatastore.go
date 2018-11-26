@@ -10,6 +10,7 @@ import (
 // to store data
 type Datastore interface {
 	CreateDatabase() error
+	Import(dir string) error
 
 	// products
 	GetProducts(helpers.DbselectparamProduct) ([]Product, int, error)
