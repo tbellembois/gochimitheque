@@ -929,6 +929,9 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 		"storage_barecode": p.GetStorageBarecode(),
 	}
 
+	log.Debug(presreq.String() + comreq.String() + postsreq.String())
+	log.Debug(m)
+
 	// select
 	if err = snstmt.Select(&products, m); err != nil {
 		return nil, 0, err
