@@ -158,6 +158,13 @@ type EmpiricalFormula struct {
 	EmpiricalFormulaLabel string `db:"empiricalformula_label" json:"empiricalformula_label" schema:"empiricalformula_label"`
 }
 
+// LinearFormula is a product linear formula
+type LinearFormula struct {
+	C                  int            `db:"c" json:"c"` // not stored in db but db:"c" set for sqlx
+	LinearFormulaID    sql.NullInt64  `db:"linearformula_id" json:"linearformula_id" schema:"linearformula_id"`
+	LinearFormulaLabel sql.NullString `db:"linearformula_label" json:"linearformula_label" schema:"linearformula_label"`
+}
+
 // PhysicalState is a product physical state
 type PhysicalState struct {
 	// nullable values to handle optional Product foreign key (gorilla shema nil values)
@@ -201,11 +208,11 @@ type Product struct {
 	ProductMSDS             sql.NullString `db:"product_msds" json:"product_msds" schema:"product_msds"`
 	ProductRestricted       sql.NullBool   `db:"product_restricted" json:"product_restricted" schema:"product_restricted"`
 	ProductRadioactive      sql.NullBool   `db:"product_radioactive" json:"product_radioactive" schema:"product_radioactive"`
-	ProductLinearFormula    sql.NullString `db:"product_linearformula" json:"product_linearformula" schema:"product_linearformula"`
 	ProductThreeDFormula    sql.NullString `db:"product_threedformula" json:"product_threedformula" schema:"product_threedformula"`
 	ProductDisposalComment  sql.NullString `db:"product_disposalcomment" json:"product_disposalcomment" schema:"product_disposalcomment"`
 	ProductRemark           sql.NullString `db:"product_remark" json:"product_remark" schema:"product_remark"`
 	EmpiricalFormula        `db:"empiricalformula" json:"empiricalformula" schema:"empiricalformula"`
+	LinearFormula           `db:"linearformula" json:"linearformula" schema:"linearformula"`
 	PhysicalState           `db:"physicalstate" json:"physicalstate" schema:"physicalstate"`
 	SignalWord              `db:"signalword" json:"signalword" schema:"signalword"`
 	ClassOfCompound         `db:"classofcompound" json:"classofcompound" schema:"classofcompound"`
@@ -286,12 +293,14 @@ func (p Person) String() string {
 }
 
 func (s StoreLocation) String() string {
-	return fmt.Sprintf(`StoreLocationName: %s | 
+	return fmt.Sprintf(`StoreLocationID: %s | 
+	StoreLocationName: %s | 
 	StoreLocationCanStore: Valid:%t Bool:%t | 
 	StoreLocationColor: %s | 
+	StoreLocation: %s |
 	Entity: %d | 
 	Stocks: %v
-	`, s.StoreLocationName.String, s.StoreLocationCanStore.Valid, s.StoreLocationCanStore.Bool, s.StoreLocationColor.String, s.EntityID, s.Stocks)
+	`, s.StoreLocationID, s.StoreLocationName.String, s.StoreLocationCanStore.Valid, s.StoreLocationCanStore.Bool, s.StoreLocationColor.String, s.StoreLocation, s.EntityID, s.Stocks)
 }
 
 func (p Permission) String() string {

@@ -677,6 +677,14 @@ func NewdbselectparamEntity(r *http.Request, f func(string) (string, error)) (*d
 	dspe.dbselectparam = *dsp
 	dspe.OrderBy = "entity_id"
 
+	if r != nil {
+		if o, ok := r.URL.Query()["sort"]; ok {
+			dspe.OrderBy = o[0]
+		} else {
+			dspe.OrderBy = "entity_id"
+		}
+	}
+
 	return &dspe, nil
 
 }

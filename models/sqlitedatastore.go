@@ -432,6 +432,10 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	CREATE TABLE IF NOT EXISTS empiricalformula (
 		empiricalformula_id integer PRIMARY KEY,
 		empiricalformula_label string NOT NULL UNIQUE);
+	-- products linear formulas
+	CREATE TABLE IF NOT EXISTS linearformula (
+		linearformula_id integer PRIMARY KEY,
+		linearformula_label string NOT NULL UNIQUE);
 	-- products physical states
 	CREATE TABLE IF NOT EXISTS physicalstate (
 		physicalstate_id integer PRIMARY KEY,
@@ -461,7 +465,6 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		product_msds string,
 		product_restricted boolean default 0,
 		product_radioactive boolean default 0,
-		product_linearformula string,
 		product_threedformula string,
 		product_disposalcomment string,
 		product_remark string,
@@ -469,6 +472,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		cenumber integer,
 		person integer NOT NULL,
 		empiricalformula integer NOT NULL,
+		linearformula integer,
 		physicalstate integer,
 		signalword integer,
 		classofcompound integer,
@@ -477,6 +481,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		FOREIGN KEY(cenumber) references cenumber(cenumber_id),
 		FOREIGN KEY(person) references person(person_id),
 		FOREIGN KEY(empiricalformula) references empiricalformula(empiricalformula_id),
+		FOREIGN KEY(linearformula) references linearformula(linearformula_id),
 		FOREIGN KEY(physicalstate) references physicalstate(physicalstate_id),
 		FOREIGN KEY(signalword) references signalword(signalword_id),
 		FOREIGN KEY(classofcompound) references classofcompound(classofcompound_id),
@@ -515,16 +520,15 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 
 	// values definition
 	inssymbol := `INSERT INTO symbol (symbol_label, symbol_image) VALUES 
-	("sgh01", "image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAInSURBVFiFzdi9b45RGMfxz11KNalS0napgVaE0HhLxEtpVEIQxKAbiUhMJCoisTyriYTBLCZGsRCrP8JkkLB4iVlyDL1EU9refZ7raZ3kJPfrub75/a7zWpVSpJSqaoBSGintlVJarzQKJWojo81sqDS4XKUSlcu3LwkuFyoRLh8qCa49UAlw6VDoRUercOlK4T7WtapcNlQHHmfYmgm1CVO4MOPZBow31V4SVDde4i22xrMeXEfVVK5myB4gh/AQVwPqSljbEe/XYVfd9lOgIvAt3AnAS1iBczgV168wVTdOClSAPcMwzmIg4EbRP+u7behZKF6r9q3BTTzFC1wLO49iD/owHioex2nswGpsnC9uU1BYhUE8R8EH3As1DuIYtmAnDsT9SZwPJScxMp8o9RKRtQHSFUk8jBHcxpPIr95QqC+svIxHGKiVDrM4VqpRSik/qqoaxTecwSe8CUWO4Dve4W6o9xFf8Bl9VVV1RgfoDLXfl1J+LhR0bp+nVRjGZoxhLw7jRNhzIwAKXmMCD/AVDVxsRq3ayY/1GEK/6RF+u+k5cTAUGJoxVk1ionaPnjf568HtD6h9GJunY3RjN7qahfobrEYP9Xv0brUuaoCt+VO7oeYGaydcS5N4u+BSlj3ZcKkLxSy4tiytW4Vr62ak2SBLsn1bbLAl3fDWDbosRwQLBV/WQ5W5IP6LY6h/w6VA5YAl2jez1lrBLlhKaaiqP9cJ5Rf+De5Q3HyidwAAAABJRU5ErkJggg=="),
-	("sgh02", "image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAIvSURBVFiFzdgxbI5BGMDx36uNJsJApFtFIh2QEIkBtYiYJFKsrDaJqYOofhKRMFhsFhNNMBgkTAaD0KUiBomN1EpYBHWGnvi8vu9r7/2eti65vHfv3T3P/57nuXvfuyqlJCRVVQuk1AqRl1LqP9NKpJxbETKjocLgYi0VaLl49wXBxUIFwsVDBcGFQWEAg1FwYZbCGMajLBfmPkzgUZRbw2IKFzGPrRFw/bpvD/bn8jUkXM719f3A9eu+k3iXA/92Bnub2yYx1NgDfbrvXIYZx8dcThjBExxvPOmGltqLIzmuEt63QSVczc+z/2whSw2ThpbajS+4UgOq59O4gYFSuGaByWb8zKvwN8RXXKiBPc7PLaWx3ARqY37O1CBe5/cvO1huVy+ZnfSX7y9MYxRTNeX32lZj+/sXWNfVnV3g1tT/aJeQ5vAGp3L9eXbjTFv7NzzM9VncSSnNF2lp4MqjNYvcxwEcy+0HcQg32/q8Kndl+YrcgM9Z4YdsrZ21PtvxHT9yv1vNgr8cbiIrnMUmbKu177PwVZjLgKPNt4sCOKzF0ww32aF9CA+yxSZKoTqDlVnucI6lMxhpg76OuxhrKr8oIENyXx/xxQKTE/hUkIdLJ1tlRd3TwtF/KtcuSalVVdUwdvQe+Fd6ljhfl9NzRKT5I8cvq/B+xi3vzFfk+FaqbEUPvEtVuipXBIspX9VLlW4Q/8U1VGe4EKgYsED3tefBgt271y7dUlV/ygHpF8bRglXiwx7BAAAAAElFTkSuQmCC"),
-	("sgh03", "image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAJhSURBVFiFzdjNq41RFMfxz/FSXK4iUV4GUjJRMpG8lQnJUF0mTAy8xkApimOEMDA2oSgD5R9gcE0obxO6JkooBroJhRttg7Nu94lzzz37OdvLrt16zrPXs9d3/9Ze+5zzNFJKirRGowlSahaZL6XUe6eZSNGbJeYsDVUMrqxSBZUrn75CcMWgsARTSsEVUwq7sLWUcmXS1wK7iOvd+pcDa5++qVgU1/fxKq4n9wrXa/qW4Bb6MIKE2diPmb3A1VYq7MqAuRQ2YTdeY6CXtNZVaj4uYG0FaLR/D3sc0+vC1d3okwJgsAI0iB+Vz5dxe1TdXLg6UHPCvg2AT2E34VobBaflzD8+2AQPRYqu4kUEPh1KzcKOuPck7CMcQF92nOyVtCquqsg8PI5C2IyHWBFjn8NuzM5Mdu7ZGcGO4k1U5EgF9CNO4QuG4t6x7ALLrhY2RLB9uBMAJ7Ea63A+CuMVlobvidzqzz9fmFtR5jvWtPHZHj4Xww5MNO+vHJNktpTSezxAP26klO618bkZah4JRe/mxslOZSiyLZQ43MHnTPicy1Wr1uavBH6Hsx3Gr+ADZudC1TouKoFv4CX624wtwDBO1oH6HSwDDsvxTetrZ2Hl/jKtg3UYs+pAtQfLg1uldcqPhH2qVanPsL4u1Phg3ayIPdiLg3hu7IAdwqEY24vFtRZdew/wtQLTqW+ptYc7gnWYLPbS8i76jFyo7sBqTFri+T86eS/P/dmV/5W/b7nB/uof3m6D/pNXBBMF/6cvVcaD+C9eQ7WHKwJVBqxg+qp9SvYvy3YtpaZGY+y6QPsJlPiFVobY9AkAAAAASUVORK5CYII="),
-	("sgh04", "image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAFtSURBVFiFzdixLgRBGADgb4UoBYXKA3gAHYU3EKWH0FKuAk8gGm+hvU4oJAqlaDVqiUSCUbjEJe5ys7v/7NnkT66Ynf/bmZ3bf6ZKKQm5qqoGKdUh/aWUugd1Ig2jjugzGhWGix2pwJGLn74gXCwqEBePCsKVQQXgyqE63lcW1eH+8qiW/fSDatFff6iG/faLatB//6jMPKEoLGEX53jEHTaxj0sMcvN1QmEBWzjGLT6QxsQX7nGUO3KNUdjAAa7wOgEyGjdYazqt+auEQzxnQEbjBdtt3rn5nCq3qqp1nGJuStM3XGMwjIc0fKrGV9YKYQXv/o7Ip58X/AQ7WIxaofnLl7Mh5gkX2MNyqb+NrEYjuNXOkMx8jRr3hRoP6wPX6pNUGtfpI14KF1L2RONCC8UoXJHSuiuu6GakbZJetm9Nk/W64c1NOpMjgmnJZ3qoMgnxL46hxuNCUDGwwOkbjawKNqParFXV7++A6xtDLLIHRMAuWAAAAABJRU5ErkJggg=="),
-	("sgh05", "image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAI9SURBVFiFzdhPiI1RGMfxz2FmgYVo1CyYhVJISuPPDmFGNwtW2EzKn4TEELKaa2NNdiyUlWxtUGYptiytrRSNIk3GsbinceO+7vvOPe8dp56677k9v+d7nnPOczonxBhlaSE0QYzNLHoxxt6NZiQma+bQzA2VDS5vpjJmLv/0ZYLLC5URLj9UJrh6oDLA1QfVo1+9UD341w+1QJ2exLAG+3AKq9DAGUxgJ1YsFG6gy9k3lb5uibEZQhjHNnxFxEe8w1ucwxfcxxw24GAIYTkCBmOMTSFIulNCKDxbO4N1gEq/P6SsfMdw6hvFDB5hGS5iLYZSRr/hE6bRAikDV2X6sC4B7MZQ13XSAlufII5iBGOllknFNTWGq6W3PJO4ngYygRu4WSoJJTO1N62TXWnqtmK0BNgR3E4DmsQdjJRJRtlMNXAX53EBz7G6BNgAjmEH9hT6dIhfagtjCV5gC67hUgmoA3iNl3iDe7iSQAe7wRWWixBCAyfauj5jo9bOPBRCeNz239kY40yb72lsx5MEth9PY4zvQwgr8aMo7nwrTCWXtWpVGRv+I1vH8SxlaRxLsblKIQ9J6K/aFXiITV1H1mrTMcbZ9o4QwmGc1CrGr/BTa83N4kGMca5T3PmattAjI4uVKhf9hqtUYPsFV6YS9OJcF9S/weqAq6CXVSynTi2iOfxrFe/Fr96R9+X6VjVYXy+8ZYMuyhNBt+CL+qhSBPFfPEN1hssClQcs4/S1W/GFt0r7fVcsvMBWbb8AgnCJLinP5ycAAAAASUVORK5CYII="),
-	("sgh06", "image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAK6SURBVFiFzdhPiFdVFMDxzxsnpTIFNQpJZjEoVEwQyoRYRP82JUQySAYuZITEDBeCuvPnInXhzGAaRTMtDNyMBElUi9m4ECVGI6FVMOuilUG4COO0eBfmj2/m997vd0e7cOG9y7vnfN8555577i0iQpZWFC0Q0coiLyK677SCSL2VQ2ZuqGxweS2V0XL53ZcJLi9URrj8UJnglgcqA1zXUHgc7+EsvsQxbOwWrluoAXyDHXgkjfXhC7zbDVw3UIO4gFWVgjmIjzqF6xTqhWSVNxcVzAq0cKgTuI4CF6cxgr4lhTOG850siMZQSeEr+B29NcBONZVfDba0pXrmPH+Ll7EX7+OxNP56GtuBy1iXxot5P9Lu5xtADWICn6AHn2M3Av9gc/puOo19jXNp7FlM4kJtfQ3cdx39eAPncS4p3IPXUrD34xkcwUZ8hW24hJXJtUO1Flhtn/M9Pk6JdBc+wx8pLfRgP+5gLV7ET7iRIA+keXtxpk74FFEu6RNl2eikRSrQoijeSop/w3Cyzq94CbeTpQaSu99JMXUN2zGOX7ATP0TE3xUK5nH0VEFUtYiYiojpiPgrIkZxFE/jJp7HFA4rF8R3CXImIvZFxPWIuBsRk5VQiyhsnpVL1w0pk+wVPKeMvQ8T7EVlDI5hSzt51a4sFd1nyoUuLYriOJ5Srrgn8LPSnffQi1X4E5twFa9iBquxRunaf/FjREzNEVytt9YKKS00jrH0vi8J2zDnm0ct2AmU8TehjL+VuIUPmqWL9nCFsqxZj5G27pmdt1a52W/FcGcJtj3cIEbxZF2wNO9tfIrVtdNTk4DM0rvaxJcLLkvZkxsua6GYC25ZSutu4Zb1MNKpkgdyfGuq7IEeeOsqfShXBO2UP9RLlcUg/hfXUNVwWaDygGV039zeW10+NmwRLUUx+5yh/QdzLVcJBJ5ddQAAAABJRU5ErkJggg=="),
-	("sgh07", "image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAF/SURBVFiFzdghT8NAGMbx/y1g0HMLQWDxJDgCkk+AQhE8BlkDGL4JwczyAXBkCY4vQAhBgiI7xJpwK1fW9nm6ccklNe/7/u7eW9c2xBixjBAKAGIsLPlijPqEIkIsZ+HI6UbZcN6dMu6cv30mnBdlxPlRJlw/KAOuP5QYJycHBsARMAYmwCUwVHHyioELIFbmvbpzchuAmwzsSW2rfDaA0wzsTs4rrwz2M7BruRPyWYBRBnYin10FVcIC8FGB7TWJ/fPXrqAS3KQCGzaOr6kro0rYbYJ6bxufq+/5w4WrBPbQJUfVMZAfgWfjuea6+zC1cht4Y7Zjx55WGg5/idsEDhyoeZiIA7aAXQfqN6wjDjgHvoApi+76Det0CsrAXpi/j+0oqHpYSxzwmKCmwEjNK213AjsEXoFP4MyyWPUsJLh1YMOBagbrkNQR32tyJa7flS/l9a1tsaW+8DYtupJPBIuKr/SjSh3iX3yGyuMsKA/M2L50rpmeNgtC+Lk2jG/Rx4o589viKwAAAABJRU5ErkJggg=="),
-	("sgh08", "image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAKJSURBVFiFzdixix1FGADw38QDUbQQqyNewiEYCxNN4ECjkuIaFYLNQQpTCBLkzD8gJsVLOqPGJiBYeGB1SeFhYXEhmCIpTgIpRDAEosWhckXU6AknCUyKN49bn+/tze6OnAsDuzA789v5vvnevg0xRkWOEHogxl6R8WKM3Ru9SEytV2LM0qhiuLIrVXDlyoevEK4sqiCuGApTeBo7SuA6o7AX3yKmdh3PdsV1RU3hzwpq0NbxZBdc1/AtjEAN2lddcq41KsG+qYH9jYfb4lqjEuxWDSxissl4ebCMQbBSg/qp7bjjYbk3c7oGttjpoduiEuz5GthbndKkLaqCu5Qgd/FdOv8FD3XaWF1QCfZawqzhWDo/mnv/2FLUEfUA3kuYL/FyOn87GzZm/rbhm8JH+LmSU6t4pHL9A87gmTa4Hf9+px19hBAmQgjzIYQVnMIGHqt0+QKvVq6ncRAzIYSlEMLZEMKu3PmyQ4kTldWI+lX/MD7GZ5jHJH7ESbyJs/qbYnDP79idF8rc7Tu6mK7hHexJfQLewE7jfxWO5Cd/zvblypiJ/sBzQ32vjun7T1hWudjqCdiH20OTrOJz7MJTqd8reAk3RqCu4fGsCDWqLezHr2mSdcxgFss4nkK4iPcxh8v6myTiazyandONCx8H8Ck+wM3KapxP+Ta43tDfqXM4hweb1MzGha+CuzMUpoWU+MPh+yR3g+XD6nEvpMQfAJaxNIT6EKEpKg9Wj3vR5jv/b/r1a4B6t81KNYPV4w7hL3yfcu+e6ivPf/pnZGvcLC7iAl7vimoOq8dN44kSqHawnEm35RPBVpNv60eVcYj/xWeo0bgiqDKwguGrtgkljhh7Qtg8L3DcB497IINNg8B2AAAAAElFTkSuQmCC"),
-	("sgh09", "image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAI8SURBVFiFzdi7a1VBEMDhb0EjYhFfaCEICopBi4haWUiqqGgQW1OKaBpNIQEVvREi2lhaWCiC/4CSImgv2IgQELSSdKKlMUKEtTgr3jxuPI+9iQMD5+y9u/NjdmbO7IYYoywSQgvE2MqyXoyxudKKxKStHGvmhsoGl9dTGT2Xf/syweWFygiXHyoTXHegMsDVgprjLk5hS4wRenLD1fYUhjGans9jF/rRlwOuMhS2Yz924F0CO4EBjOTyXK0YwUVcwAcEHMJr9OaKudqLYBA/cQx7cT+NB1xrCld5cvLOGA7gqSIRricv7sED9Df1XB1PbcVOXMZnzOA7pvEcg3UTqjNY1QDlKmLSsRX+14NNlXamLlQyeDJBfenw+xmcxQ3cxunSCVYpINmYatUfHUlg3xaN9+MmjqR5uxPkaNltrZbChcFYUi8tmjuOqbIxt25pT7uifMThtvcBPMS84kvwKY2fizE+hhDCBkXGzuBZaUsN4qtPUVQj3uOJIhmGFSXlOO4loEmsr5KhtYIfvRjCUTxS1K8reKnIwAkLt/UHhqqUjUblIkFuxi18TRCv8KsNah5v8UbqRqqVi5JwOKhI/ym8wKzlg3+xzmGyrJ2QjC2U4ox4J72NS2fFEMI27CsdwEtlNsY43Wn9BVIlILNoo494t+CytD254bI2irngutJaN4Xr6mGkrpFVOb5VNbaqB96yRtfkiuBfxtf0UqUTxH9xDbU8XBaoPGAZt69dq3awy0uMLSH8fc4gvwFyuYuihNiCxwAAAABJRU5ErkJggg==");`
-	insphysicalstate := `INSERT INTO physicalstate (physicalstate_label) VALUES ("gaz"), ("liquid"), ("solid")`
+	("SGH01", "image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAInSURBVFiFzdi9b45RGMfxz11KNalS0napgVaE0HhLxEtpVEIQxKAbiUhMJCoisTyriYTBLCZGsRCrP8JkkLB4iVlyDL1EU9refZ7raZ3kJPfrub75/a7zWpVSpJSqaoBSGintlVJarzQKJWojo81sqDS4XKUSlcu3LwkuFyoRLh8qCa49UAlw6VDoRUercOlK4T7WtapcNlQHHmfYmgm1CVO4MOPZBow31V4SVDde4i22xrMeXEfVVK5myB4gh/AQVwPqSljbEe/XYVfd9lOgIvAt3AnAS1iBczgV168wVTdOClSAPcMwzmIg4EbRP+u7behZKF6r9q3BTTzFC1wLO49iD/owHioex2nswGpsnC9uU1BYhUE8R8EH3As1DuIYtmAnDsT9SZwPJScxMp8o9RKRtQHSFUk8jBHcxpPIr95QqC+svIxHGKiVDrM4VqpRSik/qqoaxTecwSe8CUWO4Dve4W6o9xFf8Bl9VVV1RgfoDLXfl1J+LhR0bp+nVRjGZoxhLw7jRNhzIwAKXmMCD/AVDVxsRq3ayY/1GEK/6RF+u+k5cTAUGJoxVk1ionaPnjf568HtD6h9GJunY3RjN7qahfobrEYP9Xv0brUuaoCt+VO7oeYGaydcS5N4u+BSlj3ZcKkLxSy4tiytW4Vr62ak2SBLsn1bbLAl3fDWDbosRwQLBV/WQ5W5IP6LY6h/w6VA5YAl2jez1lrBLlhKaaiqP9cJ5Rf+De5Q3HyidwAAAABJRU5ErkJggg=="),
+	("SGH02", "image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAIvSURBVFiFzdgxbI5BGMDx36uNJsJApFtFIh2QEIkBtYiYJFKsrDaJqYOofhKRMFhsFhNNMBgkTAaD0KUiBomN1EpYBHWGnvi8vu9r7/2eti65vHfv3T3P/57nuXvfuyqlJCRVVQuk1AqRl1LqP9NKpJxbETKjocLgYi0VaLl49wXBxUIFwsVDBcGFQWEAg1FwYZbCGMajLBfmPkzgUZRbw2IKFzGPrRFw/bpvD/bn8jUkXM719f3A9eu+k3iXA/92Bnub2yYx1NgDfbrvXIYZx8dcThjBExxvPOmGltqLIzmuEt63QSVczc+z/2whSw2ThpbajS+4UgOq59O4gYFSuGaByWb8zKvwN8RXXKiBPc7PLaWx3ARqY37O1CBe5/cvO1huVy+ZnfSX7y9MYxRTNeX32lZj+/sXWNfVnV3g1tT/aJeQ5vAGp3L9eXbjTFv7NzzM9VncSSnNF2lp4MqjNYvcxwEcy+0HcQg32/q8Kndl+YrcgM9Z4YdsrZ21PtvxHT9yv1vNgr8cbiIrnMUmbKu177PwVZjLgKPNt4sCOKzF0ww32aF9CA+yxSZKoTqDlVnucI6lMxhpg76OuxhrKr8oIENyXx/xxQKTE/hUkIdLJ1tlRd3TwtF/KtcuSalVVdUwdvQe+Fd6ljhfl9NzRKT5I8cvq/B+xi3vzFfk+FaqbEUPvEtVuipXBIspX9VLlW4Q/8U1VGe4EKgYsED3tefBgt271y7dUlV/ygHpF8bRglXiwx7BAAAAAElFTkSuQmCC"),
+	("SGH03", "image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAJhSURBVFiFzdjNq41RFMfxz/FSXK4iUV4GUjJRMpG8lQnJUF0mTAy8xkApimOEMDA2oSgD5R9gcE0obxO6JkooBroJhRttg7Nu94lzzz37OdvLrt16zrPXs9d3/9Ze+5zzNFJKirRGowlSahaZL6XUe6eZSNGbJeYsDVUMrqxSBZUrn75CcMWgsARTSsEVUwq7sLWUcmXS1wK7iOvd+pcDa5++qVgU1/fxKq4n9wrXa/qW4Bb6MIKE2diPmb3A1VYq7MqAuRQ2YTdeY6CXtNZVaj4uYG0FaLR/D3sc0+vC1d3okwJgsAI0iB+Vz5dxe1TdXLg6UHPCvg2AT2E34VobBaflzD8+2AQPRYqu4kUEPh1KzcKOuPck7CMcQF92nOyVtCquqsg8PI5C2IyHWBFjn8NuzM5Mdu7ZGcGO4k1U5EgF9CNO4QuG4t6x7ALLrhY2RLB9uBMAJ7Ea63A+CuMVlobvidzqzz9fmFtR5jvWtPHZHj4Xww5MNO+vHJNktpTSezxAP26klO618bkZah4JRe/mxslOZSiyLZQ43MHnTPicy1Wr1uavBH6Hsx3Gr+ADZudC1TouKoFv4CX624wtwDBO1oH6HSwDDsvxTetrZ2Hl/jKtg3UYs+pAtQfLg1uldcqPhH2qVanPsL4u1Phg3ayIPdiLg3hu7IAdwqEY24vFtRZdew/wtQLTqW+ptYc7gnWYLPbS8i76jFyo7sBqTFri+T86eS/P/dmV/5W/b7nB/uof3m6D/pNXBBMF/6cvVcaD+C9eQ7WHKwJVBqxg+qp9SvYvy3YtpaZGY+y6QPsJlPiFVobY9AkAAAAASUVORK5CYII="),
+	("SGH04", "image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAFtSURBVFiFzdixLgRBGADgb4UoBYXKA3gAHYU3EKWH0FKuAk8gGm+hvU4oJAqlaDVqiUSCUbjEJe5ys7v/7NnkT66Ynf/bmZ3bf6ZKKQm5qqoGKdUh/aWUugd1Ig2jjugzGhWGix2pwJGLn74gXCwqEBePCsKVQQXgyqE63lcW1eH+8qiW/fSDatFff6iG/faLatB//6jMPKEoLGEX53jEHTaxj0sMcvN1QmEBWzjGLT6QxsQX7nGUO3KNUdjAAa7wOgEyGjdYazqt+auEQzxnQEbjBdtt3rn5nCq3qqp1nGJuStM3XGMwjIc0fKrGV9YKYQXv/o7Ip58X/AQ7WIxaofnLl7Mh5gkX2MNyqb+NrEYjuNXOkMx8jRr3hRoP6wPX6pNUGtfpI14KF1L2RONCC8UoXJHSuiuu6GakbZJetm9Nk/W64c1NOpMjgmnJZ3qoMgnxL46hxuNCUDGwwOkbjawKNqParFXV7++A6xtDLLIHRMAuWAAAAABJRU5ErkJggg=="),
+	("SGH05", "image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAI9SURBVFiFzdhPiI1RGMfxz2FmgYVo1CyYhVJISuPPDmFGNwtW2EzKn4TEELKaa2NNdiyUlWxtUGYptiytrRSNIk3GsbinceO+7vvOPe8dp56677k9v+d7nnPOczonxBhlaSE0QYzNLHoxxt6NZiQma+bQzA2VDS5vpjJmLv/0ZYLLC5URLj9UJrh6oDLA1QfVo1+9UD341w+1QJ2exLAG+3AKq9DAGUxgJ1YsFG6gy9k3lb5uibEZQhjHNnxFxEe8w1ucwxfcxxw24GAIYTkCBmOMTSFIulNCKDxbO4N1gEq/P6SsfMdw6hvFDB5hGS5iLYZSRr/hE6bRAikDV2X6sC4B7MZQ13XSAlufII5iBGOllknFNTWGq6W3PJO4ngYygRu4WSoJJTO1N62TXWnqtmK0BNgR3E4DmsQdjJRJRtlMNXAX53EBz7G6BNgAjmEH9hT6dIhfagtjCV5gC67hUgmoA3iNl3iDe7iSQAe7wRWWixBCAyfauj5jo9bOPBRCeNz239kY40yb72lsx5MEth9PY4zvQwgr8aMo7nwrTCWXtWpVGRv+I1vH8SxlaRxLsblKIQ9J6K/aFXiITV1H1mrTMcbZ9o4QwmGc1CrGr/BTa83N4kGMca5T3PmattAjI4uVKhf9hqtUYPsFV6YS9OJcF9S/weqAq6CXVSynTi2iOfxrFe/Fr96R9+X6VjVYXy+8ZYMuyhNBt+CL+qhSBPFfPEN1hssClQcs4/S1W/GFt0r7fVcsvMBWbb8AgnCJLinP5ycAAAAASUVORK5CYII="),
+	("SGH06", "image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAK6SURBVFiFzdhPiFdVFMDxzxsnpTIFNQpJZjEoVEwQyoRYRP82JUQySAYuZITEDBeCuvPnInXhzGAaRTMtDNyMBElUi9m4ECVGI6FVMOuilUG4COO0eBfmj2/m997vd0e7cOG9y7vnfN8555577i0iQpZWFC0Q0coiLyK677SCSL2VQ2ZuqGxweS2V0XL53ZcJLi9URrj8UJnglgcqA1zXUHgc7+EsvsQxbOwWrluoAXyDHXgkjfXhC7zbDVw3UIO4gFWVgjmIjzqF6xTqhWSVNxcVzAq0cKgTuI4CF6cxgr4lhTOG850siMZQSeEr+B29NcBONZVfDba0pXrmPH+Ll7EX7+OxNP56GtuBy1iXxot5P9Lu5xtADWICn6AHn2M3Av9gc/puOo19jXNp7FlM4kJtfQ3cdx39eAPncS4p3IPXUrD34xkcwUZ8hW24hJXJtUO1Flhtn/M9Pk6JdBc+wx8pLfRgP+5gLV7ET7iRIA+keXtxpk74FFEu6RNl2eikRSrQoijeSop/w3Cyzq94CbeTpQaSu99JMXUN2zGOX7ATP0TE3xUK5nH0VEFUtYiYiojpiPgrIkZxFE/jJp7HFA4rF8R3CXImIvZFxPWIuBsRk5VQiyhsnpVL1w0pk+wVPKeMvQ8T7EVlDI5hSzt51a4sFd1nyoUuLYriOJ5Srrgn8LPSnffQi1X4E5twFa9iBquxRunaf/FjREzNEVytt9YKKS00jrH0vi8J2zDnm0ct2AmU8TehjL+VuIUPmqWL9nCFsqxZj5G27pmdt1a52W/FcGcJtj3cIEbxZF2wNO9tfIrVtdNTk4DM0rvaxJcLLkvZkxsua6GYC25ZSutu4Zb1MNKpkgdyfGuq7IEeeOsqfShXBO2UP9RLlcUg/hfXUNVwWaDygGV039zeW10+NmwRLUUx+5yh/QdzLVcJBJ5ddQAAAABJRU5ErkJggg=="),
+	("SGH07", "image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAF/SURBVFiFzdghT8NAGMbx/y1g0HMLQWDxJDgCkk+AQhE8BlkDGL4JwczyAXBkCY4vQAhBgiI7xJpwK1fW9nm6ccklNe/7/u7eW9c2xBixjBAKAGIsLPlijPqEIkIsZ+HI6UbZcN6dMu6cv30mnBdlxPlRJlw/KAOuP5QYJycHBsARMAYmwCUwVHHyioELIFbmvbpzchuAmwzsSW2rfDaA0wzsTs4rrwz2M7BruRPyWYBRBnYin10FVcIC8FGB7TWJ/fPXrqAS3KQCGzaOr6kro0rYbYJ6bxufq+/5w4WrBPbQJUfVMZAfgWfjuea6+zC1cht4Y7Zjx55WGg5/idsEDhyoeZiIA7aAXQfqN6wjDjgHvoApi+76Det0CsrAXpi/j+0oqHpYSxzwmKCmwEjNK213AjsEXoFP4MyyWPUsJLh1YMOBagbrkNQR32tyJa7flS/l9a1tsaW+8DYtupJPBIuKr/SjSh3iX3yGyuMsKA/M2L50rpmeNgtC+Lk2jG/Rx4o589viKwAAAABJRU5ErkJggg=="),
+	("SGH08", "image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAKJSURBVFiFzdixix1FGADw38QDUbQQqyNewiEYCxNN4ECjkuIaFYLNQQpTCBLkzD8gJsVLOqPGJiBYeGB1SeFhYXEhmCIpTgIpRDAEosWhckXU6AknCUyKN49bn+/tze6OnAsDuzA789v5vvnevg0xRkWOEHogxl6R8WKM3Ru9SEytV2LM0qhiuLIrVXDlyoevEK4sqiCuGApTeBo7SuA6o7AX3yKmdh3PdsV1RU3hzwpq0NbxZBdc1/AtjEAN2lddcq41KsG+qYH9jYfb4lqjEuxWDSxissl4ebCMQbBSg/qp7bjjYbk3c7oGttjpoduiEuz5GthbndKkLaqCu5Qgd/FdOv8FD3XaWF1QCfZawqzhWDo/mnv/2FLUEfUA3kuYL/FyOn87GzZm/rbhm8JH+LmSU6t4pHL9A87gmTa4Hf9+px19hBAmQgjzIYQVnMIGHqt0+QKvVq6ncRAzIYSlEMLZEMKu3PmyQ4kTldWI+lX/MD7GZ5jHJH7ESbyJs/qbYnDP79idF8rc7Tu6mK7hHexJfQLewE7jfxWO5Cd/zvblypiJ/sBzQ32vjun7T1hWudjqCdiH20OTrOJz7MJTqd8reAk3RqCu4fGsCDWqLezHr2mSdcxgFss4nkK4iPcxh8v6myTiazyandONCx8H8Ck+wM3KapxP+Ta43tDfqXM4hweb1MzGha+CuzMUpoWU+MPh+yR3g+XD6nEvpMQfAJaxNIT6EKEpKg9Wj3vR5jv/b/r1a4B6t81KNYPV4w7hL3yfcu+e6ivPf/pnZGvcLC7iAl7vimoOq8dN44kSqHawnEm35RPBVpNv60eVcYj/xWeo0bgiqDKwguGrtgkljhh7Qtg8L3DcB497IINNg8B2AAAAAElFTkSuQmCC"),
+	("SGH09", "image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAI8SURBVFiFzdi7a1VBEMDhb0EjYhFfaCEICopBi4haWUiqqGgQW1OKaBpNIQEVvREi2lhaWCiC/4CSImgv2IgQELSSdKKlMUKEtTgr3jxuPI+9iQMD5+y9u/NjdmbO7IYYoywSQgvE2MqyXoyxudKKxKStHGvmhsoGl9dTGT2Xf/syweWFygiXHyoTXHegMsDVgprjLk5hS4wRenLD1fYUhjGans9jF/rRlwOuMhS2Yz924F0CO4EBjOTyXK0YwUVcwAcEHMJr9OaKudqLYBA/cQx7cT+NB1xrCld5cvLOGA7gqSIRricv7sED9Df1XB1PbcVOXMZnzOA7pvEcg3UTqjNY1QDlKmLSsRX+14NNlXamLlQyeDJBfenw+xmcxQ3cxunSCVYpINmYatUfHUlg3xaN9+MmjqR5uxPkaNltrZbChcFYUi8tmjuOqbIxt25pT7uifMThtvcBPMS84kvwKY2fizE+hhDCBkXGzuBZaUsN4qtPUVQj3uOJIhmGFSXlOO4loEmsr5KhtYIfvRjCUTxS1K8reKnIwAkLt/UHhqqUjUblIkFuxi18TRCv8KsNah5v8UbqRqqVi5JwOKhI/ym8wKzlg3+xzmGyrJ2QjC2U4ox4J72NS2fFEMI27CsdwEtlNsY43Wn9BVIlILNoo494t+CytD254bI2irngutJaN4Xr6mGkrpFVOb5VNbaqB96yRtfkiuBfxtf0UqUTxH9xDbU8XBaoPGAZt69dq3awy0uMLSH8fc4gvwFyuYuihNiCxwAAAABJRU5ErkJggg==");`
 	inssignalword := `INSERT INTO signalword (signalword_label) VALUES ("danger"), ("warning")`
 	insunit := `INSERT INTO unit (unit_label, unit_multiplier, unit) VALUES 
 	("l", 1, NULL), ("ml", 0.001, 1), ("µl", 0.00001, 1),
@@ -563,16 +567,6 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	}
 	if c == 0 {
 		if _, err = db.Exec(insunit); err != nil {
-			return err
-		}
-	}
-
-	// physical states
-	if err = db.Get(&c, `SELECT count(*) FROM physicalstate`); err != nil {
-		return err
-	}
-	if c == 0 {
-		if _, err = db.Exec(insphysicalstate); err != nil {
 			return err
 		}
 	}
@@ -639,31 +633,55 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 func (db *SQLiteDataStore) Import(dir string) error {
 
 	var (
-		csvFile        *os.File
-		csvReader      *csv.Reader
-		err            error
-		res            sql.Result
-		lastid         int64
-		c, i           int                 // count result
-		tx             *sql.Tx             // db transaction
-		sqlr           string              // sql request
+		csvFile   *os.File
+		csvReader *csv.Reader
+		err       error
+		res       sql.Result
+		lastid    int64
+		c, i      int     // count result
+		tx        *sql.Tx // db transaction
+		sqlr      string  // sql request
+
 		mperson        map[string]string   // oldid <> newid map for user table
 		mentity        map[string]string   // oldid <> newid map for entity table
 		mstorelocation map[string]string   // oldid <> newid map for storelocation table
 		mentitypeople  map[string][]string // managers, oldentityid <> oldpersonid
+		mcasnumber     map[string]string   // newlabel <> newid
+
+		mproduct                map[string]string // oldid <> newid map for product table
+		mclassofcompound        map[string]string // oldid <> newid map for classofcompound table
+		mempiricalformula       map[string]string // oldid <> newid map for empiricalformula table
+		mlinearformula          map[string]string // oldid <> newid map for linearformula table
+		mname                   map[string]string // oldid <> newid map for name table
+		mphysicalstate          map[string]string // oldid <> newid map for physicalstate table
+		mhazardstatement        map[string]string // oldid <> newid map for hazardstatement table
+		mprecautionarystatement map[string]string // oldid <> newid map for precautionarystatement table
+		msymbol                 map[string]string // oldid <> newid map for symbol table
+		msignalword             map[string]string // oldid <> newid map for signalword table
 	)
 
 	// init maps
+	mproduct = make(map[string]string)
 	mperson = make(map[string]string)
 	mentity = make(map[string]string)
 	mstorelocation = make(map[string]string)
 	mentitypeople = make(map[string][]string)
+	mcasnumber = make(map[string]string)
+	mclassofcompound = make(map[string]string)
+	mempiricalformula = make(map[string]string)
+	mlinearformula = make(map[string]string)
+	mname = make(map[string]string)
+	mphysicalstate = make(map[string]string)
+	mhazardstatement = make(map[string]string)
+	mprecautionarystatement = make(map[string]string)
+	msymbol = make(map[string]string)
+	msignalword = make(map[string]string)
 
 	// checking tables empty
 	if err = db.Get(&c, `SELECT count(*) FROM person`); err != nil {
 		return err
 	}
-	if c != 0 {
+	if c != 1 {
 		panic("person table not empty - can not import")
 	}
 	if err = db.Get(&c, `SELECT count(*) FROM entity`); err != nil {
@@ -786,8 +804,8 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		}
 		log.Info("  " + label)
 		log.Debug("storelocation " + label + ", entity:" + newentity + ", parent:" + newparent.String)
-		sqlr = `INSERT INTO storelocation(storelocation_name, storelocation_color, storelocation_canstore, entity, storelocation) VALUES (?, ?, ?, ?, ?)`
-		if res, err = tx.Exec(sqlr, label, color, can_store, newentity, newparent); err != nil {
+		sqlr = `INSERT INTO storelocation(storelocation_name, storelocation_color, storelocation_canstore, storelocation_fullpath, entity, storelocation) VALUES (?, ?, ?, ?, ?, ?)`
+		if res, err = tx.Exec(sqlr, label, color, can_store, "", newentity, newparent); err != nil {
 			tx.Rollback()
 			return err
 		}
@@ -913,6 +931,558 @@ func (db *SQLiteDataStore) Import(dir string) error {
 				tx.Rollback()
 				return err
 			}
+		}
+	}
+
+	//
+	// class of compounds
+	//
+	log.Info("- importing classes of compounds")
+	if csvFile, err = os.Open(path.Join(dir, "class_of_compounds.csv")); err != nil {
+		return (err)
+	}
+	csvReader = csv.NewReader(bufio.NewReader(csvFile))
+	i = 0
+	for {
+		line, error := csvReader.Read()
+
+		// skip header
+		if i == 0 {
+			i++
+			continue
+		}
+
+		if error == io.EOF {
+			break
+		} else if error != nil {
+			tx.Rollback()
+			return err
+		}
+		id := line[0]
+		label := line[1]
+
+		sqlr = `INSERT INTO classofcompound(classofcompound_id, classofcompound_label) VALUES (?, ?)`
+		if res, err = tx.Exec(sqlr, id, label); err != nil {
+			tx.Rollback()
+			return err
+		}
+		// getting the last inserted id
+		if lastid, err = res.LastInsertId(); err != nil {
+			tx.Rollback()
+			return err
+		}
+		// populating the map
+		mclassofcompound[id] = strconv.FormatInt(lastid, 10)
+	}
+
+	//
+	// empirical formula
+	//
+	log.Info("- importing empirical formulas")
+	if csvFile, err = os.Open(path.Join(dir, "empirical_formula.csv")); err != nil {
+		return (err)
+	}
+	csvReader = csv.NewReader(bufio.NewReader(csvFile))
+	i = 0
+	for {
+		line, error := csvReader.Read()
+
+		// skip header
+		if i == 0 {
+			i++
+			continue
+		}
+
+		if error == io.EOF {
+			break
+		} else if error != nil {
+			tx.Rollback()
+			return err
+		}
+		id := line[0]
+		label := line[1]
+
+		sqlr = `INSERT INTO empiricalformula(empiricalformula_id, empiricalformula_label) VALUES (?, ?)`
+		if res, err = tx.Exec(sqlr, id, label); err != nil {
+			tx.Rollback()
+			return err
+		}
+		// getting the last inserted id
+		if lastid, err = res.LastInsertId(); err != nil {
+			tx.Rollback()
+			return err
+		}
+		// populating the map
+		mempiricalformula[id] = strconv.FormatInt(lastid, 10)
+	}
+
+	//
+	// linear formula
+	//
+	log.Info("- importing linear formulas")
+	if csvFile, err = os.Open(path.Join(dir, "linear_formula.csv")); err != nil {
+		return (err)
+	}
+	csvReader = csv.NewReader(bufio.NewReader(csvFile))
+	i = 0
+	for {
+		line, error := csvReader.Read()
+
+		// skip header
+		if i == 0 {
+			i++
+			continue
+		}
+
+		if error == io.EOF {
+			break
+		} else if error != nil {
+			tx.Rollback()
+			return err
+		}
+		id := line[0]
+		label := line[1]
+
+		sqlr = `INSERT INTO linearformula(linearformula_id, linearformula_label) VALUES (?, ?)`
+		if res, err = tx.Exec(sqlr, id, label); err != nil {
+			tx.Rollback()
+			return err
+		}
+		// getting the last inserted id
+		if lastid, err = res.LastInsertId(); err != nil {
+			tx.Rollback()
+			return err
+		}
+		// populating the map
+		mlinearformula[id] = strconv.FormatInt(lastid, 10)
+	}
+
+	//
+	// name
+	//
+	log.Info("- importing product names")
+	if csvFile, err = os.Open(path.Join(dir, "name.csv")); err != nil {
+		return (err)
+	}
+	csvReader = csv.NewReader(bufio.NewReader(csvFile))
+	i = 0
+	for {
+		line, error := csvReader.Read()
+
+		// skip header
+		if i == 0 {
+			i++
+			continue
+		}
+
+		if error == io.EOF {
+			break
+		} else if error != nil {
+			tx.Rollback()
+			return err
+		}
+		id := line[0]
+		label := line[1]
+
+		sqlr = `INSERT INTO name(name_id, name_label) VALUES (?, ?)`
+		if res, err = tx.Exec(sqlr, id, label); err != nil {
+			tx.Rollback()
+			return err
+		}
+		// getting the last inserted id
+		if lastid, err = res.LastInsertId(); err != nil {
+			tx.Rollback()
+			return err
+		}
+		// populating the map
+		mname[id] = strconv.FormatInt(lastid, 10)
+	}
+
+	//
+	// name
+	//
+	log.Info("- importing product physical states")
+	if csvFile, err = os.Open(path.Join(dir, "physical_state.csv")); err != nil {
+		return (err)
+	}
+	csvReader = csv.NewReader(bufio.NewReader(csvFile))
+	i = 0
+	for {
+		line, error := csvReader.Read()
+
+		// skip header
+		if i == 0 {
+			i++
+			continue
+		}
+
+		if error == io.EOF {
+			break
+		} else if error != nil {
+			tx.Rollback()
+			return err
+		}
+		id := line[0]
+		label := line[1]
+
+		sqlr = `INSERT INTO physicalstate(physicalstate_id, physicalstate_label) VALUES (?, ?)`
+		if res, err = tx.Exec(sqlr, id, label); err != nil {
+			tx.Rollback()
+			return err
+		}
+		// getting the last inserted id
+		if lastid, err = res.LastInsertId(); err != nil {
+			tx.Rollback()
+			return err
+		}
+		// populating the map
+		mphysicalstate[id] = strconv.FormatInt(lastid, 10)
+	}
+
+	//
+	// cas numbers
+	//
+	log.Info("- extracting and importing cas numbers from products")
+	if csvFile, err = os.Open(path.Join(dir, "product.csv")); err != nil {
+		return (err)
+	}
+	csvReader = csv.NewReader(bufio.NewReader(csvFile))
+	i = 0
+	for {
+		line, error := csvReader.Read()
+
+		// skip header
+		if i == 0 {
+			i++
+			continue
+		}
+
+		if error == io.EOF {
+			break
+		} else if error != nil {
+			tx.Rollback()
+			return err
+		}
+		id := line[0]
+		casnumber := line[26]
+		sqlr = `INSERT INTO casnumber(casnumber_label) VALUES (?)`
+		if res, err = tx.Exec(sqlr, id, casnumber); err != nil {
+			tx.Rollback()
+			return err
+		}
+		// getting the last inserted id
+		if lastid, err = res.LastInsertId(); err != nil {
+			tx.Rollback()
+			return err
+		}
+		// populating the map
+		mcasnumber[casnumber] = strconv.FormatInt(lastid, 10)
+	}
+
+	// committing changes
+	if err = tx.Commit(); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// beginning new transaction
+	if tx, err = db.Begin(); err != nil {
+		return err
+	}
+
+	//
+	// products
+	//
+	log.Info("- importing products")
+	log.Info("  gathering hazardstatement ids")
+	if csvFile, err = os.Open(path.Join(dir, "hazard_statement.csv")); err != nil {
+		return (err)
+	}
+	csvReader = csv.NewReader(bufio.NewReader(csvFile))
+	i = 0
+	for {
+		line, error := csvReader.Read()
+
+		// skip header
+		if i == 0 {
+			i++
+			continue
+		}
+
+		if error == io.EOF {
+			break
+		} else if error != nil {
+			tx.Rollback()
+			return err
+		}
+		id := line[0]
+		reference := line[2]
+		if reference == "----" {
+			continue
+		}
+		// finding new id
+		var nid int
+		if err = db.Get(&nid, `SELECT hazardstatement_id FROM hazardstatement WHERE hazardstatement_reference = ?`, reference); err != nil {
+			log.Error("error gathering hazardstatement id for " + reference)
+			tx.Rollback()
+			return err
+		}
+		mhazardstatement[id] = strconv.Itoa(nid)
+	}
+	log.Info("  gathering precautionarystatement ids")
+	if csvFile, err = os.Open(path.Join(dir, "precautionary_statement.csv")); err != nil {
+		return (err)
+	}
+	csvReader = csv.NewReader(bufio.NewReader(csvFile))
+	i = 0
+	for {
+		line, error := csvReader.Read()
+
+		// skip header
+		if i == 0 {
+			i++
+			continue
+		}
+
+		if error == io.EOF {
+			break
+		} else if error != nil {
+			tx.Rollback()
+			return err
+		}
+		id := line[0]
+		reference := line[2]
+		if reference == "----" {
+			continue
+		}
+		// finding new id
+		var nid int
+		if err = db.Get(&nid, `SELECT precautionarystatement_id FROM precautionarystatement WHERE precautionarystatement_reference = ?`, reference); err != nil {
+			log.Error("error gathering precautionarystatement id for " + reference)
+			tx.Rollback()
+			return err
+		}
+		mprecautionarystatement[id] = strconv.Itoa(nid)
+	}
+	log.Info("  gathering symbol ids")
+	if csvFile, err = os.Open(path.Join(dir, "symbol.csv")); err != nil {
+		return (err)
+	}
+	csvReader = csv.NewReader(bufio.NewReader(csvFile))
+	i = 0
+	for {
+		line, error := csvReader.Read()
+
+		// skip header
+		if i == 0 {
+			i++
+			continue
+		}
+
+		if error == io.EOF {
+			break
+		} else if error != nil {
+			tx.Rollback()
+			return err
+		}
+		id := line[0]
+		label := line[1]
+		// finding new id
+		var nid int
+		if err = db.Get(&nid, `SELECT symbol_id FROM symbol WHERE symbol_label = ?`, label); err != nil {
+			log.Error("error gathering symbol id for " + label)
+			tx.Rollback()
+			return err
+		}
+		msymbol[id] = strconv.Itoa(nid)
+	}
+	log.Info("  gathering signalword ids")
+	if csvFile, err = os.Open(path.Join(dir, "signal_word.csv")); err != nil {
+		return (err)
+	}
+	csvReader = csv.NewReader(bufio.NewReader(csvFile))
+	i = 0
+	for {
+		line, error := csvReader.Read()
+
+		// skip header
+		if i == 0 {
+			i++
+			continue
+		}
+
+		if error == io.EOF {
+			break
+		} else if error != nil {
+			tx.Rollback()
+			return err
+		}
+		id := line[0]
+		label := line[1]
+		// finding new id
+		var nid int
+		if err = db.Get(&nid, `SELECT signalword_id FROM signalword WHERE signalword_label = ?`, label); err != nil {
+			log.Error("error gathering signalword id for " + label)
+			tx.Rollback()
+			return err
+		}
+		msignalword[id] = strconv.Itoa(nid)
+	}
+
+	if csvFile, err = os.Open(path.Join(dir, "product.csv")); err != nil {
+		return (err)
+	}
+	csvReader = csv.NewReader(bufio.NewReader(csvFile))
+	i = 0
+	for {
+		line, error := csvReader.Read()
+
+		// skip header
+		if i == 0 {
+			i++
+			continue
+		}
+
+		if error == io.EOF {
+			break
+		} else if error != nil {
+			tx.Rollback()
+			return err
+		}
+		id := line[0]
+		cenumber := line[1]
+		person := line[2]
+		name := line[3]
+		//synonym := line[4]
+		restricted := line[5]
+		specificity := line[6]
+		tdformula := line[7]
+		empiricalformula := line[8]
+		linearformula := line[9]
+		msds := line[10]
+		physicalstate := line[11]
+		//coc := line[12]
+		//symbol := line[14]
+		signalword := line[15]
+		//hazardstatement := line[18]
+		//precautionarystatement := line[19]
+		disposalcomment := line[20]
+		remark := line[21]
+		archive := line[23]
+		casnumber := line[26]
+		isradio := line[27]
+
+		newcenumber := cenumber
+		newperson := mperson[person]
+		newname := mname[name]
+		//TODO:synonym
+		newrestricted := false
+		if restricted == "T" {
+			newrestricted = true
+		}
+		newspecificity := specificity
+		newtdformula := tdformula
+		newempiricalformula := mempiricalformula[empiricalformula]
+		newlinearformula := mlinearformula[linearformula]
+		newmsds := msds
+		newphysicalstate := mphysicalstate[physicalstate]
+		//TODO:coc
+		//TODO:symbol
+		newsignalword := msignalword[signalword]
+		//TODO:hs
+		//TODO:ps
+		newdisposalcomment := disposalcomment
+		newremark := remark
+		//TODO: DO NOT IMPORT ARCHIVES
+		newarchive := false
+		if archive == "T" {
+			newarchive = true
+		}
+		newcasnumber := mcasnumber[casnumber]
+		newisradio := false
+		if isradio == "T" {
+			newisradio = true
+		}
+
+		// do not import archived cards
+		if !newarchive {
+			sqlr = `INSERT INTO product (product_specificity, 
+				product_msds, 
+				product_restricted, 
+				product_radioactive, 
+				product_threedformula, 
+				product_disposalcomment, 
+				product_remark,
+				empiricalformula,
+				linearformula,
+				physicalstate,
+				signalword,
+				person,
+				casnumber,
+				cenumber,
+				name) 
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+			if res, err = tx.Exec(sqlr,
+				newspecificity,
+				newmsds,
+				newrestricted,
+				newisradio,
+				newtdformula,
+				newdisposalcomment,
+				newremark,
+				newempiricalformula,
+				newlinearformula,
+				newphysicalstate,
+				newsignalword,
+				newperson,
+				newcasnumber,
+				newcenumber,
+				newname); err != nil {
+				tx.Rollback()
+				return err
+			}
+			// getting the last inserted id
+			if lastid, err = res.LastInsertId(); err != nil {
+				tx.Rollback()
+				return err
+			}
+			// populating the map
+			mproduct[id] = strconv.FormatInt(lastid, 10)
+		}
+
+	}
+
+	// committing changes
+	if err = tx.Commit(); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// beginning new transaction
+	if tx, err = db.Begin(); err != nil {
+		return err
+	}
+
+	log.Info("- updating store locations full path")
+	var sls []StoreLocation
+	if err = db.Select(&sls, ` SELECT s.storelocation_id AS "storelocation_id", 
+		s.storelocation_name AS "storelocation_name", 
+		s.storelocation_canstore, 
+		s.storelocation_color,
+		storelocation.storelocation_id AS "storelocation.storelocation_id",
+		storelocation.storelocation_name AS "storelocation.storelocation_name"
+		FROM storelocation AS s
+		LEFT JOIN storelocation on s.storelocation = storelocation.storelocation_id`); err != nil {
+		tx.Rollback()
+		return err
+	}
+	for _, sl := range sls {
+		log.Info("  " + sl.StoreLocationName.String)
+		sl.StoreLocationFullPath = db.buildFullPath(sl)
+		sqlr = `UPDATE storelocation SET storelocation_fullpath = ? WHERE storelocation_id = ?`
+		if res, err = tx.Exec(sqlr, sl.StoreLocationFullPath, sl.StoreLocationID.Int64); err != nil {
+			tx.Rollback()
+			return err
 		}
 	}
 

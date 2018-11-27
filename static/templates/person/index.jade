@@ -69,8 +69,11 @@
         // table data loading
         //
         function queryParams(params) {
-            if (URLValues.has("entity")) {
-                params["entity"] = URLValues.get("entity")[0];
+            // getting request parameters
+            var urlParams = new URLSearchParams(window.location.search);
+
+            if (urlParams.has("entity")) {
+                params["entity"] = urlParams.get("entity");
             }
             return params;
         }

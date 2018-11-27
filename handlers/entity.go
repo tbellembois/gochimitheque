@@ -89,7 +89,7 @@ func (env *Env) GetEntitiesHandler(w http.ResponseWriter, r *http.Request) *help
 	return nil
 }
 
-// GetEntityHandler returns a json of the stock of the entity with the requested id
+// GetEntityStockHandler returns a json of the stock of the entity with the requested id
 func (env *Env) GetEntityStockHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	vars := mux.Vars(r)
 	var (
