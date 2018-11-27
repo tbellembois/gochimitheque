@@ -486,6 +486,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		FOREIGN KEY(signalword) references signalword(signalword_id),
 		FOREIGN KEY(classofcompound) references classofcompound(classofcompound_id),
 		FOREIGN KEY(name) references name(name_id));
+	CREATE UNIQUE INDEX idx_product_casnumber ON product(casnumber, product_specificity);
 	CREATE TABLE IF NOT EXISTS productsymbols (
 		productsymbols_product_id integer NOT NULL,
 		productsymbols_symbol_id integer NOT NULL,
@@ -571,11 +572,21 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		}
 	}
 
-	// cas numbers
+	// zero cas number
 	if err = db.Get(&c, `SELECT count(*) FROM casnumber`); err != nil {
 		return err
 	}
 	if c == 0 {
+		if _, err = db.Exec(`INSERT INTO casnumber (casnumber_label) VALUES ("0000")`); err != nil {
+			return err
+		}
+	}
+
+	// cas numbers
+	if err = db.Get(&c, `SELECT count(*) FROM casnumber`); err != nil {
+		return err
+	}
+	if c == 1 {
 		r = csv.NewReader(strings.NewReader(CMR))
 		r.Comma = ','
 		if records, err = r.ReadAll(); err != nil {
@@ -622,9 +633,24 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		}
 	}
 
+	// zero empirical formula
+	if err = db.Get(&c, `SELECT count(*) FROM empiricalformula`); err != nil {
+		return err
+	}
+	if c == 0 {
+		if _, err = db.Exec(`INSERT INTO empiricalformula (empiricalformula_label) VALUES ("XXXX")`); err != nil {
+			return err
+		}
+	}
+
 	// inserting default admin
-	admin := Person{PersonEmail: "user@super.com", Permissions: []Permission{Permission{PermissionPermName: "all", PermissionItemName: "all", PermissionEntityID: -1}}}
-	db.CreatePerson(admin)
+	if err = db.Get(&c, `SELECT count(*) FROM person`); err != nil {
+		return err
+	}
+	if c == 0 {
+		admin := Person{PersonEmail: "user@super.com", Permissions: []Permission{Permission{PermissionPermName: "all", PermissionItemName: "all", PermissionEntityID: -1}}}
+		db.CreatePerson(admin)
+	}
 
 	return nil
 }
@@ -641,6 +667,10 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		c, i      int     // count result
 		tx        *sql.Tx // db transaction
 		sqlr      string  // sql request
+
+		zerocasnumberid        int
+		zeroempiricalformulaid int
+		zeropersonid           int
 
 		mperson        map[string]string   // oldid <> newid map for user table
 		mentity        map[string]string   // oldid <> newid map for entity table
@@ -1001,6 +1031,9 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		}
 		id := line[0]
 		label := line[1]
+		if label == "----" {
+			continue
+		}
 
 		sqlr = `INSERT INTO empiricalformula(empiricalformula_id, empiricalformula_label) VALUES (?, ?)`
 		if res, err = tx.Exec(sqlr, id, label); err != nil {
@@ -1042,6 +1075,9 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		}
 		id := line[0]
 		label := line[1]
+		if label == "----" {
+			continue
+		}
 
 		sqlr = `INSERT INTO linearformula(linearformula_id, linearformula_label) VALUES (?, ?)`
 		if res, err = tx.Exec(sqlr, id, label); err != nil {
@@ -1194,6 +1230,24 @@ func (db *SQLiteDataStore) Import(dir string) error {
 	// products
 	//
 	log.Info("- importing products")
+	log.Info("  retrieving zero empirical id")
+	if err = db.Get(&zeroempiricalformulaid, `SELECT empiricalformula_id FROM empiricalformula WHERE empiricalformula_label = "XXXX"`); err != nil {
+		log.Error("error retrieving zero empirical id")
+		tx.Rollback()
+		return err
+	}
+	log.Info("  retrieving zero casnumber id")
+	if err = db.Get(&zerocasnumberid, `SELECT casnumber_id FROM casnumber WHERE casnumber_label = "0000"`); err != nil {
+		log.Error("error retrieving zero casnumber id")
+		tx.Rollback()
+		return err
+	}
+	log.Info("  retrieving default admin id")
+	if err = db.Get(&zeropersonid, `SELECT person_id FROM person WHERE person_email = "user@super.com"`); err != nil {
+		log.Error("error retrieving default admin id")
+		tx.Rollback()
+		return err
+	}
 	log.Info("  gathering hazardstatement ids")
 	if csvFile, err = os.Open(path.Join(dir, "hazard_statement.csv")); err != nil {
 		return (err)
@@ -1350,7 +1404,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 			return err
 		}
 		id := line[0]
-		cenumber := line[1]
+		//cenumber := line[1]
 		person := line[2]
 		name := line[3]
 		//synonym := line[4]
@@ -1371,9 +1425,11 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		archive := line[23]
 		casnumber := line[26]
 		isradio := line[27]
-
-		newcenumber := cenumber
+		//TODO: cenumber
 		newperson := mperson[person]
+		if newperson == "" {
+			newperson = strconv.Itoa(zeropersonid)
+		}
 		newname := mname[name]
 		//TODO:synonym
 		newrestricted := false
@@ -1383,12 +1439,42 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		newspecificity := specificity
 		newtdformula := tdformula
 		newempiricalformula := mempiricalformula[empiricalformula]
-		newlinearformula := mlinearformula[linearformula]
+		if newempiricalformula == "" {
+			newempiricalformula = strconv.Itoa(zeroempiricalformulaid)
+		}
+		newlinearformula := sql.NullInt64{}
+		if mlinearformula[linearformula] != "" {
+			i, e := strconv.ParseInt(mlinearformula[linearformula], 10, 64)
+			if e != nil {
+				log.Error("error converting linearformula id for " + mlinearformula[linearformula])
+				tx.Rollback()
+				return err
+			}
+			newlinearformula = sql.NullInt64{Valid: true, Int64: i}
+		}
 		newmsds := msds
-		newphysicalstate := mphysicalstate[physicalstate]
+		newphysicalstate := sql.NullInt64{}
+		if mphysicalstate[physicalstate] != "" {
+			i, e := strconv.ParseInt(mphysicalstate[physicalstate], 10, 64)
+			if e != nil {
+				log.Error("error converting physicalstate id for " + mphysicalstate[physicalstate])
+				tx.Rollback()
+				return err
+			}
+			newphysicalstate = sql.NullInt64{Valid: true, Int64: i}
+		}
 		//TODO:coc
 		//TODO:symbol
-		newsignalword := msignalword[signalword]
+		newsignalword := sql.NullInt64{}
+		if msignalword[signalword] != "" {
+			i, e := strconv.ParseInt(msignalword[signalword], 10, 64)
+			if e != nil {
+				log.Error("error converting signalword id for " + msignalword[signalword])
+				tx.Rollback()
+				return err
+			}
+			newsignalword = sql.NullInt64{Valid: true, Int64: i}
+		}
 		//TODO:hs
 		//TODO:ps
 		newdisposalcomment := disposalcomment
@@ -1399,6 +1485,9 @@ func (db *SQLiteDataStore) Import(dir string) error {
 			newarchive = true
 		}
 		newcasnumber := mcasnumber[casnumber]
+		if newcasnumber == "" {
+			newcasnumber = strconv.Itoa(zerocasnumberid)
+		}
 		newisradio := false
 		if isradio == "T" {
 			newisradio = true
@@ -1419,9 +1508,12 @@ func (db *SQLiteDataStore) Import(dir string) error {
 				signalword,
 				person,
 				casnumber,
-				cenumber,
 				name) 
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+			log.Debug(newlinearformula.Valid)
+			log.Debug(newphysicalstate.Valid)
+			log.Debug(newsignalword.Valid)
+			log.Debug("ef:" + newempiricalformula + " person:" + newperson + " cas:" + newcasnumber + " name:" + newname)
 			if res, err = tx.Exec(sqlr,
 				newspecificity,
 				newmsds,
@@ -1436,7 +1528,6 @@ func (db *SQLiteDataStore) Import(dir string) error {
 				newsignalword,
 				newperson,
 				newcasnumber,
-				newcenumber,
 				newname); err != nil {
 				tx.Rollback()
 				return err
