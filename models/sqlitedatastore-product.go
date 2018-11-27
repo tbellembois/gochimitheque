@@ -261,6 +261,75 @@ func (db *SQLiteDataStore) GetProductsEmpiricalFormulas(p helpers.Dbselectparam)
 	return eformulas, count, nil
 }
 
+// GetProductsLinearFormulas return the empirical formulas matching the search criteria
+func (db *SQLiteDataStore) GetProductsLinearFormulas(p helpers.Dbselectparam) ([]LinearFormula, int, error) {
+	var (
+		lformulas                          []LinearFormula
+		count                              int
+		precreq, presreq, comreq, postsreq strings.Builder
+		cnstmt                             *sqlx.NamedStmt
+		snstmt                             *sqlx.NamedStmt
+		err                                error
+	)
+
+	precreq.WriteString(" SELECT count(DISTINCT linearformula.linearformula_id)")
+	presreq.WriteString(" SELECT linearformula_id, linearformula_label")
+
+	comreq.WriteString(" FROM linearformula")
+	comreq.WriteString(" WHERE linearformula_label LIKE :search")
+	postsreq.WriteString(" ORDER BY linearformula_label  " + p.GetOrder())
+
+	// limit
+	if p.GetLimit() != constants.MaxUint64 {
+		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
+	}
+
+	// building count and select statements
+	if cnstmt, err = db.PrepareNamed(precreq.String() + comreq.String()); err != nil {
+		return nil, 0, err
+	}
+	if snstmt, err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); err != nil {
+		return nil, 0, err
+	}
+
+	// building argument map
+	m := map[string]interface{}{
+		"search": p.GetSearch(),
+		"order":  p.GetOrder(),
+		"limit":  p.GetLimit(),
+		"offset": p.GetOffset(),
+	}
+
+	// select
+	if err = snstmt.Select(&lformulas, m); err != nil {
+		return nil, 0, err
+	}
+	// count
+	if err = cnstmt.Get(&count, m); err != nil {
+		return nil, 0, err
+	}
+
+	// setting the C attribute for formula matching exactly the search
+	s := p.GetSearch()
+	s = strings.TrimPrefix(s, "%")
+	s = strings.TrimSuffix(s, "%")
+	var lf LinearFormula
+
+	r := db.QueryRowx(`SELECT linearformula_id, linearformula_label FROM linearformula WHERE linearformula_label == ?`, s)
+	if err = r.StructScan(&lf); err != nil && err != sql.ErrNoRows {
+		return nil, 0, err
+	} else {
+		for i, e := range lformulas {
+			if e.LinearFormulaID == lf.LinearFormulaID {
+				lformulas[i].C = 1
+			}
+		}
+	}
+
+	log.WithFields(log.Fields{"lformulas": lformulas}).Debug("GetProductsLinearFormulas")
+	return lformulas, count, nil
+}
+
 // GetProductsClassOfCompounds return the classe of compounds matching the search criteria
 func (db *SQLiteDataStore) GetProductsClassOfCompounds(p helpers.Dbselectparam) ([]ClassOfCompound, int, error) {
 	var (
@@ -738,10 +807,11 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	p.product_msds,
 	p.product_restricted,
 	p.product_radioactive,
-	p.product_linearformula,
 	p.product_threedformula,
 	p.product_disposalcomment,
 	p.product_remark,
+	linearformula.linearformula_id AS "linearformula.linearformula_id",
+	linearformula.linearformula_label AS "linearformula.linearformula_label",
 	empiricalformula.empiricalformula_id AS "empiricalformula.empiricalformula_id",
 	empiricalformula.empiricalformula_label AS "empiricalformula.empiricalformula_label",
 	physicalstate.physicalstate_id AS "physicalstate.physicalstate_id",
@@ -779,6 +849,8 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	comreq.WriteString(" LEFT JOIN classofcompound ON p.classofcompound = classofcompound.classofcompound_id")
 	// get empirical formula
 	comreq.WriteString(" JOIN empiricalformula ON p.empiricalformula = empiricalformula.empiricalformula_id")
+	// get linear formula
+	comreq.WriteString(" LEFT JOIN linearformula ON p.linearformula = linearformula.linearformula_id")
 	// get bookmark
 	comreq.WriteString(" LEFT JOIN bookmark ON (bookmark.product = p.product_id AND bookmark.person = :personid)")
 	// get storages, store locations and entities
@@ -945,10 +1017,11 @@ func (db *SQLiteDataStore) GetProduct(id int) (Product, error) {
 	product_msds,
 	product_restricted,
 	product_radioactive,
-	product_linearformula,
 	product_threedformula,
 	product_disposalcomment,
 	product_remark,
+	linearformula.linearformula_id AS "linearformula.linearformula_id",
+	linearformula.linearformula_label AS "linearformula.linearformula_label",
 	empiricalformula.empiricalformula_id AS "empiricalformula.empiricalformula_id",
 	empiricalformula.empiricalformula_label AS "empiricalformula.empiricalformula_label",
 	physicalstate.physicalstate_id AS "physicalstate.physicalstate_id",
@@ -972,6 +1045,7 @@ func (db *SQLiteDataStore) GetProduct(id int) (Product, error) {
 	LEFT JOIN cenumber ON product.cenumber = cenumber.cenumber_id
 	JOIN person ON product.person = person.person_id
 	JOIN empiricalformula ON product.empiricalformula = empiricalformula.empiricalformula_id
+	LEFT JOIN linearformula ON product.linearformula = linearformula.linearformula_id
 	LEFT JOIN physicalstate ON product.physicalstate = physicalstate.physicalstate_id
 	LEFT JOIN signalword ON product.signalword = signalword.signalword_id
 	LEFT JOIN classofcompound ON product.classofcompound = classofcompound.classofcompound_id
@@ -1161,6 +1235,21 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 		// updating the product EmpiricalFormulaID (EmpiricalFormulaLabel already set)
 		p.EmpiricalFormula.EmpiricalFormulaID = int(lastid)
 	}
+	// if LinearFormulaID = -1 then it is a new linear formula
+	if v, err := p.LinearFormula.LinearFormulaID.Value(); p.LinearFormula.LinearFormulaID.Valid && err == nil && v.(int64) == -1 {
+		sqlr = `INSERT INTO linearformula (linearformula_label) VALUES (?)`
+		if res, err = tx.Exec(sqlr, p.LinearFormulaLabel); err != nil {
+			tx.Rollback()
+			return err, 0
+		}
+		// getting the last inserted id
+		if lastid, err = res.LastInsertId(); err != nil {
+			tx.Rollback()
+			return err, 0
+		}
+		// updating the product LinearFormulaID (LinearFormulaLabel already set)
+		p.LinearFormula.LinearFormulaID = sql.NullInt64{Int64: lastid}
+	}
 	// if ClassOfCompoundID = -1 then it is a new class of compound
 	if v, err := p.ClassOfCompound.ClassOfCompoundID.Value(); p.ClassOfCompound.ClassOfCompoundID.Valid && err == nil && v.(int64) == -1 {
 		sqlr = `INSERT INTO classofcompound (classofcompound_label) VALUES (?)`
@@ -1196,9 +1285,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 	if p.ProductRadioactive.Valid {
 		s["product_radioactive"] = p.ProductRadioactive.Bool
 	}
-	if p.ProductLinearFormula.Valid {
-		s["product_linearformula"] = p.ProductLinearFormula.String
-	}
+
 	if p.ProductThreeDFormula.Valid {
 		s["product_threedformula"] = p.ProductThreeDFormula.String
 	}
@@ -1207,6 +1294,9 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 	}
 	if p.ProductRemark.Valid {
 		s["product_remark"] = p.ProductRemark.String
+	}
+	if p.LinearFormulaID.Valid {
+		s["linearformula"] = int(p.LinearFormulaID.Int64)
 	}
 	if p.PhysicalStateID.Valid {
 		s["physicalstate"] = int(p.PhysicalStateID.Int64)
@@ -1406,6 +1496,21 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 		// updating the product EmpiricalFormulaID (EmpiricalFormulaLabel already set)
 		p.EmpiricalFormula.EmpiricalFormulaID = int(lastid)
 	}
+	// if LinearFormulaID = -1 then it is a new linear formula
+	if v, err := p.LinearFormula.LinearFormulaID.Value(); p.LinearFormula.LinearFormulaID.Valid && err == nil && v.(int64) == -1 {
+		sqlr = `INSERT INTO linearformula (linearformula_label) VALUES (?)`
+		if res, err = tx.Exec(sqlr, p.LinearFormulaLabel); err != nil {
+			tx.Rollback()
+			return err
+		}
+		// getting the last inserted id
+		if lastid, err = res.LastInsertId(); err != nil {
+			tx.Rollback()
+			return err
+		}
+		// updating the product LinearFormulaID (LinearFormulaLabel already set)
+		p.LinearFormula.LinearFormulaID = sql.NullInt64{Int64: lastid}
+	}
 	// if ClassOfCompoundID = -1 then it is a new class of compound
 	if v, err := p.ClassOfCompound.ClassOfCompoundID.Value(); p.ClassOfCompound.ClassOfCompoundID.Valid && err == nil && v.(int64) == -1 {
 		sqlr = `INSERT INTO classofcompound (classofcompound_label) VALUES (?)`
@@ -1441,9 +1546,6 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	if p.ProductRadioactive.Valid {
 		s["product_radioactive"] = p.ProductRadioactive.Bool
 	}
-	if p.ProductLinearFormula.Valid {
-		s["product_linearformula"] = p.ProductLinearFormula.String
-	}
 	if p.ProductThreeDFormula.Valid {
 		s["product_threedformula"] = p.ProductThreeDFormula.String
 	}
@@ -1452,6 +1554,9 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	}
 	if p.ProductRemark.Valid {
 		s["product_remark"] = p.ProductRemark.String
+	}
+	if p.LinearFormulaID.Valid {
+		s["linearformula"] = int(p.LinearFormulaID.Int64)
 	}
 	if p.PhysicalStateID.Valid {
 		s["physicalstate"] = int(p.PhysicalStateID.Int64)

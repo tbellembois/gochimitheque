@@ -75,6 +75,7 @@
                 input#product_id(type='hidden', name='product_id', value='')
 
                 input#exactMatchEmpiricalFormula(type="hidden")
+                input#exactMatchlinearFormula(type="hidden")
                 input#exactMatchCasNumber(type="hidden")
                 input#exactMatchCeNumber(type="hidden")
                 input#exactMatchName(type="hidden")
@@ -107,8 +108,8 @@
                         | {{$label := "empirical formula"}} {{$name := "empiricalformula"}}
                         +select
                     .form-group.col-sm-5
-                        | {{$label := "linear formula"}} {{$name := "product_linearformula"}}
-                        +inputtext
+                        | {{$label := "linear formula"}} {{$name := "linearformula"}}
+                        +select
                     .form-group.col-sm-1
                         button#fconverter.btn.btn-primary(type="button" data-toggle="popover" data-content="no result" title="convert linear to empirical formula" onclick="linearToEmpirical();")
                             i.material-icons loop

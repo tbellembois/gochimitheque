@@ -15,16 +15,26 @@ import (
 	"github.com/tbellembois/gochimitheque/helpers"
 )
 
-func (db *SQLiteDataStore) buildFullPath(s *StoreLocation) {
-	s.StoreLocationFullPath = s.StoreLocationName.String + "/"
-	if s.StoreLocation != nil {
-		for p := *s.StoreLocation; p.StoreLocationID.Valid; {
-			p, _ = db.GetStoreLocation(int(p.StoreLocationID.Int64))
-			s.StoreLocationFullPath = p.StoreLocationName.String + "/" + s.StoreLocationFullPath
-			p = *p.StoreLocation
+// buildFullPath builds the store location full path
+func (db *SQLiteDataStore) buildFullPath(s StoreLocation) string {
+	// parent
+	var (
+		pp  StoreLocation
+		err error
+	)
+	// getting the parent
+	if s.StoreLocation != nil && s.StoreLocation.StoreLocationID.Valid {
+		// retrieving the parent from db
+		pp, err = db.GetStoreLocation(int(s.StoreLocation.StoreLocationID.Int64))
+		// just logging errors
+		if err != nil {
+			log.Error(err)
 		}
-		s.StoreLocationFullPath = strings.TrimSuffix(s.StoreLocationFullPath, "/")
+		// prepending the path with the parent name
+		return db.buildFullPath(pp) + "/" + s.StoreLocationName.String
 	}
+
+	return s.StoreLocationName.String
 }
 
 // GetStoreLocations returns the store locations matching the search criteria
@@ -207,7 +217,7 @@ func (db *SQLiteDataStore) CreateStoreLocation(s StoreLocation) (error, int) {
 	)
 
 	// building full path
-	db.buildFullPath(&s)
+	s.StoreLocationFullPath = db.buildFullPath(s)
 
 	m := make(map[string]interface{})
 	if s.StoreLocationCanStore.Valid {
@@ -284,7 +294,7 @@ func (db *SQLiteDataStore) UpdateStoreLocation(s StoreLocation) error {
 	log.WithFields(log.Fields{"s": s}).Debug("UpdateStoreLocation")
 
 	// building full path
-	db.buildFullPath(&s)
+	s.StoreLocationFullPath = db.buildFullPath(s)
 
 	m := make(map[string]interface{})
 	if s.StoreLocationCanStore.Valid {

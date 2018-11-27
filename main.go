@@ -306,6 +306,7 @@ func main() {
 	r.Handle("/{item:products}/names", securechain.Then(env.AppMiddleware(env.GetProductsNamesHandler))).Methods("GET")
 	r.Handle("/{item:products}/names/{id}", securechain.Then(env.AppMiddleware(env.GetProductsNameHandler))).Methods("GET")
 	r.Handle("/{item:products}/empiricalformulas", securechain.Then(env.AppMiddleware(env.GetProductsEmpiricalFormulasHandler))).Methods("GET")
+	r.Handle("/{item:products}/linearformulas", securechain.Then(env.AppMiddleware(env.GetProductsLinearFormulasHandler))).Methods("GET")
 	r.Handle("/{item:products}/empiricalformulas/{id}", securechain.Then(env.AppMiddleware(env.GetProductsEmpiricalFormulaHandler))).Methods("GET")
 	r.Handle("/{item:products}/physicalstates", securechain.Then(env.AppMiddleware(env.GetProductsPhysicalStatesHandler))).Methods("GET")
 	r.Handle("/{item:products}/signalwords", securechain.Then(env.AppMiddleware(env.GetProductsSignalWordsHandler))).Methods("GET")

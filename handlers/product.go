@@ -311,6 +311,41 @@ func (env *Env) GetProductsEmpiricalFormulasHandler(w http.ResponseWriter, r *ht
 	return nil
 }
 
+// GetProductsLinearFormulasHandler returns a json list of the linear formulas matching the search criteria
+func (env *Env) GetProductsLinearFormulasHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	log.Debug("GetProductsLinearFormulasHandler")
+
+	var (
+		err  error
+		aerr *helpers.AppError
+		dsp  helpers.Dbselectparam
+	)
+
+	// init db request parameters
+	if dsp, aerr = helpers.Newdbselectparam(r, nil); err != nil {
+		return aerr
+	}
+
+	lformulas, count, err := env.DB.GetProductsLinearFormulas(dsp)
+	if err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the empirical formulas",
+		}
+	}
+
+	type resp struct {
+		Rows  []models.LinearFormula `json:"rows"`
+		Total int                    `json:"total"`
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resp{Rows: lformulas, Total: count})
+	return nil
+}
+
 // GetProductsNamesHandler returns a json list of the names matching the search criteria
 func (env *Env) GetProductsNamesHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	log.Debug("GetProductsNamesHandler")
@@ -728,7 +763,7 @@ func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *he
 	updatedp.CasNumber = p.CasNumber
 	updatedp.CeNumber = p.CeNumber
 	updatedp.EmpiricalFormula = p.EmpiricalFormula
-	updatedp.ProductLinearFormula = p.ProductLinearFormula
+	updatedp.LinearFormula = p.LinearFormula
 	updatedp.Name = p.Name
 	updatedp.ProductSpecificity = p.ProductSpecificity
 	updatedp.Symbols = p.Symbols
@@ -736,7 +771,7 @@ func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *he
 	updatedp.ProductMSDS = p.ProductMSDS
 	updatedp.ProductRestricted = p.ProductRestricted
 	updatedp.ProductRadioactive = p.ProductRadioactive
-	updatedp.ProductLinearFormula = p.ProductLinearFormula
+	updatedp.LinearFormula = p.LinearFormula
 	updatedp.ProductThreeDFormula = p.ProductThreeDFormula
 	updatedp.ProductDisposalComment = p.ProductDisposalComment
 	updatedp.ProductRemark = p.ProductRemark
