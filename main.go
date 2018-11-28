@@ -48,7 +48,7 @@ func main() {
 	if *debug {
 		log.SetLevel(log.DebugLevel)
 	} else {
-		log.SetLevel(log.ErrorLevel)
+		log.SetLevel(log.InfoLevel)
 	}
 
 	// database initialization

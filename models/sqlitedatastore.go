@@ -339,10 +339,14 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		person_id integer PRIMARY KEY,
 		person_email string NOT NULL,
 		person_password string NOT NULL);
+		CREATE UNIQUE INDEX IF NOT EXISTS idx_person ON person(person_id, person_email);
+
 	CREATE TABLE IF NOT EXISTS entity (
 		entity_id integer PRIMARY KEY,
 		entity_name string NOT NULL,
 		entity_description string);
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_entity ON entity(entity_id, entity_name);
+
 	CREATE TABLE IF NOT EXISTS storelocation (
 		storelocation_id integer PRIMARY KEY,
 		storelocation_name string NOT NULL,
@@ -353,6 +357,8 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		storelocation integer,
 		FOREIGN KEY(storelocation) references storelocation(storelocation_id),
 		FOREIGN KEY(entity) references entity(entity_id));
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_storelocation ON storelocation(storelocation_id, storelocation_name);
+
 	CREATE TABLE IF NOT EXISTS supplier (
 		supplier_id integer PRIMARY KEY,
 		supplier_label string NOT NULL);
@@ -389,6 +395,8 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		FOREIGN KEY(person) references person(person_id),
 		FOREIGN KEY(product) references product(product_id),
 		FOREIGN KEY(storelocation) references storelocation(storelocation_id));
+	
+	-- person permissions
 	CREATE TABLE IF NOT EXISTS permission (
 		permission_id integer PRIMARY KEY,
 		person integer NOT NULL,
@@ -396,6 +404,8 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		permission_item_name string NOT NULL,
 		permission_entity_id integer,
 		FOREIGN KEY(person) references person(person_id));
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_permission ON permission(person, permission_item_name, permission_perm_name, permission_entity_id);
+
 	-- entities people belongs to
 	CREATE TABLE IF NOT EXISTS personentities (
 		personentities_person_id integer NOT NULL,
@@ -403,6 +413,8 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		PRIMARY KEY(personentities_person_id, personentities_entity_id),
 		FOREIGN KEY(personentities_person_id) references person(person_id),
 		FOREIGN KEY(personentities_entity_id) references entity(entity_id));
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_personentities ON personentities(personentities_person_id, personentities_entity_id);
+
 	-- entities managers	
 	CREATE TABLE IF NOT EXISTS entitypeople (
 		entitypeople_entity_id integer NOT NULL,
@@ -410,54 +422,75 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		PRIMARY KEY(entitypeople_entity_id, entitypeople_person_id),
 		FOREIGN KEY(entitypeople_person_id) references person(person_id),
 		FOREIGN KEY(entitypeople_entity_id) references entity(entity_id));
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_entitypeople ON entitypeople(entitypeople_entity_id, entitypeople_person_id);
+
 	-- products symbols
 	CREATE TABLE IF NOT EXISTS symbol (
 		symbol_id integer PRIMARY KEY,
 		symbol_label string NOT NULL,
 		symbol_image string);
+
 	-- products names
 	CREATE TABLE IF NOT EXISTS name (
 		name_id integer PRIMARY KEY,
 		name_label string NOT NULL UNIQUE);
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_name ON name(name_label);
+
 	-- products cas numbers
 	CREATE TABLE IF NOT EXISTS casnumber (
 		casnumber_id integer PRIMARY KEY,
 		casnumber_label string NOT NULL UNIQUE,
 		casnumber_cmr string);
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_casnumber ON casnumber(casnumber_label);
+
 	-- products ce numbers
 	CREATE TABLE IF NOT EXISTS cenumber (
 		cenumber_id integer PRIMARY KEY,
 		cenumber_label string NOT NULL UNIQUE);
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_cenumber ON cenumber(cenumber_label);
+
 	-- products empirical formulas
 	CREATE TABLE IF NOT EXISTS empiricalformula (
 		empiricalformula_id integer PRIMARY KEY,
 		empiricalformula_label string NOT NULL UNIQUE);
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_empiricalformula ON empiricalformula(empiricalformula_label);
+
 	-- products linear formulas
 	CREATE TABLE IF NOT EXISTS linearformula (
 		linearformula_id integer PRIMARY KEY,
 		linearformula_label string NOT NULL UNIQUE);
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_linearformula ON linearformula(linearformula_label);
+
 	-- products physical states
 	CREATE TABLE IF NOT EXISTS physicalstate (
 		physicalstate_id integer PRIMARY KEY,
 		physicalstate_label string NOT NULL UNIQUE);
+
 	-- products signal words
 	CREATE TABLE IF NOT EXISTS signalword (
 		signalword_id integer PRIMARY KEY,
 		signalword_label string NOT NULL UNIQUE);
+
 	-- products classes of compound
 	CREATE TABLE IF NOT EXISTS classofcompound (
 		classofcompound_id integer PRIMARY KEY,
 		classofcompound_label string NOT NULL UNIQUE);
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_classofcompound ON classofcompound(classofcompound_label);
+
 	-- products hazard statements
 	CREATE TABLE IF NOT EXISTS hazardstatement (
 		hazardstatement_id integer PRIMARY KEY,
 		hazardstatement_label string NOT NULL,
 		hazardstatement_reference string NOT NULL);
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_hazardstatement ON hazardstatement(hazardstatement_reference);
+
 	-- products precautionary statements
 	CREATE TABLE IF NOT EXISTS precautionarystatement (
 		precautionarystatement_id integer PRIMARY KEY,
 		precautionarystatement_label string NOT NULL,
 		precautionarystatement_reference string NOT NULL);
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_precautionarystatement ON precautionarystatement(precautionarystatement_reference);
+
 	-- products
 	CREATE TABLE IF NOT EXISTS product (
 		product_id integer PRIMARY KEY,
@@ -486,31 +519,43 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		FOREIGN KEY(signalword) references signalword(signalword_id),
 		FOREIGN KEY(classofcompound) references classofcompound(classofcompound_id),
 		FOREIGN KEY(name) references name(name_id));
-	CREATE UNIQUE INDEX idx_product_casnumber ON product(casnumber, product_specificity);
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_product_casnumber ON product(product_id, casnumber);
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_product_cenumber ON product(product_id, cenumber);
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_product_empiricalformula ON product(product_id, empiricalformula);
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_product_name ON product(product_id, name);
+
 	CREATE TABLE IF NOT EXISTS productsymbols (
 		productsymbols_product_id integer NOT NULL,
 		productsymbols_symbol_id integer NOT NULL,
 		PRIMARY KEY(productsymbols_product_id, productsymbols_symbol_id),
 		FOREIGN KEY(productsymbols_product_id) references product(product_id),
 		FOREIGN KEY(productsymbols_symbol_id) references symbol(symbol_id));
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_productsymbols ON productsymbols(productsymbols_product_id, productsymbols_symbol_id);
+
 	CREATE TABLE IF NOT EXISTS productsynonyms (
 		productsynonyms_product_id integer NOT NULL,
 		productsynonyms_name_id integer NOT NULL,
 		PRIMARY KEY(productsynonyms_product_id, productsynonyms_name_id),
 		FOREIGN KEY(productsynonyms_product_id) references product(product_id),
 		FOREIGN KEY(productsynonyms_name_id) references name(name_id));
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_productsynonyms ON productsynonyms(productsynonyms_product_id, productsynonyms_name_id);
+
 	CREATE TABLE IF NOT EXISTS producthazardstatements (
 		producthazardstatements_product_id integer NOT NULL,
 		producthazardstatements_hazardstatement_id integer NOT NULL,
 		PRIMARY KEY(producthazardstatements_product_id, producthazardstatements_hazardstatement_id),
 		FOREIGN KEY(producthazardstatements_product_id) references product(product_id),
-		FOREIGN KEY(producthazardstatements_hazardstatement_id) references hazardstatement(hazardstatement_id));	
+		FOREIGN KEY(producthazardstatements_hazardstatement_id) references hazardstatement(hazardstatement_id));
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_producthazardstatements ON producthazardstatements(producthazardstatements_product_id, producthazardstatements_hazardstatement_id);
+
 	CREATE TABLE IF NOT EXISTS productprecautionarystatements (
 		productprecautionarystatements_product_id integer NOT NULL,
 		productprecautionarystatements_precautionarystatement_id integer NOT NULL,
 		PRIMARY KEY(productprecautionarystatements_product_id, productprecautionarystatements_precautionarystatement_id),
 		FOREIGN KEY(productprecautionarystatements_product_id) references product(product_id),
 		FOREIGN KEY(productprecautionarystatements_precautionarystatement_id) references precautionarystatement(precautionarystatement_id));
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_productprecautionarystatements ON productprecautionarystatements(productprecautionarystatements_product_id, productprecautionarystatements_precautionarystatement_id);
+
 	CREATE TABLE IF NOT EXISTS bookmark (
 		bookmark_id integer PRIMARY KEY,
 		person integer NOT NULL,
@@ -672,40 +717,45 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		zeroempiricalformulaid int
 		zeropersonid           int
 
-		mperson        map[string]string   // oldid <> newid map for user table
-		mentity        map[string]string   // oldid <> newid map for entity table
-		mstorelocation map[string]string   // oldid <> newid map for storelocation table
-		mentitypeople  map[string][]string // managers, oldentityid <> oldpersonid
-		mcasnumber     map[string]string   // newlabel <> newid
+		// O:old N:new R:reverse
+		mONperson        map[string]string   // oldid <> newid map for user table
+		mONentity        map[string]string   // oldid <> newid map for entity table
+		mONstorelocation map[string]string   // oldid <> newid map for storelocation table
+		mOOentitypeople  map[string][]string // managers, oldentityid <> oldpersonid
+		mRNNcasnumber    map[string]string   // newlabel <> newid
 
-		mproduct                map[string]string // oldid <> newid map for product table
-		mclassofcompound        map[string]string // oldid <> newid map for classofcompound table
-		mempiricalformula       map[string]string // oldid <> newid map for empiricalformula table
-		mlinearformula          map[string]string // oldid <> newid map for linearformula table
-		mname                   map[string]string // oldid <> newid map for name table
-		mphysicalstate          map[string]string // oldid <> newid map for physicalstate table
-		mhazardstatement        map[string]string // oldid <> newid map for hazardstatement table
-		mprecautionarystatement map[string]string // oldid <> newid map for precautionarystatement table
-		msymbol                 map[string]string // oldid <> newid map for symbol table
-		msignalword             map[string]string // oldid <> newid map for signalword table
+		mONproduct                map[string]string // oldid <> newid map for product table
+		mONclassofcompound        map[string]string // oldid <> newid map for classofcompound table
+		mONempiricalformula       map[string]string // oldid <> newid map for empiricalformula table
+		mONlinearformula          map[string]string // oldid <> newid map for linearformula table
+		mONname                   map[string]string // oldid <> newid map for name table
+		mONphysicalstate          map[string]string // oldid <> newid map for physicalstate table
+		mONhazardstatement        map[string]string // oldid <> newid map for hazardstatement table
+		mONprecautionarystatement map[string]string // oldid <> newid map for precautionarystatement table
+		mONsymbol                 map[string]string // oldid <> newid map for symbol table
+		mONsignalword             map[string]string // oldid <> newid map for signalword table
+
 	)
 
 	// init maps
-	mproduct = make(map[string]string)
-	mperson = make(map[string]string)
-	mentity = make(map[string]string)
-	mstorelocation = make(map[string]string)
-	mentitypeople = make(map[string][]string)
-	mcasnumber = make(map[string]string)
-	mclassofcompound = make(map[string]string)
-	mempiricalformula = make(map[string]string)
-	mlinearformula = make(map[string]string)
-	mname = make(map[string]string)
-	mphysicalstate = make(map[string]string)
-	mhazardstatement = make(map[string]string)
-	mprecautionarystatement = make(map[string]string)
-	msymbol = make(map[string]string)
-	msignalword = make(map[string]string)
+	mONproduct = make(map[string]string)
+	mONperson = make(map[string]string)
+	mONentity = make(map[string]string)
+	mONstorelocation = make(map[string]string)
+	mOOentitypeople = make(map[string][]string)
+	mRNNcasnumber = make(map[string]string)
+	mONclassofcompound = make(map[string]string)
+	mONempiricalformula = make(map[string]string)
+	mONlinearformula = make(map[string]string)
+	mONname = make(map[string]string)
+	mONphysicalstate = make(map[string]string)
+	mONhazardstatement = make(map[string]string)
+	mONprecautionarystatement = make(map[string]string)
+	mONsymbol = make(map[string]string)
+	mONsignalword = make(map[string]string)
+
+	// number regex
+	rnumber := regexp.MustCompile("([0-9]+)")
 
 	// checking tables empty
 	if err = db.Get(&c, `SELECT count(*) FROM person`); err != nil {
@@ -737,7 +787,6 @@ func (db *SQLiteDataStore) Import(dir string) error {
 	//
 	log.Info("- importing entity")
 	rentity_name := regexp.MustCompile("user_[0-9]+|root_entity|all_entity")
-	rmanagers := regexp.MustCompile("([0-9]+)")
 	if csvFile, err = os.Open(path.Join(dir, "entity.csv")); err != nil {
 		return (err)
 	}
@@ -764,18 +813,18 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		manager := line[3]
 
 		// finding web2py like manager ids
-		ms := rmanagers.FindAllString(manager, -1)
+		ms := rnumber.FindAllString(manager, -1)
 		for _, m := range ms {
 			// leaving hardcoded zeros
 			if m != "0" {
-				mentitypeople[id] = append(mentitypeople[id], m)
+				mOOentitypeople[id] = append(mOOentitypeople[id], m)
 				log.Debug("entity with old id " + id + " has manager with old id " + m)
 			}
 		}
 
 		// leaving web2py specific entries
 		if !rentity_name.MatchString(name) {
-			log.Info("  " + name)
+			log.Debug("  " + name)
 			sqlr = `INSERT INTO entity(entity_name, entity_description) VALUES (?, ?)`
 			if res, err = tx.Exec(sqlr, name, description); err != nil {
 				tx.Rollback()
@@ -787,7 +836,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 				return err
 			}
 			// populating the map
-			mentity[id] = strconv.FormatInt(lastid, 10)
+			mONentity[id] = strconv.FormatInt(lastid, 10)
 			log.Debug("entity with old id " + id + " has new  id " + strconv.FormatInt(lastid, 10))
 		}
 	}
@@ -826,13 +875,12 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		}
 		color := line[5]
 
-		newentity := mentity[entity]
+		newentity := mONentity[entity]
 		newparent := sql.NullString{}
-		np := mstorelocation[parent]
+		np := mONstorelocation[parent]
 		if np != "" {
 			newparent = sql.NullString{Valid: true, String: np}
 		}
-		log.Info("  " + label)
 		log.Debug("storelocation " + label + ", entity:" + newentity + ", parent:" + newparent.String)
 		sqlr = `INSERT INTO storelocation(storelocation_name, storelocation_color, storelocation_canstore, storelocation_fullpath, entity, storelocation) VALUES (?, ?, ?, ?, ?, ?)`
 		if res, err = tx.Exec(sqlr, label, color, can_store, "", newentity, newparent); err != nil {
@@ -845,7 +893,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 			return err
 		}
 		// populating the map
-		mstorelocation[id] = strconv.FormatInt(lastid, 10)
+		mONstorelocation[id] = strconv.FormatInt(lastid, 10)
 	}
 
 	//
@@ -887,14 +935,14 @@ func (db *SQLiteDataStore) Import(dir string) error {
 			return err
 		}
 		// populating the map
-		mperson[id] = strconv.FormatInt(lastid, 10)
+		mONperson[id] = strconv.FormatInt(lastid, 10)
 	}
 
 	//
 	// permissions
 	//
 	log.Info("- initializing default permissions (r products)")
-	for _, newpid := range mperson {
+	for _, newpid := range mONperson {
 		sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id) VALUES (?, ?, ?, ?)`
 		if res, err = tx.Exec(sqlr, newpid, "r", "products", -1); err != nil {
 			tx.Rollback()
@@ -906,10 +954,10 @@ func (db *SQLiteDataStore) Import(dir string) error {
 	// managers
 	//
 	log.Info("- importing managers")
-	for oldentityid, oldmanagerids := range mentitypeople {
+	for oldentityid, oldmanagerids := range mOOentitypeople {
 		for _, oldmanagerid := range oldmanagerids {
-			newentityid := mentity[oldentityid]
-			newmanagerid := mperson[oldmanagerid]
+			newentityid := mONentity[oldentityid]
+			newmanagerid := mONperson[oldmanagerid]
 			// silently missing entities with no managers
 			if newmanagerid != "" {
 				sqlr = `INSERT INTO entitypeople(entitypeople_entity_id, entitypeople_person_id) VALUES (?, ?)`
@@ -917,6 +965,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 					tx.Rollback()
 					return err
 				}
+				log.Debug("person "+newmanagerid+", permission_perm_name: all permission_item_name: all", " permission_entity_id:"+newentityid)
 				sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id) VALUES (?, ?, ?, ?)`
 				if res, err = tx.Exec(sqlr, newmanagerid, "all", "all", newentityid); err != nil {
 					tx.Rollback()
@@ -952,8 +1001,8 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		}
 		userid := line[1]
 		groupid := line[2]
-		newuserid := mperson[userid]
-		newgroupid := mentity[groupid]
+		newuserid := mONperson[userid]
+		newgroupid := mONentity[groupid]
 
 		if newuserid != "" && newgroupid != "" {
 			sqlr = `INSERT INTO personentities(personentities_person_id, personentities_entity_id) VALUES (?, ?)`
@@ -1002,7 +1051,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 			return err
 		}
 		// populating the map
-		mclassofcompound[id] = strconv.FormatInt(lastid, 10)
+		mONclassofcompound[id] = strconv.FormatInt(lastid, 10)
 	}
 
 	//
@@ -1046,7 +1095,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 			return err
 		}
 		// populating the map
-		mempiricalformula[id] = strconv.FormatInt(lastid, 10)
+		mONempiricalformula[id] = strconv.FormatInt(lastid, 10)
 	}
 
 	//
@@ -1090,7 +1139,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 			return err
 		}
 		// populating the map
-		mlinearformula[id] = strconv.FormatInt(lastid, 10)
+		mONlinearformula[id] = strconv.FormatInt(lastid, 10)
 	}
 
 	//
@@ -1120,6 +1169,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		id := line[0]
 		label := line[1]
 
+		log.Debug("label:" + label)
 		sqlr = `INSERT INTO name(name_id, name_label) VALUES (?, ?)`
 		if res, err = tx.Exec(sqlr, id, label); err != nil {
 			tx.Rollback()
@@ -1130,12 +1180,12 @@ func (db *SQLiteDataStore) Import(dir string) error {
 			tx.Rollback()
 			return err
 		}
-		// populating the map
-		mname[id] = strconv.FormatInt(lastid, 10)
+		// populating the maps
+		mONname[id] = strconv.FormatInt(lastid, 10)
 	}
 
 	//
-	// name
+	// physical states
 	//
 	log.Info("- importing product physical states")
 	if csvFile, err = os.Open(path.Join(dir, "physical_state.csv")); err != nil {
@@ -1172,13 +1222,31 @@ func (db *SQLiteDataStore) Import(dir string) error {
 			return err
 		}
 		// populating the map
-		mphysicalstate[id] = strconv.FormatInt(lastid, 10)
+		mONphysicalstate[id] = strconv.FormatInt(lastid, 10)
 	}
 
 	//
 	// cas numbers
 	//
 	log.Info("- extracting and importing cas numbers from products")
+	log.Info("  gathering existing CMR cas numbers")
+	var (
+		rows     *sql.Rows
+		casid    string
+		caslabel string
+	)
+	if rows, err = tx.Query(`SELECT casnumber_id, casnumber_label FROM casnumber`); err != nil {
+		log.Error("error gathering existing CMR cas numbers")
+		tx.Rollback()
+		return err
+	}
+	for rows.Next() {
+		err := rows.Scan(&casid, &caslabel)
+		if err != nil {
+			log.Fatal(err)
+		}
+		mRNNcasnumber[caslabel] = casid
+	}
 	if csvFile, err = os.Open(path.Join(dir, "product.csv")); err != nil {
 		return (err)
 	}
@@ -1199,20 +1267,21 @@ func (db *SQLiteDataStore) Import(dir string) error {
 			tx.Rollback()
 			return err
 		}
-		id := line[0]
 		casnumber := line[26]
-		sqlr = `INSERT INTO casnumber(casnumber_label) VALUES (?)`
-		if res, err = tx.Exec(sqlr, id, casnumber); err != nil {
-			tx.Rollback()
-			return err
+		if _, ok := mRNNcasnumber[casnumber]; !ok {
+			sqlr = `INSERT INTO casnumber(casnumber_label) VALUES (?)`
+			if res, err = tx.Exec(sqlr, casnumber); err != nil {
+				tx.Rollback()
+				return err
+			}
+			// getting the last inserted id
+			if lastid, err = res.LastInsertId(); err != nil {
+				tx.Rollback()
+				return err
+			}
+			// populating the map
+			mRNNcasnumber[casnumber] = strconv.FormatInt(lastid, 10)
 		}
-		// getting the last inserted id
-		if lastid, err = res.LastInsertId(); err != nil {
-			tx.Rollback()
-			return err
-		}
-		// populating the map
-		mcasnumber[casnumber] = strconv.FormatInt(lastid, 10)
 	}
 
 	// committing changes
@@ -1281,7 +1350,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 			tx.Rollback()
 			return err
 		}
-		mhazardstatement[id] = strconv.Itoa(nid)
+		mONhazardstatement[id] = strconv.Itoa(nid)
 	}
 	log.Info("  gathering precautionarystatement ids")
 	if csvFile, err = os.Open(path.Join(dir, "precautionary_statement.csv")); err != nil {
@@ -1316,7 +1385,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 			tx.Rollback()
 			return err
 		}
-		mprecautionarystatement[id] = strconv.Itoa(nid)
+		mONprecautionarystatement[id] = strconv.Itoa(nid)
 	}
 	log.Info("  gathering symbol ids")
 	if csvFile, err = os.Open(path.Join(dir, "symbol.csv")); err != nil {
@@ -1348,7 +1417,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 			tx.Rollback()
 			return err
 		}
-		msymbol[id] = strconv.Itoa(nid)
+		mONsymbol[id] = strconv.Itoa(nid)
 	}
 	log.Info("  gathering signalword ids")
 	if csvFile, err = os.Open(path.Join(dir, "signal_word.csv")); err != nil {
@@ -1380,7 +1449,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 			tx.Rollback()
 			return err
 		}
-		msignalword[id] = strconv.Itoa(nid)
+		mONsignalword[id] = strconv.Itoa(nid)
 	}
 
 	if csvFile, err = os.Open(path.Join(dir, "product.csv")); err != nil {
@@ -1404,10 +1473,10 @@ func (db *SQLiteDataStore) Import(dir string) error {
 			return err
 		}
 		id := line[0]
-		//cenumber := line[1]
+		//TODO: cenumber := line[1]
 		person := line[2]
 		name := line[3]
-		//synonym := line[4]
+		synonym := line[4]
 		restricted := line[5]
 		specificity := line[6]
 		tdformula := line[7]
@@ -1415,38 +1484,37 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		linearformula := line[9]
 		msds := line[10]
 		physicalstate := line[11]
-		//coc := line[12]
-		//symbol := line[14]
+		//TODO: coc := line[12]
+		symbol := line[14]
 		signalword := line[15]
-		//hazardstatement := line[18]
-		//precautionarystatement := line[19]
+		hazardstatement := line[18]
+		precautionarystatement := line[19]
 		disposalcomment := line[20]
 		remark := line[21]
 		archive := line[23]
 		casnumber := line[26]
 		isradio := line[27]
-		//TODO: cenumber
-		newperson := mperson[person]
+
+		newperson := mONperson[person]
 		if newperson == "" {
 			newperson = strconv.Itoa(zeropersonid)
 		}
-		newname := mname[name]
-		//TODO:synonym
+		newname := mONname[name]
 		newrestricted := false
 		if restricted == "T" {
 			newrestricted = true
 		}
 		newspecificity := specificity
 		newtdformula := tdformula
-		newempiricalformula := mempiricalformula[empiricalformula]
+		newempiricalformula := mONempiricalformula[empiricalformula]
 		if newempiricalformula == "" {
 			newempiricalformula = strconv.Itoa(zeroempiricalformulaid)
 		}
 		newlinearformula := sql.NullInt64{}
-		if mlinearformula[linearformula] != "" {
-			i, e := strconv.ParseInt(mlinearformula[linearformula], 10, 64)
+		if mONlinearformula[linearformula] != "" {
+			i, e := strconv.ParseInt(mONlinearformula[linearformula], 10, 64)
 			if e != nil {
-				log.Error("error converting linearformula id for " + mlinearformula[linearformula])
+				log.Error("error converting linearformula id for " + mONlinearformula[linearformula])
 				tx.Rollback()
 				return err
 			}
@@ -1454,37 +1522,32 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		}
 		newmsds := msds
 		newphysicalstate := sql.NullInt64{}
-		if mphysicalstate[physicalstate] != "" {
-			i, e := strconv.ParseInt(mphysicalstate[physicalstate], 10, 64)
+		if mONphysicalstate[physicalstate] != "" {
+			i, e := strconv.ParseInt(mONphysicalstate[physicalstate], 10, 64)
 			if e != nil {
-				log.Error("error converting physicalstate id for " + mphysicalstate[physicalstate])
+				log.Error("error converting physicalstate id for " + mONphysicalstate[physicalstate])
 				tx.Rollback()
 				return err
 			}
 			newphysicalstate = sql.NullInt64{Valid: true, Int64: i}
 		}
-		//TODO:coc
-		//TODO:symbol
 		newsignalword := sql.NullInt64{}
-		if msignalword[signalword] != "" {
-			i, e := strconv.ParseInt(msignalword[signalword], 10, 64)
+		if mONsignalword[signalword] != "" {
+			i, e := strconv.ParseInt(mONsignalword[signalword], 10, 64)
 			if e != nil {
-				log.Error("error converting signalword id for " + msignalword[signalword])
+				log.Error("error converting signalword id for " + mONsignalword[signalword])
 				tx.Rollback()
 				return err
 			}
 			newsignalword = sql.NullInt64{Valid: true, Int64: i}
 		}
-		//TODO:hs
-		//TODO:ps
 		newdisposalcomment := disposalcomment
 		newremark := remark
-		//TODO: DO NOT IMPORT ARCHIVES
 		newarchive := false
 		if archive == "T" {
 			newarchive = true
 		}
-		newcasnumber := mcasnumber[casnumber]
+		newcasnumber := mRNNcasnumber[casnumber]
 		if newcasnumber == "" {
 			newcasnumber = strconv.Itoa(zerocasnumberid)
 		}
@@ -1510,10 +1573,6 @@ func (db *SQLiteDataStore) Import(dir string) error {
 				casnumber,
 				name) 
 			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-			log.Debug(newlinearformula.Valid)
-			log.Debug(newphysicalstate.Valid)
-			log.Debug(newsignalword.Valid)
-			log.Debug("ef:" + newempiricalformula + " person:" + newperson + " cas:" + newcasnumber + " name:" + newname)
 			if res, err = tx.Exec(sqlr,
 				newspecificity,
 				newmsds,
@@ -1534,11 +1593,53 @@ func (db *SQLiteDataStore) Import(dir string) error {
 			}
 			// getting the last inserted id
 			if lastid, err = res.LastInsertId(); err != nil {
+				log.Error("error importing product")
 				tx.Rollback()
 				return err
 			}
 			// populating the map
-			mproduct[id] = strconv.FormatInt(lastid, 10)
+			mONproduct[id] = strconv.FormatInt(lastid, 10)
+
+			// synonym
+			syns := rnumber.FindAllString(synonym, -1)
+			for _, s := range syns {
+				if s == "0" {
+					continue
+				}
+				// leaving hardcoded zeros
+				sqlr = `INSERT INTO productsynonyms (productsynonyms_product_id, productsynonyms_name_id) VALUES (?,?)`
+				if res, err = tx.Exec(sqlr, lastid, mONname[s]); err != nil {
+					// not leaving on errors
+					log.Error("error importing product synonym with id " + s)
+				}
+			}
+			// symbol
+			symbols := rnumber.FindAllString(symbol, -1)
+			for _, s := range symbols {
+				sqlr = `INSERT INTO productsymbols (productsymbols_product_id, productsymbols_symbol_id) VALUES (?,?)`
+				if res, err = tx.Exec(sqlr, lastid, mONsymbol[s]); err != nil {
+					// not leaving on errors
+					log.Error("error importing product symbol with id " + s)
+				}
+			}
+			// hs
+			hss := rnumber.FindAllString(hazardstatement, -1)
+			for _, s := range hss {
+				sqlr = `INSERT INTO producthazardstatements (producthazardstatements_product_id, producthazardstatements_hazardstatement_id) VALUES (?,?)`
+				if res, err = tx.Exec(sqlr, lastid, mONhazardstatement[s]); err != nil {
+					// not leaving on errors
+					log.Error("error importing product hazardstatement with id " + s)
+				}
+			}
+			// ps
+			pss := rnumber.FindAllString(precautionarystatement, -1)
+			for _, s := range pss {
+				sqlr = `INSERT INTO productprecautionarystatements (productprecautionarystatements_product_id, productprecautionarystatements_precautionarystatement_id) VALUES (?,?)`
+				if res, err = tx.Exec(sqlr, lastid, mONprecautionarystatement[s]); err != nil {
+					// not leaving on errors
+					log.Error("error importing product precautionarystatement with id " + s)
+				}
+			}
 		}
 
 	}
@@ -1568,7 +1669,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		return err
 	}
 	for _, sl := range sls {
-		log.Info("  " + sl.StoreLocationName.String)
+		log.Debug("  " + sl.StoreLocationName.String)
 		sl.StoreLocationFullPath = db.buildFullPath(sl)
 		sqlr = `UPDATE storelocation SET storelocation_fullpath = ? WHERE storelocation_id = ?`
 		if res, err = tx.Exec(sqlr, sl.StoreLocationFullPath, sl.StoreLocationID.Int64); err != nil {
