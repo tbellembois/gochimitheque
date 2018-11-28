@@ -44,6 +44,8 @@ type DbselectparamProduct interface {
 	SetCasNumber(int)
 	SetStorageBarecode(string)
 
+	SetCustomNamePartOf(string)
+
 	GetEntity() int
 	GetProduct() int
 	GetStorelocation() int
@@ -52,6 +54,8 @@ type DbselectparamProduct interface {
 	GetEmpiricalFormula() int
 	GetCasNumber() int
 	GetStorageBarecode() string
+
+	GetCustomNamePartOf() string
 }
 type dbselectparamProduct struct {
 	dbselectparam
@@ -63,6 +67,9 @@ type dbselectparamProduct struct {
 	EmpiricalFormula int // id
 	CasNumber        int // id
 	StorageBarecode  string
+
+	// custom search
+	CustomNamePartOf string
 }
 
 // dbselectparamStorage contains the parameters of the GetStorages function
@@ -263,6 +270,14 @@ func (d dbselectparamProduct) GetStorageBarecode() string {
 	return d.StorageBarecode
 }
 
+func (d *dbselectparamProduct) SetCustomNamePartOf(n string) {
+	d.CustomNamePartOf = n
+}
+
+func (d dbselectparamProduct) GetCustomNamePartOf() string {
+	return d.CustomNamePartOf
+}
+
 //
 // dbselectparamStorage functions
 //
@@ -400,6 +415,7 @@ func NewdbselectparamProduct(r *http.Request, f func(string) (string, error)) (*
 	dspp.CasNumber = -1
 	dspp.EmpiricalFormula = -1
 	dspp.StorageBarecode = ""
+	dspp.CustomNamePartOf = ""
 	if dsp, aerr = Newdbselectparam(r, f); aerr != nil {
 		return nil, aerr
 	}
@@ -476,6 +492,9 @@ func NewdbselectparamProduct(r *http.Request, f func(string) (string, error)) (*
 		}
 		if storage_barecode, ok := r.URL.Query()["storage_barecode"]; ok {
 			dspp.StorageBarecode = storage_barecode[0]
+		}
+		if custom_name_part_of, ok := r.URL.Query()["custom_name_part_of"]; ok {
+			dspp.CustomNamePartOf = custom_name_part_of[0]
 		}
 	}
 	return &dspp, nil

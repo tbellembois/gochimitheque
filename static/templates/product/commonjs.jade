@@ -82,6 +82,8 @@ script.
         //
         $('select#s_casnumber').select2({
             tags: false,
+            allowClear: true,
+            placeholder: "select a cas number",
             ajax: {
                 url: proxyPath + 'products/casnumbers',
                 delay: 400,
@@ -117,6 +119,8 @@ script.
 
         $('select#s_name').select2({
             tags: false,
+            allowClear: true,
+            placeholder: "select a name",
             ajax: {
                 url: proxyPath + 'products/names',
                 delay: 400,
@@ -153,6 +157,8 @@ script.
 
         $('select#s_empiricalformula').select2({
             tags: false,
+            allowClear: true,
+            placeholder: "select a formula",
             ajax: {
                 url: proxyPath + 'products/empiricalformulas',
                 delay: 400,
@@ -641,6 +647,7 @@ script.
         //
         $('select#linearformula').select2({
             tags: true,
+            allowClear: true,
             createTag: function (params) {
                 if ($("input#exactMatchLinearFormula").val() == "true") {
                     return null
@@ -650,6 +657,7 @@ script.
                     text: params.term,
                 }
             },
+            placeholder: "select or enter a linear formula",
             ajax: {
                 url: proxyPath + 'products/linearformulas',
                 delay: 400,
@@ -685,8 +693,8 @@ script.
 
                     // replacing name by text expected by select2
                     var newdata = $.map(data.rows, function (obj) {
-                        obj.text = obj.text || obj.linearformula_label;
-                        obj.id = obj.id || obj.linearformula_id;
+                        obj.text = obj.text || obj.linearformula_label.String;
+                        obj.id = obj.id || obj.linearformula_id.Int64;
                         return obj;
                     });
                     // getting the number of loaded select elements

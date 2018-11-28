@@ -12,6 +12,8 @@ html
         | <link href="{{.ProxyPath}}css/chimitheque.css" rel="stylesheet"/>
         
         link(href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet")
+        link(href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet")
+        
     body
         div.container
             | {{template "HEADER"}}
@@ -107,6 +109,8 @@ html
         | <script src="{{.ProxyPath}}js/chimcommon.js"></script>
         | <script src="{{.ProxyPath}}js/chimauth.js"></script>
         
+        script(src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js")
+
         script.
             //
             // common javascript

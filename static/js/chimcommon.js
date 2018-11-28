@@ -187,16 +187,20 @@ function switchProductStorageView() {
 }
 
 function clearsearch() {
-    $('#s_name').val(null).trigger('change');
-    $('#s_casnumber').val(null).trigger('change');
-    $('#s_empiricalformula').val(null).trigger('change');
-    $("#s_storage_barecode").val("");
+    // root url
+    root = window.location.protocol + '//' + window.location.hostname + ":" + window.location.port;
+    window.location.href = root + "/v/products";
+    // $('#s_name').val(null).trigger('change');
+    // $('#s_casnumber').val(null).trigger('change');
+    // $('#s_empiricalformula').val(null).trigger('change');
+    // $("#s_storage_barecode").val("");
 }
 
 function search() {
     var s_name;
     var s_empiricalformula;
     var s_casnumber;
+    var s_custom_name_part_of;
     if ($('select#s_name').hasClass("select2-hidden-accessible")) {
         // Select2 has been initialized
         // name_id
@@ -221,7 +225,8 @@ function search() {
             s_casnumber = $('select#s_casnumber').select2('data')[0].id;
         }
     }
-
+    s_custom_name_part_of = $('#s_custom_name_part_of').val() ;
+    
     var $table = $('#table');
-    $table.bootstrapTable('refresh', {query: {name: s_name, casnumber: s_casnumber, empiricalformula: s_empiricalformula}}); 
+    $table.bootstrapTable('refresh', {query: {name: s_name, casnumber: s_casnumber, empiricalformula: s_empiricalformula, custom_name_part_of: s_custom_name_part_of}}); 
 }
