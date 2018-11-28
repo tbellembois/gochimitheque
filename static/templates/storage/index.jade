@@ -8,7 +8,11 @@
                     +selecticon
             .row
                 .col-sm-6
-                    | {{$label := "name"}} {{$name := "s_name"}}
+                    | {{$label := "part of name"}} {{$name := "s_custom_name_part_of"}}
+                    +inputtextcompact
+                .col-sm-6
+                .col-sm-6
+                    | {{$label := "exact name"}} {{$name := "s_name"}}
                     +selectcompact
                 .col-sm-6
                     | {{$label := "cas"}} {{$name := "s_casnumber"}}
@@ -45,9 +49,14 @@
             button.btn.btn-dark#switchview(type="button" title="switch to product view" onclick="switchProductStorageView()")
                 i.material-icons local_offer
         .col
-            | {{$icon := "delete"}} {{$name := "s_storage_archive"}} {{$title := "view archives"}}
-            +checkboxicon
-    
+            .btn-group.btn-group-toggle(data-toggle="buttons" title="view archives?")
+                label.btn.btn-secondary.active
+                    input#s_storage_archive_off(type="radio" name="options" autocomplete="off" checked="checked" title="do not show archives")
+                        i.material-icons delete_forever
+                label.btn.btn-secondary
+                    input#s_storage_archive_on(type="radio" name="options" autocomplete="off" title="show only archives")
+                        i.material-icons delete
+
     #stock.modal.fade(role="dialog" tabindex="-1" aria-labelledby="stockLabel" aria-hidden="true")
         .modal-dialog.modal-lg(role="document")
             .modal-content
@@ -61,7 +70,7 @@
                 .col-sm-12
                     table#table(data-toggle='table', 
                                 data-striped='true', 
-                                data-search='true', 
+                                data-search='false', 
                                 data-toolbar="#toolbar",
                                 data-side-pagination='server', 
                                 data-page-list="[5, 10, 20, 50, 100]",
@@ -162,14 +171,14 @@
         //
         // view storages button
         //
-        $('#s_storage_archive').on('click', function () {
+        $('#s_storage_archive_on').on('change', function () {
             var $table = $('#table');
-
-            if($("#s_storage_archive").prop('checked') == true){
-                updateQueryStringParam("storage_archive", "true");
-            } else {
-                updateQueryStringParam("storage_archive", "false");
-            }
+            updateQueryStringParam("storage_archive", "true");
+            $table.bootstrapTable('refresh');
+        });
+        $('#s_storage_archive_off').on('change', function () {
+            var $table = $('#table');
+            updateQueryStringParam("storage_archive", "false");
             $table.bootstrapTable('refresh');
         });
 
@@ -462,6 +471,10 @@
                     rows: data.rows,
                     total: data.total,
                 });
+                if (data.total == 0) {
+                    var $table = $('#table');
+                    $table.bootstrapTable('removeAll');
+                }
             }).fail(function(jqXHR, textStatus, errorThrown) {
                 params.error(jqXHR.statusText);                
                 handleHTTPError(jqXHR.statusText, jqXHR.status);

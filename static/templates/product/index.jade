@@ -8,7 +8,11 @@
                     +selecticon
             .row
                 .col-sm-6
-                    | {{$label := "name"}} {{$name := "s_name"}}
+                    | {{$label := "part of name"}} {{$name := "s_custom_name_part_of"}}
+                    +inputtextcompact
+                .col-sm-6
+                .col-sm-6
+                    | {{$label := "exact name"}} {{$name := "s_name"}}
                     +selectcompact
                 .col-sm-6
                     | {{$label := "cas"}} {{$name := "s_casnumber"}}
@@ -49,7 +53,7 @@
                 .col-sm-12
                     table#table(data-toggle='table', 
                                 data-striped='true', 
-                                data-search='true', 
+                                data-search='false', 
                                 data-toolbar="#toolbar",
                                 data-side-pagination='server', 
                                 data-page-list="[5, 10, 20, 50, 100]",
@@ -379,6 +383,10 @@
                     rows: data.rows,
                     total: data.total,
                 });
+                if (data.total == 0) {
+                    var $table = $('#table');
+                    $table.bootstrapTable('removeAll');
+                }
             }).fail(function(jqXHR, textStatus, errorThrown) {
                 params.error(jqXHR.statusText);                
                 handleHTTPError(jqXHR.statusText, jqXHR.status)

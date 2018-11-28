@@ -895,6 +895,9 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	if p.GetStorageBarecode() != "" {
 		comreq.WriteString(" AND storage.storage_barecode = :storage_barecode")
 	}
+	if p.GetCustomNamePartOf() != "" {
+		comreq.WriteString(" AND name.name_label LIKE :custom_name_part_of")
+	}
 
 	// post select request
 	postsreq.WriteString(" GROUP BY p.product_id")
@@ -915,18 +918,19 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 
 	// building argument map
 	m := map[string]interface{}{
-		"search":           p.GetSearch(),
-		"personid":         p.GetLoggedPersonID(),
-		"order":            p.GetOrder(),
-		"limit":            p.GetLimit(),
-		"offset":           p.GetOffset(),
-		"entity":           p.GetEntity(),
-		"product":          p.GetProduct(),
-		"storelocation":    p.GetStorelocation(),
-		"name":             p.GetName(),
-		"casnumber":        p.GetCasNumber(),
-		"empiricalformula": p.GetEmpiricalFormula(),
-		"storage_barecode": p.GetStorageBarecode(),
+		"search":              p.GetSearch(),
+		"personid":            p.GetLoggedPersonID(),
+		"order":               p.GetOrder(),
+		"limit":               p.GetLimit(),
+		"offset":              p.GetOffset(),
+		"entity":              p.GetEntity(),
+		"product":             p.GetProduct(),
+		"storelocation":       p.GetStorelocation(),
+		"name":                p.GetName(),
+		"casnumber":           p.GetCasNumber(),
+		"empiricalformula":    p.GetEmpiricalFormula(),
+		"storage_barecode":    p.GetStorageBarecode(),
+		"custom_name_part_of": "%" + p.GetCustomNamePartOf() + "%",
 	}
 
 	log.Debug(presreq.String() + comreq.String() + postsreq.String())

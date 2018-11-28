@@ -228,8 +228,10 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 	if !p.GetHistory() {
 		comreq.WriteString(" AND s.storage IS NULL")
 	}
-	if !p.GetStorageArchive() {
-		comreq.WriteString(" AND s.storage_archive = false ")
+	if p.GetStorageArchive() {
+		comreq.WriteString(" AND s.storage_archive = true")
+	} else {
+		comreq.WriteString(" AND s.storage_archive = false")
 	}
 
 	// post select request
