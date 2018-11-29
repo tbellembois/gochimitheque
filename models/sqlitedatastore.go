@@ -376,7 +376,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		storage_exitdate datetime,
 		storage_openingdate datetime,
 		storage_expirationdate datetime,
-		storage_quantity integer,
+		storage_quantity float,
 		storage_barecode string,
 		storage_comment string,
 		storage_reference string,
@@ -577,7 +577,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	("SGH09", "image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAI8SURBVFiFzdi7a1VBEMDhb0EjYhFfaCEICopBi4haWUiqqGgQW1OKaBpNIQEVvREi2lhaWCiC/4CSImgv2IgQELSSdKKlMUKEtTgr3jxuPI+9iQMD5+y9u/NjdmbO7IYYoywSQgvE2MqyXoyxudKKxKStHGvmhsoGl9dTGT2Xf/syweWFygiXHyoTXHegMsDVgprjLk5hS4wRenLD1fYUhjGans9jF/rRlwOuMhS2Yz924F0CO4EBjOTyXK0YwUVcwAcEHMJr9OaKudqLYBA/cQx7cT+NB1xrCld5cvLOGA7gqSIRricv7sED9Df1XB1PbcVOXMZnzOA7pvEcg3UTqjNY1QDlKmLSsRX+14NNlXamLlQyeDJBfenw+xmcxQ3cxunSCVYpINmYatUfHUlg3xaN9+MmjqR5uxPkaNltrZbChcFYUi8tmjuOqbIxt25pT7uifMThtvcBPMS84kvwKY2fizE+hhDCBkXGzuBZaUsN4qtPUVQj3uOJIhmGFSXlOO4loEmsr5KhtYIfvRjCUTxS1K8reKnIwAkLt/UHhqqUjUblIkFuxi18TRCv8KsNah5v8UbqRqqVi5JwOKhI/ym8wKzlg3+xzmGyrJ2QjC2U4ox4J72NS2fFEMI27CsdwEtlNsY43Wn9BVIlILNoo494t+CytD254bI2irngutJaN4Xr6mGkrpFVOb5VNbaqB96yRtfkiuBfxtf0UqUTxH9xDbU8XBaoPGAZt69dq3awy0uMLSH8fc4gvwFyuYuihNiCxwAAAABJRU5ErkJggg==");`
 	inssignalword := `INSERT INTO signalword (signalword_label) VALUES ("danger"), ("warning")`
 	insunit := `INSERT INTO unit (unit_label, unit_multiplier, unit) VALUES 
-	("l", 1, NULL), ("ml", 0.001, 1), ("µl", 0.00001, 1),
+	("L", 1, NULL), ("mL", 0.001, 1), ("µL", 0.00001, 1),
 	("kg", 1000, 2), ("g", 1, NULL), ("mg", 0.001, 2), ("µg", 0.00001, 2),
 	("m", 1, NULL), ("dm", 0.1, 3), ("cm", 0.01, 3)`
 
@@ -719,6 +719,8 @@ func (db *SQLiteDataStore) Import(dir string) error {
 
 		// O:old N:new R:reverse
 		mONperson        map[string]string   // oldid <> newid map for user table
+		mONsupplier      map[string]string   // oldid <> newid map for supplier table
+		mONunit          map[string]string   // oldid <> newid map for unit table
 		mONentity        map[string]string   // oldid <> newid map for entity table
 		mONstorelocation map[string]string   // oldid <> newid map for storelocation table
 		mOOentitypeople  map[string][]string // managers, oldentityid <> oldpersonid
@@ -740,6 +742,8 @@ func (db *SQLiteDataStore) Import(dir string) error {
 	// init maps
 	mONproduct = make(map[string]string)
 	mONperson = make(map[string]string)
+	mONunit = make(map[string]string)
+	mONsupplier = make(map[string]string)
 	mONentity = make(map[string]string)
 	mONstorelocation = make(map[string]string)
 	mOOentitypeople = make(map[string][]string)
@@ -1284,6 +1288,48 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		}
 	}
 
+	//
+	// supplier
+	//
+	log.Info("- importing storage suppliers")
+	if csvFile, err = os.Open(path.Join(dir, "supplier.csv")); err != nil {
+		return (err)
+	}
+	csvReader = csv.NewReader(bufio.NewReader(csvFile))
+	i = 0
+	for {
+		line, error := csvReader.Read()
+
+		// skip header
+		if i == 0 {
+			i++
+			continue
+		}
+
+		if error == io.EOF {
+			break
+		} else if error != nil {
+			tx.Rollback()
+			return err
+		}
+		id := line[0]
+		label := line[1]
+
+		log.Debug("label:" + label)
+		sqlr = `INSERT INTO supplier(supplier_id, supplier_label) VALUES (?, ?)`
+		if res, err = tx.Exec(sqlr, id, label); err != nil {
+			tx.Rollback()
+			return err
+		}
+		// getting the last inserted id
+		if lastid, err = res.LastInsertId(); err != nil {
+			tx.Rollback()
+			return err
+		}
+		// populating the maps
+		mONsupplier[id] = strconv.FormatInt(lastid, 10)
+	}
+
 	// committing changes
 	if err = tx.Commit(); err != nil {
 		tx.Rollback()
@@ -1655,6 +1701,142 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		return err
 	}
 
+	//
+	// storages
+	//
+	log.Info("- importing storages")
+	log.Info("  gathering unit ids")
+	if csvFile, err = os.Open(path.Join(dir, "unit.csv")); err != nil {
+		return (err)
+	}
+	csvReader = csv.NewReader(bufio.NewReader(csvFile))
+	i = 0
+	for {
+		line, error := csvReader.Read()
+
+		// skip header
+		if i == 0 {
+			i++
+			continue
+		}
+
+		if error == io.EOF {
+			break
+		} else if error != nil {
+			tx.Rollback()
+			return err
+		}
+		id := line[0]
+		label := line[1]
+		// finding new id
+		var nid int
+		if err = db.Get(&nid, `SELECT unit_id FROM unit WHERE unit_label = ?`, label); err != nil {
+			log.Error("error gathering unit id for " + label)
+			tx.Rollback()
+			return err
+		}
+		mONunit[id] = strconv.Itoa(nid)
+	}
+
+	if csvFile, err = os.Open(path.Join(dir, "storage.csv")); err != nil {
+		return (err)
+	}
+	csvReader = csv.NewReader(bufio.NewReader(csvFile))
+	i = 0
+	for {
+		line, error := csvReader.Read()
+
+		// skip header
+		if i == 0 {
+			i++
+			continue
+		}
+
+		if error == io.EOF {
+			break
+		} else if error != nil {
+			tx.Rollback()
+			return err
+		}
+		product := line[1]
+		person := line[2]
+		store_location := line[3]
+		unit := line[4]
+		comment := line[8]
+		barecode := line[9]
+		reference := line[10]
+		batch_number := line[11]
+		supplier := line[12]
+		archive := line[13]
+		volume_weight := line[16]
+		to_destroy := line[18]
+
+		newproduct := mONproduct[product]
+		newperson := mONperson[person]
+		newstore_location := mONstorelocation[store_location]
+		newunit := mONunit[unit]
+		newcomment := comment
+		newbarecode := barecode
+		newreference := reference
+		newbatch_number := batch_number
+		newsupplier := mONsupplier[supplier]
+		newarchive := false
+		if archive == "T" {
+			newarchive = true
+		}
+		newvolume_weight := volume_weight
+		newto_destroy := false
+		if to_destroy == "T" {
+			newto_destroy = true
+		}
+
+		// do not import archived cards
+		if !newarchive {
+			sqlr = `INSERT INTO storage (storage_creationdate, 
+				storage_modificationdate, 
+				storage_comment, 
+				storage_reference, 
+				storage_batchnumber, 
+				storage_quantity, 
+				storage_barecode,
+				storage_todestroy,
+				person,
+				product,
+				storelocation,
+				unit,
+				supplier) 
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+			if _, err = tx.Exec(sqlr,
+				time.Now(),
+				time.Now(),
+				newcomment,
+				newreference,
+				newbatch_number,
+				newvolume_weight,
+				newbarecode,
+				newto_destroy,
+				newperson,
+				newproduct,
+				newstore_location,
+				newunit,
+				newsupplier); err != nil {
+				tx.Rollback()
+				return err
+			}
+		}
+	}
+
+	// committing changes
+	if err = tx.Commit(); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// beginning new transaction
+	if tx, err = db.Begin(); err != nil {
+		return err
+	}
+
 	log.Info("- updating store locations full path")
 	var sls []StoreLocation
 	if err = db.Select(&sls, ` SELECT s.storelocation_id AS "storelocation_id", 
@@ -1676,6 +1858,25 @@ func (db *SQLiteDataStore) Import(dir string) error {
 			tx.Rollback()
 			return err
 		}
+	}
+
+	//TODO: remove before prod
+	sqlr = `DELETE FROM storage WHERE storage.storelocation NOT in (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	if res, err = tx.Exec(sqlr,
+		mONstorelocation["221941"],
+		mONstorelocation["221947"],
+		mONstorelocation["221950"],
+		mONstorelocation["221949"],
+		mONstorelocation["221951"],
+		mONstorelocation["221959"],
+		mONstorelocation["221953"],
+		mONstorelocation["221940"],
+		mONstorelocation["221666"],
+		mONstorelocation["221667"],
+		mONstorelocation["221668"],
+		mONstorelocation["13"],
+		mONstorelocation["15"]); err != nil {
+		log.Error(err)
 	}
 
 	// committing changes

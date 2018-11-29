@@ -333,11 +333,12 @@ script.
             return sl.storelocation_fullpath;
         }
         var canstore = '<i class="material-icons">close</i>';
+        var icon = '<span class="badge badge-pill" style="color: ' + sl.storelocation_color.String + ';"><i class="material-icons">label</i></span>';
         if (sl.storelocation_canstore.Valid && sl.storelocation_canstore.Bool) {
             canstore = '<i class="material-icons">check</i>'
         }
         var s = $(
-            '<div><span style="color:' + sl.storelocation_color.String + '">' + sl.storelocation_fullpath + '</span>' + canstore + '</div>'
+            '<div>' + icon + '<span>' + sl.storelocation_fullpath + '</span>' + canstore + '</div>'
         );
         return s;
     };
