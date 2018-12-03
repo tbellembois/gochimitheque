@@ -311,6 +311,7 @@
             var name = urlParams.get("name");
             var casnumber = urlParams.get("casnumber");
             var empiricalformula = urlParams.get("empiricalformula");
+            var storage_barecode = urlParams.get("storage_barecode");
             if (name != null) {
                 $.ajax({
                     url: proxyPath + "products/names/" + name,
@@ -344,6 +345,9 @@
                     handleHTTPError(jqXHR.statusText, jqXHR.status)
                 });
             }           
+            if (storage_barecode != null) {
+                $("input#storage_barecode").val(storage_barecode);
+            }
 
             if (urlParams.has("entity")) {
                 params["entity"] = urlParams.get("entity");
@@ -366,6 +370,9 @@
             }
             if (empiricalformula != null) {
                 params["empiricalformula"] = empiricalformula;
+            }
+            if (storage_barecode != null) {
+                params["storage_barecode"] = storage_barecode;
             }
 
             return params;

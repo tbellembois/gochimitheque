@@ -389,6 +389,7 @@
             var name = urlParams.get("name");
             var casnumber = urlParams.get("casnumber");
             var empiricalformula = urlParams.get("empiricalformula");
+            var storage_barecode = urlParams.get("storage_barecode");
             var storage_archive = urlParams.get("storage_archive");
             if (name != null) {
                 $.ajax({
@@ -422,7 +423,10 @@
                 }).fail(function(jqXHR, textStatus, errorThrown) {
                     handleHTTPError(jqXHR.statusText, jqXHR.status)
                 });
-            }        
+            }
+            if (storage_barecode != null) {
+                $("input#storage_barecode").val(storage_barecode);
+            }
             if (storage_archive != null && storage_archive == "true") {
                 $("#s_storage_archive").prop( "checked", true );
             }
@@ -454,6 +458,9 @@
             }
             if (empiricalformula != null) {
                 params["empiricalformula"] = empiricalformula;
+            }
+            if (storage_barecode != null) {
+                params["storage_barecode"] = storage_barecode;
             }
 
             return params;
