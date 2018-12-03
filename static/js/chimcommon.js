@@ -188,7 +188,7 @@ function switchProductStorageView() {
 
 function clearsearch() {
     // root url
-    root = window.location.protocol + '//' + window.location.hostname + ":" + window.location.port;
+    root = window.location.protocol + '//' + window.location.hostname + ":" + window.location.port + "/" + proxyPath;
     window.location.href = root + "/v/products";
     // $('#s_name').val(null).trigger('change');
     // $('#s_casnumber').val(null).trigger('change');
