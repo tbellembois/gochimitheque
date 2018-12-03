@@ -32,11 +32,11 @@ func TestSortEmpiricalFormula(t *testing.T) {
 		sortedf string
 		err     error
 	)
-	f := "NaCl2"
+	f := "C8H14O6"
 	if sortedf, err = utils.SortEmpiricalFormula(f); err != nil {
 		t.Errorf("%s is not a valid formula: %v", f, err)
 	}
-	if sortedf != "Cl2Na" {
+	if sortedf != "C8H14O6" {
 		t.Errorf("%s was not sorted - output: %s", f, sortedf)
 	}
 }
