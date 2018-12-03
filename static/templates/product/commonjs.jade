@@ -958,7 +958,6 @@ script.
 
         var product_id = $("input#product_id").val(),
             product_specificity = $("input#product_specificity").val(),
-            product_linearformula = $("input#product_linearformula").val(),
             product_threedformula = $("input#product_threedformula").val(),
             product_msds = $("input#product_msds").val(),
             product_disposalcomment = $("textarea#product_disposalcomment").val(),
@@ -968,6 +967,7 @@ script.
             casnumber = $('select#casnumber').select2('data')[0],
             cenumber = $('select#cenumber').select2('data')[0],
             empiricalformula = $('select#empiricalformula').select2('data')[0],
+            linearformula = $('select#linearformula').select2('data')[0],
             name_ = $('select#name').select2('data')[0],
             physicalstate = $('select#physicalstate').select2('data')[0],
             signalword = $('select#signalword').select2('data')[0],
@@ -1075,7 +1075,8 @@ script.
     // linear to empirical formula converter
     //
     function linearToEmpirical() {
-        var f = $("#product_linearformula").val();
+        var f = $('select#linearformula').select2('data')[0].text;
+        console.log(f);
         if (f != "") {
             $.ajax({
                 url: proxyPath + "products/l2eformula/" + f,
