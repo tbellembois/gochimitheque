@@ -201,6 +201,7 @@ function search() {
     var s_empiricalformula;
     var s_casnumber;
     var s_custom_name_part_of;
+    var s_storage_barecode;
     if ($('select#s_name').hasClass("select2-hidden-accessible")) {
         // Select2 has been initialized
         // name_id
@@ -226,7 +227,8 @@ function search() {
         }
     }
     s_custom_name_part_of = $('#s_custom_name_part_of').val() ;
-    
+    s_storage_barecode = $('#s_storage_barecode').val() ;
+
     var $table = $('#table');
-    $table.bootstrapTable('refresh', {query: {name: s_name, casnumber: s_casnumber, empiricalformula: s_empiricalformula, custom_name_part_of: s_custom_name_part_of}}); 
+    $table.bootstrapTable('refresh', {query: {name: s_name, casnumber: s_casnumber, empiricalformula: s_empiricalformula, custom_name_part_of: s_custom_name_part_of, storage_barecode: s_storage_barecode}}); 
 }

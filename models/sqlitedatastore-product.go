@@ -854,7 +854,7 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	// get bookmark
 	comreq.WriteString(" LEFT JOIN bookmark ON (bookmark.product = p.product_id AND bookmark.person = :personid)")
 	// get storages, store locations and entities
-	if p.GetEntity() != -1 || p.GetStorelocation() != -1 {
+	if p.GetEntity() != -1 || p.GetStorelocation() != -1 || p.GetStorageBarecode() != "" {
 		comreq.WriteString(" JOIN storage ON storage.product = p.product_id")
 		comreq.WriteString(" JOIN storelocation ON storage.storelocation = storelocation.storelocation_id")
 		comreq.WriteString(" JOIN entity ON storelocation.entity = entity.entity_id")
