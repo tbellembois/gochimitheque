@@ -500,7 +500,7 @@ func SortSimpleFormula(f string) (string, error) {
 	for _, a := range ula {
 		// wrong?
 		if _, ok := atoms[a[2]]; !ok {
-			return "", errors.New("wrong UL atom in formula")
+			return "", errors.New("wrong UL atom in formula: " + a[2])
 		}
 		upperLowerAtoms = append(upperLowerAtoms, a[0])
 		// duplicate?
@@ -551,18 +551,19 @@ func SortSimpleFormula(f string) (string, error) {
 	// searching the other atoms
 	OAtomRe := regexp.MustCompile("((?:^[0-9]+)?([A-Z])[0-9,]*)")
 	oa := OAtomRe.FindAllStringSubmatch(f, -1)
+
 	// detecting wrong atoms
 	// counting atoms at the same time and leaving on duplicates
 	atomcount = make(map[string]int)
 	for _, a := range oa {
 		// wrong?
-		if _, ok := atoms[a[0]]; !ok {
-			return "", errors.New("wrong UL atom in formula")
+		if _, ok := atoms[a[2]]; !ok {
+			return "", errors.New("wrong UL atom in formula: " + a[2])
 		}
 		otherAtoms = append(otherAtoms, a[0])
 		// duplicate?
-		if _, ok := atomcount[a[0]]; !ok {
-			atomcount[a[0]] = 0
+		if _, ok := atomcount[a[2]]; !ok {
+			atomcount[a[2]] = 0
 		} else {
 			// atom already present !
 			return "", errors.New("duplicate other atom in formula")
