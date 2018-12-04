@@ -47,6 +47,9 @@ type Datastore interface {
 	CreateStorage(s Storage) (error, int)
 	UpdateStorage(s Storage) error
 	GenerateAndUpdateStorageBarecode(s *Storage) error
+	IsStorageBorrowing(b Borrowing) (bool, error)
+	CreateStorageBorrowing(b Borrowing) error
+	DeleteStorageBorrowing(b Borrowing) error
 
 	// store locations
 	GetStoreLocations(helpers.DbselectparamStoreLocation) ([]StoreLocation, int, error)

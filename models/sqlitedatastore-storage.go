@@ -16,6 +16,47 @@ import (
 	"github.com/tbellembois/gochimitheque/helpers"
 )
 
+// IsStorageBorrowing returns true if there is a borrowing b in the database
+func (db *SQLiteDataStore) IsStorageBorrowing(b Borrowing) (bool, error) {
+	var (
+		sqlr string
+		err  error
+		i    int
+	)
+	sqlr = `SELECT count(*) FROM borrowing WHERE borrower = ? AND storage = ?`
+	if err = db.Get(&i, sqlr, b.Borrower.PersonID, b.Storage.StorageID.Int64); err != nil {
+		return false, err
+	}
+	return i != 0, err
+}
+
+// CreateStorageBorrowing creates the borrowing b
+func (db *SQLiteDataStore) CreateStorageBorrowing(b Borrowing) error {
+	var (
+		sqlr string
+		err  error
+	)
+	sqlr = `INSERT into borrowing(person, storage, borrower, borrowing_comment) VALUES (?, ?, ?, ?)`
+	if _, err = db.Exec(sqlr, b.Person.PersonID, b.Storage.StorageID.Int64, b.Borrower.PersonID, b.BorrowingComment); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// DeleteStorageBorrowing deletes the borrowing b
+func (db *SQLiteDataStore) DeleteStorageBorrowing(b Borrowing) error {
+	var (
+		sqlr string
+		err  error
+	)
+	sqlr = `DELETE from borrowing WHERE storage = ?`
+	if _, err = db.Exec(sqlr, b.Storage.StorageID.Int64); err != nil {
+		return err
+	}
+	return nil
+}
+
 // GetStoragesUnits return the units matching the search criteria
 func (db *SQLiteDataStore) GetStoragesUnits(p helpers.Dbselectparam) ([]Unit, int, error) {
 	var (
@@ -173,7 +214,8 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 		supplier.supplier_label AS "supplier.supplier_label",
 		person.person_email AS "person.person_email", 
 		product.product_id AS "product.product_id",
-		name.name_label AS "product.name.name_label",	 
+		name.name_label AS "product.name.name_label",
+		borrowing.borrowing_id AS "borrowing.borrowing_id",
 		storelocation.storelocation_name AS "storelocation.storelocation_name",
 		storelocation.storelocation_color AS "storelocation.storelocation_color",
 		storelocation.storelocation_fullpath AS "storelocation.storelocation_fullpath",
@@ -198,6 +240,8 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 	comreq.WriteString(" LEFT JOIN unit ON s.unit = unit.unit_id")
 	// get supplier
 	comreq.WriteString(" LEFT JOIN supplier ON s.supplier = supplier.supplier_id")
+	// get borrowing
+	comreq.WriteString(" LEFT JOIN borrowing ON s.storage_id = borrowing.storage")
 	// filter by permissions
 	comreq.WriteString(` JOIN permission AS perm, entity as e ON
 		(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR

@@ -51,6 +51,75 @@ func (env *Env) VCreateStorageHandler(w http.ResponseWriter, r *http.Request) *h
 	REST handlers
 */
 
+func (env *Env) ToogleStorageBorrowingHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+
+	var (
+		err         error
+		isborrowing bool
+		id          int
+		b           models.Borrowing
+	)
+	vars := mux.Vars(r)
+
+	// parsing request form
+	if err = r.ParseForm(); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "form parsing error",
+			Code:    http.StatusBadRequest}
+	}
+	// decoding request form
+	if err = Decoder.Decode(&b, r.PostForm); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "form decoding error",
+			Code:    http.StatusBadRequest}
+	}
+	// getting the storage id
+	if id, err = strconv.Atoi(vars["id"]); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "id atoi conversion",
+			Code:    http.StatusInternalServerError}
+	}
+	b.Storage.StorageID.Int64 = int64(id)
+
+	// retrieving the logged user id from request context
+	c := helpers.ContainerFromRequestContext(r)
+	b.Person.PersonID = c.PersonID
+
+	if b.Borrower != nil {
+		if isborrowing, err = env.DB.IsStorageBorrowing(b); err != nil {
+			return &helpers.AppError{
+				Error:   err,
+				Code:    http.StatusInternalServerError,
+				Message: "error getting borrowing status",
+			}
+		}
+	} else {
+		isborrowing = true
+	}
+
+	// toggling the borrowing
+	if isborrowing {
+		err = env.DB.DeleteStorageBorrowing(b)
+	} else {
+		err = env.DB.CreateStorageBorrowing(b)
+	}
+	if err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error creating the borrowing",
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	json.NewEncoder(w).Encode(b.Storage)
+	w.WriteHeader(http.StatusOK)
+	return nil
+}
+
 // GetStoragesUnitsHandler returns a json list of the units matching the search criteria
 func (env *Env) GetStoragesUnitsHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	log.Debug("GetStoragesUnitsHandler")
