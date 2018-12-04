@@ -64,6 +64,26 @@
                 .modal-footer
                     button.btn.btn-secondary(type="button" data-dismiss="modal") close
 
+    #borrow.modal.fade(role="dialog" tabindex="-1" aria-labelledby="borrowLabel" aria-hidden="true")
+        .modal-dialog.modal-lg(role="document")
+            .modal-content
+                .modal-body#borrow-body
+                    form#borrowing
+                        input#bstorage_id(type='hidden', name='bstorage_id', value='')
+                        .form-group.row
+                            .form-group.col-sm-auto
+                                span.badge.badge-pill.badge-danger &nbsp;
+                            .form-group.col-sm-11
+                                | {{$label := "borrower"}} {{$name := "borrower"}}
+                                +select
+                        .form-group.row
+                            .col-sm-12
+                                | {{$label := "comment"}} {{$name := "borrowing_comment"}}
+                                +inputtextarea
+                .modal-footer
+                    button.btn.btn-secondary(type="button" onclick='saveBorrowing()') save
+                    button.btn.btn-secondary(type="button" data-dismiss="modal") close
+
     #accordion
         #list-collapse.collapse.show(data-parent='#accordion')
             header.row
@@ -186,7 +206,7 @@
         // startup actions
         //
         $( document ).ready(function() {  
-         });
+        });
         $('#table').on('load-success.bs.table refresh.bs.table', function () {
             
             // getting request parameters
@@ -578,15 +598,13 @@
             // show action buttons if permitted
             sid = row.storage_id.Int64
             eid = row.storelocation.entity.entity_id
-            hasPermission(proxyPath + "f/storages/" + eid, "PUT", sid).done(function(){
-                    $("#edit"+this.itemId).fadeIn();
-                    $("#clone"+this.itemId).fadeIn();
-            })
-            hasPermission(proxyPath + "f/storages/" + eid, "DELETE", sid).done(function(){
-                    $("#delete"+this.itemId).fadeIn();
-                    $("#archive"+this.itemId).fadeIn();
-                    $("#restore"+this.itemId).fadeIn();
-            })
+
+            var borrowingicon = "thumb_up",
+                borrowingtitle = "borrow";
+            if (row.borrowing.borrowing_id.Valid) {
+                borrowingicon = "thumb_down";
+                borrowingtitle = "unborrow"
+            }
 
             if (row.storage_archive.Valid && row.storage_archive.Bool) {
                 // this is an archive
@@ -611,6 +629,9 @@
                 '</button>',
                 '<button id="archive' + sid + '" class="archive btn btn-primary btn-sm" style="display: none;" title="archive" type="button">',
                     '<i class="material-icons">delete</i>',
+                '</button>',
+                '<button id="borrow' + sid + '" data-target="#borrow" class="borrow btn btn-primary btn-sm" style="display: none;" title="' + borrowingtitle + '" type="button">',
+                    '<i class="material-icons">' + borrowingicon + '</i>',
                 '</button>'];
             }
 
@@ -628,10 +649,36 @@
                 actions.push('</button>');
             }
 
+            hasPermission(proxyPath + "f/storages/" + eid, "PUT", sid).done(function(){
+                    $("#edit"+this.itemId).fadeIn();
+                    $("#clone"+this.itemId).fadeIn();
+                    $("#borrow"+this.itemId).fadeIn();
+            })
+            hasPermission(proxyPath + "f/storages/" + eid, "DELETE", sid).done(function(){
+                    $("#delete"+this.itemId).fadeIn();
+                    $("#archive"+this.itemId).fadeIn();
+                    $("#restore"+this.itemId).fadeIn();
+            })
+
             return actions.join('&nbsp;')    
         }
 
         // items actions callback
+        function operateBorrow(e, value, row, index) {
+            $('select#borrower').val(null).trigger('change');
+            $('select#borrower').find('option').remove();
+
+            $("input#bstorage_id").val(row['storage_id'].Int64);
+
+            if (row['borrowing']['borrowing_id'].Valid) {
+                saveBorrowing();
+            } else {
+                $("#borrow").modal("show");
+            }
+            
+            var $table = $('#table');
+            $table.bootstrapTable('refresh');
+        }
         function operateEdit(e, value, row, index) {
             // clearing selections
             $('input#storage_quantity').val(null);
@@ -694,6 +741,9 @@
         window.operateEvents = {
             'click .edit': function (e, value, row, index) {
                 operateEdit(e, value, row, index)
+            },
+            'click .borrow': function (e, value, row, index) {
+                operateBorrow(e, value, row, index)
             },
             'click .history': function (e, value, row, index) {
                 var urlParams = new URLSearchParams(window.location.search);

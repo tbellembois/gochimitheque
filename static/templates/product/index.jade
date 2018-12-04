@@ -510,26 +510,11 @@
         function operateFormatter(value, row, index) {
             // show action buttons if permitted
             pid = row.product_id
-            // FIXME: perms
-            hasPermission(proxyPath + "f/storages", "POST", pid).done(function(){
-                    $("#store"+this.itemId).fadeIn();
-            })
-            hasPermission(proxyPath + "f/storages/-2", "GET", pid).done(function(){
-                    $("#storages"+this.itemId).fadeIn();
-            })
-            hasPermission(proxyPath + "f/products/-1", "PUT", pid).done(function(){
-                    $("#edit"+this.itemId).fadeIn();
-            })
-            hasPermission(proxyPath + "f/products/-1", "DELETE", pid).done(function(){
-                    $("#delete"+this.itemId).fadeIn();
-            })
 
             var bookmarkicon = "star_border"
             if (row.bookmark.bookmark_id.Valid) {
                 bookmarkicon = "star"
             }
-
-            console.log(row.casnumber.casnumber_cmr)
 
             // buttons are hidden by default
             var actions = [
@@ -553,6 +538,20 @@
             if (row.casnumber.casnumber_cmr.Valid) {
                 actions.push('<i title="CMR" class="material-icons">warning</i>' + row.casnumber.casnumber_cmr.String);
             }    
+
+            // FIXME: perms
+            hasPermission(proxyPath + "f/storages", "POST", pid).done(function(){
+                    $("#store"+this.itemId).fadeIn();
+            })
+            hasPermission(proxyPath + "f/storages/-2", "GET", pid).done(function(){
+                    $("#storages"+this.itemId).fadeIn();
+            })
+            hasPermission(proxyPath + "f/products/-1", "PUT", pid).done(function(){
+                    $("#edit"+this.itemId).fadeIn();
+            })
+            hasPermission(proxyPath + "f/products/-1", "DELETE", pid).done(function(){
+                    $("#delete"+this.itemId).fadeIn();
+            })
 
             return actions.join('&nbsp;')    
         }

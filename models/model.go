@@ -110,7 +110,17 @@ type Storage struct {
 	StoreLocation           `db:"storelocation" json:"storelocation" schema:"storelocation"`
 	Unit                    `db:"unit" json:"unit" schema:"unit"`
 	Supplier                `db:"supplier" json:"supplier" schema:"supplier"`
-	Storage                 *Storage `db:"storage" json:"storage" schema:"storage"`
+	Storage                 *Storage   `db:"storage" json:"storage" schema:"storage"`
+	Borrowing               *Borrowing `db:"borrowing" json:"borrowing" schema:"borrowing"` // not un db but sqlx requires the "db" entry
+}
+
+// Borrowing represent a storage borrowing
+type Borrowing struct {
+	BorrowingID      sql.NullInt64  `db:"borrowing_id" json:"borrowing_id" schema:"borrowing_id"`
+	BorrowingComment sql.NullString `db:"borrowing_comment" json:"borrowing_comment" schema:"borrowing_comment"`
+	Person           `db:"person" json:"person" schema:"person"`
+	Storage          `db:"storage" json:"storage" schema:"storage"`
+	Borrower         *Person `db:"borrower" json:"borrower" schema:"borrower"`
 }
 
 // Permission represent who is able to do what on something
@@ -290,6 +300,12 @@ func (s Storage) String() string {
 
 func (p Person) String() string {
 	return fmt.Sprintf("PersonEmail: %s", p.PersonEmail)
+}
+
+func (b Borrowing) String() string {
+	return fmt.Sprintf(`StorageID:%d |
+	Borrower.PersonID:%d |
+	`, b.StorageID, b.Borrower.PersonID)
 }
 
 func (s StoreLocation) String() string {
