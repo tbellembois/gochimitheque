@@ -53,6 +53,10 @@ func main() {
 		log.SetLevel(log.InfoLevel)
 	}
 
+	// global variables init
+	global.ProxyPath = *proxypath
+	global.ProxyURL = *proxyurl
+
 	// database initialization
 	if datastore, err = models.NewDBstore(dbname); err != nil {
 		log.Panic(err)
@@ -77,10 +81,6 @@ func main() {
 		DB:        datastore,
 		Templates: make(map[string]*template.Template),
 	}
-
-	// global variables init
-	global.ProxyPath = *proxypath
-	global.ProxyURL = *proxyurl
 
 	// HasPermission used by template rendering to show/hide html elements
 	funcMap := template.FuncMap{

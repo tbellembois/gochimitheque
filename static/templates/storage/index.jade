@@ -49,13 +49,8 @@
             button.btn.btn-dark#switchview(type="button" title="switch to product view" onclick="switchProductStorageView()")
                 i.material-icons local_offer
         .col
-            .btn-group.btn-group-toggle(data-toggle="buttons" title="view archives?")
-                label.btn.btn-secondary.active
-                    input#s_storage_archive_off(type="radio" name="options" autocomplete="off" checked="checked" title="do not show archives")
-                        i.material-icons delete_forever
-                label.btn.btn-secondary
-                    input#s_storage_archive_on(type="radio" name="options" autocomplete="off" title="show only archives")
-                        i.material-icons delete
+            .button#s_storage_archive_button.btn.btn-primary(type="button" data-toggle="button" aria-pressed="true" autocomplete="off" title="show deleted")
+                i.material-icons delete
 
     #stock.modal.fade(role="dialog" tabindex="-1" aria-labelledby="stockLabel" aria-hidden="true")
         .modal-dialog.modal-lg(role="document")
@@ -191,16 +186,24 @@
         //
         // view storages button
         //
-        $('#s_storage_archive_on').on('change', function () {
-            var $table = $('#table');
-            updateQueryStringParam("storage_archive", "true");
+        $('#s_storage_archive_button').on('click', function () {
+            var $table = $('#table'),
+                btntitle = "",
+                btnicon = "";
+            if ($('#s_storage_archive_button').hasClass("active")) {
+                updateQueryStringParam("storage_archive", "false");
+                btntitle = "show deleted";
+                btnicon = "delete";
+            } else {
+                updateQueryStringParam("storage_archive", "true");
+                btntitle = "do not show deleted";       
+                btnicon = "delete_forever";
+            }
             $table.bootstrapTable('refresh');
+            $('#s_storage_archive_button').attr("title", btntitle);
+            $('#s_storage_archive_button > i').text(btnicon);
         });
-        $('#s_storage_archive_off').on('change', function () {
-            var $table = $('#table');
-            updateQueryStringParam("storage_archive", "false");
-            $table.bootstrapTable('refresh');
-        });
+
 
         //
         // startup actions
@@ -519,38 +522,46 @@
         //
         function detailFormatter(index, row) {
             var html = [];
-            html.push("<div class='row mt-md-3'>")
-            html.push("<div class='col-sm-12'><img src='data:image/png;base64," + row["storage_qrcode"] + "'></div>")
-            html.push("</div>") 
+            
+            html.push("<div class='row'>")
 
-            html.push("<div class='row mt-md-3'>")
+            html.push("<div class='col-sm-3'>")
+            html.push("<img src='data:image/png;base64," + row["storage_qrcode"] + "'>")
+            html.push("</div>")
+
+            html.push("<div class='col-sm-9'>")
+            html.push("<div class='row'>")
             html.push("<div class='col-sm-6'><p><b>product</b>: " + row["product"]["name"]["name_label"] + "</p></div>")
             html.push("<div class='col-sm-6'><b>store location</b>: " + row["storelocation"]["storelocation_name"]["String"] + "</p></div>")
             html.push("</div>")            
 
-            html.push("<div class='row mt-md-3'>")
+            html.push("<div class='row'>")
             html.push("<div class='col-sm-3'><p><b>quantity</b>: " + row["storage_quantity"]["Float64"] + " " + row["unit"]["unit_label"]["String"] + "</p></div>")
             html.push("<div class='col-sm-3'><b>barecode</b>: " + row["storage_barecode"]["String"] + "</p></div>")
             html.push("<div class='col-sm-3'><b>batch number</b>: " + row["storage_batchnumber"]["String"] + "</p></div>")
             html.push("<div class='col-sm-3'><p><b>supplier</b>: " + row["supplier"]["supplier_label"]["String"] + "</p></div>")
             html.push("</div>")    
 
-            html.push("<div class='row mt-md-3'>")
+            html.push("<div class='row'>")
             html.push("<div class='col-sm-3'><b>entry date</b>: " + dateFormatter(row["storage_entrydate"], null, null, null) + "</p></div>")
             html.push("<div class='col-sm-3'><b>exit date</b>: " + dateFormatter(row["storage_exitdate"], null, null, null) + "</p></div>")
             html.push("<div class='col-sm-3'><b>opening date</b>: " + dateFormatter(row["storage_openingdate"], null, null, null) + "</p></div>")
             html.push("<div class='col-sm-3'><b>expiration date</b>: " + dateFormatter(row["storage_expirationdate"], null, null, null) + "</p></div>")
             html.push("</div>")   
 
-            html.push("<div class='row mt-md-3'>")
+            html.push("<div class='row'>")
             html.push("<div class='col-sm-4'><b>created at</b>: " + dateFormatter(row["storage_creationdate"], null, null, null) + "</p></div>")
             html.push("<div class='col-sm-4'><b>modified at</b>: " + dateFormatter(row["storage_modificationdate"], null, null, null) + "</p></div>")
             html.push("<div class='col-sm-4'><p><b>by</b>: " + row["person"]["person_email"] + "</p></div>")
             html.push("</div>")   
 
-            html.push("<div class='row mt-md-3'>")
+            html.push("<div class='row'>")
             html.push("<div class='col-sm-12'><b>to destroy</b>: " + row["storage_todestroy"]["Bool"] + "</p></div>")
+            html.push("</div>")             
+            html.push("</div>")
+
             html.push("</div>")  
+
             return html.join('');
         }
         //
@@ -631,7 +642,7 @@
                 '<button id="clone' + sid + '" class="clone btn btn-primary btn-sm" style="display: none;" title="clone" type="button">',
                     '<i class="material-icons">filter_none</i>',
                 '</button>',
-                '<button id="archive' + sid + '" class="archive btn btn-primary btn-sm" style="display: none;" title="archive" type="button">',
+                '<button id="archive' + sid + '" class="archive btn btn-primary btn-sm" style="display: none;" title="delete" type="button">',
                     '<i class="material-icons">delete</i>',
                 '</button>',
                 '<button id="borrow' + sid + '" data-target="#borrow" class="borrow btn btn-primary btn-sm" style="display: none;" title="' + borrowingtitle + '" type="button">',
@@ -644,7 +655,7 @@
                 actions.push('<i title="history card" class="material-icons">alarm</i>');
             }
             if (row.storage_archive.Valid && row.storage_archive.Bool) {
-                actions.push('<i title="archive card" class="material-icons">delete</i>');
+                actions.push('<i title="deleted card" class="material-icons">delete</i>');
             }
 
             if (row.storage_creationdate != row.storage_modificationdate && !row.storage.storage_id.Valid) {

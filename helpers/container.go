@@ -25,6 +25,5 @@ func ContainerFromRequestContext(r *http.Request) ViewContainer {
 	if ctxcontainer != nil {
 		container = ctxcontainer.(ViewContainer)
 	}
-	//container.URLValues = r.URL.Query()
 	return container
 }
