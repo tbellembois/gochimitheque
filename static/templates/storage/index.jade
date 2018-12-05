@@ -530,33 +530,37 @@
             html.push("</div>")
 
             html.push("<div class='col-sm-9'>")
-            html.push("<div class='row'>")
-            html.push("<div class='col-sm-6'><p><b>product</b>: " + row["product"]["name"]["name_label"] + "</p></div>")
-            html.push("<div class='col-sm-6'><b>store location</b>: " + row["storelocation"]["storelocation_name"]["String"] + "</p></div>")
+            html.push("<div class='row mt-sm-3'>")
+            html.push("<div class='col-sm-6'><i class='material-icons'>local_offer</i> " + row["product"]["name"]["name_label"] + "</p></div>")
+            html.push("<div class='col-sm-6'><i class='material-icons'>extension</i> " + row["storelocation"]["storelocation_name"]["String"] + "</p></div>")
             html.push("</div>")            
 
-            html.push("<div class='row'>")
+            html.push("<div class='row mt-sm-3'>")
             html.push("<div class='col-sm-3'><p><b>quantity</b>: " + row["storage_quantity"]["Float64"] + " " + row["unit"]["unit_label"]["String"] + "</p></div>")
             html.push("<div class='col-sm-3'><b>barecode</b>: " + row["storage_barecode"]["String"] + "</p></div>")
+            html.push("</div>")   
+
+            html.push("<div class='row mt-sm-2'>")
             html.push("<div class='col-sm-3'><b>batch number</b>: " + row["storage_batchnumber"]["String"] + "</p></div>")
             html.push("<div class='col-sm-3'><p><b>supplier</b>: " + row["supplier"]["supplier_label"]["String"] + "</p></div>")
             html.push("</div>")    
 
-            html.push("<div class='row'>")
-            html.push("<div class='col-sm-3'><b>entry date</b>: " + dateFormatter(row["storage_entrydate"], null, null, null) + "</p></div>")
-            html.push("<div class='col-sm-3'><b>exit date</b>: " + dateFormatter(row["storage_exitdate"], null, null, null) + "</p></div>")
-            html.push("<div class='col-sm-3'><b>opening date</b>: " + dateFormatter(row["storage_openingdate"], null, null, null) + "</p></div>")
-            html.push("<div class='col-sm-3'><b>expiration date</b>: " + dateFormatter(row["storage_expirationdate"], null, null, null) + "</p></div>")
+            html.push("<div class='row mt-sm-2'>")
+            html.push("<div class='col-sm-12'><b>entry date</b>: " + dateFormatter(row["storage_entrydate"], null, null, null) + "</p></div>")
+            html.push("<div class='col-sm-12'><b>exit date</b>: " + dateFormatter(row["storage_exitdate"], null, null, null) + "</p></div>")
+            html.push("<div class='col-sm-12'><b>opening date</b>: " + dateFormatter(row["storage_openingdate"], null, null, null) + "</p></div>")
+            html.push("<div class='col-sm-12'><b>expiration date</b>: " + dateFormatter(row["storage_expirationdate"], null, null, null) + "</p></div>")
+            html.push("</div>")   
+
+            html.push("<div class='row mt-sm-4'>")
+            html.push("<div class='col-sm-8'>" + dateFormatter(row["storage_creationdate"], null, null, null) + " (" + dateFormatter(row["storage_modificationdate"], null, null, null) + ")</div>")
+            html.push("<div class='col-sm-4'>" + row["person"]["person_email"] + "</div>")
             html.push("</div>")   
 
             html.push("<div class='row'>")
-            html.push("<div class='col-sm-4'><b>created at</b>: " + dateFormatter(row["storage_creationdate"], null, null, null) + "</p></div>")
-            html.push("<div class='col-sm-4'><b>modified at</b>: " + dateFormatter(row["storage_modificationdate"], null, null, null) + "</p></div>")
-            html.push("<div class='col-sm-4'><p><b>by</b>: " + row["person"]["person_email"] + "</p></div>")
-            html.push("</div>")   
-
-            html.push("<div class='row'>")
-            html.push("<div class='col-sm-12'><b>to destroy</b>: " + row["storage_todestroy"]["Bool"] + "</p></div>")
+            if (row["storage_todestroy"]["Bool"]) {
+                html.push("<div class='col-sm-12'><i title='to destroy' class='material-icons'>delete_outline</i></div>")
+            }
             html.push("</div>")             
             html.push("</div>")
 
