@@ -526,7 +526,9 @@
             html.push("<div class='row'>")
 
             html.push("<div class='col-sm-3'>")
-            html.push("<img src='data:image/png;base64," + row["storage_qrcode"] + "'>")
+            if ( row["storage_qrcode"] != null ) {
+                html.push("<img src='data:image/png;base64," + row["storage_qrcode"] + "'>")
+            }
             html.push("</div>")
 
             html.push("<div class='col-sm-9'>")
@@ -553,7 +555,7 @@
             html.push("</div>")   
 
             html.push("<div class='row mt-sm-4'>")
-            html.push("<div class='col-sm-8'>" + dateFormatter(row["storage_creationdate"], null, null, null) + " (" + dateFormatter(row["storage_modificationdate"], null, null, null) + ")</div>")
+            html.push("<div class='col-sm-8'>" + dateFormatter(row["storage_creationdate"], null, null, null) + " <i>(" + dateFormatter(row["storage_modificationdate"], null, null, null) + ")</i></div>")
             html.push("<div class='col-sm-4'>" + row["person"]["person_email"] + "</div>")
             html.push("</div>")   
 

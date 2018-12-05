@@ -577,7 +577,6 @@
             $('textarea#product_remark').val(null);
             $('textarea#product_disposalcomment').val(null);
             $('input#product_specificity').val(null);
-            $('input#product_linearformula').val(null);
             $('input#product_msds').val(null);
             $('input#product_threedformula').val(null);
 
@@ -593,6 +592,8 @@
             $('select#synonyms').find('option').remove();
             $('select#empiricalformula').val(null).trigger('change');
             $('select#empiricalformula').find('option').remove();
+            $('select#linearformula').val(null).trigger('change');
+            $('select#linearformula').find('option').remove();
             $('select#physicalstate').val(null).trigger('change');
             $('select#physicalstate').find('option').remove();
             $('select#classofcompound').val(null).trigger('change');
