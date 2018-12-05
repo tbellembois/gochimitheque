@@ -6,30 +6,9 @@ import (
 	"net/http"
 	"time"
 
-	"database/sql/driver"
-
+	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/helpers"
 )
-
-// NullTime represent a nullable time
-type NullTime struct {
-	Time  time.Time
-	Valid bool // Valid is true if Time is not NULL
-}
-
-// Scan implements the Scanner interface.
-func (nt *NullTime) Scan(value interface{}) error {
-	nt.Time, nt.Valid = value.(time.Time)
-	return nil
-}
-
-// Value implements the driver Valuer interface.
-func (nt NullTime) Value() (driver.Value, error) {
-	if !nt.Valid {
-		return nil, nil
-	}
-	return nt.Time, nil
-}
 
 // AppHandlerFunc is an HandlerFunc returning an AppError
 type AppHandlerFunc func(http.ResponseWriter, *http.Request) *helpers.AppError
@@ -93,16 +72,17 @@ type Storage struct {
 	StorageID               sql.NullInt64   `db:"storage_id" json:"storage_id" schema:"storage_id"`
 	StorageCreationDate     time.Time       `db:"storage_creationdate" json:"storage_creationdate" schema:"storage_creationdate"`
 	StorageModificationDate time.Time       `db:"storage_modificationdate" json:"storage_modificationdate" schema:"storage_modificationdate"`
-	StorageEntryDate        NullTime        `db:"storage_entrydate" json:"storage_entrydate" schema:"storage_entrydate"`
-	StorageExitDate         NullTime        `db:"storage_exitdate" json:"storage_exitdate" schema:"storage_exitdate"`
-	StorageOpeningDate      NullTime        `db:"storage_openingdate" json:"storage_openingdate" schema:"storage_openingdate"`
-	StorageExpirationDate   NullTime        `db:"storage_expirationdate" json:"storage_expirationdate" schema:"storage_expirationdate"`
+	StorageEntryDate        global.NullTime `db:"storage_entrydate" json:"storage_entrydate" schema:"storage_entrydate"`
+	StorageExitDate         global.NullTime `db:"storage_exitdate" json:"storage_exitdate" schema:"storage_exitdate"`
+	StorageOpeningDate      global.NullTime `db:"storage_openingdate" json:"storage_openingdate" schema:"storage_openingdate"`
+	StorageExpirationDate   global.NullTime `db:"storage_expirationdate" json:"storage_expirationdate" schema:"storage_expirationdate"`
 	StorageComment          sql.NullString  `db:"storage_comment" json:"storage_comment" schema:"storage_comment"`
 	StorageReference        sql.NullString  `db:"storage_reference" json:"storage_reference" schema:"storage_reference"`
 	StorageBatchNumber      sql.NullString  `db:"storage_batchnumber" json:"storage_batchnumber" schema:"storage_batchnumber"`
 	StorageQuantity         sql.NullFloat64 `db:"storage_quantity" json:"storage_quantity" schema:"storage_quantity"`
 	StorageNbItem           int             `db:"-" json:"storage_nbitem" schema:"storage_nbitem"`
 	StorageBarecode         sql.NullString  `db:"storage_barecode" json:"storage_barecode" schema:"storage_barecode"`
+	StorageQRCode           []byte          `db:"storage_qrcode" json:"storage_qrcode" schema:"storage_qrcode"`
 	StorageToDestroy        sql.NullBool    `db:"storage_todestroy" json:"storage_todestroy" schema:"storage_todestroy"`
 	StorageArchive          sql.NullBool    `db:"storage_archive" json:"storage_archive" schema:"storage_archive"`
 	Person                  `db:"person" json:"person" schema:"person"`
@@ -221,6 +201,7 @@ type Product struct {
 	ProductThreeDFormula    sql.NullString `db:"product_threedformula" json:"product_threedformula" schema:"product_threedformula"`
 	ProductDisposalComment  sql.NullString `db:"product_disposalcomment" json:"product_disposalcomment" schema:"product_disposalcomment"`
 	ProductRemark           sql.NullString `db:"product_remark" json:"product_remark" schema:"product_remark"`
+	ProductQRCode           string         `db:"product_qrcode" json:"product_qrcode" schema:"product_qrcode"`
 	EmpiricalFormula        `db:"empiricalformula" json:"empiricalformula" schema:"empiricalformula"`
 	LinearFormula           `db:"linearformula" json:"linearformula" schema:"linearformula"`
 	PhysicalState           `db:"physicalstate" json:"physicalstate" schema:"physicalstate"`

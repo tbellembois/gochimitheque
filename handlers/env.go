@@ -13,7 +13,6 @@ import (
 type Env struct {
 	DB        models.Datastore              // application DB connection
 	Templates map[string]*template.Template // application templates
-	ProxyPath string                        // application proxy path if behind a proxy
 }
 
 // FakeHandler returns true

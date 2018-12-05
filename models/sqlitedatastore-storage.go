@@ -7,12 +7,13 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jmoiron/sqlx"
-
 	sq "github.com/Masterminds/squirrel"
+	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
 	log "github.com/sirupsen/logrus"
+	qrcode "github.com/skip2/go-qrcode"
 	"github.com/tbellembois/gochimitheque/constants"
+	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/helpers"
 )
 
@@ -207,6 +208,7 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 		s.storage_modificationdate,
 		s.storage_quantity,
 		s.storage_barecode,
+		s.storage_qrcode,
 		s.storage_comment,
 		s.storage_archive,
 		storage.storage_id AS "storage.storage_id",
@@ -341,6 +343,7 @@ func (db *SQLiteDataStore) GetStorage(id int) (Storage, error) {
 	storage.storage_modificationdate,
 	storage.storage_quantity,
 	storage.storage_barecode,
+	storage.storage_qrcode,
 	storage.storage_comment,
 	storage.storage_archive,
 	unit.unit_id AS "unit.unit_id",
@@ -430,8 +433,12 @@ func (db *SQLiteDataStore) GenerateAndUpdateStorageBarecode(s *Storage) error {
 		err    error
 		prefix string
 		m      []string
+		png    []byte
 	)
 
+	//
+	// barecode
+	//
 	// compiling regex
 	r := regexp.MustCompile("^\\[(?P<groupone>[a-zA-Z]{1})\\].*$")
 	// finding group names
@@ -457,10 +464,19 @@ func (db *SQLiteDataStore) GenerateAndUpdateStorageBarecode(s *Storage) error {
 		return err
 	}
 
-	log.Debug(sqlr)
-	log.Debug(s.ProductID)
-	log.Debug(s.EntityID)
-	log.Debug(s.StorageID)
+	//
+	// qrcode
+	//
+	qr := global.ProxyURL + global.ProxyPath + "v/storages?storage=" + strconv.FormatInt(s.StorageID.Int64, 10)
+	if png, err = qrcode.Encode(qr, qrcode.Medium, 256); err != nil {
+		return err
+	}
+	sqlr = `UPDATE storage 
+	SET storage_qrcode = ? 
+	WHERE storage_id = ?`
+	if _, err = db.Exec(sqlr, png, s.StorageID.Int64); err != nil {
+		return err
+	}
 
 	return nil
 }

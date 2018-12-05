@@ -10,6 +10,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
+	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/helpers"
 	"github.com/tbellembois/gochimitheque/models"
 )
@@ -45,7 +46,7 @@ func (env *Env) HeadersMiddleware(h http.Handler) http.Handler {
 // ContextMiddleware initialize the request context and setup initial variables
 func (env *Env) ContextMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(r.Context(), "container", helpers.ViewContainer{ProxyPath: env.ProxyPath})
+		ctx := context.WithValue(r.Context(), "container", helpers.ViewContainer{ProxyPath: global.ProxyPath})
 		h.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -88,7 +89,7 @@ func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 		splitToken := strings.Split(reqToken.String(), "token=")
 		reqTokenStr = splitToken[1]
 		token, err = jwt.Parse(reqTokenStr, func(token *jwt.Token) (interface{}, error) {
-			return TokenSignKey, nil
+			return global.TokenSignKey, nil
 		})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusUnauthorized)

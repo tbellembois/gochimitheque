@@ -8,6 +8,7 @@ import (
 
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
+	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/helpers"
 	"github.com/tbellembois/gochimitheque/models"
 )
@@ -131,7 +132,7 @@ func (env *Env) CreateStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 			Code:    http.StatusBadRequest}
 	}
 
-	if err := Decoder.Decode(&sl, r.PostForm); err != nil {
+	if err := global.Decoder.Decode(&sl, r.PostForm); err != nil {
 		return &helpers.AppError{
 			Error:   err,
 			Message: "form decoding error",
@@ -182,7 +183,7 @@ func (env *Env) UpdateStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 			Message: "form parsing error",
 			Code:    http.StatusBadRequest}
 	}
-	if err := Decoder.Decode(&sl, r.PostForm); err != nil {
+	if err := global.Decoder.Decode(&sl, r.PostForm); err != nil {
 		return &helpers.AppError{
 			Error:   err,
 			Message: "form decoding error",

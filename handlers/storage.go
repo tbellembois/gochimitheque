@@ -9,6 +9,7 @@ import (
 
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
+	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/helpers"
 	"github.com/tbellembois/gochimitheque/models"
 )
@@ -69,7 +70,7 @@ func (env *Env) ToogleStorageBorrowingHandler(w http.ResponseWriter, r *http.Req
 			Code:    http.StatusBadRequest}
 	}
 	// decoding request form
-	if err = Decoder.Decode(&b, r.PostForm); err != nil {
+	if err = global.Decoder.Decode(&b, r.PostForm); err != nil {
 		return &helpers.AppError{
 			Error:   err,
 			Message: "form decoding error",
@@ -274,7 +275,7 @@ func (env *Env) UpdateStorageHandler(w http.ResponseWriter, r *http.Request) *he
 	// retrieving the logged user id from request context
 	c := helpers.ContainerFromRequestContext(r)
 
-	if err := Decoder.Decode(&s, r.PostForm); err != nil {
+	if err := global.Decoder.Decode(&s, r.PostForm); err != nil {
 		return &helpers.AppError{
 			Error:   err,
 			Message: "form decoding error",
@@ -394,7 +395,7 @@ func (env *Env) CreateStorageHandler(w http.ResponseWriter, r *http.Request) *he
 	// retrieving the logged user id from request context
 	c := helpers.ContainerFromRequestContext(r)
 
-	if err := Decoder.Decode(&s, r.PostForm); err != nil {
+	if err := global.Decoder.Decode(&s, r.PostForm); err != nil {
 		return &helpers.AppError{
 			Error:   err,
 			Message: "form decoding error",
@@ -422,7 +423,7 @@ func (env *Env) CreateStorageHandler(w http.ResponseWriter, r *http.Request) *he
 				Message: "create storage error",
 				Code:    http.StatusInternalServerError}
 		}
-		// TODO: move it in the DB CreateStorage method?
+		// generating barecode
 		s.StorageID = sql.NullInt64{Valid: true, Int64: int64(id)}
 		if err = env.DB.GenerateAndUpdateStorageBarecode(&s); err != nil {
 			return &helpers.AppError{
