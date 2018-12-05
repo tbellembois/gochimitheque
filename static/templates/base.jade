@@ -41,8 +41,6 @@ html
                             li.nav-item.active
                                 a(href="{{.ProxyPath}}v/products?bookmark=true" title="my bookmarked products").nav-link
                                     i.material-icons star
-                        //li.nav-item
-                        //    a(href="/login").nav-link login
 
                         if HasPermission .PersonID "w" "products" -2
                             li.nav-item
@@ -95,21 +93,6 @@ html
             | {{template "FOOTER"}}
 
         | {{template "FOOT"}}
-        | <script src="{{.ProxyPath}}js/jquery-3.3.1.min.js"></script>
-        | <script src="{{.ProxyPath}}js/jquery.formautofill.min.js"></script>
-        | <script src="{{.ProxyPath}}js/jquery.validate.min.js"></script>
-        | <script src="{{.ProxyPath}}js/jquery.validate.additional-methods.min.js"></script>
-        | <script src="{{.ProxyPath}}js/select2.full.min.js"></script>
-        | <script src="{{.ProxyPath}}js/popper.min.js"></script>
-        | <script src="{{.ProxyPath}}js/bootstrap.min.js"></script>
-        | <script src="{{.ProxyPath}}js/bootstrap-table.min.js"></script>
-        | <script src="{{.ProxyPath}}js/bootstrap-confirmation.min.js"></script>
-        | <script src="{{.ProxyPath}}js/bootstrap-colorpicker.min.js"></script>
-        | <script src="{{.ProxyPath}}js/gjs-common.js"></script>
-        | <script src="{{.ProxyPath}}js/chimcommon.js"></script>
-        | <script src="{{.ProxyPath}}js/chimauth.js"></script>
-        
-        script(src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js")
 
         script.
             //
@@ -138,6 +121,21 @@ html
                 email = readCookie("email")
                 document.getElementById("logged").innerHTML = email;
            };
+           
+        | <script src="{{.ProxyPath}}js/jquery-3.3.1.min.js"></script>
+        | <script src="{{.ProxyPath}}js/jquery.formautofill.min.js"></script>
+        | <script src="{{.ProxyPath}}js/jquery.validate.min.js"></script>
+        | <script src="{{.ProxyPath}}js/jquery.validate.additional-methods.min.js"></script>
+        | <script src="{{.ProxyPath}}js/select2.full.min.js"></script>
+        | <script src="{{.ProxyPath}}js/popper.min.js"></script>
+        | <script src="{{.ProxyPath}}js/bootstrap.min.js"></script>
+        | <script src="{{.ProxyPath}}js/bootstrap-table.min.js"></script>
+        | <script src="{{.ProxyPath}}js/bootstrap-confirmation.min.js"></script>
+        | <script src="{{.ProxyPath}}js/bootstrap-colorpicker.min.js"></script>
+        | <script src="{{.ProxyPath}}js/gjs-common.js"></script>
+        | <script src="{{.ProxyPath}}js/chimcommon.js"></script>
+        | <script src="{{.ProxyPath}}js/chimauth.js"></script>
         
+        script(src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js")        
         | {{template "CONTENTJS"}}
 | {{end}}

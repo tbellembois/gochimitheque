@@ -188,12 +188,8 @@ function switchProductStorageView() {
 
 function clearsearch() {
     // root url
-    root = window.location.protocol + '//' + window.location.hostname + ":" + window.location.port + "/" + proxyPath;
-    window.location.href = root + "/v/products";
-    // $('#s_name').val(null).trigger('change');
-    // $('#s_casnumber').val(null).trigger('change');
-    // $('#s_empiricalformula').val(null).trigger('change');
-    // $("#s_storage_barecode").val("");
+    root = window.location.protocol + '//' + window.location.hostname + ":" + window.location.port + proxyPath;
+    window.location.href = root + "v/products";
 }
 
 function search() {

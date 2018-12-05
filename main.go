@@ -31,7 +31,7 @@ func main() {
 	// getting the program parameters
 	listenport := flag.String("port", "8081", "the port to listen")
 	proxyurl := flag.String("proxyurl", "http://localhost:"+*listenport, "the application url (without the path) if behind a proxy, with NO trailing /")
-	proxypath := flag.String("proxypath", "/", "the application path if behind a proxy, with the trailing /")
+	proxypath := flag.String("proxypath", "/", "the application path if behind a proxy, with the heading and trailing /")
 	logfile := flag.String("logfile", "", "log to the given file")
 	debug := flag.Bool("debug", false, "debug (verbose log), default is error")
 	importfrom := flag.String("importfrom", "", "full path of the directory containing the CSV to import")
