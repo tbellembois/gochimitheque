@@ -9,6 +9,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
+	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/helpers"
 	"github.com/tbellembois/gochimitheque/models"
 )
@@ -55,7 +56,7 @@ func (env *Env) GetTokenHandler(w http.ResponseWriter, r *http.Request) *helpers
 
 	// decoding the form
 	person := new(models.Person)
-	if e = Decoder.Decode(person, r.PostForm); e != nil {
+	if e = global.Decoder.Decode(person, r.PostForm); e != nil {
 		return &helpers.AppError{
 			Code:    http.StatusInternalServerError,
 			Error:   e,
@@ -85,7 +86,7 @@ func (env *Env) GetTokenHandler(w http.ResponseWriter, r *http.Request) *helpers
 	claims["exp"] = time.Now().Add(time.Hour * 8).Unix()
 
 	// sign the token with our secret
-	tokenString, _ := token.SignedString(TokenSignKey)
+	tokenString, _ := token.SignedString(global.TokenSignKey)
 
 	// finally, write the token to the browser window
 	//w.WriteHeader(http.StatusOK)

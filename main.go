@@ -14,6 +14,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/justinas/alice"
 	log "github.com/sirupsen/logrus"
+	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/handlers"
 	"github.com/tbellembois/gochimitheque/models"
 )
@@ -29,6 +30,7 @@ func main() {
 
 	// getting the program parameters
 	listenport := flag.String("port", "8081", "the port to listen")
+	proxyurl := flag.String("proxyurl", "http://localhost:"+*listenport, "the application url (without the path) if behind a proxy, with NO trailing /")
 	proxypath := flag.String("proxypath", "/", "the application path if behind a proxy, with the trailing /")
 	logfile := flag.String("logfile", "", "log to the given file")
 	debug := flag.Bool("debug", false, "debug (verbose log), default is error")
@@ -73,9 +75,12 @@ func main() {
 	// environment creation
 	env := handlers.Env{
 		DB:        datastore,
-		ProxyPath: *proxypath,
 		Templates: make(map[string]*template.Template),
 	}
+
+	// global variables init
+	global.ProxyPath = *proxypath
+	global.ProxyURL = *proxyurl
 
 	// HasPermission used by template rendering to show/hide html elements
 	funcMap := template.FuncMap{

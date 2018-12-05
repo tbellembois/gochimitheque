@@ -17,6 +17,8 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
 	log "github.com/sirupsen/logrus"
+	qrcode "github.com/skip2/go-qrcode"
+	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/utils"
 )
 
@@ -383,6 +385,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		storage_batchnumber string,
 		storage_todestroy boolean default 0,
 		storage_archive boolean default 0,
+		storage_qrcode blob,
 		person integer NOT NULL,
 		product integer NOT NULL,
 		storelocation integer NOT NULL,
@@ -512,6 +515,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		product_threedformula string,
 		product_disposalcomment string,
 		product_remark string,
+		product_qrcode string,
 		casnumber integer,
 		cenumber integer,
 		person integer NOT NULL,
@@ -1848,6 +1852,42 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		return err
 	}
 
+	log.Info("- updating storages qr codes")
+	var sts []Storage
+	var png []byte
+	if err = db.Select(&sts, ` SELECT storage_id
+		FROM storage`); err != nil {
+		tx.Rollback()
+		return err
+	}
+	for _, s := range sts {
+		log.Debug("  " + strconv.FormatInt(s.StorageID.Int64, 10))
+		// generating qrcode
+		newqrcode := global.ProxyURL + global.ProxyPath + "v/storages?storage=" + strconv.FormatInt(s.StorageID.Int64, 10)
+		if png, err = qrcode.Encode(newqrcode, qrcode.Medium, 256); err != nil {
+			return err
+		}
+		sqlr = `UPDATE storage
+			SET storage_qrcode = ?
+			WHERE storage_id = ?`
+		if _, err = tx.Exec(sqlr, png, s.StorageID); err != nil {
+			log.Error("error updating storage qrcode")
+			tx.Rollback()
+			return err
+		}
+	}
+
+	// committing changes
+	if err = tx.Commit(); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// beginning new transaction
+	if tx, err = db.Begin(); err != nil {
+		return err
+	}
+
 	log.Info("- updating store locations full path")
 	var sls []StoreLocation
 	if err = db.Select(&sls, ` SELECT s.storelocation_id AS "storelocation_id", 
@@ -1869,6 +1909,17 @@ func (db *SQLiteDataStore) Import(dir string) error {
 			tx.Rollback()
 			return err
 		}
+	}
+
+	// committing changes
+	if err = tx.Commit(); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// beginning new transaction
+	if tx, err = db.Begin(); err != nil {
+		return err
 	}
 
 	//TODO: remove before prod

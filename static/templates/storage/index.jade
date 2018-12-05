@@ -520,6 +520,10 @@
         function detailFormatter(index, row) {
             var html = [];
             html.push("<div class='row mt-md-3'>")
+            html.push("<div class='col-sm-12'><img src='data:image/png;base64," + row["storage_qrcode"] + "'></div>")
+            html.push("</div>") 
+
+            html.push("<div class='row mt-md-3'>")
             html.push("<div class='col-sm-6'><p><b>product</b>: " + row["product"]["name"]["name_label"] + "</p></div>")
             html.push("<div class='col-sm-6'><b>store location</b>: " + row["storelocation"]["storelocation_name"]["String"] + "</p></div>")
             html.push("</div>")            
