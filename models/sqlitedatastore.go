@@ -1861,9 +1861,10 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		return err
 	}
 	for _, s := range sts {
-		log.Debug("  " + strconv.FormatInt(s.StorageID.Int64, 10))
 		// generating qrcode
 		newqrcode := global.ProxyURL + global.ProxyPath + "v/storages?storage=" + strconv.FormatInt(s.StorageID.Int64, 10)
+		log.Debug("  " + strconv.FormatInt(s.StorageID.Int64, 10) + " " + newqrcode)
+
 		if png, err = qrcode.Encode(newqrcode, qrcode.Medium, 256); err != nil {
 			return err
 		}
