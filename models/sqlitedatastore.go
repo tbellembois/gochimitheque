@@ -1804,6 +1804,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		if to_destroy == "T" {
 			newto_destroy = true
 		}
+		newstorage_creationdate := time.Now()
 
 		// do not import archived cards
 		if !newarchive {
@@ -1822,8 +1823,8 @@ func (db *SQLiteDataStore) Import(dir string) error {
 				supplier) 
 			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 			if _, err = tx.Exec(sqlr,
-				time.Now(),
-				time.Now(),
+				newstorage_creationdate,
+				newstorage_creationdate,
 				newcomment,
 				newreference,
 				newbatch_number,
