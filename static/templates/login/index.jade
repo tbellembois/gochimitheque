@@ -1,6 +1,6 @@
 | {{define "CONTENT"}}
     header.row
-        div.col-sm-12
+        div.col.col-sm-4.offset-sm-4
             form#authForm
                 div.form-group
                     label(for="person_email") login
@@ -16,6 +16,16 @@
                                                     placeholder="enter your password" 
                                                     name="person_password")
                 button.btn.btn-primary(type="button" onclick="getToken();") submit
+
+    .row.mt-sm-5
+        .col.col-sm-4.offset-sm-4
+            img.mx-auto.d-block(src="{{.ProxyPath}}img/logo_ens.png", alt="ens_logo" title="Ecole Normale Supérieure de Lyon")
+    .row.mt-sm-5
+        .col.col-sm-4.offset-sm-4
+            img.mx-auto.d-block(src="{{.ProxyPath}}img/logo_uca.jpg", alt="uca_logo" title="Université Clermont Auvergne")
+    .row.mt-sm-5
+        .col.col-sm-4.offset-sm-4
+            img.mx-auto.d-block(src="{{.ProxyPath}}img/logo_go.png", alt="go_logo" title="Developped with love in Golang")
 
 | {{end}}
 | {{define "CONTENTJS"}}
