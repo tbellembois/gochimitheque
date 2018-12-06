@@ -411,46 +411,28 @@
         //
         function detailFormatter(index, row) {
             var html = [];
-            html.push("<div class='row mt-md-3'>")
-            html.push("<div class='col-sm-6'><b>id</b>: " + row["product_id"] + "</div>")
-            html.push("<div class='col-sm-6'><b>creator</b>: " + row["person"]["person_email"] + "</div>")
-            html.push("</div>")
 
-            html.push("<div class='row mt-md-3'>")
-            html.push("<div class='col-sm-6'><b>name</b>: " + row["name"]["name_label"] + "</div>")
-            html.push("<div class='col-sm-6'>")
-            html.push("<b>synonyms</b>:")
+            html.push("<div class='row mt-sm-3'>")
+            html.push("<div class='col-sm-12'>")
             $.each(row["synonyms"], function (key, value) {
                 html.push("<span>" + value["name_label"] + "</span> ");
             });
             html.push("</div>")
             html.push("</div>")
 
-            html.push("<div class='row mt-md-3'>")
-            html.push("<div class='col-sm-4'><b>empirical formula</b>: " + row["empiricalformula"]["empiricalformula_label"] + "</div>")
-            html.push("<div class='col-sm-4'><b>linear formula</b>: " + row["linearformula"]["linearformula_label"]["String"]  + "</div>")
-            html.push("<div class='col-sm-4'><b>3D formula</b>:: " + row["product_threedformula"]["String"] + "</div>")
+            html.push("<div class='row mt-sm-3'>")
+            html.push("<div class='col-sm-4'><span title='empirical formula' class='mdi mdi-36px mdi-alpha-e-box-outline'></span> " + row["empiricalformula"]["empiricalformula_label"] + "</div>")
+            html.push("<div class='col-sm-4'><span title='linear formula' class='mdi mdi-36px mdi-alpha-l-box-outline'></span> " + row["linearformula"]["linearformula_label"]["String"]  + "</div>")
+            html.push("<div class='col-sm-4'><span title='3d formula' class='mdi mdi-36px mdi-cube-outline'></span> " + row["product_threedformula"]["String"] + "</div>")
             html.push("</div>")
 
-            html.push("<div class='row mt-md-3'>")
-            html.push("<div class='col-sm-4'><b>specificity</b>: " + row["product_specificity"]["String"] + "</div>")
-            html.push("<div class='col-sm-4'><b>cas</b>: " + row["casnumber"]["casnumber_label"] + "</div>")
-            html.push("<div class='col-sm-4'><b>ce</b>: " + row["cenumber"]["cenumber_label"]["String"] + "</div>")
-            html.push("</div>")
-
-            html.push("<div class='row mt-md-3'>")
-            html.push("<div class='col-sm-12'><b>msds</b>: " + row["product_msds"]["String"] + "</div>")
-            html.push("</div>")
-
-            html.push("<div class='row mt-md-3'>")
-            html.push("<div class='col-sm-4'><b>classofcompound</b>: " + row["classofcompound"]["classofcompound_label"]["String"] + "</div>")
-            html.push("<div class='col-sm-4'><b>restricted</b>: " + row["product_restricted"]["Bool"] + "</div>")
-            html.push("<div class='col-sm-4'><b>radioactive</b>: " + row["product_radioactive"]["Bool"] + "</div>")
+            html.push("<div class='row mt-sm-4'>")
+            html.push("<div class='col-sm-4'><b>ce</b> " + row["cenumber"]["cenumber_label"]["String"] + "</div>")
+            html.push("<div class='col-sm-8'><b>msds</b> <a href='" + row["product_msds"]["String"] + "'>" + row["product_msds"]["String"] + "</a></div>")
             html.push("</div>")
 
             html.push("<div class='row mt-md-3'>")
             html.push("<div class='col-sm-6'>")
-            html.push("<b>symbols</b>:")
             $.each(row["symbols"], function (key, value) {
                 html.push("<img src='data:" + value["symbol_image"] + "' alt='" + value["symbol_label"] + "' title='" + value["symbol_label"] + "'/>");
             });
@@ -480,16 +462,30 @@
             html.push("</div>")
 
             html.push("<div class='row mt-md-3'>")
-            html.push("<div class='col-sm-12'><b>physical state</b>: " + row["physicalstate"]["physicalstate_label"]["String"] + "</div>")
+            html.push("<div class='col-sm-6'><b>classofcompound</b> " + row["classofcompound"]["classofcompound_label"]["String"] + "</div>")
+            html.push("<div class='col-sm-6'><b>physical state</b>: " + row["physicalstate"]["physicalstate_label"]["String"] + "</div>")
             html.push("</div>")
 
             html.push("<div class='row mt-md-3'>")
-            html.push("<div class='col-sm-12'><b>disposal comment</b>: " + row["product_disposalcomment"]["String"] + "</div>")
+            html.push("<div class='col-sm-6'><b>disposal comment</b>: " + row["product_disposalcomment"]["String"] + "</div>")
+            html.push("<div class='col-sm-6'><b>remark</b>: " + row["product_remark"]["String"] + "</div>")
             html.push("</div>")
 
-            html.push("<div class='row mt-md-3'>")
-            html.push("<div class='col-sm-12'><b>remark</b>: " + row["product_remark"]["String"] + "</div>")
+            html.push("<div class='row mt-sm-3'>")
+            html.push("<div class='col-sm-12'>")
+            if (row["product_radioactive"]["Bool"]) {
+                html.push("<span title='radioactive' class='mdi mdi-36px mdi-radioactive'></span>")
+            }
+            if (row["product_restricted"]["Bool"]) {
+                html.push("<span title='restricted access' class='mdi mdi-36px mdi-hand'></span>")
+            }
             html.push("</div>")
+            html.push("</div>")
+
+            html.push("<div class='row mt-sm-4'>")
+            html.push("<div class='col-sm-12'>" + row["person"]["person_email"] + "</div>")
+            html.push("</div>") 
+            
             return html.join('');
         }
 

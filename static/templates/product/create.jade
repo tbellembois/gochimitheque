@@ -1,7 +1,6 @@
 | {{define "CONTENT"}}
 
-    | {{$icon := "local_offer"}}
-    +titleicon
+    +titleicon(icon="local_offer")
 
     form#product
         input#exactMatchEmpiricalFormula(type="hidden")
@@ -16,11 +15,9 @@
             .form-group.col-sm-auto
                 span.badge.badge-pill.badge-danger &nbsp;
             .form-group.col-sm-5
-                | {{$label := "name"}} {{$name := "name"}}
-                +select
+                +select(label="name" name="name")
             .form-group.col-sm-5
-                | {{$label := "synonym(s)"}} {{$name := "synonyms"}}
-                +selectmultiple
+                +selectmultiple(label="synonym(s)" name="synonyms")
 
         .form-row
             .form-group.col-sm-12
@@ -90,12 +87,12 @@
 
         .form-row
             .form-group.col-sm-12
-                | {{$label := "restricted access"}} {{$name := "product_restricted"}}
-                +checkbox
+                | {{$title := "restricted access"}} {{$name := "product_restricted"}} {{$icon := "mdi-hand"}}
+                +checkboxicon2
         .form-row
             .form-group.col-sm-12
-                | {{$label := "radioactive"}} {{$name := "product_radioactive"}}
-                +checkbox
+                | {{$title := "radioactive"}} {{$name := "product_radioactive"}} {{$icon := "mdi-radioactive"}}
+                +checkboxicon2
 
         .form-row
             .form-group.col-sm-12

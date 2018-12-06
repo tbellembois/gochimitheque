@@ -36,6 +36,12 @@ mixin checkboxicon
         label.form-check-label(for='{{$name}}')
             i.material-icons.md-24 {{$icon}}
 
+mixin checkboxicon2
+    .form-check
+        input.form-check-input(type='checkbox' id='{{$name}}' title='{{$title}}')
+        label.form-check-label(for='{{$name}}')
+            span(class='mdi mdi-36px {{$icon}}' title='{{$title}}')
+
 mixin select
     .form-group.col-sm-12
         label(for='{{$name}}') {{$label}}
