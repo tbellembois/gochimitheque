@@ -20,7 +20,7 @@ html
             | {{template "HEADER"}}
             header.row.justify-content-left
                 div.col-sm-12
-                    img(src="{{.ProxyPath}}img/chimitheque_logo.png", alt="chimitheque_logo")
+                    img(src="{{.ProxyPath}}img/logo_chimitheque.png", alt="chimitheque_logo")
 
             nav.navbar.navbar-expand-lg.navbar-light.bg-light
                 button.navbar-toggler(
@@ -137,6 +137,7 @@ html
         | <script src="{{.ProxyPath}}js/chimcommon.js"></script>
         | <script src="{{.ProxyPath}}js/chimauth.js"></script>
         
-        script(src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js")        
+        script(src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js")
+
         | {{template "CONTENTJS"}}
 | {{end}}
