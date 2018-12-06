@@ -538,20 +538,20 @@
             html.push("</div>")            
 
             html.push("<div class='row mt-sm-3'>")
-            html.push("<div class='col-sm-3'><p><b>quantity</b>: " + row["storage_quantity"]["Float64"] + " " + row["unit"]["unit_label"]["String"] + "</p></div>")
-            html.push("<div class='col-sm-3'><b>barecode</b>: " + row["storage_barecode"]["String"] + "</p></div>")
+            html.push("<div class='col-sm-3'><p><b>quantity</b> " + row["storage_quantity"]["Float64"] + " " + row["unit"]["unit_label"]["String"] + "</p></div>")
+            html.push("<div class='col-sm-3'><b>barecode</b> " + row["storage_barecode"]["String"] + "</p></div>")
             html.push("</div>")   
 
             html.push("<div class='row mt-sm-2'>")
-            html.push("<div class='col-sm-3'><b>batch number</b>: " + row["storage_batchnumber"]["String"] + "</p></div>")
-            html.push("<div class='col-sm-3'><p><b>supplier</b>: " + row["supplier"]["supplier_label"]["String"] + "</p></div>")
+            html.push("<div class='col-sm-3'><b>batch number</b> " + row["storage_batchnumber"]["String"] + "</p></div>")
+            html.push("<div class='col-sm-3'><p><b>supplier</b> " + row["supplier"]["supplier_label"]["String"] + "</p></div>")
             html.push("</div>")    
 
             html.push("<div class='row mt-sm-2'>")
-            html.push("<div class='col-sm-12'><b>entry date</b>: " + dateFormatter(row["storage_entrydate"], null, null, null) + "</p></div>")
-            html.push("<div class='col-sm-12'><b>exit date</b>: " + dateFormatter(row["storage_exitdate"], null, null, null) + "</p></div>")
-            html.push("<div class='col-sm-12'><b>opening date</b>: " + dateFormatter(row["storage_openingdate"], null, null, null) + "</p></div>")
-            html.push("<div class='col-sm-12'><b>expiration date</b>: " + dateFormatter(row["storage_expirationdate"], null, null, null) + "</p></div>")
+            html.push("<div class='col-sm-12'><b>entry date</b> " + dateFormatter(row["storage_entrydate"], null, null, null) + "</p></div>")
+            html.push("<div class='col-sm-12'><b>exit date</b> " + dateFormatter(row["storage_exitdate"], null, null, null) + "</p></div>")
+            html.push("<div class='col-sm-12'><b>opening date</b> " + dateFormatter(row["storage_openingdate"], null, null, null) + "</p></div>")
+            html.push("<div class='col-sm-12'><b>expiration date</b> " + dateFormatter(row["storage_expirationdate"], null, null, null) + "</p></div>")
             html.push("</div>")   
 
             html.push("<div class='row mt-sm-4'>")
@@ -639,6 +639,12 @@
                 '<button id="delete' + sid + '" class="delete btn btn-primary btn-sm" style="display: none;" title="delete" type="button">',
                     '<i class="material-icons">clear</i>',
                 '</button>']; 
+            } else if (row.storage.storage_id.Valid) {
+                // this is an history
+                var actions = [
+                '<button id="clone' + sid + '" class="clone btn btn-primary btn-sm" style="display: none;" title="clone" type="button">',
+                    '<i class="material-icons">filter_none</i>',
+                '</button>'];
             } else {
                 // buttons are hidden by default
                 var actions = [
