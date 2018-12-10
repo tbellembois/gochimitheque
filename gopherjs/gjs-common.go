@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gopherjs/gopherjs/js"
 	"honnef.co/go/js/dom"
+	"regexp"
 )
 
 var (
@@ -20,6 +21,45 @@ var (
 func init() {
 	window = dom.GetWindow()
 	document = window.Document()
+}
+
+// CreateTitle return a JDiv title wrapped in a js.Object
+func CreateTitle(msgText string, msgType string) *dom.HTMLDivElement {
+	t := document.CreateElement("div").(*dom.HTMLDivElement)
+	s := document.CreateElement("span").(*dom.HTMLSpanElement)
+	i := document.CreateElement("i").(*dom.BasicHTMLElement)
+	t.Class().SetString("mt-md-3 mb-md-3 row")
+	s.Class().SetString("col-sm-11 align-bottom")
+	i.Class().SetString("material-icons")
+	s.SetTextContent(msgText)
+
+	switch msgType {
+	case "history":
+		i.SetTextContent("alarm")
+		break
+	case "bookmark":
+		i.SetTextContent("star")
+		break
+	case "entity":
+		i.SetTextContent("store")
+		break
+	case "storelocation":
+		i.SetTextContent("extension")
+		break
+	case "product":
+		i.SetTextContent("local_offer")
+		break
+	case "storage":
+		i.SetTextContent("inbox")
+		break
+	default:
+		i.SetTextContent("keyboard_tab")
+	}
+
+	t.AppendChild(i)
+	t.AppendChild(s)
+
+	return t
 }
 
 func PopulatePermissionWidget(params []*js.Object) {
@@ -154,14 +194,7 @@ func PopulatePermissionWidget(params []*js.Object) {
 	}
 }
 
-// BuildInlineRadioElement return a radio inline block such as:
-//
-// <div class="form-check form-check-inline">
-//   <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1">
-//   <label class="form-check-label" for="inlineRadio1">1</label>
-// </div>
-//
-// inputattr much contain at least id, name, label and value
+// BuildInlineRadioElement return a radio inline block
 func BuildInlineRadioElement(inputattr map[string]string) *dom.HTMLDivElement {
 	// main div
 	maindiv := document.CreateElement("div").(*dom.HTMLDivElement)
@@ -254,12 +287,80 @@ func BuildPermissionWidget(entityID int, entityName string) *dom.HTMLDivElement 
 	return widgetdiv
 }
 
+// DisplayMessage display fading messages at the
+// top of the screen
+func DisplayMessage(msgText string, msgType string) {
+	d := document.CreateElement("div").(*dom.HTMLDivElement)
+	d.SetAttribute("role", "alert")
+	d.Class().SetString("alert alert-" + msgType)
+	d.SetTextContent(msgText)
+
+	//https://stackoverflow.com/questions/15907079/css3-transition-fade-out-effect
+	document.GetElementByID("message").AppendChild(d)
+}
+
+// NormalizeSqlNull removes from the obj map keys the .Foo (.String, .Int64...) prefixes
+func NormalizeSqlNull(obj map[string]interface{}) *map[string]interface{} {
+	// result map
+	r := make(map[string]interface{})
+
+	// sqlNull values type detection regexp
+	regexS := regexp.MustCompile("(.+)\\.String")
+	regexI := regexp.MustCompile("(.+)\\.Int64")
+	regexF := regexp.MustCompile("(.+)\\.Float64")
+	regexB := regexp.MustCompile("(.+)\\.Bool")
+
+	for k, iv := range obj {
+		// trying to match a regex
+		mS := regexS.FindStringSubmatch(k)
+		mI := regexI.FindStringSubmatch(k)
+		mF := regexF.FindStringSubmatch(k)
+		mB := regexB.FindStringSubmatch(k)
+
+		// building the new map without
+		// the .Foo in the key names
+		if len(mS) > 0 {
+			r[mS[1]] = iv.(string)
+		} else if len(mI) > 0 {
+			r[mI[1]] = iv.(float64)
+		} else if len(mF) > 0 {
+			r[mF[1]] = iv.(float64)
+		} else if len(mB) > 0 {
+			r[mB[1]] = iv.(bool)
+		} else {
+			r[k] = iv
+		}
+	}
+	return &r
+}
+
+// type Foo struct {
+// 	*js.Object
+// 	Toto                string `js:"toto"`
+// 	StorageCreationDate string `js:"storage_creationdate"`
+// }
+
+// func (f *Foo) GetToto() string {
+// 	return f.Toto
+// }
+
+// func Test(obj *js.Object) *js.Object {
+// 	t := &Foo{Object: obj}
+// 	t.Toto = "toto"
+// 	fmt.Println(t.StorageCreationDate)
+// 	fmt.Println(t.Toto)
+// 	return js.MakeWrapper(t)
+// }
+
 func main() {
 
 	// exporting functions to be called from other JS files
 	js.Global.Set("global", map[string]interface{}{
 		"buildPermissionWidget":    BuildPermissionWidget,
 		"populatePermissionWidget": PopulatePermissionWidget,
+		"createTitle":              CreateTitle,
+		"normalizeSqlNull":         NormalizeSqlNull,
+		"displayMessage":           DisplayMessage,
 	})
 
 }

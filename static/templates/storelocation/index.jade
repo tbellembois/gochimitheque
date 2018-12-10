@@ -179,7 +179,8 @@
                 // flattening response data
                 fdata = flatten(data);
                 // processing sqlNull values
-                newfdata = normalizeSqlNull(fdata)
+                //newfdata = normalizeSqlNull(fdata)
+                newfdata = global.normalizeSqlNull(fdata);
                 // autofilling form
                 $("#edit-collapse").autofill( newfdata, {"findbyname": false } );
                 // setting index hidden input
