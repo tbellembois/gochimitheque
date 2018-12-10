@@ -27,78 +27,78 @@ var flatten = function(obj, name, stem) {
     return out;
 };
 
-var normalizeSqlNull = function(obj) {
-  newfdata = new Map()
-  $.each(obj, function(k, v) {
-    matchs = k.match(/(.+)\.String/);
-    matchi = k.match(/(.+)\.Int64/);
-    matchf = k.match(/(.+)\.Float64/);
-    matchb = k.match(/(.+)\.Bool/);
-    if (matchs !== null) {
-        fieldname = matchs[1];
-        valid = fdata[fieldname+".Valid"] == true;
-        if (valid) {
-            newfdata[fieldname] = v;
-        }
-    }  else if (matchi !== null) {
-        fieldname = matchi[1];
-        valid = fdata[fieldname+".Valid"] == true;
-        if (valid) {
-            newfdata[fieldname] = v;
-        }
-    }  else if (matchb !== null) {
-        fieldname = matchb[1];
-        valid = fdata[fieldname+".Valid"] == true;
-        if (valid) {
-            newfdata[fieldname] = v;
-        }
-    } else if (matchf !== null) {
-        fieldname = matchf[1];
-        valid = fdata[fieldname+".Valid"] == true;
-        if (valid) {
-            newfdata[fieldname] = v;
-        }
-    }
-    else {
-        newfdata[k] = v;
-    }
-  });
-  return newfdata;
-};
+// var normalizeSqlNull = function(obj) {
+//   newfdata = new Map()
+//   $.each(obj, function(k, v) {
+//     matchs = k.match(/(.+)\.String/);
+//     matchi = k.match(/(.+)\.Int64/);
+//     matchf = k.match(/(.+)\.Float64/);
+//     matchb = k.match(/(.+)\.Bool/);
+//     if (matchs !== null) {
+//         fieldname = matchs[1];
+//         valid = fdata[fieldname+".Valid"] == true;
+//         if (valid) {
+//             newfdata[fieldname] = v;
+//         }
+//     }  else if (matchi !== null) {
+//         fieldname = matchi[1];
+//         valid = fdata[fieldname+".Valid"] == true;
+//         if (valid) {
+//             newfdata[fieldname] = v;
+//         }
+//     }  else if (matchb !== null) {
+//         fieldname = matchb[1];
+//         valid = fdata[fieldname+".Valid"] == true;
+//         if (valid) {
+//             newfdata[fieldname] = v;
+//         }
+//     } else if (matchf !== null) {
+//         fieldname = matchf[1];
+//         valid = fdata[fieldname+".Valid"] == true;
+//         if (valid) {
+//             newfdata[fieldname] = v;
+//         }
+//     }
+//     else {
+//         newfdata[k] = v;
+//     }
+//   });
+//   return newfdata;
+// };
 
-function createTitle(msgText, type) {
-    var i=$("<i>").addClass("material-icons");
-    switch (type) {
-        case 'history':
-            i.text("alarm");
-            break;
-        case 'bookmark':
-            i.text("star");
-            break;
-        case 'entity':
-            i.text("store");
-            break;
-        case 'storelocation':
-            i.text("extension");
-            break;
-        case 'product':
-            i.text("local_offer");
-            break;
-        case 'storage':
-            i.text("inbox");
-            break;
-        default:
-            i.text("keyboard_tab");
-    }
+// function createTitle(msgText, type) {
+//     var i=$("<i>").addClass("material-icons");
+//     switch (type) {
+//         case 'history':
+//             i.text("alarm");
+//             break;
+//         case 'bookmark':
+//             i.text("star");
+//             break;
+//         case 'entity':
+//             i.text("store");
+//             break;
+//         case 'storelocation':
+//             i.text("extension");
+//             break;
+//         case 'product':
+//             i.text("local_offer");
+//             break;
+//         case 'storage':
+//             i.text("inbox");
+//             break;
+//         default:
+//             i.text("keyboard_tab");
+//     }
 
-    var d = $("<div>");
-    var h = $("<span>");
-    d.addClass("mt-md-3 mb-md-3 row");
-    h.addClass("col-sm-11 align-bottom").text(msgText);
-    d.append(i);
-    d.append(h);
-    return d;
-}
+//     var d = $("<div>");
+//     var h = $("<span>");
+//     d.addClass("mt-md-3 mb-md-3 row");
+//     h.addClass("col-sm-11 align-bottom").text(msgText);
+//     d.append(i);
+//     d.append(h);
+//     return d;
+// }
 
 // displays and fadeout the given message
 function displayMessage(msgText, type) {

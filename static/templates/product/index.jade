@@ -284,16 +284,16 @@
             $.when(entitypromise, storelocationpromise, productpromise, bookmarkpromise).done(function() {
                 $("#filter-item").html("");
                 if (bookmarkData !== undefined) {
-                    $("#filter-item").append(createTitle("my bookmarked products", "bookmark"));
+                    $("#filter-item").append(global.createTitle("my bookmarked products", "bookmark"));
                 };
                 if (entityData !== undefined) {
-                    $("#filter-item").append(createTitle(entityData.entity_name, "entity"));
+                    $("#filter-item").append(global.createTitle(entityData.entity_name, "entity"));
                 };
                 if (storelocationData !== undefined) {
-                    $("#filter-item").append(createTitle(storelocationData.storelocation_name.String, "storelocation"));
+                    $("#filter-item").append(global.createTitle(storelocationData.storelocation_name.String, "storelocation"));
                 };
                 if (productData !== undefined) {
-                    $("#filter-item").append(createTitle(productData.name.name_label + " (" + productData.casnumber.casnumber_label + ") " + productData.product_specificity.String, "product"));
+                    $("#filter-item").append(global.createTitle(productData.name.name_label + " (" + productData.casnumber.casnumber_label + ") " + productData.product_specificity.String, "product"));
                 };
             });
 
@@ -612,7 +612,8 @@
                 fdata = flatten(data);
 
                 // processing sqlNull values
-                newfdata = normalizeSqlNull(fdata)
+                //newfdata = normalizeSqlNull(fdata)
+                newfdata = global.normalizeSqlNull(fdata);
 
                 // autofilling form
                 $("#edit-collapse").autofill( newfdata, {"findbyname": false } );
