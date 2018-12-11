@@ -2,10 +2,16 @@ package models
 
 import (
 	"database/sql"
+	"encoding/csv"
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"os"
+	"strconv"
+	"strings"
 	"time"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/helpers"
 )
@@ -224,6 +230,36 @@ type Bookmark struct {
 	BookmarkID sql.NullInt64 `db:"bookmark_id" json:"bookmark_id" schema:"bookmark_id"`
 	Person     `db:"person" json:"person" schema:"person"`
 	Product    `db:"product" json:"product" schema:"product"`
+}
+
+func (s Storage) storageToStringSlice() []string {
+	ret := make([]string, 5)
+
+	ret = append(ret, strconv.FormatInt(s.StorageID.Int64, 10))
+	ret = append(ret, s.Product.Name.NameLabel)
+	ret = append(ret, s.Product.CasNumber.CasNumberLabel)
+	ret = append(ret, s.StorageComment.String)
+	ret = append(ret, strconv.FormatFloat(s.StorageQuantity.Float64, 'E', -1, 64))
+
+	return ret
+}
+
+func StoragesToCSV(sts []Storage) string {
+
+	// create a temp file
+	tmpFile, err := ioutil.TempFile(os.TempDir(), "chimitheque-")
+	if err != nil {
+		log.Error("cannot create temporary file", err)
+	}
+
+	csvwr := csv.NewWriter(tmpFile) // creates a csv writer that uses the io buffer
+
+	for _, s := range sts {
+		csvwr.Write(s.storageToStringSlice()) // converts array of string to comma seperated values
+	}
+
+	csvwr.Flush()
+	return strings.Split(tmpFile.Name(), "chimitheque-")[1]
 }
 
 func (p Product) String() string {

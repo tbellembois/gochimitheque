@@ -152,6 +152,28 @@ function cleanQueryParams() {
     window.history.replaceState("", "", root + "?" + urlParams.toString());
 }
 
+function exportAll() {
+    // root path
+    path = window.location.pathname
+    // root url
+    root = window.location.protocol + '//' + window.location.hostname + ":" + window.location.port + path;
+    // building url parameters from last AJAX query parameters
+    p = lastQueryParams.data;
+    // filtering empty values
+    newp = {};
+    $.each(p, function(k, v) {
+        if (v !== "") {
+            newp[k] = v;
+        }
+    });
+
+    // adding export param
+    newp["export"] = true;
+
+    // redirecting
+    window.location.href = root + "?" + $.param(newp);
+}
+
 function switchProductStorageView() {
     // root path
     path = window.location.pathname
@@ -174,7 +196,7 @@ function switchProductStorageView() {
     });
 
     // redirecting
-    window.location.href = root + "?" + $.param(p);
+    window.location.href = root + "?" + $.param(newp);
 }
 
 function clearsearch() {

@@ -13,6 +13,7 @@ import (
 type Dbselectparam interface {
 	SetLoggedPersonID(int)
 	SetSearch(string)
+	SetLimit(uint64)
 
 	GetLoggedPersonID() int
 	GetSearch() string
@@ -171,6 +172,10 @@ func (d dbselectparam) GetOffset() uint64 {
 
 func (d dbselectparam) GetLimit() uint64 {
 	return d.Limit
+}
+
+func (d *dbselectparam) SetLimit(l uint64) {
+	d.Limit = l
 }
 
 //
