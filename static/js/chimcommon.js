@@ -101,22 +101,13 @@ var flatten = function(obj, name, stem) {
 // }
 
 // displays and fadeout the given message
-function displayMessage(msgText, type) {
-    var d = $("<div>");
-    d.attr("role", "alert");
-    d.addClass("alert alert-" + type);
-    d.text(msgText);
-    $("body").prepend(d.delay(800).fadeOut("slow"));
-}
-
-function highlightRow(attr, id) {
-    $("tr[" + attr + "=" + id + "]").fadeTo("slow", 0.30);
-    $("tr[" + attr + "=" + id + "]").fadeTo("slow", 1);
-    $("tr[" + attr + "=" + id + "]").fadeTo("slow", 0.30);
-    $("tr[" + attr + "=" + id + "]").fadeTo("slow", 1);
-    $("tr[" + attr + "=" + id + "]").fadeTo("slow", 0.30);
-    $("tr[" + attr + "=" + id + "]").fadeTo("slow", 1);
-}
+// function displayMessage(msgText, type) {
+//     var d = $("<div>");
+//     d.attr("role", "alert");
+//     d.addClass("alert alert-" + type);
+//     d.text(msgText);
+//     $("body").prepend(d.delay(800).fadeOut("slow"));
+// }
 
 // https://gist.github.com/excalq/2961415
 var updateQueryStringParam = function (key, value) {

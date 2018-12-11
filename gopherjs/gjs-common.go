@@ -119,6 +119,40 @@ func PopulatePermissionWidget(params []*js.Object) {
 					document.GetElementByID("permn" + pitemname + pentityid).(*dom.HTMLInputElement).Checked = true
 				}
 			}
+		case "rproducts":
+			switch ppermname {
+			case "w", "all":
+				if pentityid == "-1" {
+					for _, e := range document.GetElementsByClassName("permwrproducts") {
+						e.(*dom.HTMLInputElement).Checked = true
+					}
+				} else {
+					document.GetElementByID("permw" + pitemname + pentityid).(*dom.HTMLInputElement).Checked = true
+				}
+			case "r":
+				if pentityid == "-1" {
+					for _, e := range document.GetElementsByClassName("permrrproducts") {
+						// avoid selecting r if w is already selected
+						eid := e.GetAttribute("entity_id")
+						if !document.GetElementByID("permw" + pitemname + eid).(*dom.HTMLInputElement).Checked {
+							e.(*dom.HTMLInputElement).Checked = true
+						}
+					}
+				} else {
+					// avoid selecting r if w is already selected
+					if document.GetElementByID("permw"+pitemname+pentityid).(*dom.HTMLInputElement).Checked == false {
+						document.GetElementByID("permr" + pitemname + pentityid).(*dom.HTMLInputElement).Checked = true
+					}
+				}
+			case "n":
+				if pentityid == "-1" {
+					for _, e := range document.GetElementsByClassName("permnrproducts") {
+						e.(*dom.HTMLInputElement).Checked = true
+					}
+				} else {
+					document.GetElementByID("permn" + pitemname + pentityid).(*dom.HTMLInputElement).Checked = true
+				}
+			}
 		case "storages":
 			switch ppermname {
 			case "w", "all":
@@ -291,11 +325,13 @@ func BuildPermissionWidget(entityID int, entityName string) *dom.HTMLDivElement 
 // top of the screen
 func DisplayMessage(msgText string, msgType string) {
 	d := document.CreateElement("div").(*dom.HTMLDivElement)
+	s := document.CreateElement("span").(*dom.HTMLSpanElement)
 	d.SetAttribute("role", "alert")
-	d.Class().SetString("alert alert-" + msgType)
-	d.SetTextContent(msgText)
+	d.Class().SetString("animated fadeOutUp delay-2s position-absolute w-100 p-3 text-center alert alert-" + msgType)
+	s.SetTextContent(msgText)
+	d.AppendChild(s)
 
-	//https://stackoverflow.com/questions/15907079/css3-transition-fade-out-effect
+	document.GetElementByID("message").SetInnerHTML("")
 	document.GetElementByID("message").AppendChild(d)
 }
 

@@ -31,7 +31,6 @@ script.
             // manager select2
             //
             $('select#entities').select2({
-                dropdownParent: $('#viewedit-collapse'),
                 ajax: {
                     url: proxyPath + 'entities',
                     dataType: 'json',
@@ -63,7 +62,7 @@ script.
                 });
                 if (ismanager) {
                     // FIXME: do we have to do something on the server side to check this?
-                    displayMessage("this entity can not be removed, the user is one of its manager", "success");
+                    global.displayMessage("this entity can not be removed, the user is one of its manager", "success");
                     e.preventDefault();
                 } else {
                     // removing permissions widget
@@ -83,7 +82,7 @@ script.
         // save person callback
         //
         var createCallBack = function createCallback(data, textStatus, jqXHR) {
-            displayMessage("person " + data.person_email + " created", "success");
+            global.displayMessage("person " + data.person_email + " created", "success");
             setTimeout(function(){ window.location = "/v/people"; }, 1000);
         }
         var updateCallBack = function updateCallback(data, textStatus, jqXHR) {
@@ -97,7 +96,7 @@ script.
                     "person_email": data.person_email,
                 }
             });
-            displayMessage("person " + data.person_email + " updated", "success");
+            global.displayMessage("person " + data.person_email + " updated", "success");
         }
         function savePerson() {
             var form = $("#person");
