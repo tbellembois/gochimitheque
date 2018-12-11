@@ -9,6 +9,7 @@ import (
 
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
+	"github.com/tbellembois/gochimitheque/constants"
 	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/helpers"
 	"github.com/tbellembois/gochimitheque/models"
@@ -196,9 +197,10 @@ func (env *Env) GetStoragesHandler(w http.ResponseWriter, r *http.Request) *help
 	log.Debug("GetStoragesHandler")
 
 	var (
-		err  error
-		aerr *helpers.AppError
-		dsps helpers.DbselectparamStorage
+		err      error
+		aerr     *helpers.AppError
+		dsps     helpers.DbselectparamStorage
+		exportfn string
 	)
 
 	// init db request parameters
@@ -215,14 +217,21 @@ func (env *Env) GetStoragesHandler(w http.ResponseWriter, r *http.Request) *help
 		}
 	}
 
+	// export?
+	if _, export := r.URL.Query()["export"]; export {
+		exportfn = models.StoragesToCSV(storages)
+	}
+
 	type resp struct {
-		Rows  []models.Storage `json:"rows"`
-		Total int              `json:"total"`
+		Rows     []models.Storage `json:"rows"`
+		Total    int              `json:"total"`
+		ExportFN string           `json:"exportfn"`
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(resp{Rows: storages, Total: count})
+	json.NewEncoder(w).Encode(resp{Rows: storages, Total: count, ExportFN: exportfn})
+
 	return nil
 }
 

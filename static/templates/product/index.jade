@@ -1,6 +1,6 @@
 | {{define "CONTENT"}}
 
-    #search.row.pt-sm-4.pb-sm-4.pl-sm-2.pr-sm-2.mt-sm-2.mb-sm-2.ml-sm-5.mr-sm-5.bg-light.border.shadow.rounded
+    #search.row.pt-sm-4.pb-sm-4.pl-sm-2.pr-sm-2.mt-sm-2.mb-sm-2.ml-sm-5.mr-sm-5.bg-light.border.shadow.rounded.collapse.show
         .col
             .row
                 .col.mb-sm-2
@@ -44,8 +44,11 @@
 
     #toolbar.row
         .col.toggleable
-            button.btn.btn-dark#switchview(type="button" title="switch to storage view" onclick="switchProductStorageView()")
+            button.btn.btn-secondary#switchview(type="button" title="switch to storage view" onclick="switchProductStorageView()")
                 i.material-icons all_inbox
+        .col
+            button.btn.btn-secondary#export(type="button" title="export" onclick="exportAll()")
+                i.material-icons save_alt
 
     #accordion
         #list-collapse.collapse.show(data-parent='#accordion')
@@ -56,7 +59,7 @@
                                 data-search='false', 
                                 data-toolbar="#toolbar",
                                 data-side-pagination='server', 
-                                data-page-list="[5, 10, 20, 50, 100]",
+                                data-page-list="[5, 10, 20, 50, 100, 200, 500]",
                                 data-pagination='true', 
                                 data-ajax='getData', 
                                 data-query-params='queryParams',
@@ -199,6 +202,7 @@
             if (!urlParams.get("product") && !urlParams.get("entity")) {
                 $(".toggleable").show();
             }
+            $('div#search').collapse('show');
         }
         
         //
@@ -358,6 +362,9 @@
             }
             if (urlParams.has("bookmark")) {
                 params["bookmark"] = urlParams.get("bookmark");
+            }
+            if (urlParams.has("export")) {
+                params["export"] = urlParams.get("export");
             }
 
             if (name != null) {
@@ -677,6 +684,7 @@
             // finally collapsing the view
             $('#edit-collapse').collapse('show');
             $('#list-collapse').collapse('hide');
+            $('div#search').collapse('hide');
             $(".toggleable").hide();
         }
         window.operateEvents = {

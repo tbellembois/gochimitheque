@@ -363,6 +363,9 @@ func main() {
 	// formatters
 	r.Handle("/format/product/{id}/empiricalformula/", securechain.Then(env.AppMiddleware(env.FormatProductEmpiricalFormulaHandler))).Methods("POST")
 
+	// export download
+	r.Handle("/download/{id}", securechain.Then(env.AppMiddleware(env.DownloadExportHandler))).Methods("GET")
+
 	// rice boxes
 	webfontsBox := rice.MustFindBox("static/webfonts")
 	webfontsFileServer := http.StripPrefix("/webfonts/", http.FileServer(webfontsBox.HTTPBox()))
