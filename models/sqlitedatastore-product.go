@@ -797,8 +797,13 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 		cnstmt                                  *sqlx.NamedStmt
 		snstmt                                  *sqlx.NamedStmt
 		err                                     error
+		rperm                                   bool
 	)
 	log.WithFields(log.Fields{"p": p}).Debug("GetProducts")
+
+	if rperm, err = db.HasPersonPermission(p.GetLoggedPersonID(), "r", "rproduct", -1); err != nil {
+		return nil, 0, err
+	}
 
 	// pre request: select or count
 	precreq.WriteString(" SELECT count(DISTINCT p.product_id)")
@@ -897,6 +902,10 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	}
 	if p.GetCustomNamePartOf() != "" {
 		comreq.WriteString(" AND name.name_label LIKE :custom_name_part_of")
+	}
+	// filter restricted product
+	if !rperm {
+		comreq.WriteString(" AND p.product_restricted = false")
 	}
 
 	// post select request

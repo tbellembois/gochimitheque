@@ -937,7 +937,7 @@ script.
     // save store location callback
     //
     var createCallBack = function createCallback(data, textStatus, jqXHR) {
-        displayMessage("product " + data.name.name_label + " created", "success");
+        global.displayMessage("product " + data.name.name_label + " created", "success");
         setTimeout(function(){ window.location = proxyPath + "v/products?product="+data.product_id+"&hl="+data.product_id; }, 1000);
     }
     var updateCallBack = function updateCallback(data, textStatus, jqXHR) {
@@ -948,7 +948,7 @@ script.
         // appending hl parameter to highlight updated row
         updateQueryStringParam("hl", data.product_id);
         $table.bootstrapTable('refresh');
-        displayMessage("product " + data.name.name_label + " updated", "success");
+        global.displayMessage("product " + data.name.name_label + " updated", "success");
     }
     function saveProduct() {
         var form = $("#product");

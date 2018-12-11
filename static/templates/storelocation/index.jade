@@ -211,7 +211,7 @@
                         url: proxyPath + "storelocations/" + row['storelocation_id'],
                         method: "DELETE",
                     }).done(function(data, textStatus, jqXHR) {
-                        displayMessage("store location deleted", "success");
+                        global.displayMessage("store location deleted", "success");
                         var $table = $('#table');
                         $table.bootstrapTable('refresh');
                     }).fail(function(jqXHR, textStatus, errorThrown) {

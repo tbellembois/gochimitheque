@@ -53,7 +53,7 @@ script.
         // save entity callback
         //
         var createCallBack = function createCallback(data, textStatus, jqXHR) {
-            displayMessage("entity " + data.entity_name + " created", "success");
+            global.displayMessage("entity " + data.entity_name + " created", "success");
             setTimeout(function(){ window.location = "/v/entities"; }, 1000);
         }
         var updateCallBack = function updateCallback(data, textStatus, jqXHR) {
@@ -68,7 +68,7 @@ script.
                     "entity_description": data.entity_description,
                 }
             });
-            displayMessage("entity " + data.entity_name + " updated", "success");
+            global.displayMessage("entity " + data.entity_name + " updated", "success");
         }
         function saveEntity() {
             var form = $("#entity");

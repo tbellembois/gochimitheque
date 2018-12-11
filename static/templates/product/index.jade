@@ -219,10 +219,8 @@
                 $('#table').bootstrapTable('resetSearch', urlParams.get("search"));
             }
             // highlight row if needed
-            //if (URLValues.has("hl")) {
             if (urlParams.has("hl")) {
-                //highlightRow("product_id", URLValues.get("hl")[0]);
-                highlightRow("product_id", urlParams.get("hl"));
+                $("tr[product_id=" + urlParams.get("hl") + "]").addClass("animated bounce slow");
             }
 
             var storelocationpromise = $.Deferred();
@@ -531,11 +529,14 @@
             '</button>',
             ];
 
-            if (row.casnumber.casnumber_cmr.Valid) {
+            if (row.casnumber.casnumber_cmr.Valid && row.casnumber.casnumber_cmr.Bool) {
                 actions.push('<i title="CMR" class="material-icons">warning</i>' + row.casnumber.casnumber_cmr.String);
             }    
+            if (row.product_restricted.Valid && row.product_restricted.Bool) {
+                actions.push('<span title="restricted access" class="mdi mdi-36px mdi-hand"></span>');
+            }  
 
-            // FIXME: perms
+            //FIXME: perms
             hasPermission(proxyPath + "f/storages", "POST", pid).done(function(){
                     $("#store"+this.itemId).fadeIn();
             })
@@ -708,7 +709,7 @@
                         url: proxyPath + "products/" + row['product_id'],
                         method: "DELETE",
                     }).done(function(data, textStatus, jqXHR) {
-                        displayMessage("product deleted", "success");
+                        global.displayMessage("product deleted", "success");
                         var $table = $('#table');
                         $table.bootstrapTable('refresh');
                     }).fail(function(jqXHR, textStatus, errorThrown) {

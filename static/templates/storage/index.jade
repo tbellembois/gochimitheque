@@ -204,7 +204,6 @@
             $('#s_storage_archive_button > i').text(btnicon);
         });
 
-
         //
         // startup actions
         //
@@ -223,10 +222,8 @@
                 $('#table').bootstrapTable('resetSearch', urlParams.get("search"));
             }
             // highlight row if needed
-            //if (URLValues.has("hl")) {
             if (urlParams.has("hl")) {
-                //highlightRow("storage_id", URLValues.get("hl")[0]);
-                highlightRow("storage_id", urlParams.get("hl"));
+                $("tr[storage_id=" + urlParams.get("hl") + "]").addClass("animated bounce slow");
             }
             
             var storelocationpromise = $.Deferred();
@@ -326,7 +323,7 @@
             $.when(entitypromise, storelocationpromise, storagepromise, productpromise).done(function() {
                 $("#filter-item").html("");
                 if (historyData !== undefined) {
-                    $("#filter-item").append(global.createTitle("history", "history")));
+                    $("#filter-item").append(global.createTitle("history", "history"));
                 };
                 if (entityData !== undefined) {
                     $("#filter-item").append(global.createTitle(entityData.entity_name, "entity"));
@@ -515,7 +512,7 @@
         // table row attributes
         //
         function rowAttributes(row, index) {
-            return {"storage_id":row["storage_id"]}
+            return {"storage_id":row["storage_id"].Int64}
         }
         //
         // table detail formatter
@@ -791,7 +788,7 @@
                         url: proxyPath + "storages/" + row['storage_id'].Int64 + "/r",
                         method: "PUT",
                     }).done(function(data, textStatus, jqXHR) {
-                        displayMessage("storage restored", "success");
+                        global.displayMessage("storage restored", "success");
                         var $table = $('#table');
                         $table.bootstrapTable('refresh');
                     }).fail(function(jqXHR, textStatus, errorThrown) {
@@ -811,7 +808,7 @@
                         url: proxyPath + "storages/" + row['storage_id'].Int64 + "/a",
                         method: "DELETE",
                     }).done(function(data, textStatus, jqXHR) {
-                        displayMessage("storage trashed", "success");
+                        global.displayMessage("storage trashed", "success");
                         var $table = $('#table');
                         $table.bootstrapTable('refresh');
                     }).fail(function(jqXHR, textStatus, errorThrown) {
@@ -831,7 +828,7 @@
                         url: proxyPath + "storages/" + row['storage_id'].Int64,
                         method: "DELETE",
                     }).done(function(data, textStatus, jqXHR) {
-                        displayMessage("storage deleted", "success");
+                        global.displayMessage("storage deleted", "success");
                         var $table = $('#table');
                         $table.bootstrapTable('refresh');
                     }).fail(function(jqXHR, textStatus, errorThrown) {

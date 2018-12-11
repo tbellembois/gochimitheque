@@ -3,18 +3,18 @@ function handleHTTPError(msgText, msgStatus) {
     //console.log(msgStatus);
     switch(msgStatus) {
     case 401:
-        displayMessage(msgText, "danger");
+        global.displayMessage(msgText, "danger");
         // redirect on 401 errors
         window.location.replace("/login");
         break;
     case 403:
-        displayMessage(msgText, "danger");
+        global.displayMessage(msgText, "danger");
         break;
     case 500:
-        displayMessage(msgText, "danger");
+        global.displayMessage(msgText, "danger");
         break;
     default:
-        displayMessage(msgText, "light");
+        global.displayMessage(msgText, "light");
         break;
     }
 }

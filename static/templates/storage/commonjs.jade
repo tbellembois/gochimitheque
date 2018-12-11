@@ -376,7 +376,7 @@ script.
     // save storage callback
     //
     var createCallBack = function createCallback(data, textStatus, jqXHR) {
-        displayMessage("storage created", "success");
+        global.displayMessage("storage created", "success");
         setTimeout(function(){ window.location = proxyPath + "v/storages?product="+data.product.product_id+"&hl="+data.product.product_id; }, 1000);
     }
     var updateCallBack = function updateCallback(data, textStatus, jqXHR) {
@@ -387,7 +387,7 @@ script.
         // appending hl parameter to highlight updated row
         updateQueryStringParam("hl", data.storage_id.Int64);
         $table.bootstrapTable('refresh');
-        displayMessage("storage " + data.storage_id.Int64 + " updated", "success");
+        global.displayMessage("storage " + data.storage_id.Int64 + " updated", "success");
     }
     function saveBorrowing() {
         var form = $("#borrowing");
@@ -414,7 +414,7 @@ script.
             data: data,
         }).done(function(jqXHR, textStatus, errorThrown) {
            $("#borrow").modal("hide");
-           displayMessage("borrowing modified", "success");
+           global.displayMessage("borrowing modified", "success");
         }).fail(function(jqXHR, textStatus, errorThrown) {
             handleHTTPError(jqXHR.statusText, jqXHR.status);
         });  

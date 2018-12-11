@@ -74,7 +74,7 @@ script.
     // save store location callback
     //
     var createCallBack = function createCallback(data, textStatus, jqXHR) {
-        displayMessage("store location " + data.storelocation_name.String + " created", "success");
+        global.displayMessage("store location " + data.storelocation_name.String + " created", "success");
         setTimeout(function(){ window.location = "/v/storelocations"; }, 1000);
     }
     var updateCallBack = function updateCallback(data, textStatus, jqXHR) {
@@ -91,7 +91,7 @@ script.
                 "entity.entity_name": data.entity.entity_name,
             }
         });
-        displayMessage("store location " + data.storelocation_name.String + " updated", "success");
+        global.displayMessage("store location " + data.storelocation_name.String + " updated", "success");
     }
     function saveStoreLocation() {
         var form = $("#storelocation");
