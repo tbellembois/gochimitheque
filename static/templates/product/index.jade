@@ -1,6 +1,6 @@
 | {{define "CONTENT"}}
 
-    #search.row.pt-sm-4.pb-sm-4.pl-sm-2.pr-sm-2.mt-sm-2.mb-sm-2.ml-sm-5.mr-sm-5.bg-light.border.shadow.rounded.collapse.show
+    #search.row.pt-sm-4.pb-sm-4.pl-sm-2.pr-sm-2.mt-sm-2.mb-sm-2.ml-sm-5.mr-sm-5.bg-light.border.rounded.collapse.show
         .col
             .row
                 .col.mb-sm-2
@@ -49,6 +49,13 @@
         .col
             button.btn.btn-secondary#export(type="button" title="export" onclick="exportAll()")
                 i.material-icons save_alt
+
+    #exportlink.modal.fade(role="dialog" tabindex="-1" aria-labelledby="exportlinkLabel" aria-hidden="true")
+        .modal-dialog.modal-lg(role="document")
+            .modal-content
+                .modal-body#exportlink-body
+                .modal-footer
+                    button.btn.btn-secondary(type="button" data-dismiss="modal") close
 
     #accordion
         #list-collapse.collapse.show(data-parent='#accordion')
@@ -398,6 +405,12 @@
                 if (data.total == 0) {
                     var $table = $('#table');
                     $table.bootstrapTable('removeAll');
+                }
+                if (data.exportfn != "") {
+                    var a = $("<a>").attr("href", proxyPath + "download/" + data.exportfn).text("download");
+                    $("#exportlink-body").html("");
+                    $("#exportlink-body").append(a);
+                    $("#exportlink").modal("show");
                 }
             }).fail(function(jqXHR, textStatus, errorThrown) {
                 params.error(jqXHR.statusText);                

@@ -1,6 +1,6 @@
 | {{define "CONTENT"}}
 
-    #search.row.pt-sm-4.pb-sm-4.pl-sm-2.pr-sm-2.mt-sm-2.mb-sm-2.ml-sm-5.mr-sm-5.bg-light.border.shadow.rounded.collapse.show
+    #search.row.pt-sm-4.pb-sm-4.pl-sm-2.pr-sm-2.mt-sm-2.mb-sm-2.ml-sm-5.mr-sm-5.bg-light.border.rounded.collapse.show
         .col
             .row
                 .col.mb-sm-2
@@ -754,7 +754,6 @@
                 fdata = flatten(data);
 
                 // processing sqlNull values
-                //newfdata = normalizeSqlNull(fdata)
                 newfdata = global.normalizeSqlNull(fdata);
 
                 // autofilling form

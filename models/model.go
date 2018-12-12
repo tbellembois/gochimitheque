@@ -232,30 +232,164 @@ type Bookmark struct {
 	Product    `db:"product" json:"product" schema:"product"`
 }
 
-func (s Storage) storageToStringSlice() []string {
-	ret := make([]string, 5)
+func (p Product) productToStringSlice() []string {
+	ret := make([]string, 0)
 
-	ret = append(ret, strconv.FormatInt(s.StorageID.Int64, 10))
-	ret = append(ret, s.Product.Name.NameLabel)
-	ret = append(ret, s.Product.CasNumber.CasNumberLabel)
-	ret = append(ret, s.StorageComment.String)
-	ret = append(ret, strconv.FormatFloat(s.StorageQuantity.Float64, 'E', -1, 64))
+	ret = append(ret, strconv.Itoa(p.ProductID))
+
+	ret = append(ret, p.NameLabel)
+	syn := ""
+	for _, s := range p.Synonyms {
+		syn += "|" + s.NameLabel
+	}
+	ret = append(ret, syn)
+
+	ret = append(ret, p.CasNumberLabel)
+	ret = append(ret, p.CeNumberLabel.String)
+
+	ret = append(ret, p.ProductSpecificity.String)
+	ret = append(ret, p.EmpiricalFormulaLabel)
+	ret = append(ret, p.LinearFormulaLabel.String)
+	ret = append(ret, p.ProductThreeDFormula.String)
+
+	ret = append(ret, p.ProductMSDS.String)
+
+	ret = append(ret, p.ClassOfCompoundLabel.String)
+	ret = append(ret, p.PhysicalStateLabel.String)
+
+	ret = append(ret, p.SignalWordLabel.String)
+
+	sym := ""
+	for _, s := range p.Symbols {
+		sym += "|" + s.SymbolLabel
+	}
+	ret = append(ret, sym)
+	hs := ""
+	for _, h := range p.HazardStatements {
+		hs += "|" + h.HazardStatementReference
+	}
+	ret = append(ret, hs)
+	ps := ""
+	for _, p := range p.PrecautionaryStatements {
+		ps += "|" + p.PrecautionaryStatementReference
+	}
+	ret = append(ret, ps)
+
+	ret = append(ret, p.ProductRemark.String)
+	ret = append(ret, p.ProductDisposalComment.String)
+
+	ret = append(ret, strconv.FormatBool(p.ProductRestricted.Bool))
+	ret = append(ret, strconv.FormatBool(p.ProductRadioactive.Bool))
 
 	return ret
 }
 
-func StoragesToCSV(sts []Storage) string {
+func (s Storage) storageToStringSlice() []string {
+	ret := make([]string, 0)
+
+	ret = append(ret, strconv.FormatInt(s.StorageID.Int64, 10))
+	ret = append(ret, s.Product.Name.NameLabel)
+	ret = append(ret, s.Product.CasNumber.CasNumberLabel)
+	ret = append(ret, s.Product.ProductSpecificity.String)
+
+	ret = append(ret, s.StoreLocation.StoreLocationName.String)
+
+	ret = append(ret, strconv.FormatFloat(s.StorageQuantity.Float64, 'E', -1, 64))
+	ret = append(ret, s.Unit.UnitLabel.String)
+	ret = append(ret, s.StorageBarecode.String)
+	ret = append(ret, s.Supplier.SupplierLabel.String)
+
+	ret = append(ret, s.StorageCreationDate.Format(time.RFC822))
+	ret = append(ret, s.StorageModificationDate.Format(time.RFC822))
+	ret = append(ret, s.StorageEntryDate.Time.Format(time.RFC822))
+	ret = append(ret, s.StorageExitDate.Time.Format(time.RFC822))
+	ret = append(ret, s.StorageOpeningDate.Time.Format(time.RFC822))
+	ret = append(ret, s.StorageExpirationDate.Time.Format(time.RFC822))
+
+	ret = append(ret, s.StorageComment.String)
+	ret = append(ret, s.StorageReference.String)
+	ret = append(ret, s.StorageBatchNumber.String)
+
+	ret = append(ret, strconv.FormatBool(s.StorageToDestroy.Bool))
+	ret = append(ret, strconv.FormatBool(s.StorageArchive.Bool))
+
+	return ret
+}
+
+func ProductsToCSV(prs []Product) string {
+
+	header := []string{"product_id",
+		"product_name",
+		"product_synonyms",
+		"product_cas",
+		"product_ce",
+		"product_specificity",
+		"empirical_formula",
+		"linear_formula",
+		"3D_formula",
+		"MSDS",
+		"class_of_compounds",
+		"physical_state",
+		"signal_word",
+		"symbols",
+		"hazard_statements",
+		"precautionary_statements",
+		"remark",
+		"disposal_comment",
+		"restricted?",
+		"radioactive?"}
 
 	// create a temp file
 	tmpFile, err := ioutil.TempFile(os.TempDir(), "chimitheque-")
 	if err != nil {
 		log.Error("cannot create temporary file", err)
 	}
+	// creates a csv writer that uses the io buffer
+	csvwr := csv.NewWriter(tmpFile)
+	// write the header
+	csvwr.Write(header)
+	for _, p := range prs {
+		csvwr.Write(p.productToStringSlice())
+	}
 
-	csvwr := csv.NewWriter(tmpFile) // creates a csv writer that uses the io buffer
+	csvwr.Flush()
+	return strings.Split(tmpFile.Name(), "chimitheque-")[1]
+}
 
+func StoragesToCSV(sts []Storage) string {
+
+	header := []string{"storage_id",
+		"product_name",
+		"product_casnumber",
+		"product_specificity",
+		"storelocation",
+		"quantity",
+		"unit",
+		"barecode",
+		"supplier",
+		"creation_date",
+		"modification_date",
+		"entry_date",
+		"exit_date",
+		"opening_date",
+		"expiration_date",
+		"comment",
+		"reference",
+		"batch_number",
+		"to_destroy?",
+		"archive?"}
+
+	// create a temp file
+	tmpFile, err := ioutil.TempFile(os.TempDir(), "chimitheque-")
+	if err != nil {
+		log.Error("cannot create temporary file", err)
+	}
+	// creates a csv writer that uses the io buffer
+	csvwr := csv.NewWriter(tmpFile)
+	// write the header
+	csvwr.Write(header)
 	for _, s := range sts {
-		csvwr.Write(s.storageToStringSlice()) // converts array of string to comma seperated values
+		csvwr.Write(s.storageToStringSlice())
 	}
 
 	csvwr.Flush()

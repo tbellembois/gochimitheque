@@ -9,7 +9,6 @@ import (
 
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
-	"github.com/tbellembois/gochimitheque/constants"
 	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/helpers"
 	"github.com/tbellembois/gochimitheque/models"
@@ -220,6 +219,9 @@ func (env *Env) GetStoragesHandler(w http.ResponseWriter, r *http.Request) *help
 	// export?
 	if _, export := r.URL.Query()["export"]; export {
 		exportfn = models.StoragesToCSV(storages)
+		// emptying results on exports
+		storages = []models.Storage{}
+		count = 0
 	}
 
 	type resp struct {
