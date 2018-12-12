@@ -149,6 +149,8 @@ function cleanQueryParams() {
     urlParams.delete("order");
     urlParams.delete("offset");
     urlParams.delete("limit");
+    urlParams.delete("export");
+
     window.history.replaceState("", "", root + "?" + urlParams.toString());
 }
 

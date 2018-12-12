@@ -623,9 +623,10 @@ func (env *Env) GetProductsHandler(w http.ResponseWriter, r *http.Request) *help
 	log.Debug("GetProductsHandler")
 
 	var (
-		err  error
-		aerr *helpers.AppError
-		dspp helpers.DbselectparamProduct
+		err      error
+		aerr     *helpers.AppError
+		dspp     helpers.DbselectparamProduct
+		exportfn string
 	)
 
 	// init db request parameters
@@ -642,14 +643,23 @@ func (env *Env) GetProductsHandler(w http.ResponseWriter, r *http.Request) *help
 		}
 	}
 
+	// export?
+	if _, export := r.URL.Query()["export"]; export {
+		exportfn = models.ProductsToCSV(products)
+		// emptying results on exports
+		products = []models.Product{}
+		count = 0
+	}
+
 	type resp struct {
-		Rows  []models.Product `json:"rows"`
-		Total int              `json:"total"`
+		Rows     []models.Product `json:"rows"`
+		Total    int              `json:"total"`
+		ExportFN string           `json:"exportfn"`
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(resp{Rows: products, Total: count})
+	json.NewEncoder(w).Encode(resp{Rows: products, Total: count, ExportFN: exportfn})
 	return nil
 }
 

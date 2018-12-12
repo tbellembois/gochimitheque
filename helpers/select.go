@@ -385,16 +385,19 @@ func Newdbselectparam(r *http.Request, f func(string) (string, error)) (*dbselec
 		}
 		dsp.Offset = uint64(of)
 	}
-	if l, ok := r.URL.Query()["limit"]; ok {
-		var lm int
-		if lm, err = strconv.Atoi(l[0]); err != nil {
-			return nil, &AppError{
-				Error:   err,
-				Code:    http.StatusInternalServerError,
-				Message: "limit atoi conversion",
+	// no limit on export
+	if _, ok := r.URL.Query()["export"]; !ok {
+		if l, ok := r.URL.Query()["limit"]; ok {
+			var lm int
+			if lm, err = strconv.Atoi(l[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "limit atoi conversion",
+				}
 			}
+			dsp.Limit = uint64(lm)
 		}
-		dsp.Limit = uint64(lm)
 	}
 	return &dsp, nil
 
