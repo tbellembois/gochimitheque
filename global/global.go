@@ -30,10 +30,15 @@ func (nt NullTime) Value() (driver.Value, error) {
 
 var (
 	// TokenSignKey is the JWT token signing key
-	TokenSignKey []byte
-	Decoder      *schema.Decoder
-	ProxyPath    string // application proxy path if behind a proxy
-	ProxyURL     string // application url if behind a proxy
+	TokenSignKey       []byte
+	Decoder            *schema.Decoder
+	ProxyPath          string // application proxy path if behind a proxy
+	ProxyURL           string // application url if behind a proxy
+	MailServerAddress  string
+	MailServerPassword string
+	MailServerSender   string
+	MailServerUser     string
+	MailServerPort     string
 )
 
 // Convertors for sql.Null* types so that they can be

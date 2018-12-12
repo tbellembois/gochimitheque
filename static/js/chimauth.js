@@ -19,24 +19,51 @@ function handleHTTPError(msgText, msgStatus) {
     }
 }
 
+// send a password initialization link
+function resetPassword() {
+    var email = $("#person_email").val();
+    if (email == "") {
+        global.displayMessage("enter your email in the login form", "warning");
+    } else {
+        $.ajax({
+            url: proxyPath + "reset-password",
+            method: 'POST',
+            data: {
+                person_email: email
+            }
+        }).done(function(token) {
+            global.displayMessage("a reinitialization link has been sent to " + email, "success");
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            handleHTTPError(jqXHR.statusText, jqXHR.status)
+        });
+        $("#person_email").val("");
+    }
+}
+
 // get a JWT token for the user
 function getToken() {
     var email = $("#person_email").val(),
         password = $("#person_password").val();
 
-    $.ajax({
-        url: proxyPath + "get-token",
-        method: 'POST',
-        data: {
-            person_email: email,
-            person_password: password
-        }
-    }).done(function(token) {
-        //console.log(token);
-        // store in web storage
-        //window.localStorage.setItem('token', token);
-        window.location.replace(proxyPath + "v/products");
-    });
+    if (email == "") {
+        global.displayMessage("enter your email in the login form", "warning");
+    } else {
+        $.ajax({
+            url: proxyPath + "get-token",
+            method: 'POST',
+            data: {
+                person_email: email,
+                person_password: password
+            }
+        }).done(function(token) {
+            //console.log(token);
+            // store in web storage
+            //window.localStorage.setItem('token', token);
+            window.location.replace(proxyPath + "v/products");
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            handleHTTPError(jqXHR.statusText, jqXHR.status)
+        });
+    }
 }
 
 // returns the cookie value
