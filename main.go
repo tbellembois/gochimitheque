@@ -32,6 +32,11 @@ func main() {
 	listenport := flag.String("port", "8081", "the port to listen")
 	proxyurl := flag.String("proxyurl", "http://localhost:"+*listenport, "the application url (without the path) if behind a proxy, with NO trailing /")
 	proxypath := flag.String("proxypath", "/", "the application path if behind a proxy, with the heading and trailing /")
+	mailServerAddress := flag.String("mailserveraddress", "", "the mail server address")
+	mailServerPort := flag.String("mailserverport", "", "the mail server address")
+	mailServerSender := flag.String("mailserversender", "", "the mail server sender")
+	mailServerUser := flag.String("mailserveruser", "", "the mail server user (optional)")
+	mailServerPassword := flag.String("mailserverpassword", "", "the mail server password (optional)")
 	logfile := flag.String("logfile", "", "log to the given file")
 	debug := flag.Bool("debug", false, "debug (verbose log), default is error")
 	importfrom := flag.String("importfrom", "", "full path of the directory containing the CSV to import")
@@ -56,6 +61,11 @@ func main() {
 	// global variables init
 	global.ProxyPath = *proxypath
 	global.ProxyURL = *proxyurl
+	global.MailServerAddress = *mailServerAddress
+	global.MailServerPassword = *mailServerPassword
+	global.MailServerSender = *mailServerSender
+	global.MailServerUser = *mailServerUser
+	global.MailServerPort = *mailServerPort
 
 	// database initialization
 	if datastore, err = models.NewDBstore(dbname); err != nil {
@@ -238,6 +248,8 @@ func main() {
 	// login
 	r.Handle("/login", commonChain.Then(env.AppMiddleware(env.VLoginHandler))).Methods("GET")
 	r.Handle("/get-token", commonChain.Then(env.AppMiddleware(env.GetTokenHandler))).Methods("POST")
+	r.Handle("/reset-password", commonChain.Then(env.AppMiddleware(env.ResetPasswordHandler))).Methods("POST")
+	r.Handle("/reset", commonChain.Then(env.AppMiddleware(env.ResetHandler))).Methods("GET")
 	// developper tests
 	r.Handle("/v/test", securechain.Then(env.AppMiddleware(env.VTestHandler))).Methods("GET")
 	// home page

@@ -1,11 +1,16 @@
 package handlers
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
 	"encoding/json"
 	"net/http"
+	"net/smtp"
 	"strconv"
 	"time"
 
+	"database/sql"
+	"github.com/dchest/passwordreset"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
@@ -38,6 +43,126 @@ func (env *Env) VLoginHandler(w http.ResponseWriter, r *http.Request) *helpers.A
 	REST handlers
 */
 
+// getPasswordHash return password hash for the login,
+func getPasswordHash(login string) ([]byte, error) {
+
+	h := hmac.New(sha256.New, []byte("secret"))
+	h.Write([]byte(login))
+
+	log.Debug(string(h.Sum(nil)))
+
+	return h.Sum(nil), nil
+}
+
+// ResetHandler reset the user password from the token
+func (env *Env) ResetHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+
+	var (
+		t     []string
+		token string
+		login string
+		ok    bool
+		err   error
+	)
+
+	if t, ok = r.URL.Query()["token"]; !ok {
+		return &helpers.AppError{
+			Code:    http.StatusBadRequest,
+			Message: "token not found in request",
+		}
+	}
+	token = t[0]
+
+	if login, err = passwordreset.VerifyToken(token, getPasswordHash, []byte("secret")); err != nil {
+		return &helpers.AppError{
+			Code:    http.StatusForbidden,
+			Error:   err,
+			Message: "password reset token not verified",
+		}
+	}
+
+	log.Debug(login)
+
+	return nil
+}
+
+// ResetPasswordHandler send a password reinitialisation link by mail
+func (env *Env) ResetPasswordHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+
+	var (
+		e    error
+		auth smtp.Auth
+		hash []byte
+	)
+
+	// parsing the form
+	if e = r.ParseForm(); e != nil {
+		return &helpers.AppError{
+			Code:    http.StatusBadRequest,
+			Error:   e,
+			Message: "error parsing form",
+		}
+	}
+
+	// decoding the form
+	person := new(models.Person)
+	if e = global.Decoder.Decode(person, r.PostForm); e != nil {
+		return &helpers.AppError{
+			Code:    http.StatusInternalServerError,
+			Error:   e,
+			Message: "error decoding form",
+		}
+	}
+	log.WithFields(log.Fields{"person.PersonEmail": person.PersonEmail}).Debug("ResetPasswordHandler")
+
+	// getting the person in the db
+	if _, e = env.DB.GetPersonByEmail(person.PersonEmail); e != nil {
+		return &helpers.AppError{
+			Code:    http.StatusInternalServerError,
+			Error:   e,
+			Message: "error getting user",
+		}
+	}
+
+	// generating a password hash
+	if hash, e = getPasswordHash(person.PersonEmail); e != nil {
+		return &helpers.AppError{
+			Code:    http.StatusInternalServerError,
+			Error:   e,
+			Message: "error generating the password hash",
+		}
+	}
+
+	// generating the reinitialization token
+	token := passwordreset.NewToken(person.PersonEmail, 12*time.Hour, hash, []byte("secret"))
+	// and the mail body
+	msgbody := "Click on this link to reinitialize your password: " + global.ProxyURL + global.ProxyPath + "reset?token=" + token
+	//msgsubject := "Chimithèque password reinitialization"
+
+	// sending the reinitialisation email
+	if global.MailServerUser != "" {
+		// authenticated smtp
+		auth = smtp.PlainAuth("", global.MailServerUser, global.MailServerPassword, global.MailServerAddress)
+	}
+	if e = smtp.SendMail(
+		global.MailServerAddress+":"+global.MailServerPort,
+		auth,
+		global.MailServerSender,
+		[]string{person.PersonEmail},
+		[]byte(msgbody),
+	); e != nil {
+		return &helpers.AppError{
+			Code:    http.StatusInternalServerError,
+			Error:   e,
+			Message: "error sending the authenticated mail",
+		}
+	}
+
+	w.WriteHeader(http.StatusOK)
+
+	return nil
+}
+
 // GetTokenHandler authenticate the user and return a JWT token on success
 func (env *Env) GetTokenHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 
@@ -68,6 +193,13 @@ func (env *Env) GetTokenHandler(w http.ResponseWriter, r *http.Request) *helpers
 	// authenticating the person
 	// TODO: true auth
 	if _, e = env.DB.GetPersonByEmail(person.PersonEmail); e != nil {
+		if e == sql.ErrNoRows {
+			return &helpers.AppError{
+				Code:    http.StatusUnauthorized,
+				Error:   e,
+				Message: "user not found in database",
+			}
+		}
 		return &helpers.AppError{
 			Code:    http.StatusInternalServerError,
 			Error:   e,
@@ -103,6 +235,8 @@ func (env *Env) GetTokenHandler(w http.ResponseWriter, r *http.Request) *helpers
 	}
 	http.SetCookie(w, &ctoken)
 	http.SetCookie(w, &cemail)
+
+	w.WriteHeader(http.StatusOK)
 
 	return nil
 }

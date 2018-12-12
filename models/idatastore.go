@@ -82,6 +82,7 @@ type Datastore interface {
 	HasPersonPermission(id int, perm string, item string, itemid int) (bool, error)
 	CreatePerson(p Person) (error, int)
 	UpdatePerson(p Person) error
+	UpdatePersonPassword(p Person) error
 	DeletePerson(id int) error
 	IsPersonAdmin(id int) (bool, error)
 	IsPersonManager(id int) (bool, error)

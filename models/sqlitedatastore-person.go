@@ -102,7 +102,7 @@ func (db *SQLiteDataStore) GetPerson(id int) (Person, error) {
 		err    error
 	)
 
-	sqlr = "SELECT person_id, person_email FROM person WHERE person_id = ?"
+	sqlr = "SELECT person_id, person_email, person_password FROM person WHERE person_id = ?"
 	if err = db.Get(&person, sqlr, id); err != nil {
 		return Person{}, err
 	}
@@ -454,7 +454,23 @@ func (db *SQLiteDataStore) CreatePerson(p Person) (error, int) {
 	return nil, p.PersonID
 }
 
-// UpdatePerson updates the given person
+// UpdatePerson updates the given person password.
+func (db *SQLiteDataStore) UpdatePersonPassword(p Person) error {
+	var (
+		sqlr string
+		err  error
+	)
+	// updating person
+	sqlr = `UPDATE person SET person_password = ?
+	WHERE person_id = ?`
+	if _, err = db.Exec(sqlr, p.PersonPassword, p.PersonID); err != nil {
+		return err
+	}
+	return nil
+}
+
+// UpdatePerson updates the given person.
+// The password is not updated.
 func (db *SQLiteDataStore) UpdatePerson(p Person) error {
 	var (
 		sqlr string
