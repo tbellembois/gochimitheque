@@ -177,6 +177,14 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			}
 		}
 
+		// bypass
+		switch item {
+		case "peoplepass", "peoplep":
+			// everybody can change his password
+			h.ServeHTTP(w, r)
+			return
+		}
+
 		// depending on the request
 		// preparing the HasPersonPermission parameters
 		// to allow/deny access

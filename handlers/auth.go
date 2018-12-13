@@ -3,6 +3,7 @@ package handlers
 import (
 	"crypto/hmac"
 	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"net/http"
 	"net/smtp"
@@ -17,6 +18,7 @@ import (
 	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/helpers"
 	"github.com/tbellembois/gochimitheque/models"
+	"golang.org/x/crypto/bcrypt"
 )
 
 /*
@@ -49,9 +51,31 @@ func getPasswordHash(login string) ([]byte, error) {
 	h := hmac.New(sha256.New, []byte("secret"))
 	h.Write([]byte(login))
 
-	log.Debug(string(h.Sum(nil)))
-
 	return h.Sum(nil), nil
+}
+
+// sendMail send a mail
+func sendMail(to string, subject string, body string) error {
+
+	var (
+		e    error
+		auth smtp.Auth
+	)
+
+	if global.MailServerUser != "" {
+		// authenticated smtp
+		auth = smtp.PlainAuth("", global.MailServerUser, global.MailServerPassword, global.MailServerAddress)
+	}
+	if e = smtp.SendMail(
+		global.MailServerAddress+":"+global.MailServerPort,
+		auth,
+		global.MailServerSender,
+		[]string{to},
+		[]byte(subject+body),
+	); e != nil {
+		return e
+	}
+	return nil
 }
 
 // ResetHandler reset the user password from the token
@@ -63,6 +87,7 @@ func (env *Env) ResetHandler(w http.ResponseWriter, r *http.Request) *helpers.Ap
 		login string
 		ok    bool
 		err   error
+		p     models.Person
 	)
 
 	if t, ok = r.URL.Query()["token"]; !ok {
@@ -81,7 +106,42 @@ func (env *Env) ResetHandler(w http.ResponseWriter, r *http.Request) *helpers.Ap
 		}
 	}
 
-	log.Debug(login)
+	// getting the person in the db
+	if p, err = env.DB.GetPersonByEmail(login); err != nil {
+		return &helpers.AppError{
+			Code:    http.StatusInternalServerError,
+			Error:   err,
+			Message: "error getting user",
+		}
+	}
+
+	// generating a random password using the login
+	brp, _ := getPasswordHash(login)
+	p.PersonPassword = hex.EncodeToString(brp)
+
+	// updating the person password
+	if err = env.DB.UpdatePersonPassword(p); err != nil {
+		return &helpers.AppError{
+			Code:    http.StatusInternalServerError,
+			Error:   err,
+			Message: "error updating the user password",
+		}
+	}
+
+	// sending the new mail
+	msgbody := "This is your new password: " + p.PersonPassword
+	msgsubject := "Subject: Chimithèque new password\r\n"
+	if err = sendMail(login, msgsubject, msgbody); err != nil {
+		return &helpers.AppError{
+			Code:    http.StatusInternalServerError,
+			Error:   err,
+			Message: "error sending the new password mail",
+		}
+	}
+
+	//w.WriteHeader(http.StatusOK)
+	// redirecting to login page
+	http.Redirect(w, r, "/login?message=password%20reinitialized", http.StatusSeeOther)
 
 	return nil
 }
@@ -91,7 +151,6 @@ func (env *Env) ResetPasswordHandler(w http.ResponseWriter, r *http.Request) *he
 
 	var (
 		e    error
-		auth smtp.Auth
 		hash []byte
 	)
 
@@ -117,6 +176,13 @@ func (env *Env) ResetPasswordHandler(w http.ResponseWriter, r *http.Request) *he
 
 	// getting the person in the db
 	if _, e = env.DB.GetPersonByEmail(person.PersonEmail); e != nil {
+		if e == sql.ErrNoRows {
+			return &helpers.AppError{
+				Code:    http.StatusUnauthorized,
+				Error:   e,
+				Message: "user not found in database",
+			}
+		}
 		return &helpers.AppError{
 			Code:    http.StatusInternalServerError,
 			Error:   e,
@@ -137,24 +203,14 @@ func (env *Env) ResetPasswordHandler(w http.ResponseWriter, r *http.Request) *he
 	token := passwordreset.NewToken(person.PersonEmail, 12*time.Hour, hash, []byte("secret"))
 	// and the mail body
 	msgbody := "Click on this link to reinitialize your password: " + global.ProxyURL + global.ProxyPath + "reset?token=" + token
-	//msgsubject := "Chimithèque password reinitialization"
+	msgsubject := "Subject: Chimithèque password reinitialization\r\n"
 
 	// sending the reinitialisation email
-	if global.MailServerUser != "" {
-		// authenticated smtp
-		auth = smtp.PlainAuth("", global.MailServerUser, global.MailServerPassword, global.MailServerAddress)
-	}
-	if e = smtp.SendMail(
-		global.MailServerAddress+":"+global.MailServerPort,
-		auth,
-		global.MailServerSender,
-		[]string{person.PersonEmail},
-		[]byte(msgbody),
-	); e != nil {
+	if e = sendMail(person.PersonEmail, msgsubject, msgbody); e != nil {
 		return &helpers.AppError{
 			Code:    http.StatusInternalServerError,
 			Error:   e,
-			Message: "error sending the authenticated mail",
+			Message: "error sending the reinitialization mail",
 		}
 	}
 
@@ -167,7 +223,9 @@ func (env *Env) ResetPasswordHandler(w http.ResponseWriter, r *http.Request) *he
 func (env *Env) GetTokenHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 
 	var (
-		e error
+		e      error
+		p      models.Person  // db person
+		person *models.Person // form person
 	)
 
 	// parsing the form
@@ -180,7 +238,7 @@ func (env *Env) GetTokenHandler(w http.ResponseWriter, r *http.Request) *helpers
 	}
 
 	// decoding the form
-	person := new(models.Person)
+	person = new(models.Person)
 	if e = global.Decoder.Decode(person, r.PostForm); e != nil {
 		return &helpers.AppError{
 			Code:    http.StatusInternalServerError,
@@ -188,11 +246,9 @@ func (env *Env) GetTokenHandler(w http.ResponseWriter, r *http.Request) *helpers
 			Message: "error decoding form",
 		}
 	}
-	log.WithFields(log.Fields{"person.PersonEmail": person.PersonEmail}).Debug("GetTokenHandler")
 
 	// authenticating the person
-	// TODO: true auth
-	if _, e = env.DB.GetPersonByEmail(person.PersonEmail); e != nil {
+	if p, e = env.DB.GetPersonByEmail(person.PersonEmail); e != nil {
 		if e == sql.ErrNoRows {
 			return &helpers.AppError{
 				Code:    http.StatusUnauthorized,
@@ -204,6 +260,16 @@ func (env *Env) GetTokenHandler(w http.ResponseWriter, r *http.Request) *helpers
 			Code:    http.StatusInternalServerError,
 			Error:   e,
 			Message: "error getting user",
+		}
+	}
+	log.WithFields(log.Fields{"form person": person}).Debug("GetTokenHandler")
+	log.WithFields(log.Fields{"db p": p}).Debug("GetTokenHandler")
+
+	if e = bcrypt.CompareHashAndPassword([]byte(p.PersonPassword), []byte(person.PersonPassword)); e != nil {
+		return &helpers.AppError{
+			Code:    http.StatusUnauthorized,
+			Error:   e,
+			Message: "invalid password",
 		}
 	}
 

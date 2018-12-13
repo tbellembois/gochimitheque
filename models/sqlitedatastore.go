@@ -64,15 +64,6 @@ func (db *SQLiteDataStore) InsertSamples() error {
 		defer sname.Close()
 		defer sempiricalformula.Close()
 
-		// scanner := bufio.NewScanner(scas)
-		// scanner.Split(bufio.ScanLines)
-		// log.Debug("- creating sample cas")
-		// for scanner.Scan() {
-		// 	if _, err = db.Exec(`INSERT OR IGNORE INTO casnumber ("casnumber_label") VALUES ("` + scanner.Text() + `");`); err != nil {
-		// 		return err
-		// 	}
-		// }
-
 		scanner := bufio.NewScanner(sname)
 		scanner.Split(bufio.ScanLines)
 		log.Debug("- creating sample names")
@@ -709,7 +700,9 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	}
 	if c == 0 {
 		admin := Person{PersonEmail: "user@super.com", Permissions: []Permission{Permission{PermissionPermName: "all", PermissionItemName: "all", PermissionEntityID: -1}}}
-		db.CreatePerson(admin)
+		_, admin.PersonID = db.CreatePerson(admin)
+		admin.PersonPassword = "test"
+		db.UpdatePersonPassword(admin)
 	}
 
 	return nil

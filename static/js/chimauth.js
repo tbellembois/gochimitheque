@@ -4,8 +4,6 @@ function handleHTTPError(msgText, msgStatus) {
     switch(msgStatus) {
     case 401:
         global.displayMessage(msgText, "danger");
-        // redirect on 401 errors
-        window.location.replace("/login");
         break;
     case 403:
         global.displayMessage(msgText, "danger");
@@ -25,6 +23,8 @@ function resetPassword() {
     if (email == "") {
         global.displayMessage("enter your email in the login form", "warning");
     } else {
+        global.displayMessage("sending reinitialization link...", "success");
+        $("#resetpassword").fadeOut("slow");
         $.ajax({
             url: proxyPath + "reset-password",
             method: 'POST',
@@ -34,7 +34,7 @@ function resetPassword() {
         }).done(function(token) {
             global.displayMessage("a reinitialization link has been sent to " + email, "success");
         }).fail(function(jqXHR, textStatus, errorThrown) {
-            handleHTTPError(jqXHR.statusText, jqXHR.status)
+            handleHTTPError(jqXHR.responseText, jqXHR.status)
         });
         $("#person_email").val("");
     }
@@ -61,7 +61,7 @@ function getToken() {
             //window.localStorage.setItem('token', token);
             window.location.replace(proxyPath + "v/products");
         }).fail(function(jqXHR, textStatus, errorThrown) {
-            handleHTTPError(jqXHR.statusText, jqXHR.status)
+            handleHTTPError(jqXHR.responseText, jqXHR.status)
         });
     }
 }

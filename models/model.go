@@ -450,7 +450,7 @@ func (s Storage) String() string {
 }
 
 func (p Person) String() string {
-	return fmt.Sprintf("PersonEmail: %s", p.PersonEmail)
+	return fmt.Sprintf("PersonEmail: %s | PersonPassword: %s", p.PersonEmail, p.PersonPassword)
 }
 
 func (b Borrowing) String() string {

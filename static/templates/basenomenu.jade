@@ -52,8 +52,17 @@ html
 
             // setting up logged user
             window.onload = function() {
-                email = readCookie("email")
-                document.getElementById("logged").innerHTML = email;
+                //var email = readCookie("email")
+                var urlParams = new URLSearchParams(window.location.search);
+                var message = urlParams.get("message");
+                
+                //- if (email != null) {
+                //-     document.getElementById("logged").innerHTML = email;
+                //- }
+                if (message != null) {
+                    global.displayMessage(message, "success");
+                }
+
            };
 
         | <script src="{{.ProxyPath}}js/jquery-3.3.1.min.js"></script>

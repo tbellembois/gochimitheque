@@ -26,6 +26,25 @@ script.
                     },
                 },
             });
+            $( "#personp" ).validate({
+                errorClass: "alert alert-danger",
+                rules: {
+                    person_password: {
+                        required: true,
+                    },
+                    person_passwordagain: {
+                        equalTo: "#person_password",
+                    },
+                },
+                messages: {
+                    person_password: {
+                        required: "enter your new password",
+                    },
+                    person_passwordagain: {
+                        equalTo: "you have not entered the same password",
+                    },
+                },
+            });
 
             //
             // manager select2
@@ -97,6 +116,26 @@ script.
                 }
             });
             global.displayMessage("person " + data.person_email + " updated", "success");
+        }
+        function savePersonp() {
+            var form = $("#personp");
+            if (! form.valid()) {
+                return;
+            };
+
+            var person_password = $("input#person_password").val();
+
+            $.ajax({
+                url: proxyPath + "peoplep",
+                method: "POST",
+                dataType: 'json',
+                data: {"person_password": person_password},
+            }).done(function(jqXHR, textStatus, errorThrown) {
+                global.displayMessage("password updated", "success");
+                setTimeout(function(){ window.location = "/v/products"; }, 1000);            
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                handleHTTPError(jqXHR.statusText, jqXHR.status)
+            });
         }
         function savePerson() {
             var form = $("#person");

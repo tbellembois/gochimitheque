@@ -17,6 +17,21 @@ import (
 	views handlers
 */
 
+// VUpdatePersonPasswordHandler handles the person password update page
+func (env *Env) VUpdatePersonPasswordHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+
+	c := helpers.ContainerFromRequestContext(r)
+
+	if e := env.Templates["personpupdate"].ExecuteTemplate(w, "BASE", c); e != nil {
+		return &helpers.AppError{
+			Error:   e,
+			Code:    http.StatusInternalServerError,
+			Message: "error executing template base",
+		}
+	}
+	return nil
+}
+
 // VCreatePersonHandler handles the person creation page
 func (env *Env) VCreatePersonHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 
@@ -234,6 +249,46 @@ func (env *Env) CreatePersonHandler(w http.ResponseWriter, r *http.Request) *hel
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(p)
+	return nil
+}
+
+// UpdatePersonpHandler updates the person password from the request form
+func (env *Env) UpdatePersonpHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	var (
+		err error
+		p   models.Person
+	)
+	if err := r.ParseForm(); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "form parsing error",
+			Code:    http.StatusBadRequest}
+	}
+	if err := global.Decoder.Decode(&p, r.PostForm); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "form decoding error",
+			Code:    http.StatusBadRequest}
+	}
+	log.WithFields(log.Fields{"p": p}).Debug("UpdatePersonpHandler")
+
+	// retrieving the logged user id from request context
+	c := helpers.ContainerFromRequestContext(r)
+
+	updatedp, _ := env.DB.GetPerson(c.PersonID)
+	updatedp.PersonPassword = p.PersonPassword
+	log.WithFields(log.Fields{"updatedp": updatedp}).Debug("UpdatePersonpHandler")
+
+	if err = env.DB.UpdatePersonPassword(updatedp); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "update person password error",
+			Code:    http.StatusInternalServerError}
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(updatedp)
 	return nil
 }
 
