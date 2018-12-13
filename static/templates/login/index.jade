@@ -18,10 +18,10 @@
                                                         name="person_password")
             .row
                 .col.offset-sm-4.col-sm-2
-                    button.btn.btn-primary(type="button" onclick="getToken();") submit
+                    button#gettoken.btn.btn-primary(type="button" onclick="getToken();") submit
                 .col.col-sm-2
                     p.text-right
-                        a(href="#" onclick="resetPassword();" title="reset password")
+                        a#resetpassword(href="#" onclick="resetPassword();" title="reset password")
                             span.mdi.mdi-36px.mdi-lock-reset 
 
     a(href="https://github.com/tbellembois/gochimitheque")
@@ -35,7 +35,7 @@
             img.mx-auto.d-block(src="{{.ProxyPath}}img/logo_uca.jpg", alt="uca_logo" title="Université Clermont Auvergne")
     .row.mt-sm-5
         .col.col-sm-4.offset-sm-4.animated.jackInTheBox.delay-1s
-            img.mx-auto.d-block(src="{{.ProxyPath}}img/logo_go.png", alt="go_logo" title="Developped with fun in Golang")
+            img.mx-auto.d-block(src="{{.ProxyPath}}img/logo_gopher.png", alt="gopher_logo" title="Developped with fun in Golang")
 
 | {{end}}
 | {{define "CONTENTJS"}}

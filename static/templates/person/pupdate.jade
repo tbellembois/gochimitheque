@@ -1,0 +1,20 @@
+| {{define "CONTENT"}}
+    form#personp
+        .row.d-flex.flex-row.justify-content-center
+            div
+                span.mdi.mdi-36px.mdi-lock-reset
+        .form-group.row
+            div.col.col-sm-4.offset-sm-4
+                | {{$label := "password"}} {{$name := "person_password"}}
+                +inputpassword
+        .form-group.row
+            div.col.col-sm-4.offset-sm-4
+                | {{$label := "confirm password"}} {{$name := "person_passwordagain"}}
+                +inputpassword
+        .row.d-flex.flex-row.justify-content-center
+            div
+                button.btn.btn-primary(type='button', onclick='savePersonp()') save password
+| {{end}}
+| {{define "CONTENTJS"}}
+| {{template "COMMONCONTENTJS"}}
+| {{end}}

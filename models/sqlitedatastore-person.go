@@ -10,6 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/constants"
 	"github.com/tbellembois/gochimitheque/helpers"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // GetPeople returns the people matching the search criteria
@@ -117,7 +118,7 @@ func (db *SQLiteDataStore) GetPersonByEmail(email string) (Person, error) {
 		err    error
 	)
 
-	sqlr = "SELECT person_id, person_email FROM person WHERE person_email = ?"
+	sqlr = "SELECT person_id, person_email, person_password FROM person WHERE person_email = ?"
 	if err = db.Get(&person, sqlr, email); err != nil {
 		return Person{}, err
 	}
@@ -457,13 +458,20 @@ func (db *SQLiteDataStore) CreatePerson(p Person) (error, int) {
 // UpdatePerson updates the given person password.
 func (db *SQLiteDataStore) UpdatePersonPassword(p Person) error {
 	var (
-		sqlr string
-		err  error
+		sqlr  string
+		err   error
+		hpass []byte
 	)
+
+	// hashing the password
+	if hpass, err = bcrypt.GenerateFromPassword([]byte(p.PersonPassword), bcrypt.DefaultCost); err != nil {
+		return err
+	}
+
 	// updating person
 	sqlr = `UPDATE person SET person_password = ?
 	WHERE person_id = ?`
-	if _, err = db.Exec(sqlr, p.PersonPassword, p.PersonID); err != nil {
+	if _, err = db.Exec(sqlr, hpass, p.PersonID); err != nil {
 		return err
 	}
 	return nil
@@ -476,6 +484,7 @@ func (db *SQLiteDataStore) UpdatePerson(p Person) error {
 		sqlr string
 		err  error
 	)
+
 	// updating person
 	// FIXME: use a transaction here
 	sqlr = `UPDATE person SET person_email = ?

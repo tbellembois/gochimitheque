@@ -54,7 +54,6 @@ mixin selecticon
         .col-sm-11
             select(style='width: 100% !important;' id='{{$name}}' name='{{$name}}')
 
-
 mixin selectcompact
     .form-group.row
         label.col-sm-2.col-form-label(for='{{$name}}') {{$label}}
@@ -70,6 +69,11 @@ mixin inputtext
     .form-group.col-sm-12
         label(for='{{$name}}') {{$label}}
         input.form-control(type='text' id='{{$name}}' name='{{$name}}' title='{{$name}}')
+
+mixin inputpassword
+    .form-group.col-sm-12
+        label(for='{{$name}}') {{$label}}
+        input.form-control(type='password' id='{{$name}}' name='{{$name}}' title='{{$name}}')
 
 mixin inputtextcompact
     .form-group.row

@@ -206,6 +206,14 @@ func main() {
 	if err != nil {
 		log.Fatal("personcreatetmpl parse:" + e.Error())
 	}
+	personpupdatetmpl, e := jade.Parse("personp_update", append(append(basejadess, b.MustString("person/commonjs.jade")...), b.MustString("person/pupdate.jade")...))
+	if e != nil {
+		log.Fatal("personpupdatetmpl jade:" + e.Error())
+	}
+	env.Templates["personpupdate"], err = template.New("personpupdate").Funcs(funcMap).Parse(personpupdatetmpl)
+	if err != nil {
+		log.Fatal("personpupdatetmpl parse:" + e.Error())
+	}
 	// product
 	productindextmpl, e := jade.Parse("product_index", append(append(basejadess, b.MustString("product/commonjs.jade")...), b.MustString("product/index.jade")...))
 	if e != nil {
@@ -277,6 +285,7 @@ func main() {
 	// people
 	r.Handle("/{view:v}/{item:people}", securechain.Then(env.AppMiddleware(env.VGetPeopleHandler))).Methods("GET")
 	r.Handle("/{view:vc}/{item:people}", securechain.Then(env.AppMiddleware(env.VCreatePersonHandler))).Methods("GET")
+	r.Handle("/{view:vu}/{item:peoplepass}", securechain.Then(env.AppMiddleware(env.VUpdatePersonPasswordHandler))).Methods("GET")
 	r.Handle("/{item:people}", securechain.Then(env.AppMiddleware(env.GetPeopleHandler))).Methods("GET")
 	r.Handle("/{item:people}/{id}", securechain.Then(env.AppMiddleware(env.GetPersonHandler))).Methods("GET")
 	r.Handle("/{item:people}/{id}/entities", securechain.Then(env.AppMiddleware(env.GetPersonEntitiesHandler))).Methods("GET")
@@ -285,6 +294,7 @@ func main() {
 	r.Handle("/{item:people}/{id}", securechain.Then(env.AppMiddleware(env.UpdatePersonHandler))).Methods("PUT")
 	r.Handle("/{item:people}", securechain.Then(env.AppMiddleware(env.CreatePersonHandler))).Methods("POST")
 	r.Handle("/{item:people}/{id}", securechain.Then(env.AppMiddleware(env.DeletePersonHandler))).Methods("DELETE")
+	r.Handle("/{item:peoplep}", securechain.Then(env.AppMiddleware(env.UpdatePersonpHandler))).Methods("POST")
 
 	r.Handle("/f/{view:v}/{item:people}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 	r.Handle("/f/{view:vc}/{item:people}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
