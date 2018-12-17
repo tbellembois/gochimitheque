@@ -11,10 +11,12 @@ import (
 	"time"
 
 	"database/sql"
+
 	"github.com/dchest/passwordreset"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
+	"github.com/steambap/captcha"
 	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/helpers"
 	"github.com/tbellembois/gochimitheque/models"
@@ -75,6 +77,29 @@ func sendMail(to string, subject string, body string) error {
 	); e != nil {
 		return e
 	}
+	return nil
+}
+
+// GetCaptcha returns a captcha image
+func (env *Env) CaptchaHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+
+	var (
+		e    error
+		data *captcha.Data
+	)
+
+	// create a captcha
+	if data, e = captcha.New(350, 100); e != nil {
+		return &helpers.AppError{
+			Code:    http.StatusBadRequest,
+			Message: "captcha creation error",
+		}
+	}
+
+	// saving
+
+	data.WriteImage(w)
+
 	return nil
 }
 

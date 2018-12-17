@@ -567,8 +567,13 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		person integer NOT NULL,
 		product integer NOT NULL,
 		FOREIGN KEY(person) references person(person_id),
-		FOREIGN KEY(product) references product(product_id));	
-		`
+		FOREIGN KEY(product) references product(product_id));
+		
+	CREATE TABLE IF NOT EXISTS captcha (
+		captcha_id integer PRIMARY KEY,
+		captcha_token string NOT NULL,
+		captcha_text string NOT NULL);
+	`
 
 	// values definition
 	inssymbol := `INSERT INTO symbol (symbol_label, symbol_image) VALUES 
