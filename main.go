@@ -388,6 +388,9 @@ func main() {
 	// export download
 	r.Handle("/download/{id}", securechain.Then(env.AppMiddleware(env.DownloadExportHandler))).Methods("GET")
 
+	// captcha
+	r.Handle("/captcha", commonChain.Then(env.AppMiddleware(env.CaptchaHandler))).Methods("GET")
+
 	// rice boxes
 	webfontsBox := rice.MustFindBox("static/webfonts")
 	webfontsFileServer := http.StripPrefix("/webfonts/", http.FileServer(webfontsBox.HTTPBox()))
