@@ -224,7 +224,9 @@ type Product struct {
 	HazardStatements        []HazardStatement        `db:"-" schema:"hazardstatements" json:"hazardstatements"`
 	PrecautionaryStatements []PrecautionaryStatement `db:"-" schema:"precautionarystatements" json:"precautionarystatements"`
 
-	Bookmark *Bookmark `db:"bookmark" json:"bookmark" schema:"bookmark"` // not un db but sqlx requires the "db" entry
+	Bookmark *Bookmark `db:"bookmark" json:"bookmark" schema:"bookmark"` // not in db but sqlx requires the "db" entry
+
+	ProductSL string `db:"product_sl" json:"product_sl" schema:"product_sl"` // not in db but sqlx requires the "db" entry
 }
 
 // Bookmark is a product person bookmark

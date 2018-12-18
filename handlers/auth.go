@@ -2,10 +2,12 @@ package handlers
 
 import (
 	"bytes"
+	"crypto/tls"
 	"database/sql"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/smtp"
 	"strconv"
@@ -50,23 +52,67 @@ func (env *Env) VLoginHandler(w http.ResponseWriter, r *http.Request) *helpers.A
 func sendMail(to string, subject string, body string) error {
 
 	var (
-		e    error
-		auth smtp.Auth
+		e         error
+		tlsconfig *tls.Config
+		tlsconn   *tls.Conn
+		client    *smtp.Client
+		smtpw     io.WriteCloser
+		n         int64
 	)
+	log.WithFields(log.Fields{
+		"global.MailServerAddress":       global.MailServerAddress,
+		"global.MailServerPort":          global.MailServerPort,
+		"global.MailServerSender":        global.MailServerSender,
+		"global.MailServerUseTLS":        global.MailServerUseTLS,
+		"global.MailServerTLSSkipVerify": global.MailServerTLSSkipVerify,
+		"to":                             to}).Debug("sendMail")
 
-	if global.MailServerUser != "" {
-		// authenticated smtp
-		auth = smtp.PlainAuth("", global.MailServerUser, global.MailServerPassword, global.MailServerAddress)
+	if global.MailServerUseTLS {
+		// tls
+		tlsconfig = &tls.Config{
+			InsecureSkipVerify: global.MailServerTLSSkipVerify,
+			ServerName:         global.MailServerAddress,
+		}
+		if tlsconn, e = tls.Dial("tcp", global.MailServerAddress+":"+global.MailServerPort, tlsconfig); e != nil {
+			log.Error("dial :" + e.Error())
+			return e
+		}
+		defer tlsconn.Close()
+		if client, e = smtp.NewClient(tlsconn, global.MailServerAddress); e != nil {
+			log.Error("tls client :" + e.Error())
+			return e
+		}
+	} else {
+		if client, e = smtp.Dial(global.MailServerAddress + ":" + global.MailServerPort); e != nil {
+			log.Error("smtp client :" + e.Error())
+			return e
+		}
 	}
-	if e = smtp.SendMail(
-		global.MailServerAddress+":"+global.MailServerPort,
-		auth,
-		global.MailServerSender,
-		[]string{to},
-		[]byte(subject+body),
-	); e != nil {
+	defer client.Close()
+
+	// to && from
+	if e = client.Mail(global.MailServerSender); e != nil {
+		log.Error("from :" + e.Error())
 		return e
 	}
+	if e = client.Rcpt(to); e != nil {
+		log.Error("to :" + e.Error())
+		return e
+	}
+	// data
+	if smtpw, e = client.Data(); e != nil {
+		log.Error("data :" + e.Error())
+		return e
+	}
+	defer smtpw.Close()
+	// send message
+	buf := bytes.NewBufferString(subject + body)
+	if n, e = buf.WriteTo(smtpw); e != nil {
+		log.Error("send :" + e.Error())
+		return e
+	}
+	log.WithFields(log.Fields{"n": n}).Debug("sendMail")
+
 	return nil
 }
 
@@ -86,7 +132,10 @@ func (env *Env) CaptchaHandler(w http.ResponseWriter, r *http.Request) *helpers.
 	re := resp{}
 
 	// create a captcha
-	if data, e = captcha.New(350, 100); e != nil {
+	if data, e = captcha.New(350, 150, func(options *captcha.Options) {
+		options.CharPreset = "abcdefghijklmnopqrstuvwxyz0123456789"
+		options.TextLength = 4
+	}); e != nil {
 		return &helpers.AppError{
 			Code:    http.StatusInternalServerError,
 			Message: "captcha creation error",
