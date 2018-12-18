@@ -15,7 +15,7 @@ func main() {
 	reader := csv.NewReader(bufio.NewReader(csvFile))
 	m := make(map[string]string)
 
-	r, _ := regexp.Compile("([0-9]+-[0-9]+-[0-9]+)")
+	r := regexp.MustCompile("([0-9]+-[0-9]+-[0-9]+)")
 
 	i := 0
 	for {

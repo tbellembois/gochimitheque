@@ -35,8 +35,8 @@ func main() {
 	mailServerAddress := flag.String("mailserveraddress", "", "the mail server address")
 	mailServerPort := flag.String("mailserverport", "", "the mail server address")
 	mailServerSender := flag.String("mailserversender", "", "the mail server sender")
-	mailServerUser := flag.String("mailserveruser", "", "the mail server user (optional)")
-	mailServerPassword := flag.String("mailserverpassword", "", "the mail server password (optional)")
+	mailServerUseTLS := flag.Bool("mailserverusetls", false, "use TLS? (optional)")
+	mailServerTLSSkipVerify := flag.Bool("mailservertlsskipverify", false, "skip TLS verification? (optional)")
 	logfile := flag.String("logfile", "", "log to the given file")
 	debug := flag.Bool("debug", false, "debug (verbose log), default is error")
 	importfrom := flag.String("importfrom", "", "full path of the directory containing the CSV to import")
@@ -62,10 +62,10 @@ func main() {
 	global.ProxyPath = *proxypath
 	global.ProxyURL = *proxyurl
 	global.MailServerAddress = *mailServerAddress
-	global.MailServerPassword = *mailServerPassword
 	global.MailServerSender = *mailServerSender
-	global.MailServerUser = *mailServerUser
 	global.MailServerPort = *mailServerPort
+	global.MailServerUseTLS = *mailServerUseTLS
+	global.MailServerTLSSkipVerify = *mailServerTLSSkipVerify
 
 	// database initialization
 	if datastore, err = models.NewDBstore(dbname); err != nil {
