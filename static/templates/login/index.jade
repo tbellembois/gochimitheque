@@ -21,8 +21,19 @@
                     button#gettoken.btn.btn-primary(type="button" onclick="getToken();") submit
                 .col.col-sm-2
                     p.text-right
-                        a#resetpassword(href="#" onclick="resetPassword();" title="reset password")
+                        a#getcaptcha(href="#" onclick="getCaptcha();" title="reset password")
                             span.mdi.mdi-36px.mdi-lock-reset 
+        
+        form#captcha
+            .row.invisible#captcha-row
+                div.col.col-sm-12.d-flex.justify-content-center.mt-sm-4.mb-sm-2
+                    img#captcha-img
+                div.col.col-sm-12.d-flex.justify-content-center.mb-sm-4
+                    input#captcha_uid(type="hidden" name="captcha_uid")
+                    input#captcha_text(type="text" name="captcha_text")
+                    a#resetpassword(href="#" onclick="resetPassword();" title="reset password, I am not a robot")
+                        span.mdi.mdi-36px.mdi-lock-reset 
+
 
     a(href="https://github.com/tbellembois/gochimitheque")
         img(style="position: absolute; top: 0; right: 0; border: 0;" src="{{.ProxyPath}}img/forkme_right_darkblue_121621.png" alt="Fork me on GitHub")

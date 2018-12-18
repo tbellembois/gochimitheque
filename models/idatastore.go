@@ -3,6 +3,7 @@ package models
 import (
 	"net/http"
 
+	"github.com/steambap/captcha"
 	"github.com/tbellembois/gochimitheque/helpers"
 )
 
@@ -86,4 +87,8 @@ type Datastore interface {
 	DeletePerson(id int) error
 	IsPersonAdmin(id int) (bool, error)
 	IsPersonManager(id int) (bool, error)
+
+	// captcha
+	InsertCaptcha(*captcha.Data) (string, error)
+	ValidateCaptcha(token string, text string) (bool, error)
 }
