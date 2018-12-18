@@ -56,8 +56,8 @@ mixin selecticon
 
 mixin selectcompact
     .form-group.row
-        label.col-sm-2.col-form-label(for='{{$name}}') {{$label}}
-        .col-sm-10
+        label.col-sm-3.col-form-label(for='{{$name}}') {{$label}}
+        .col-sm-9
             select.form-control(style='width: 100% !important;' id='{{$name}}' name='{{$name}}')
 
 mixin selectmultiple
@@ -77,8 +77,8 @@ mixin inputpassword
 
 mixin inputtextcompact
     .form-group.row
-        label.col-sm-2.col-form-label(for='{{$name}}') {{$label}}
-        .col-sm-10
+        label.col-sm-3.col-form-label(for='{{$name}}') {{$label}}
+        .col-sm-9
             input.form-control(type='text' id='{{$name}}' name='{{$name}}' title='{{$name}}')
 
 mixin inputdate

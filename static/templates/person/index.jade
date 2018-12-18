@@ -223,9 +223,12 @@
                 // adding a permission widget for each entity
                 // except for managed entities
                 $("#permissions").empty();
+                console.log(entitydata);
                 for(var i in entitydata) {
                     if ($.inArray(entitydata[i].entity_id, managedentitydataids) == -1){
-                        $("#permissions").append(global.buildPermissionWidget(entitydata[i].entity_id, entitydata[i].entity_name));
+                        $("#permissions").append(global.buildPermissionWidget(entitydata[i].entity_id, entitydata[i].entity_name, false));
+                    } else {
+                        $("#permissions").append(global.buildPermissionWidget(entitydata[i].entity_id, entitydata[i].entity_name, true));
                     }
                 }
 
