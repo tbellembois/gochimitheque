@@ -942,9 +942,6 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 		"custom_name_part_of": "%" + p.GetCustomNamePartOf() + "%",
 	}
 
-	log.Debug(presreq.String() + comreq.String() + postsreq.String())
-	log.Debug(m)
-
 	// select
 	if err = snstmt.Select(&products, m); err != nil {
 		return nil, 0, err

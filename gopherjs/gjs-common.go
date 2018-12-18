@@ -11,8 +11,9 @@ var (
 	window   dom.Window
 	document dom.Document
 
-	// database tables
-	permitems = [3]string{
+	// permissions
+	permitems = [4]string{
+		"rproducts",
 		"products",
 		"storelocations",
 		"storages"}
@@ -254,7 +255,7 @@ func BuildInlineRadioElement(inputattr map[string]string) *dom.HTMLDivElement {
 }
 
 // BuildPermissionWidget return a widget to setup people permissions
-func BuildPermissionWidget(entityID int, entityName string) *dom.HTMLDivElement {
+func BuildPermissionWidget(entityID int, entityName string, ismanager bool) *dom.HTMLDivElement {
 	var widgetdiv *dom.HTMLDivElement
 	// create main widget div
 	widgetdiv = document.CreateElement("div").(*dom.HTMLDivElement)
@@ -264,9 +265,22 @@ func BuildPermissionWidget(entityID int, entityName string) *dom.HTMLDivElement 
 	title.SetInnerHTML(entityName)
 
 	widgetdiv.AppendChild(title)
+
+	if ismanager {
+		s := document.CreateElement("span").(*dom.HTMLSpanElement)
+		s.SetClass("mdi mdi-36px mdi-account-star")
+		s.SetAttribute("title", "manager")
+		coldiv := document.CreateElement("div").(*dom.HTMLDivElement)
+		coldiv.SetClass("col-sm-6")
+		coldiv.AppendChild(s)
+
+		widgetdiv.AppendChild(coldiv)
+		return widgetdiv
+	}
+
 	for _, i := range permitems {
 		// products permissions widget is static
-		if i != "products" {
+		if i != "products" && i != "rproducts" {
 			//println(i)
 			// building main row
 			mainrowdiv := document.CreateElement("div").(*dom.HTMLDivElement)
