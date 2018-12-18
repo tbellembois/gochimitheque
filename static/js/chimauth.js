@@ -17,19 +17,44 @@ function handleHTTPError(msgText, msgStatus) {
     }
 }
 
-// send a password initialization link
-function resetPassword() {
+// get a captcha to resolve
+function getCaptcha() {
     var email = $("#person_email").val();
     if (email == "") {
         global.displayMessage("enter your email in the login form", "warning");
     } else {
-        global.displayMessage("sending reinitialization link...", "success");
+        global.displayMessage("are you a robot?", "success");
+        $("#getcaptcha").fadeOut("slow");
+        $.ajax({
+            url: proxyPath + "captcha",
+            method: 'GET',
+        }).done(function(data) {
+            $("input#captcha_uid").val(data.uid);
+            $("img#captcha-img").attr("src", "data:image/png;base64," + data.image);
+            $("div#captcha-row").removeClass("invisible");
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            handleHTTPError(jqXHR.responseText, jqXHR.status)
+        });
+    }
+}
+
+// send a password initialization link
+function resetPassword() {
+    var email = $("#person_email").val(),
+        captcha = $("input#captcha_text").val(),
+        uid = $("input#captcha_uid").val();
+    if (email == "") {
+        global.displayMessage("enter your email in the login form", "warning");
+    } else {
+        global.displayMessage("validating...", "success");
         $("#resetpassword").fadeOut("slow");
         $.ajax({
             url: proxyPath + "reset-password",
             method: 'POST',
             data: {
-                person_email: email
+                person_email: email,
+                captcha_text: captcha,
+                captcha_uid: uid,
             }
         }).done(function(token) {
             global.displayMessage("a reinitialization link has been sent to " + email, "success");
@@ -37,6 +62,8 @@ function resetPassword() {
             handleHTTPError(jqXHR.responseText, jqXHR.status)
         });
         $("#person_email").val("");
+        $("input#captcha_text").val("");
+        $("div#captcha-row").addClass("invisible");
     }
 }
 

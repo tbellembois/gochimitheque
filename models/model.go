@@ -56,6 +56,8 @@ type Person struct {
 	PersonPassword string       `db:"person_password" json:"person_password" schema:"person_password"`
 	Permissions    []Permission `db:"-" schema:"permissions"`
 	Entities       []Entity     `db:"-" schema:"entities"`
+	CaptchaText    string       `db:"-" schema:"captcha_text"`
+	CaptchaUID     string       `db:"-" schema:"captcha_uid"`
 }
 
 // Unit is a volume or weight unit

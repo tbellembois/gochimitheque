@@ -19,7 +19,9 @@ import (
 func (env *Env) AppMiddleware(h models.AppHandlerFunc) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if e := h(w, r); e != nil {
-			log.Error(e.Message + "-" + e.Error.Error())
+			if e.Error != nil {
+				log.Error(e.Message + "-" + e.Error.Error())
+			}
 			http.Error(w, e.Message, e.Code)
 		}
 	})

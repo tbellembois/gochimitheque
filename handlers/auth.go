@@ -1,16 +1,15 @@
 package handlers
 
 import (
-	"crypto/hmac"
-	"crypto/sha256"
+	"bytes"
+	"database/sql"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"net/http"
 	"net/smtp"
 	"strconv"
 	"time"
-
-	"database/sql"
 
 	"github.com/dchest/passwordreset"
 	"github.com/dgrijalva/jwt-go"
@@ -47,15 +46,6 @@ func (env *Env) VLoginHandler(w http.ResponseWriter, r *http.Request) *helpers.A
 	REST handlers
 */
 
-// getPasswordHash return password hash for the login,
-func getPasswordHash(login string) ([]byte, error) {
-
-	h := hmac.New(sha256.New, []byte("secret"))
-	h.Write([]byte(login))
-
-	return h.Sum(nil), nil
-}
-
 // sendMail send a mail
 func sendMail(to string, subject string, body string) error {
 
@@ -80,25 +70,44 @@ func sendMail(to string, subject string, body string) error {
 	return nil
 }
 
-// GetCaptcha returns a captcha image
+// GetCaptcha returns a captcha image with an uuid
 func (env *Env) CaptchaHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 
 	var (
 		e    error
 		data *captcha.Data
+		b    bytes.Buffer
 	)
+
+	type resp struct {
+		Image string `json:"image"`
+		UID   string `json:"uid"`
+	}
+	re := resp{}
 
 	// create a captcha
 	if data, e = captcha.New(350, 100); e != nil {
 		return &helpers.AppError{
-			Code:    http.StatusBadRequest,
+			Code:    http.StatusInternalServerError,
 			Message: "captcha creation error",
 		}
 	}
 
-	// saving
+	// saving it, retrieving its uuid
+	if re.UID, e = env.DB.InsertCaptcha(data); e != nil {
+		return &helpers.AppError{
+			Code:    http.StatusInternalServerError,
+			Message: "captcha database insert error",
+		}
+	}
 
-	data.WriteImage(w)
+	// writing response
+	data.WriteImage(&b)
+	re.Image = base64.StdEncoding.EncodeToString(b.Bytes())
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(re)
 
 	return nil
 }
@@ -123,7 +132,7 @@ func (env *Env) ResetHandler(w http.ResponseWriter, r *http.Request) *helpers.Ap
 	}
 	token = t[0]
 
-	if login, err = passwordreset.VerifyToken(token, getPasswordHash, []byte("secret")); err != nil {
+	if login, err = passwordreset.VerifyToken(token, helpers.GetPasswordHash, []byte("secret")); err != nil {
 		return &helpers.AppError{
 			Code:    http.StatusForbidden,
 			Error:   err,
@@ -141,7 +150,7 @@ func (env *Env) ResetHandler(w http.ResponseWriter, r *http.Request) *helpers.Ap
 	}
 
 	// generating a random password using the login
-	brp, _ := getPasswordHash(login)
+	brp, _ := helpers.GetPasswordHash(login)
 	p.PersonPassword = hex.EncodeToString(brp)
 
 	// updating the person password
@@ -177,6 +186,7 @@ func (env *Env) ResetPasswordHandler(w http.ResponseWriter, r *http.Request) *he
 	var (
 		e    error
 		hash []byte
+		v    bool
 	)
 
 	// parsing the form
@@ -197,7 +207,27 @@ func (env *Env) ResetPasswordHandler(w http.ResponseWriter, r *http.Request) *he
 			Message: "error decoding form",
 		}
 	}
-	log.WithFields(log.Fields{"person.PersonEmail": person.PersonEmail}).Debug("ResetPasswordHandler")
+	log.WithFields(log.Fields{
+		"person.PersonEmail": person.PersonEmail,
+		"person.CaptchaUID":  person.CaptchaUID,
+		"person.CaptchaText": person.CaptchaText}).Debug("ResetPasswordHandler")
+
+	// validating captcha
+	if v, e = env.DB.ValidateCaptcha(person.CaptchaUID, person.CaptchaText); e != nil {
+		return &helpers.AppError{
+			Code:    http.StatusInternalServerError,
+			Error:   e,
+			Message: "error validating captcha",
+		}
+	}
+	log.WithFields(log.Fields{"v": v}).Debug("ResetPasswordHandler")
+	if !v {
+		return &helpers.AppError{
+			Code:    http.StatusBadRequest,
+			Error:   nil,
+			Message: "captcha not verified",
+		}
+	}
 
 	// getting the person in the db
 	if _, e = env.DB.GetPersonByEmail(person.PersonEmail); e != nil {
@@ -216,7 +246,7 @@ func (env *Env) ResetPasswordHandler(w http.ResponseWriter, r *http.Request) *he
 	}
 
 	// generating a password hash
-	if hash, e = getPasswordHash(person.PersonEmail); e != nil {
+	if hash, e = helpers.GetPasswordHash(person.PersonEmail); e != nil {
 		return &helpers.AppError{
 			Code:    http.StatusInternalServerError,
 			Error:   e,

@@ -3,15 +3,59 @@ package models
 import (
 	"database/sql"
 	"strings"
+	"time"
 
+	"encoding/hex"
 	"github.com/jmoiron/sqlx"
 
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
 	log "github.com/sirupsen/logrus"
+	"github.com/steambap/captcha"
 	"github.com/tbellembois/gochimitheque/constants"
 	"github.com/tbellembois/gochimitheque/helpers"
 	"golang.org/x/crypto/bcrypt"
 )
+
+func (db *SQLiteDataStore) ValidateCaptcha(token string, text string) (bool, error) {
+
+	var (
+		e error
+		i int
+	)
+
+	sqlr := `SELECT count(*) FROM captcha 
+	WHERE captcha_token = ? AND captcha_text = ?`
+	if e = db.Get(&i, sqlr, token, text); e != nil && e != sql.ErrNoRows {
+		return false, e
+	}
+	log.WithFields(log.Fields{"token": token, "text": text, "i": i}).Debug("ValidateCaptcha")
+
+	return i > 0, nil
+}
+
+func (db *SQLiteDataStore) InsertCaptcha(data *captcha.Data) (string, error) {
+
+	var (
+		e     error
+		uuid  []byte
+		suuid string
+	)
+
+	// generating uuid for the captcha
+	if uuid, e = helpers.GetPasswordHash(time.Now().Format("20060102150405")); e != nil {
+		return "", e
+	}
+	suuid = hex.EncodeToString(uuid)
+
+	// saving
+	sqlr := `INSERT INTO captcha (captcha_token, captcha_text) 
+	VALUES (?, ?)`
+	if _, e = db.Exec(sqlr, suuid, data.Text); e != nil {
+		return "", e
+	}
+
+	return suuid, nil
+}
 
 // GetPeople returns the people matching the search criteria
 // order, offset and limit are passed to the sql request
