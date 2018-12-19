@@ -1072,11 +1072,44 @@ script.
         }
 
     //
+    // magical selector
+    //
+    function magic() {
+        var m = $('textarea#magical').val();
+        if (m != "") {
+            $.ajax({
+                url: proxyPath + "products/magic",
+                method: "POST",
+                data: {"msds": m}
+            }).done(function(data, textStatus, jqXHR) {
+                $('select#hazardstatements').val(null).trigger('change');
+                $('select#hazardstatements').find('option').remove();
+                $('select#precautionarystatements').val(null).trigger('change');
+                $('select#precautionarystatements').find('option').remove();
+                
+                var hs = data.hs,
+                    ps = data.ps;
+                for(var i= 0; i < hs.length; i++)
+                {
+                   var newOption = new Option(data.hs[i].hazardstatement_reference, data.hs[i].hazardstatement_id, true, true);
+                   $('select#hazardstatements').append(newOption).trigger('change');
+                }
+                for(var i= 0; i < ps.length; i++)
+                {
+                   var newOption = new Option(data.ps[i].precautionarystatement_reference, data.ps[i].precautionarystatement_id, true, true);
+                   $('select#precautionarystatements').append(newOption).trigger('change');
+                }
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                handleHTTPError(jqXHR.statusText, jqXHR.status)
+            });
+        }
+    }
+
+    //
     // linear to empirical formula converter
     //
     function linearToEmpirical() {
         var f = $('select#linearformula').select2('data')[0].text;
-        console.log(f);
         if (f != "") {
             $.ajax({
                 url: proxyPath + "products/l2eformula/" + f,

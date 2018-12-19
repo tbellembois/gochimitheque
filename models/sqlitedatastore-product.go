@@ -581,6 +581,23 @@ func (db *SQLiteDataStore) GetProductsSymbols(p helpers.Dbselectparam) ([]Symbol
 	return symbols, count, nil
 }
 
+// GetProductsHazardStatementByReference return the hazard statement matching the reference
+func (db *SQLiteDataStore) GetProductsHazardStatementByReference(r string) (HazardStatement, error) {
+	var (
+		err error
+		hs  HazardStatement
+	)
+
+	sqlr := `SELECT hazardstatement_id, hazardstatement_label, hazardstatement_reference
+	FROM hazardstatement
+	WHERE hazardstatement_reference = ?`
+	if err = db.Get(&hs, sqlr, r); err != nil {
+		return HazardStatement{}, err
+	}
+
+	return hs, nil
+}
+
 // GetProductsHazardStatements return the hazard statements matching the search criteria
 func (db *SQLiteDataStore) GetProductsHazardStatements(p helpers.Dbselectparam) ([]HazardStatement, int, error) {
 	var (
@@ -631,6 +648,23 @@ func (db *SQLiteDataStore) GetProductsHazardStatements(p helpers.Dbselectparam) 
 
 	log.WithFields(log.Fields{"hazardstatements": hazardstatements}).Debug("GetProductsHazardStatements")
 	return hazardstatements, count, nil
+}
+
+// GetProductsPrecautionaryStatementByReference return the precautionary statement matching the reference
+func (db *SQLiteDataStore) GetProductsPrecautionaryStatementByReference(r string) (PrecautionaryStatement, error) {
+	var (
+		err error
+		ps  PrecautionaryStatement
+	)
+
+	sqlr := `SELECT precautionarystatement_id, precautionarystatement_label, precautionarystatement_reference
+	FROM precautionarystatement
+	WHERE precautionarystatement_reference = ?`
+	if err = db.Get(&ps, sqlr, r); err != nil {
+		return PrecautionaryStatement{}, err
+	}
+
+	return ps, nil
 }
 
 // GetProductsPrecautionaryStatements return the hazard statements matching the search criteria

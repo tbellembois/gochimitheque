@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"regexp"
 	"strconv"
 
 	"github.com/tbellembois/gochimitheque/utils"
@@ -51,6 +52,76 @@ func (env *Env) VCreateProductHandler(w http.ResponseWriter, r *http.Request) *h
 /*
 	REST handlers
 */
+
+// MagicHandler
+func (env *Env) MagicHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	log.Debug("MagicHandler")
+
+	rhs := regexp.MustCompile("((?:EU){0,1}H[0-9]{3}[FfDdAi]{0,2})")
+	rps := regexp.MustCompile("(P[0-9]{3})")
+
+	// form receiver
+	type magic struct {
+		MSDS string
+	}
+	// response
+	type Resp struct {
+		HS []models.HazardStatement        `json:"hs"`
+		PS []models.PrecautionaryStatement `json:"ps"`
+	}
+
+	var (
+		err  error
+		m    magic
+		hs   models.HazardStatement
+		ps   models.PrecautionaryStatement
+		resp Resp
+	)
+
+	if err = r.ParseForm(); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "form parsing error",
+			Code:    http.StatusBadRequest}
+	}
+	if err = global.Decoder.Decode(&m, r.PostForm); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "form decoding error",
+			Code:    http.StatusBadRequest}
+	}
+
+	shs := rhs.FindAllStringSubmatch(m.MSDS, -1)
+	sps := rps.FindAllStringSubmatch(m.MSDS, -1)
+
+	for _, h := range shs {
+		if hs, err = env.DB.GetProductsHazardStatementByReference(h[1]); err != nil {
+			return &helpers.AppError{
+				Error:   err,
+				Code:    http.StatusInternalServerError,
+				Message: "error getting hazard statement",
+			}
+		}
+		resp.HS = append(resp.HS, hs)
+	}
+	for _, p := range sps {
+		if ps, err = env.DB.GetProductsPrecautionaryStatementByReference(p[1]); err != nil {
+			return &helpers.AppError{
+				Error:   err,
+				Code:    http.StatusInternalServerError,
+				Message: "error getting precautionary statement",
+			}
+		}
+		resp.PS = append(resp.PS, ps)
+	}
+
+	log.WithFields(log.Fields{"m.msds": m.MSDS, "shs": shs, "sps": sps}).Debug("MagicHandler")
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	json.NewEncoder(w).Encode(resp)
+	w.WriteHeader(http.StatusOK)
+	return nil
+}
 
 func (env *Env) ToogleProductBookmarkHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 

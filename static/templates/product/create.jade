@@ -26,10 +26,6 @@
 
         .form-row
             .form-group.col-sm-auto
-                span magic selector coming soon
-
-        .form-row
-            .form-group.col-sm-auto
                 span.badge.badge-pill.badge-danger &nbsp;
             .form-group.col-sm-5
                 | {{$label := "empirical formula"}} {{$name := "empiricalformula"}}
@@ -68,7 +64,15 @@
             .form-group.col-sm-6
                 | {{$label := "class of compound"}} {{$name := "classofcompound"}}
                 +select  
-                
+
+        .form-row
+            .form-group.col-sm-5.d-flex.align-items-end
+                | {{$label := "magical selector"}} {{$name := "magical"}}
+                +inputtextarea
+            .form-group.col-sm-1.d-flex.align-items-end
+                button#magical-button(onclick="magic();")
+                    span.mdi.mdi-24px.mdi-auto-fix
+
         .form-row
             .form-group.col-sm-6
                 | {{$label := "signal word"}} {{$name := "signalword"}}
