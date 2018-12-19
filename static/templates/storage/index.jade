@@ -59,6 +59,7 @@
         .modal-dialog.modal-lg(role="document")
             .modal-content
                 .modal-body#stock-body
+                    span.mdi.mdi-36px.mdi-spin.mdi-autorenew
                 .modal-footer
                     button.btn.btn-secondary(type="button" data-dismiss="modal") close
 
@@ -397,11 +398,11 @@
             }
         }
         function showStock(pid) {
-            $("#stock-body").html("");
             $.ajax({
                 url: proxyPath + "stocks/" + pid,
                 method: "GET",
             }).done(function(data, textStatus, jqXHR) {
+                $("#stock-body").html("");
                 for (var key in data) {
                     showStockRecursive(data[key], 0)
                 }
