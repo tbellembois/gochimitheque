@@ -1,0 +1,12 @@
+en-US:
+  demo:
+    hello: "Bonjour, monde"
+
+  global:
+    submit: "soumettre"
+
+  login:
+    loginlabel: "nom d'utilisateur"
+    loginplaceholder: "entrez votre adresse email"
+    logincomment: "nous ne transmettrons jamais votre adresse email"
+    passwordlabel: "mot de passe"
