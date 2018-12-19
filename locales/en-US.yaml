@@ -1,0 +1,12 @@
+en-US:
+  demo:
+    hello: "Hello, world"
+
+  global:
+    submit: "submit"
+
+  login:
+    loginlabel: "login"
+    loginplaceholder: "enter your email address"
+    logincomment: "we'll never share your email with anyone else"
+    passwordlabel: "password"

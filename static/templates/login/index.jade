@@ -4,21 +4,26 @@
             .row
                 div.col.col-sm-4.offset-sm-4
                     div.form-group
-                        label(for="person_email") login
+                        label(for="person_email")
+                            | {{ T "login.loginlabel" "" }}
+                        | {{ $a := "login.loginplaceholder" }} {{ $b := "" }}
                         input.form-control#person_email(type="email" 
                                                         aria-describedby="emailHelp" 
-                                                        placeholder="enter your email" 
+                                                        placeholder="{{ T $a $b }}"
                                                         name="person_email")
-                        small#emailHelp.form-text.text-muted we'll never share your email with anyone else
+                        small#emailHelp.form-text.text-muted
+                            | {{ T "login.logincomment" "" }}
                     div.form-group
-                        label(for="person_password") password
+                        label(for="person_password")
+                            | {{ T "login.passwordlabel" "" }}
                         input.form-control#person_password(type="password" 
                                                         aria-describedby="passwordHelp" 
                                                         placeholder="enter your password" 
                                                         name="person_password")
             .row
                 .col.offset-sm-4.col-sm-2
-                    button#gettoken.btn.btn-primary(type="button" onclick="getToken();") submit
+                    button#gettoken.btn.btn-primary(type="button" onclick="getToken();")
+                        | {{ T "global.submit" "" }}
                 .col.col-sm-2
                     p.text-right
                         a#getcaptcha(href="#" onclick="getCaptcha();" title="reset password")
