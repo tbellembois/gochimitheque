@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/smtp"
@@ -58,13 +59,22 @@ func sendMail(to string, subject string, body string) error {
 		client    *smtp.Client
 		smtpw     io.WriteCloser
 		n         int64
+		message   string
 	)
+
+	// build message
+	message += fmt.Sprintf("From: %s\r\n", global.MailServerSender)
+	message += fmt.Sprintf("To: %s\r\n", to)
+	message += fmt.Sprintf("Subject: %s\r\n", subject)
+	message += "\r\n" + body
+
 	log.WithFields(log.Fields{
 		"global.MailServerAddress":       global.MailServerAddress,
 		"global.MailServerPort":          global.MailServerPort,
 		"global.MailServerSender":        global.MailServerSender,
 		"global.MailServerUseTLS":        global.MailServerUseTLS,
 		"global.MailServerTLSSkipVerify": global.MailServerTLSSkipVerify,
+		"subject":                        subject,
 		"to":                             to}).Debug("sendMail")
 
 	if global.MailServerUseTLS {
@@ -105,13 +115,17 @@ func sendMail(to string, subject string, body string) error {
 		return e
 	}
 	defer smtpw.Close()
+
 	// send message
-	buf := bytes.NewBufferString(subject + body)
+	buf := bytes.NewBufferString(message)
 	if n, e = buf.WriteTo(smtpw); e != nil {
 		log.Error("send :" + e.Error())
 		return e
 	}
 	log.WithFields(log.Fields{"n": n}).Debug("sendMail")
+
+	// send quit command
+	client.Quit()
 
 	return nil
 }

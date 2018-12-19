@@ -389,7 +389,8 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		FOREIGN KEY(person) references person(person_id),
 		FOREIGN KEY(product) references product(product_id),
 		FOREIGN KEY(storelocation) references storelocation(storelocation_id));
-	
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_storage ON storage(storage_id, product);
+
 	CREATE TABLE IF NOT EXISTS borrowing (
 		borrowing_id integer PRIMARY KEY,
 		borrowing_comment string,
