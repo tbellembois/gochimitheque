@@ -405,12 +405,14 @@ func main() {
 	// export download
 	r.Handle("/download/{id}", securechain.Then(env.AppMiddleware(env.DownloadExportHandler))).Methods("GET")
 
-	// captcha
-
 	// rice boxes
 	webfontsBox := rice.MustFindBox("static/webfonts")
 	webfontsFileServer := http.StripPrefix("/webfonts/", http.FileServer(webfontsBox.HTTPBox()))
 	http.Handle("/webfonts/", webfontsFileServer)
+
+	fontsBox := rice.MustFindBox("static/fonts")
+	fontsFileServer := http.StripPrefix("/fonts/", http.FileServer(fontsBox.HTTPBox()))
+	http.Handle("/fonts/", fontsFileServer)
 
 	cssBox := rice.MustFindBox("static/css")
 	cssFileServer := http.StripPrefix("/css/", http.FileServer(cssBox.HTTPBox()))
