@@ -10,11 +10,10 @@ html
         | <link href="{{.ProxyPath}}css/bootstrap-colorpicker.min.css" rel="stylesheet"/>
         | <link href="{{.ProxyPath}}css/fontawesome.all.min.css" rel="stylesheet"/>
         | <link href="{{.ProxyPath}}css/chimitheque.css" rel="stylesheet"/>
-        
-        link(href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet")
-        link(href="//cdn.materialdesignicons.com/3.2.89/css/materialdesignicons.min.css" rel="stylesheet")
-        link(href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet")
-        link(href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css" rel="stylesheet")
+        | <link href="{{.ProxyPath}}css/materialicons.css" rel="stylesheet"/>
+        | <link href="{{.ProxyPath}}css/materialdesignicons.min.css" rel="stylesheet"/>
+        | <link href="{{.ProxyPath}}css/bootstrap-toggle.min.css" rel="stylesheet"/>
+        | <link href="{{.ProxyPath}}css/animate.min.css" rel="stylesheet"/>
 
     body
         div#message
@@ -75,12 +74,11 @@ html
         | <script src="{{.ProxyPath}}js/bootstrap-table.min.js"></script>
         | <script src="{{.ProxyPath}}js/bootstrap-confirmation.min.js"></script>
         | <script src="{{.ProxyPath}}js/bootstrap-colorpicker.min.js"></script>
+        | <script src="{{.ProxyPath}}js/bootstrap-toggle.min.js"></script>
         | <script src="{{.ProxyPath}}js/gjs-common.js"></script>
         | <script src="{{.ProxyPath}}js/chimcommon.js"></script>
         | <script src="{{.ProxyPath}}js/chimauth.js"></script>
         
-        script(src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js")
-
         | {{template "CONTENTJS"}}
 
 | {{end}}
