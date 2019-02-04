@@ -1,6 +1,6 @@
 | {{define "CONTENT"}}
 
-    +titleicon(icon="local_offer")
+    +titleicon(icon="tag")
 
     form#product
         input#exactMatchEmpiricalFormula(type="hidden")
@@ -35,7 +35,7 @@
                 +select
             .form-group.col-sm-1
                 button#fconverter.btn.btn-primary(type="button" data-toggle="popover" data-content="no result" title="convert linear to empirical formula" onclick="linearToEmpirical();")
-                    i.material-icons loop
+                    span.mdi.mdi-rotate-3d.mdi-24px
 
         .form-row
             .form-group.col-sm-auto

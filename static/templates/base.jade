@@ -10,7 +10,6 @@ html
         | <link href="{{.ProxyPath}}css/bootstrap-colorpicker.min.css" rel="stylesheet"/>
         | <link href="{{.ProxyPath}}css/fontawesome.all.min.css" rel="stylesheet"/>
         | <link href="{{.ProxyPath}}css/chimitheque.css" rel="stylesheet"/>
-        | <link href="{{.ProxyPath}}css/materialicons.css" rel="stylesheet"/>
         | <link href="{{.ProxyPath}}css/materialdesignicons.min.css" rel="stylesheet"/>
         | <link href="{{.ProxyPath}}css/bootstrap-toggle.min.css" rel="stylesheet"/>
         | <link href="{{.ProxyPath}}css/animate.min.css" rel="stylesheet"/>
@@ -37,16 +36,16 @@ html
                         if HasPermission .PersonID "r" "products" -2
                             li.nav-item.active
                                 a(href="{{.ProxyPath}}v/products" title="home").nav-link
-                                    i.material-icons home
+                                    span.mdi.mdi-home.mdi-36px
                         if HasPermission .PersonID "r" "products" -2
                             li.nav-item.active
                                 a(href="{{.ProxyPath}}v/products?bookmark=true" title="my bookmarked products").nav-link
-                                    i.material-icons star
+                                    span.mdi.mdi-star.mdi-36px
 
                         if HasPermission .PersonID "w" "products" -2
                             li.nav-item
                                 a(href="{{.ProxyPath}}vc/products" title="create product card").nav-link
-                                    i.material-icons local_offer
+                                    span.mdi.mdi-tag.mdi-36px
                         if HasPermission .PersonID "r" "entities" -2
                             li.nav-item.dropdown
                                 a(href="#", title="manage entities").nav-link.dropdown-toggle#navbarDropdown(
@@ -54,7 +53,7 @@ html
                                     data-toggle="dropdown" 
                                     aria-haspopup="true" 
                                     aria-expanded="false")
-                                    i.material-icons store
+                                    span.mdi.mdi-store.mdi-36px
                                 div.dropdown-menu(aria-labelledby="navbarDropdown")
                                     a(href="{{.ProxyPath}}v/entities", title="list").dropdown-item list
                                     if HasPermission .PersonID "all" "all" -1
@@ -67,7 +66,7 @@ html
                                     data-toggle="dropdown" 
                                     aria-haspopup="true" 
                                     aria-expanded="false")
-                                    i.material-icons extension
+                                    span.mdi.mdi-docker.mdi-36px
                                 div.dropdown-menu(aria-labelledby="navbarDropdown")
                                     a(href="{{.ProxyPath}}v/storelocations", title="list").dropdown-item list
                                     if HasPermission .PersonID "all" "all" -2
@@ -80,7 +79,7 @@ html
                                     data-toggle="dropdown" 
                                     aria-haspopup="true" 
                                     aria-expanded="false")
-                                    i.material-icons supervisor_account
+                                    span.mdi.mdi-account-group.mdi-36px
                                 div.dropdown-menu(aria-labelledby="navbarDropdown")
                                     a(href="{{.ProxyPath}}v/people", title="list").dropdown-item list
                                     if HasPermission .PersonID "w" "people" -2
@@ -88,6 +87,7 @@ html
 
                         li.nav-item
                             a.nav-link(title= "change password" href="{{.ProxyPath}}vu/peoplepass")
+                                span.mdi.mdi-shield-lock-outline.mdi-36px
                                 i.material-icons lock
                                 span#logged
 

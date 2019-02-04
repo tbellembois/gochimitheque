@@ -16,9 +16,10 @@
                     div.form-group
                         label(for="person_password")
                             | {{ T "login.passwordlabel" "" }}
+                        | {{ $a := "login.passwordplaceholder" }} {{ $b := "" }}
                         input.form-control#person_password(type="password" 
                                                         aria-describedby="passwordHelp" 
-                                                        placeholder="enter your password" 
+                                                        placeholder="{{ T $a $b }}" 
                                                         name="person_password")
             .row
                 .col.offset-sm-4.col-sm-2
@@ -26,7 +27,8 @@
                         | {{ T "global.submit" "" }}
                 .col.col-sm-2
                     p.text-right
-                        a#getcaptcha(href="#" onclick="getCaptcha();" title="reset password")
+                        | {{ $a := "login.resetpasswordtitle" }} {{ $b := "" }}
+                        a#getcaptcha(href="#" onclick="getCaptcha();" title="{{ T $a $b }}")
                             span.mdi.mdi-36px.mdi-lock-reset 
         
         form#captcha
@@ -36,7 +38,8 @@
                 div.col.col-sm-12.d-flex.justify-content-center.mb-sm-4
                     input#captcha_uid(type="hidden" name="captcha_uid")
                     input#captcha_text(type="text" name="captcha_text")
-                    a#resetpassword(href="#" onclick="resetPassword();" title="reset password, I am not a robot")
+                    | {{ $a := "login.captcharesetpasswordtitle" }} {{ $b := "" }}
+                    a#resetpassword(href="#" onclick="resetPassword();" title="{{ T $a $b }}")
                         span.mdi.mdi-36px.mdi-lock-reset 
 
     a(href="https://github.com/tbellembois/gochimitheque")
