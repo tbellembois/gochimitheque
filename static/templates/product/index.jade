@@ -4,7 +4,7 @@
         .col
             .row
                 .col.mb-sm-2
-                    | {{$icon := "extension"}} {{$name := "storelocationselector"}}
+                    | {{$icon := "docker"}} {{$name := "storelocationselector"}}
                     +selecticon
             .row
                 .col-sm-6
@@ -26,9 +26,9 @@
             .row
                 .col.col-sm-11
                     button#clearsearch.btn-sm.btn.btn-primary.mr-sm-2(title="clear search form" type="button" onclick="clearsearch();")
-                        i.material-icons check_box_outline_blank
+                        span.mdi.mdi-broom.mdi-24px
                     button#search.btn-lg.btn.btn-primary.mr-sm-2(title="search" type="button" onclick="search();")
-                        i.material-icons youtube_searched_for
+                        span.mdi.mdi-magnify.mdi-24px
                 .col.col-sm-1
                     a.btn.btn-primary.btn-sm(data-toggle="collapse" href="#advancedsearch" role="button" aria-expanded="false" title="advanced search")
                         i.material-icons add_circle_outline

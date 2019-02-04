@@ -7,7 +7,7 @@ mixin title
 mixin titleicon
     .card.bg-light.text-center.w-25.mx-auto.mt-md-5.mb-md-5
         .card-body
-            i.material-icons {{$icon}}
+            span(class='mdi-{{$icon}} mdi mdi-24px')
 
 mixin inlineradio
     .custom-control.custom-radio.custom-control-inline
@@ -50,7 +50,7 @@ mixin select
 mixin selecticon
     .row
         .col-sm-1
-            i.material-icons.md-24 {{$icon}}
+            span(class='mdi-{{$icon}} mdi mdi-36px')
         .col-sm-11
             select(style='width: 100% !important;' id='{{$name}}' name='{{$name}}')
 

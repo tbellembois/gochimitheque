@@ -10,3 +10,6 @@ en-US:
     loginplaceholder: "enter your email address"
     logincomment: "we'll never share your email with anyone else"
     passwordlabel: "password"
+    passwordplaceholder: "enter your password"
+    resetpasswordtitle: "reset password"
+    captcharesetpasswordtitle: "reset my password, I am not a robot"
