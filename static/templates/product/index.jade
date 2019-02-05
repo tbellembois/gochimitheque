@@ -31,7 +31,7 @@
                         span.mdi.mdi-magnify.mdi-24px
                 .col.col-sm-1
                     a.btn.btn-primary.btn-sm(data-toggle="collapse" href="#advancedsearch" role="button" aria-expanded="false" title="advanced search")
-                        i.material-icons add_circle_outline
+                        span.mdi.mdi-magnify-plus-outline.mdi-24px
             .row.collapse#advancedsearch
                 .col-sm-12
                     span coming soon !
@@ -45,10 +45,10 @@
     #toolbar.row
         .col.toggleable
             button.btn.btn-secondary#switchview(type="button" title="switch to storage view" onclick="switchProductStorageView()")
-                i.material-icons all_inbox
+                span.mdi.mdi-cube-unfolded.mdi-24px
         .col
             button.btn.btn-secondary#export(type="button" title="export" onclick="exportAll()")
-                i.material-icons save_alt
+                span.mdi.mdi-content-save.mdi-24px
 
     #exportlink.modal.fade(role="dialog" tabindex="-1" aria-labelledby="exportlinkLabel" aria-hidden="true")
         .modal-dialog.modal-lg(role="document")
@@ -81,7 +81,7 @@
                                 th(data-field='empiricalformula.empiricalformula_label' data-sortable='true') empirical formula
                                 th(data-field='casnumber.casnumber_label' data-sortable='true') CAS
                                 th(data-field='product_specificity' data-sortable='false' data-formatter='product_specificityFormatter') specificity
-                                th(data-field='product_sl' data-sortable='false') 
+                                th(data-field='product_sl' data-formatter='product_slFormatter' data-sortable='false') 
                                 th(data-field='operate' data-formatter='operateFormatter' data-events='operateEvents') 
 
         #edit-collapse.collapse(data-parent='#accordion')
@@ -518,6 +518,16 @@
                 return "";
             }
         }
+        //
+        // product_slFormatter formatter
+        //
+        function product_slFormatter(value, row, index, field) {
+            if (value.Valid) {
+                return value.String;
+            } else {
+                return "";
+            }
+        }
 
         //
         // table items actions
@@ -526,32 +536,32 @@
             // show action buttons if permitted
             pid = row.product_id
 
-            var bookmarkicon = "star_border"
+            var bookmarkicon = "bookmark-outline"
             if (row.bookmark.bookmark_id.Valid) {
-                bookmarkicon = "star"
+                bookmarkicon = "bookmark"
             }
 
             // buttons are hidden by default
             var actions = [
             '<button id="storages' + pid + '" class="storages btn btn-primary btn-sm" style="display: none;" title="storages" type="button">',
-                '<i class="material-icons">all_inbox</i>',
+                '<span class="mdi mdi-24px mdi-cube-unfolded"',
             '</button>',
             '<button id="store' + pid + '" class="store btn btn-primary btn-sm" style="display: none;" title="store" type="button">',
-                '<i class="material-icons">move_to_inbox</i>',
+                '<span class="mdi mdi-24px mdi-forklift"',
             '</button>',
             '<button id="edit' + pid + '" class="edit btn btn-primary btn-sm" style="display: none;" title="edit" type="button">',
-                '<i class="material-icons">edit</i>',
+                '<span class="mdi mdi-24px mdi-border-color"',
             '</button>',
             '<button id="delete' + pid + '" class="delete btn btn-primary btn-sm" style="display: none;" title="delete" type="button">',
-                '<i class="material-icons">clear</i>',
+                '<span class="mdi mdi-24px mdi-delete"',
             '</button>',
             '<button id="bookmark' + pid + '" class="bookmark btn btn-primary btn-sm" title="(un)bookmark" type="button">',
-                '<i id="bookmark' + pid + '" class="material-icons">' + bookmarkicon + '</i>',
+                '<span id="bookmark' + pid + ' "class="mdi mdi-24px mdi-' + bookmarkicon + '"',
             '</button>',
             ];
 
             if (row.casnumber.casnumber_cmr.Valid && row.casnumber.casnumber_cmr.Bool) {
-                actions.push('<i title="CMR" class="material-icons">warning</i>' + row.casnumber.casnumber_cmr.String);
+                actions.push('<span title="CMR" class="mdi mdi-36px mdi-alert-outline"></span>' + row.casnumber.casnumber_cmr.String);
             }    
             if (row.product_restricted.Valid && row.product_restricted.Bool) {
                 actions.push('<span title="restricted access" class="mdi mdi-36px mdi-hand"></span>');

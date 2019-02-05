@@ -28,36 +28,35 @@ func init() {
 func CreateTitle(msgText string, msgType string) *dom.HTMLDivElement {
 	t := document.CreateElement("div").(*dom.HTMLDivElement)
 	s := document.CreateElement("span").(*dom.HTMLSpanElement)
-	i := document.CreateElement("i").(*dom.BasicHTMLElement)
+	sp := document.CreateElement("span").(*dom.HTMLSpanElement)
 	t.Class().SetString("mt-md-3 mb-md-3 row")
 	s.Class().SetString("col-sm-11 align-bottom")
-	i.Class().SetString("material-icons")
 	s.SetTextContent(msgText)
 
 	switch msgType {
 	case "history":
-		i.SetTextContent("alarm")
+		sp.Class().SetString("mdi mdi-24px mdi-alarm")
 		break
 	case "bookmark":
-		i.SetTextContent("star")
+		sp.Class().SetString("mdi mdi-24px mdi-bookmark")
 		break
 	case "entity":
-		i.SetTextContent("store")
+		sp.Class().SetString("mdi mdi-24px mdi-store")
 		break
 	case "storelocation":
-		i.SetTextContent("extension")
+		sp.Class().SetString("mdi mdi-24px mdi-docker")
 		break
 	case "product":
-		i.SetTextContent("local_offer")
+		sp.Class().SetString("mdi mdi-24px mdi-tag")
 		break
 	case "storage":
-		i.SetTextContent("inbox")
+		sp.Class().SetString("mdi mdi-24px mdi-cube-unfolded")
 		break
 	default:
-		i.SetTextContent("keyboard_tab")
+		sp.Class().SetString("mdi mdi-24px mdi-menu-right-outline")
 	}
 
-	t.AppendChild(i)
+	t.AppendChild(sp)
 	t.AppendChild(s)
 
 	return t

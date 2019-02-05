@@ -361,10 +361,10 @@ script.
         if (!sl.storelocation_id) {
             return sl.storelocation_fullpath;
         }
-        var canstore = '<i class="material-icons">close</i>';
-        var icon = '<span class="badge badge-pill" style="color: ' + sl.storelocation_color.String + ';"><i class="material-icons">label</i></span>';
+        var canstore = '<span class="mdi mdi-close"></span>';
+        var icon = '<span class="mdi mdi-gesture" style="color: ' + sl.storelocation_color.String + ';"></span>';
         if (sl.storelocation_canstore.Valid && sl.storelocation_canstore.Bool) {
-            canstore = '<i class="material-icons">check</i>'
+            canstore = '<span class="mdi mdi-check"></span>'
         }
         var s = $(
             '<div>' + icon + '<span>' + sl.storelocation_fullpath + '</span>' + canstore + '</div>'
