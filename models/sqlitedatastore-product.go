@@ -895,7 +895,7 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	// get bookmark
 	comreq.WriteString(" LEFT JOIN bookmark ON (bookmark.product = p.product_id AND bookmark.person = :personid)")
 	// get storages, store locations and entities
-	comreq.WriteString(" JOIN storage ON storage.product = p.product_id")
+	comreq.WriteString(" LEFT JOIN storage ON storage.product = p.product_id")
 	if p.GetEntity() != -1 || p.GetStorelocation() != -1 || p.GetStorageBarecode() != "" {
 		//comreq.WriteString(" JOIN storage ON storage.product = p.product_id")
 		comreq.WriteString(" JOIN storelocation ON storage.storelocation = storelocation.storelocation_id")
@@ -994,13 +994,13 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	r := regexp.MustCompile("([a-zA-Z]{1}[0-9]+)\\.[0-9]+")
 	for i, p := range products {
 		// note: do not modify p but products[i] instead
-		m := r.FindAllStringSubmatch(p.ProductSL, -1)
+		m := r.FindAllStringSubmatch(p.ProductSL.String, -1)
 		log.Debug(m)
 		// lazily adding only the first match
 		if len(m) > 0 {
-			products[i].ProductSL = m[0][1]
+			products[i].ProductSL.String = m[0][1]
 		} else {
-			products[i].ProductSL = ""
+			products[i].ProductSL.String = ""
 		}
 	}
 

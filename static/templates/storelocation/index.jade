@@ -122,9 +122,9 @@
         //
         function storelocation_canstoreFormatter(value, row, index, field) {
             if (value.Valid && value.Bool) {
-                return '<i class="material-icons">check</i>';
+                return '<span class="mdi mdi-check mdi-36px"></span>';
             } else {
-                return '<i class="material-icons">close</i>';
+                return '<span class="mdi mdi-close mdi-36px"></span>';
             }
         }
         //
@@ -154,10 +154,10 @@
             // buttons are hidden by default
             var actions = [
             '<button id="edit' + slid + '" class="edit btn btn-primary btn-sm" style="display: none;" title="edit" type="button">',
-                '<i class="material-icons">edit</i>',
+                '<span class="mdi mdi-24px mdi-border-color"',
             '</button>',
             '<button id="delete' + slid + '" class="delete btn btn-primary btn-sm" style="display: none;" title="delete" type="button">',
-                '<i class="material-icons">delete</i>',
+                '<span class="mdi mdi-24px mdi-delete"',
             '</button>'];
 
             return actions.join('&nbsp;')    

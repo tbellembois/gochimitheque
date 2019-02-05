@@ -226,7 +226,7 @@ type Product struct {
 
 	Bookmark *Bookmark `db:"bookmark" json:"bookmark" schema:"bookmark"` // not in db but sqlx requires the "db" entry
 
-	ProductSL string `db:"product_sl" json:"product_sl" schema:"product_sl"` // not in db but sqlx requires the "db" entry
+	ProductSL sql.NullString `db:"product_sl" json:"product_sl" schema:"product_sl"` // not in db but sqlx requires the "db" entry
 }
 
 // Bookmark is a product person bookmark
