@@ -193,6 +193,131 @@ script.
             }
         });
 
+        $('select#s_signalword').select2({
+            allowClear: true,
+            placeholder: "select signal word",
+            ajax: {
+                url: proxyPath + 'products/signalwords',
+                delay: 400,
+                data: function (params) {
+                    var query = {
+                        search: params.term,
+                        page: params.page || 1,
+                        offset: (params.page-1)*10 || 0,
+                        limit: 10
+                    }
+
+                    // Query parameters will be ?search=[term]&page=[page]
+                    return query;
+                },
+                dataType: 'json',
+                processResults: function (data) {
+                    // replacing name by text expected by select2
+                    var newdata = $.map(data.rows, function (obj) {
+                        obj.text = obj.text || obj.signalword_label.String;
+                        obj.id = obj.id || obj.signalword_id.Int64;
+                        return obj;
+                    });
+                        return {
+                        results: newdata,
+                    };
+                }
+            }
+        });
+
+        $('select#s_symbols').select2({
+            templateResult: formatSymbol,
+            closeOnSelect: false,
+            ajax: {
+                url: proxyPath + 'products/symbols',
+                delay: 400,
+                dataType: 'json',
+                processResults: function (data) {
+                    // replacing name by text expected by select2
+                    var newdata = $.map(data.rows, function (obj) {
+                        obj.text = obj.text || obj.symbol_label;
+                        obj.id = obj.id || obj.symbol_id;
+                        return obj;
+                    });
+                        return {
+                        results: newdata,
+                    };
+                }
+            }
+        });
+
+        $('select#s_hazardstatements').select2({
+            templateResult: formatHazardStatement,
+            closeOnSelect: false,
+            ajax: {
+                url: proxyPath + 'products/hazardstatements',
+                delay: 400,
+                data: function (params) {
+                    var query = {
+                        search: params.term,
+                        page: params.page || 1,
+                        offset: (params.page-1)*10 || 0,
+                        limit: 10
+                    }
+
+                    // Query parameters will be ?search=[term]&page=[page]
+                    return query;
+                },
+                dataType: 'json',
+                processResults: function (data) {
+                    // replacing name by text expected by select2
+                    var newdata = $.map(data.rows, function (obj) {
+                        obj.text = obj.text || obj.hazardstatement_reference;
+                        obj.id = obj.id || obj.hazardstatement_id;
+                        return obj;
+                    });
+                    // getting the number of loaded select elements
+                    selectnbitems = $("ul#select2-hazardstatements-results li").length + 10;
+
+                    return {
+                        results: newdata,
+                        pagination: {more: selectnbitems<data.total}
+                    };
+                }
+            }
+        });
+
+        $('select#s_precautionarystatements').select2({
+            templateResult: formatPrecautionaryStatement,
+            closeOnSelect: false,
+            ajax: {
+                url: proxyPath + 'products/precautionarystatements',
+                delay: 400,
+                data: function (params) {
+                    var query = {
+                        search: params.term,
+                        page: params.page || 1,
+                        offset: (params.page-1)*10 || 0,
+                        limit: 10
+                    }
+
+                    // Query parameters will be ?search=[term]&page=[page]
+                    return query;
+                },
+                dataType: 'json',
+                processResults: function (data) {
+                    // replacing name by text expected by select2
+                    var newdata = $.map(data.rows, function (obj) {
+                        obj.text = obj.text || obj.precautionarystatement_reference;
+                        obj.id = obj.id || obj.precautionarystatement_id;
+                        return obj;
+                    });
+                    // getting the number of loaded select elements
+                    selectnbitems = $("ul#select2-precautionarystatements-results li").length + 10;
+
+                    return {
+                        results: newdata,
+                        pagination: {more: selectnbitems<data.total}
+                    };
+                }
+            }
+        });
+
         //
         // store locations selector select2
         //

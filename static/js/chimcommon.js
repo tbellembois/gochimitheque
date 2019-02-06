@@ -213,6 +213,11 @@ function search() {
     var s_casnumber;
     var s_custom_name_part_of;
     var s_storage_barecode;
+    var s_signalword;
+    var s_symbols;
+    var s_hazardstatements;
+    var s_precautionarystatements;
+
     if ($('select#s_name').hasClass("select2-hidden-accessible")) {
         // Select2 has been initialized
         // name_id
@@ -237,9 +242,57 @@ function search() {
             s_casnumber = $('select#s_casnumber').select2('data')[0].id;
         }
     }
+    if ($('select#s_signalword').hasClass("select2-hidden-accessible")) {
+        // Select2 has been initialized
+        // signalword_id
+        i = $('select#s_signalword').select2('data')[0];
+        if (i != undefined) {
+            s_signalword = $('select#s_signalword').select2('data')[0].id;
+        }
+    }
+    if ($('select#s_symbols').hasClass("select2-hidden-accessible")) {
+        // Select2 has been initialized
+        // symbols_id
+        i = $('select#s_symbols').select2('data');
+        if (i.length != 0) {
+            s_symbols = [];
+            i.forEach(function(e) {
+                s_symbols.push(e.symbol_id);
+            });
+        }
+    }
+    if ($('select#s_hazardstatements').hasClass("select2-hidden-accessible")) {
+        // Select2 has been initialized
+        // hazardstatements_id
+        i = $('select#s_hazardstatements').select2('data')[0];
+        if (i != undefined) {
+            s_hazardstatements = $('select#s_hazardstatements').select2('data')[0].id;
+        }
+    }
+    if ($('select#s_precautionarystatement').hasClass("select2-hidden-accessible")) {
+        // Select2 has been initialized
+        // precautionarystatement_id
+        i = $('select#s_precautionarystatement').select2('data')[0];
+        if (i != undefined) {
+            s_precautionarystatement = $('select#s_precautionarystatement').select2('data')[0].id;
+        }
+    }
+
     s_custom_name_part_of = $('#s_custom_name_part_of').val() ;
     s_storage_barecode = $('#s_storage_barecode').val() ;
 
     var $table = $('#table');
-    $table.bootstrapTable('refresh', {query: {name: s_name, casnumber: s_casnumber, empiricalformula: s_empiricalformula, custom_name_part_of: s_custom_name_part_of, storage_barecode: s_storage_barecode}}); 
+    $table.bootstrapTable('refresh', 
+        {query: 
+            {name: s_name, 
+            casnumber: s_casnumber, 
+            empiricalformula: s_empiricalformula, 
+            custom_name_part_of: s_custom_name_part_of, 
+            storage_barecode: s_storage_barecode,
+            signalword: s_signalword,
+            symbols: s_symbols,
+            hazardstatements: s_hazardstatements,
+            precautionarystatements: s_precautionarystatements
+            }
+        }); 
 }

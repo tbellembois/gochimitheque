@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -905,6 +906,11 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	if p.GetBookmark() {
 		comreq.WriteString(" JOIN bookmark AS b ON b.product = p.product_id AND b.person = :personid")
 	}
+	// get symbols
+	if len(p.GetSymbols()) != 0 {
+		comreq.WriteString(" JOIN productsymbols AS ps ON ps.productsymbols_product_id = p.product_id")
+	}
+
 	// filter by permissions
 	comreq.WriteString(` JOIN permission AS perm, entity as e ON
 	(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
@@ -939,6 +945,15 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	}
 	if p.GetCustomNamePartOf() != "" {
 		comreq.WriteString(" AND name.name_label LIKE :custom_name_part_of")
+	}
+	if len(p.GetSymbols()) != 0 {
+		comreq.WriteString(" AND ps.productsymbols_symbol_id IN (")
+		for _, s := range p.GetSymbols() {
+			comreq.WriteString(fmt.Sprintf("%d,", s))
+		}
+		// to complete the last comma
+		comreq.WriteString("-1")
+		comreq.WriteString(" )")
 	}
 	// filter restricted product
 	if !rperm {
