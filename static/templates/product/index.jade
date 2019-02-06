@@ -23,6 +23,22 @@
                 .col-sm-6
                     | {{$label := "barecode"}} {{$name := "s_storage_barecode"}}
                     +inputtextcompact
+            .row.collapse#advancedsearch
+                .col-sm-12
+                    .form-row
+                        .form-group.col-sm-6
+                            | {{$label := "signal word"}} {{$name := "s_signalword"}}
+                            +select
+                        .form-group.col-sm-6
+                            | {{$label := "symbol(s)"}} {{$name := "s_symbols"}}
+                            +selectmultiple
+                    .form-row
+                        .form-group.col-sm-6
+                            | {{$label := "hazard statement(s)"}} {{$name := "s_hazardstatements"}}
+                            +selectmultiple
+                        .form-group.col-sm-6
+                            | {{$label := "precautionary statement(s)"}} {{$name := "s_precautionarystatements"}}
+                            +selectmultiple
             .row
                 .col.col-sm-11
                     button#clearsearch.btn-sm.btn.btn-primary.mr-sm-2(title="clear search form" type="button" onclick="clearsearch();")
@@ -32,9 +48,6 @@
                 .col.col-sm-1
                     a.btn.btn-primary.btn-sm(data-toggle="collapse" href="#advancedsearch" role="button" aria-expanded="false" title="advanced search")
                         span.mdi.mdi-magnify-plus-outline.mdi-24px
-            .row.collapse#advancedsearch
-                .col-sm-12
-                    span coming soon !
 
     .row
         .col-sm-10
@@ -225,9 +238,7 @@
 
             // FIXME: this should be done before table rendering to avoid 2 ajax calls
             // populating search input if needed
-            //if (URLValues.has("search")) {
             if (urlParams.has("search")) {
-                //$('#table').bootstrapTable('resetSearch', URLValues.get("search")[0]);
                 $('#table').bootstrapTable('resetSearch', urlParams.get("search"));
             }
             // highlight row if needed
@@ -322,6 +333,8 @@
             var casnumber = urlParams.get("casnumber");
             var empiricalformula = urlParams.get("empiricalformula");
             var storage_barecode = urlParams.get("storage_barecode");
+            var custom_name_part_of = urlParams.get("custom_name_part_of");
+            // need to populate the form in case of product/storage view switch
             if (name != null) {
                 $.ajax({
                     url: proxyPath + "products/names/" + name,
@@ -357,6 +370,9 @@
             }           
             if (storage_barecode != null) {
                 $("input#storage_barecode").val(storage_barecode);
+            }
+            if (custom_name_part_of != null) {
+                $("input#custom_name_part_of").val(custom_name_part_of);
             }
 
             if (urlParams.has("entity")) {
@@ -556,15 +572,15 @@
                 '<span class="mdi mdi-24px mdi-delete"',
             '</button>',
             '<button id="bookmark' + pid + '" class="bookmark btn btn-primary btn-sm" title="(un)bookmark" type="button">',
-                '<span id="bookmark' + pid + ' "class="mdi mdi-24px mdi-' + bookmarkicon + '"',
+                '<span id="bookmark' + pid + ' "class="mdi mdi-24px mdi-' + bookmarkicon + '">',
             '</button>',
             ];
 
-            if (row.casnumber.casnumber_cmr.Valid && row.casnumber.casnumber_cmr.Bool) {
-                actions.push('<span title="CMR" class="mdi mdi-36px mdi-alert-outline"></span>' + row.casnumber.casnumber_cmr.String);
+            if (row.casnumber.casnumber_cmr.Valid) {
+                actions.push('<span title="CMR" class="mdi mdi-16px mdi-alert-outline"></span>' + row.casnumber.casnumber_cmr.String);
             }    
             if (row.product_restricted.Valid && row.product_restricted.Bool) {
-                actions.push('<span title="restricted access" class="mdi mdi-36px mdi-hand"></span>');
+                actions.push('<span title="restricted access" class="mdi mdi-16px mdi-hand"></span>');
             }  
 
             //FIXME: perms

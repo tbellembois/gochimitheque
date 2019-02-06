@@ -19,9 +19,14 @@ import (
 	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/handlers"
 	"github.com/tbellembois/gochimitheque/models"
+
+    //"github.com/pkg/profile"
 )
 
 func main() {
+
+	// CPU profiling by default
+	//defer profile.Start().Stop()
 
 	var (
 		err       error

@@ -44,6 +44,7 @@ type DbselectparamProduct interface {
 	SetEmpiricalFormula(int)
 	SetCasNumber(int)
 	SetStorageBarecode(string)
+	SetSymbols([]int)
 
 	SetCustomNamePartOf(string)
 
@@ -55,6 +56,7 @@ type DbselectparamProduct interface {
 	GetEmpiricalFormula() int
 	GetCasNumber() int
 	GetStorageBarecode() string
+	GetSymbols() []int
 
 	GetCustomNamePartOf() string
 }
@@ -68,6 +70,7 @@ type dbselectparamProduct struct {
 	EmpiricalFormula int // id
 	CasNumber        int // id
 	StorageBarecode  string
+	Symbols          []int // ids
 
 	// custom search
 	CustomNamePartOf string
@@ -273,6 +276,14 @@ func (d *dbselectparamProduct) SetStorageBarecode(n string) {
 
 func (d dbselectparamProduct) GetStorageBarecode() string {
 	return d.StorageBarecode
+}
+
+func (d *dbselectparamProduct) SetSymbols(n []int) {
+	d.Symbols = n
+}
+
+func (d dbselectparamProduct) GetSymbols() []int {
+	return d.Symbols
 }
 
 func (d *dbselectparamProduct) SetCustomNamePartOf(n string) {
@@ -498,12 +509,26 @@ func NewdbselectparamProduct(r *http.Request, f func(string) (string, error)) (*
 				}
 			}
 		}
+		if symbolsids, ok := r.URL.Query()["symbols[]"]; ok {
+			var sint int
+			for _, s := range symbolsids {
+				if sint, err = strconv.Atoi(s); err != nil {
+					return nil, &AppError{
+						Error:   err,
+						Code:    http.StatusInternalServerError,
+						Message: "symbol atoi conversion",
+					}
+				}
+				dspp.Symbols = append(dspp.Symbols, sint)
+			}
+		}
 		if storage_barecode, ok := r.URL.Query()["storage_barecode"]; ok {
 			dspp.StorageBarecode = storage_barecode[0]
 		}
 		if custom_name_part_of, ok := r.URL.Query()["custom_name_part_of"]; ok {
 			dspp.CustomNamePartOf = custom_name_part_of[0]
 		}
+
 	}
 	return &dspp, nil
 
