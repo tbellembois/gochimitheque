@@ -40,40 +40,48 @@ type DbselectparamProduct interface {
 	SetProduct(int)
 	SetStorelocation(int)
 	SetBookmark(bool)
+
+	SetCustomNamePartOf(string)
 	SetName(int)
 	SetEmpiricalFormula(int)
 	SetCasNumber(int)
 	SetStorageBarecode(string)
 	SetSymbols([]int)
-
-	SetCustomNamePartOf(string)
+	SetHazardStatements([]int)
+	SetPrecautionaryStatements([]int)
+	SetSignalWord(int)
 
 	GetEntity() int
 	GetProduct() int
 	GetStorelocation() int
 	GetBookmark() bool
+
+	GetCustomNamePartOf() string
 	GetName() int
 	GetEmpiricalFormula() int
 	GetCasNumber() int
 	GetStorageBarecode() string
 	GetSymbols() []int
-
-	GetCustomNamePartOf() string
+	GetHazardStatements() []int
+	GetPrecautionaryStatements() []int
+	GetSignalWord() int
 }
 type dbselectparamProduct struct {
 	dbselectparam
-	Entity           int // id
-	Product          int // id
-	Storelocation    int // id
-	Bookmark         bool
-	Name             int // id
-	EmpiricalFormula int // id
-	CasNumber        int // id
-	StorageBarecode  string
-	Symbols          []int // ids
+	Entity        int // id
+	Product       int // id
+	Storelocation int // id
+	Bookmark      bool
 
-	// custom search
-	CustomNamePartOf string
+	CustomNamePartOf        string
+	Name                    int // id
+	EmpiricalFormula        int // id
+	CasNumber               int // id
+	StorageBarecode         string
+	Symbols                 []int // ids
+	HazardStatements        []int //ids
+	PrecautionaryStatements []int //ids
+	SignalWord              int   // id
 }
 
 // dbselectparamStorage contains the parameters of the GetStorages function
@@ -86,12 +94,32 @@ type DbselectparamStorage interface {
 	SetHistory(bool)
 	SetStorageArchive(bool)
 
+	SetCustomNamePartOf(string)
+	SetName(int)
+	SetEmpiricalFormula(int)
+	SetCasNumber(int)
+	SetStorageBarecode(string)
+	SetSymbols([]int)
+	SetHazardStatements([]int)
+	SetPrecautionaryStatements([]int)
+	SetSignalWord(int)
+
 	GetEntity() int
 	GetProduct() int
 	GetStorelocation() int
 	GetStorage() int
 	GetHistory() bool
 	GetStorageArchive() bool
+
+	GetCustomNamePartOf() string
+	GetName() int
+	GetEmpiricalFormula() int
+	GetCasNumber() int
+	GetStorageBarecode() string
+	GetSymbols() []int
+	GetHazardStatements() []int
+	GetPrecautionaryStatements() []int
+	GetSignalWord() int
 }
 type dbselectparamStorage struct {
 	dbselectparam
@@ -101,6 +129,16 @@ type dbselectparamStorage struct {
 	Storage        int // id
 	History        bool
 	StorageArchive bool
+
+	CustomNamePartOf        string
+	Name                    int // id
+	EmpiricalFormula        int // id
+	CasNumber               int // id
+	StorageBarecode         string
+	Symbols                 []int // ids
+	HazardStatements        []int //ids
+	PrecautionaryStatements []int //ids
+	SignalWord              int   // id
 }
 
 // dbselectparamPerson contains the parameters of the GetPeople function
@@ -294,6 +332,30 @@ func (d dbselectparamProduct) GetCustomNamePartOf() string {
 	return d.CustomNamePartOf
 }
 
+func (d *dbselectparamProduct) SetHazardStatements(n []int) {
+	d.HazardStatements = n
+}
+
+func (d dbselectparamProduct) GetHazardStatements() []int {
+	return d.HazardStatements
+}
+
+func (d *dbselectparamProduct) SetPrecautionaryStatements(n []int) {
+	d.PrecautionaryStatements = n
+}
+
+func (d dbselectparamProduct) GetPrecautionaryStatements() []int {
+	return d.PrecautionaryStatements
+}
+
+func (d *dbselectparamProduct) SetSignalWord(n int) {
+	d.SignalWord = n
+}
+
+func (d dbselectparamProduct) GetSignalWord() int {
+	return d.SignalWord
+}
+
 //
 // dbselectparamStorage functions
 //
@@ -343,6 +405,78 @@ func (d dbselectparamStorage) GetStorageArchive() bool {
 
 func (d *dbselectparamStorage) SetStorageArchive(b bool) {
 	d.StorageArchive = b
+}
+
+func (d *dbselectparamStorage) SetName(n int) {
+	d.Name = n
+}
+
+func (d dbselectparamStorage) GetName() int {
+	return d.Name
+}
+
+func (d *dbselectparamStorage) SetEmpiricalFormula(n int) {
+	d.Name = n
+}
+
+func (d dbselectparamStorage) GetEmpiricalFormula() int {
+	return d.EmpiricalFormula
+}
+
+func (d *dbselectparamStorage) SetCasNumber(n int) {
+	d.CasNumber = n
+}
+
+func (d dbselectparamStorage) GetCasNumber() int {
+	return d.CasNumber
+}
+
+func (d *dbselectparamStorage) SetStorageBarecode(n string) {
+	d.StorageBarecode = n
+}
+
+func (d dbselectparamStorage) GetStorageBarecode() string {
+	return d.StorageBarecode
+}
+
+func (d *dbselectparamStorage) SetSymbols(n []int) {
+	d.Symbols = n
+}
+
+func (d dbselectparamStorage) GetSymbols() []int {
+	return d.Symbols
+}
+
+func (d *dbselectparamStorage) SetCustomNamePartOf(n string) {
+	d.CustomNamePartOf = n
+}
+
+func (d dbselectparamStorage) GetCustomNamePartOf() string {
+	return d.CustomNamePartOf
+}
+
+func (d *dbselectparamStorage) SetHazardStatements(n []int) {
+	d.HazardStatements = n
+}
+
+func (d dbselectparamStorage) GetHazardStatements() []int {
+	return d.HazardStatements
+}
+
+func (d *dbselectparamStorage) SetPrecautionaryStatements(n []int) {
+	d.PrecautionaryStatements = n
+}
+
+func (d dbselectparamStorage) GetPrecautionaryStatements() []int {
+	return d.PrecautionaryStatements
+}
+
+func (d *dbselectparamStorage) SetSignalWord(n int) {
+	d.SignalWord = n
+}
+
+func (d dbselectparamStorage) GetSignalWord() int {
+	return d.SignalWord
 }
 
 // Newdbselectparam returns a dbselectparam struct
@@ -435,6 +569,7 @@ func NewdbselectparamProduct(r *http.Request, f func(string) (string, error)) (*
 	dspp.EmpiricalFormula = -1
 	dspp.StorageBarecode = ""
 	dspp.CustomNamePartOf = ""
+	dspp.SignalWord = -1
 	if dsp, aerr = Newdbselectparam(r, f); aerr != nil {
 		return nil, aerr
 	}
@@ -522,6 +657,41 @@ func NewdbselectparamProduct(r *http.Request, f func(string) (string, error)) (*
 				dspp.Symbols = append(dspp.Symbols, sint)
 			}
 		}
+		if hsids, ok := r.URL.Query()["hazardstatements[]"]; ok {
+			var sint int
+			for _, s := range hsids {
+				if sint, err = strconv.Atoi(s); err != nil {
+					return nil, &AppError{
+						Error:   err,
+						Code:    http.StatusInternalServerError,
+						Message: "hazardstatement atoi conversion",
+					}
+				}
+				dspp.HazardStatements = append(dspp.HazardStatements, sint)
+			}
+		}
+		if psids, ok := r.URL.Query()["precautionarystatements[]"]; ok {
+			var sint int
+			for _, s := range psids {
+				if sint, err = strconv.Atoi(s); err != nil {
+					return nil, &AppError{
+						Error:   err,
+						Code:    http.StatusInternalServerError,
+						Message: "precautionarystatement atoi conversion",
+					}
+				}
+				dspp.PrecautionaryStatements = append(dspp.PrecautionaryStatements, sint)
+			}
+		}
+		if signalwordid, ok := r.URL.Query()["signalword"]; ok {
+			if dspp.SignalWord, err = strconv.Atoi(signalwordid[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "signalword atoi conversion",
+				}
+			}
+		}
 		if storage_barecode, ok := r.URL.Query()["storage_barecode"]; ok {
 			dspp.StorageBarecode = storage_barecode[0]
 		}
@@ -552,6 +722,12 @@ func NewdbselectparamStorage(r *http.Request, f func(string) (string, error)) (*
 	dsps.Storage = -1
 	dsps.History = false
 	dsps.StorageArchive = false
+	dsps.Name = -1
+	dsps.CasNumber = -1
+	dsps.EmpiricalFormula = -1
+	dsps.StorageBarecode = ""
+	dsps.CustomNamePartOf = ""
+	dsps.SignalWord = -1
 	if dsp, aerr = Newdbselectparam(r, f); aerr != nil {
 		return nil, aerr
 	}
@@ -621,6 +797,87 @@ func NewdbselectparamStorage(r *http.Request, f func(string) (string, error)) (*
 					Message: "storage_archive bool conversion",
 				}
 			}
+		}
+		if nameid, ok := r.URL.Query()["name"]; ok {
+			if dsps.Name, err = strconv.Atoi(nameid[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "name atoi conversion",
+				}
+			}
+		}
+		if casnumberid, ok := r.URL.Query()["casnumber"]; ok {
+			if dsps.CasNumber, err = strconv.Atoi(casnumberid[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "casnumber atoi conversion",
+				}
+			}
+		}
+		if empiricalformulaid, ok := r.URL.Query()["empiricalformula"]; ok {
+			if dsps.EmpiricalFormula, err = strconv.Atoi(empiricalformulaid[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "empiricalformula atoi conversion",
+				}
+			}
+		}
+		if symbolsids, ok := r.URL.Query()["symbols[]"]; ok {
+			var sint int
+			for _, s := range symbolsids {
+				if sint, err = strconv.Atoi(s); err != nil {
+					return nil, &AppError{
+						Error:   err,
+						Code:    http.StatusInternalServerError,
+						Message: "symbol atoi conversion",
+					}
+				}
+				dsps.Symbols = append(dsps.Symbols, sint)
+			}
+		}
+		if hsids, ok := r.URL.Query()["hazardstatements[]"]; ok {
+			var sint int
+			for _, s := range hsids {
+				if sint, err = strconv.Atoi(s); err != nil {
+					return nil, &AppError{
+						Error:   err,
+						Code:    http.StatusInternalServerError,
+						Message: "hazardstatement atoi conversion",
+					}
+				}
+				dsps.HazardStatements = append(dsps.HazardStatements, sint)
+			}
+		}
+		if psids, ok := r.URL.Query()["precautionarystatements[]"]; ok {
+			var sint int
+			for _, s := range psids {
+				if sint, err = strconv.Atoi(s); err != nil {
+					return nil, &AppError{
+						Error:   err,
+						Code:    http.StatusInternalServerError,
+						Message: "precautionarystatement atoi conversion",
+					}
+				}
+				dsps.PrecautionaryStatements = append(dsps.PrecautionaryStatements, sint)
+			}
+		}
+		if signalwordid, ok := r.URL.Query()["signalword"]; ok {
+			if dsps.SignalWord, err = strconv.Atoi(signalwordid[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "signalword atoi conversion",
+				}
+			}
+		}
+		if storage_barecode, ok := r.URL.Query()["storage_barecode"]; ok {
+			dsps.StorageBarecode = storage_barecode[0]
+		}
+		if custom_name_part_of, ok := r.URL.Query()["custom_name_part_of"]; ok {
+			dsps.CustomNamePartOf = custom_name_part_of[0]
 		}
 	}
 	return &dsps, nil

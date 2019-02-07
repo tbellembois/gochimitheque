@@ -910,6 +910,14 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	if len(p.GetSymbols()) != 0 {
 		comreq.WriteString(" JOIN productsymbols AS ps ON ps.productsymbols_product_id = p.product_id")
 	}
+	// get hazardstatements
+	if len(p.GetHazardStatements()) != 0 {
+		comreq.WriteString(" JOIN producthazardstatements AS phs ON phs.producthazardstatements_product_id = p.product_id")
+	}
+	// get precautionarystatements
+	if len(p.GetPrecautionaryStatements()) != 0 {
+		comreq.WriteString(" JOIN productprecautionarystatements AS pps ON pps.productprecautionarystatements_product_id = p.product_id")
+	}
 
 	// filter by permissions
 	comreq.WriteString(` JOIN permission AS perm, entity as e ON
@@ -931,6 +939,8 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	if p.GetStorelocation() != -1 {
 		comreq.WriteString(" AND storelocation.storelocation_id = :storelocation")
 	}
+
+	// search form parameters
 	if p.GetName() != -1 {
 		comreq.WriteString(" AND name.name_id = :name")
 	}
@@ -955,6 +965,28 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 		comreq.WriteString("-1")
 		comreq.WriteString(" )")
 	}
+	if len(p.GetHazardStatements()) != 0 {
+		comreq.WriteString(" AND phs.producthazardstatements_hazardstatement_id IN (")
+		for _, s := range p.GetHazardStatements() {
+			comreq.WriteString(fmt.Sprintf("%d,", s))
+		}
+		// to complete the last comma
+		comreq.WriteString("-1")
+		comreq.WriteString(" )")
+	}
+	if len(p.GetPrecautionaryStatements()) != 0 {
+		comreq.WriteString(" AND pps.productprecautionarystatements_precautionarystatement_id IN (")
+		for _, s := range p.GetPrecautionaryStatements() {
+			comreq.WriteString(fmt.Sprintf("%d,", s))
+		}
+		// to complete the last comma
+		comreq.WriteString("-1")
+		comreq.WriteString(" )")
+	}
+	if p.GetSignalWord() != -1 {
+		comreq.WriteString(" AND empiricalformula.empiricalformula_id = :empiricalformula")
+	}
+
 	// filter restricted product
 	if !rperm {
 		comreq.WriteString(" AND p.product_restricted = false")
