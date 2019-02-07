@@ -572,7 +572,7 @@
                 '<span class="mdi mdi-24px mdi-delete"',
             '</button>',
             '<button id="bookmark' + pid + '" class="bookmark btn btn-primary btn-sm" title="(un)bookmark" type="button">',
-                '<span id="bookmark' + pid + ' "class="mdi mdi-24px mdi-' + bookmarkicon + '">',
+                '<span id="bookmark' + pid + '" class="mdi mdi-24px mdi-' + bookmarkicon + '">',
             '</button>',
             ];
 
@@ -607,10 +607,12 @@
                 url: proxyPath + "bookmarks/" + row['product_id'],
                 method: "PUT",
             }).done(function(data, textStatus, jqXHR) {
-                if ($("i#bookmark" + data.product_id).text() == "star") {
-                    $("i#bookmark" + data.product_id).text("star_border")
+                if ($("span#bookmark" + data.product_id).hasClass("mdi-bookmark")) {
+                    $("span#bookmark" + data.product_id).removeClass("mdi-bookmark");
+                    $("span#bookmark" + data.product_id).addClass("mdi-bookmark-outline");
                 } else {
-                    $("i#bookmark" + data.product_id).text("star")
+                    $("span#bookmark" + data.product_id).removeClass("mdi-bookmark-outline");
+                    $("span#bookmark" + data.product_id).addClass("mdi-bookmark");
                 }
             }).fail(function(jqXHR, textStatus, errorThrown) {
                 handleHTTPError(jqXHR.statusText, jqXHR.status)
