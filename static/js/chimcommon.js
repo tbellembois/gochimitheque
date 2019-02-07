@@ -264,17 +264,23 @@ function search() {
     if ($('select#s_hazardstatements').hasClass("select2-hidden-accessible")) {
         // Select2 has been initialized
         // hazardstatements_id
-        i = $('select#s_hazardstatements').select2('data')[0];
-        if (i != undefined) {
-            s_hazardstatements = $('select#s_hazardstatements').select2('data')[0].id;
+        i = $('select#s_hazardstatements').select2('data');
+        if (i.length != 0) {
+            s_hazardstatements = [];
+            i.forEach(function(e) {
+                s_hazardstatements.push(e.hazardstatement_id);
+            });
         }
     }
     if ($('select#s_precautionarystatements').hasClass("select2-hidden-accessible")) {
         // Select2 has been initialized
         // precautionarystatement_id
-        i = $('select#s_precautionarystatements').select2('data')[0];
-        if (i != undefined) {
-            s_precautionarystatements = $('select#s_precautionarystatements').select2('data')[0].id;
+        i = $('select#s_precautionarystatements').select2('data');
+        if (i.length != 0) {
+            s_precautionarystatements = [];
+            i.forEach(function(e) {
+                s_precautionarystatements.push(e.precautionarystatement_id);
+            });
         }
     }
 
