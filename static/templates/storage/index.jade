@@ -23,6 +23,22 @@
                 .col-sm-6
                     | {{$label := "barecode"}} {{$name := "s_storage_barecode"}}
                     +inputtextcompact
+            .row.collapse#advancedsearch
+                .col-sm-12
+                    .form-row
+                        .form-group.col-sm-6
+                            | {{$label := "signal word"}} {{$name := "s_signalword"}}
+                            +select
+                        .form-group.col-sm-6
+                            | {{$label := "symbol(s)"}} {{$name := "s_symbols"}}
+                            +selectmultiple
+                    .form-row
+                        .form-group.col-sm-6
+                            | {{$label := "hazard statement(s)"}} {{$name := "s_hazardstatements"}}
+                            +selectmultiple
+                        .form-group.col-sm-6
+                            | {{$label := "precautionary statement(s)"}} {{$name := "s_precautionarystatements"}}
+                            +selectmultiple
             .row
                 .col.col-sm-11
                     button#clearsearch.btn-sm.btn.btn-primary.mr-sm-2(title="clear search form" type="button" onclick="clearsearch();")
@@ -32,10 +48,6 @@
                 .col.col-sm-1
                     a.btn.btn-primary.btn-sm(data-toggle="collapse" href="#advancedsearch" role="button" aria-expanded="false" title="advanced search")
                         span.mdi.mdi-magnify-plus-outline.mdi-24px
-
-            .row.collapse#advancedsearch
-                .col-sm-12
-                    span coming soon !
 
     .row
         .col-sm-8
@@ -424,6 +436,8 @@
             var empiricalformula = urlParams.get("empiricalformula");
             var storage_barecode = urlParams.get("storage_barecode");
             var storage_archive = urlParams.get("storage_archive");
+            var custom_name_part_of = urlParams.get("custom_name_part_of");
+            // need to populate the form in case of product/storage view switch
             if (name != null) {
                 $.ajax({
                     url: proxyPath + "products/names/" + name,
@@ -459,6 +473,9 @@
             }
             if (storage_barecode != null) {
                 $("input#storage_barecode").val(storage_barecode);
+            }
+            if (custom_name_part_of != null) {
+                $("input#custom_name_part_of").val(custom_name_part_of);
             }
             if (storage_archive != null && storage_archive == "true") {
                 $("#s_storage_archive").prop( "checked", true );

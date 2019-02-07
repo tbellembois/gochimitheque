@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -232,6 +233,8 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 	comreq.WriteString(" JOIN product ON s.product = product.product_id")
 	// get names
 	comreq.WriteString(" JOIN name ON product.name = name.name_id")
+	// get signal word
+	comreq.WriteString(" LEFT JOIN signalword ON product.signalword = signalword.signalword_id")
 	// get person
 	comreq.WriteString(" JOIN person ON s.person = person.person_id")
 	// get store location
@@ -244,6 +247,26 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 	comreq.WriteString(" LEFT JOIN supplier ON s.supplier = supplier.supplier_id")
 	// get borrowing
 	comreq.WriteString(" LEFT JOIN borrowing ON s.storage_id = borrowing.storage")
+
+	// get name
+	//comreq.WriteString(" JOIN name ON product.name = name.name_id")
+	// get casnumber
+	comreq.WriteString(" JOIN casnumber ON product.casnumber = casnumber.casnumber_id")
+	// get empirical formula
+	comreq.WriteString(" JOIN empiricalformula ON product.empiricalformula = empiricalformula.empiricalformula_id")
+	// get symbols
+	if len(p.GetSymbols()) != 0 {
+		comreq.WriteString(" JOIN productsymbols AS ps ON ps.productsymbols_product_id = product.product_id")
+	}
+	// get hazardstatements
+	if len(p.GetHazardStatements()) != 0 {
+		comreq.WriteString(" JOIN producthazardstatements AS phs ON phs.producthazardstatements_product_id = product.product_id")
+	}
+	// get precautionarystatements
+	if len(p.GetPrecautionaryStatements()) != 0 {
+		comreq.WriteString(" JOIN productprecautionarystatements AS pps ON pps.productprecautionarystatements_product_id = product.product_id")
+	}
+
 	// filter by permissions
 	comreq.WriteString(` JOIN permission AS perm, entity as e ON
 		(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
@@ -280,6 +303,53 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 		comreq.WriteString(" AND s.storage_archive = false")
 	}
 
+	// search form parameters
+	if p.GetName() != -1 {
+		comreq.WriteString(" AND name.name_id = :name")
+	}
+	if p.GetCasNumber() != -1 {
+		comreq.WriteString(" AND casnumber.casnumber_id = :casnumber")
+	}
+	if p.GetEmpiricalFormula() != -1 {
+		comreq.WriteString(" AND empiricalformula.empiricalformula_id = :empiricalformula")
+	}
+	if p.GetStorageBarecode() != "" {
+		comreq.WriteString(" AND storage.storage_barecode = :storage_barecode")
+	}
+	if p.GetCustomNamePartOf() != "" {
+		comreq.WriteString(" AND name.name_label LIKE :custom_name_part_of")
+	}
+	if len(p.GetSymbols()) != 0 {
+		comreq.WriteString(" AND ps.productsymbols_symbol_id IN (")
+		for _, s := range p.GetSymbols() {
+			comreq.WriteString(fmt.Sprintf("%d,", s))
+		}
+		// to complete the last comma
+		comreq.WriteString("-1")
+		comreq.WriteString(" )")
+	}
+	if len(p.GetHazardStatements()) != 0 {
+		comreq.WriteString(" AND phs.producthazardstatements_hazardstatement_id IN (")
+		for _, s := range p.GetHazardStatements() {
+			comreq.WriteString(fmt.Sprintf("%d,", s))
+		}
+		// to complete the last comma
+		comreq.WriteString("-1")
+		comreq.WriteString(" )")
+	}
+	if len(p.GetPrecautionaryStatements()) != 0 {
+		comreq.WriteString(" AND pps.productprecautionarystatements_precautionarystatement_id IN (")
+		for _, s := range p.GetPrecautionaryStatements() {
+			comreq.WriteString(fmt.Sprintf("%d,", s))
+		}
+		// to complete the last comma
+		comreq.WriteString("-1")
+		comreq.WriteString(" )")
+	}
+	if p.GetSignalWord() != -1 {
+		comreq.WriteString(" AND empiricalformula.empiricalformula_id = :empiricalformula")
+	}
+
 	// post select request
 	postsreq.WriteString(" GROUP BY s.storage_id")
 	postsreq.WriteString(" ORDER BY " + p.GetOrderBy() + " " + p.GetOrder())
@@ -299,15 +369,20 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 
 	// building argument map
 	m := map[string]interface{}{
-		"search":        p.GetSearch(),
-		"personid":      p.GetLoggedPersonID(),
-		"order":         p.GetOrder(),
-		"limit":         p.GetLimit(),
-		"offset":        p.GetOffset(),
-		"entity":        p.GetEntity(),
-		"product":       p.GetProduct(),
-		"storelocation": p.GetStorelocation(),
-		"storage":       p.GetStorage(),
+		"search":              p.GetSearch(),
+		"personid":            p.GetLoggedPersonID(),
+		"order":               p.GetOrder(),
+		"limit":               p.GetLimit(),
+		"offset":              p.GetOffset(),
+		"entity":              p.GetEntity(),
+		"product":             p.GetProduct(),
+		"storelocation":       p.GetStorelocation(),
+		"storage":             p.GetStorage(),
+		"name":                p.GetName(),
+		"casnumber":           p.GetCasNumber(),
+		"empiricalformula":    p.GetEmpiricalFormula(),
+		"storage_barecode":    p.GetStorageBarecode(),
+		"custom_name_part_of": "%" + p.GetCustomNamePartOf() + "%",
 	}
 
 	// select

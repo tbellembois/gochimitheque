@@ -269,12 +269,12 @@ function search() {
             s_hazardstatements = $('select#s_hazardstatements').select2('data')[0].id;
         }
     }
-    if ($('select#s_precautionarystatement').hasClass("select2-hidden-accessible")) {
+    if ($('select#s_precautionarystatements').hasClass("select2-hidden-accessible")) {
         // Select2 has been initialized
         // precautionarystatement_id
-        i = $('select#s_precautionarystatement').select2('data')[0];
+        i = $('select#s_precautionarystatements').select2('data')[0];
         if (i != undefined) {
-            s_precautionarystatement = $('select#s_precautionarystatement').select2('data')[0].id;
+            s_precautionarystatements = $('select#s_precautionarystatements').select2('data')[0].id;
         }
     }
 
