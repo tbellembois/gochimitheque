@@ -347,7 +347,7 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 		comreq.WriteString(" )")
 	}
 	if p.GetSignalWord() != -1 {
-		comreq.WriteString(" AND empiricalformula.empiricalformula_id = :empiricalformula")
+		comreq.WriteString(" AND signalword.signalword_id = :signalword")
 	}
 
 	// post select request
@@ -383,6 +383,7 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 		"empiricalformula":    p.GetEmpiricalFormula(),
 		"storage_barecode":    p.GetStorageBarecode(),
 		"custom_name_part_of": "%" + p.GetCustomNamePartOf() + "%",
+		"signalword":          p.GetSignalWord(),
 	}
 
 	// select

@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/GeertJohan/go.rice"
+	rice "github.com/GeertJohan/go.rice"
 	"github.com/Joker/jade"
 	"github.com/gorilla/mux"
 	"github.com/justinas/alice"
@@ -19,8 +19,7 @@ import (
 	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/handlers"
 	"github.com/tbellembois/gochimitheque/models"
-
-    //"github.com/pkg/profile"
+	//"github.com/pkg/profile"
 )
 
 func main() {
@@ -358,6 +357,7 @@ func main() {
 	r.Handle("/{item:products}/empiricalformulas/{id}", securechain.Then(env.AppMiddleware(env.GetProductsEmpiricalFormulaHandler))).Methods("GET")
 	r.Handle("/{item:products}/physicalstates", securechain.Then(env.AppMiddleware(env.GetProductsPhysicalStatesHandler))).Methods("GET")
 	r.Handle("/{item:products}/signalwords", securechain.Then(env.AppMiddleware(env.GetProductsSignalWordsHandler))).Methods("GET")
+	r.Handle("/{item:products}/signalwords/{id}", securechain.Then(env.AppMiddleware(env.GetProductsSignalWordHandler))).Methods("GET")
 	r.Handle("/{item:products}/synonyms", securechain.Then(env.AppMiddleware(env.GetProductsSynonymsHandler))).Methods("GET")
 	r.Handle("/{item:products}/symbols", securechain.Then(env.AppMiddleware(env.GetProductsSymbolsHandler))).Methods("GET")
 	r.Handle("/{item:products}/classofcompounds", securechain.Then(env.AppMiddleware(env.GetProductsClassOfCompoundsHandler))).Methods("GET")
