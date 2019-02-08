@@ -194,6 +194,7 @@ script.
         });
 
         $('select#s_signalword').select2({
+            templateResult: formatSignalWord,
             allowClear: true,
             placeholder: "select signal word",
             ajax: {
@@ -535,6 +536,7 @@ script.
         // signalword select2
         //
         $('select#signalword').select2({
+            templateResult: formatSignalWord,
             allowClear: true,
             placeholder: "select signal word",
             ajax: {
@@ -1020,7 +1022,17 @@ script.
         );
         return s;
     };
-   
+    //
+    // signalwords select2 formatter
+    //
+    function formatSignalWord (signalword) {
+        if (!signalword.signalword_id) {
+            return signalword.signalword_label;
+        }
+        if (signalword.signalword_id.Valid) {
+            return signalword.signalword_label.String;
+        }
+    };
     //
     // symbols select2 formatter
     //

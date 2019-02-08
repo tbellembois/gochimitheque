@@ -549,6 +549,38 @@ func (env *Env) GetProductsCasNumberHandler(w http.ResponseWriter, r *http.Reque
 	return nil
 }
 
+// GetProductsSignalWordHandler returns a json of the signal word matching the id
+func (env *Env) GetProductsSignalWordHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	log.Debug("GetProductsSignalWordHandler")
+
+	vars := mux.Vars(r)
+	var (
+		id  int
+		err error
+	)
+
+	if id, err = strconv.Atoi(vars["id"]); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "id atoi conversion",
+			Code:    http.StatusInternalServerError}
+	}
+
+	signalword, err := env.DB.GetProductsSignalWord(id)
+	if err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the signal word",
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(signalword)
+	return nil
+}
+
 // GetProductsSymbolsHandler returns a json list of the symbols matching the search criteria
 func (env *Env) GetProductsSymbolsHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	log.Debug("GetProductsSymbolsHandler")

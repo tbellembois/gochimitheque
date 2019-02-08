@@ -461,6 +461,26 @@ func (db *SQLiteDataStore) GetProductsCasNumber(id int) (CasNumber, error) {
 	return cas, nil
 }
 
+// GetProductsSignalWord return the signalword matching the given id
+func (db *SQLiteDataStore) GetProductsSignalWord(id int) (SignalWord, error) {
+
+	var (
+		signalword SignalWord
+		sqlr       string
+		err        error
+	)
+	log.WithFields(log.Fields{"id": id}).Debug("GetProductsSignalWord")
+
+	sqlr = `SELECT signalword.signalword_id, signalword.signalword_label
+	FROM signalword
+	WHERE signalword_id = ?`
+	if err = db.Get(&signalword, sqlr, id); err != nil {
+		return SignalWord{}, err
+	}
+	log.WithFields(log.Fields{"ID": id, "signalword": signalword}).Debug("GetProductsSignalWord")
+	return signalword, nil
+}
+
 // GetProductsNames return the names matching the search criteria
 func (db *SQLiteDataStore) GetProductsNames(p helpers.Dbselectparam) ([]Name, int, error) {
 	var (
@@ -984,7 +1004,7 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 		comreq.WriteString(" )")
 	}
 	if p.GetSignalWord() != -1 {
-		comreq.WriteString(" AND empiricalformula.empiricalformula_id = :empiricalformula")
+		comreq.WriteString(" AND signalword.signalword_id = :signalword")
 	}
 
 	// filter restricted product
@@ -1024,6 +1044,7 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 		"empiricalformula":    p.GetEmpiricalFormula(),
 		"storage_barecode":    p.GetStorageBarecode(),
 		"custom_name_part_of": "%" + p.GetCustomNamePartOf() + "%",
+		"signalword":          p.GetSignalWord(),
 	}
 
 	// select

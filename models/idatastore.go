@@ -26,6 +26,7 @@ type Datastore interface {
 	GetProductsEmpiricalFormula(id int) (EmpiricalFormula, error)
 	GetProductsPhysicalStates(helpers.Dbselectparam) ([]PhysicalState, int, error)
 	GetProductsSignalWords(helpers.Dbselectparam) ([]SignalWord, int, error)
+	GetProductsSignalWord(id int) (SignalWord, error)
 	GetProductsClassOfCompounds(helpers.Dbselectparam) ([]ClassOfCompound, int, error)
 	GetProductsHazardStatementByReference(string) (HazardStatement, error)
 	GetProductsHazardStatements(helpers.Dbselectparam) ([]HazardStatement, int, error)
