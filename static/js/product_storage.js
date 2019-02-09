@@ -12,13 +12,6 @@ $('#table').on('load-success.bs.table refresh.bs.table', function () {
     // getting request parameters
     var urlParams = new URLSearchParams(window.location.search);
     
-    // FIXME: this should be done before table rendering to avoid 2 ajax calls
-    // populating search input if needed
-    //if (URLValues.has("search")) {
-    if (urlParams.has("search")) {
-        //$('#table').bootstrapTable('resetSearch', URLValues.get("search")[0]);
-        $('#table').bootstrapTable('resetSearch', urlParams.get("search"));
-    }
     // highlight row if needed
     if (urlParams.has("hl")) {
         $("tr[storage_id=" + urlParams.get("hl") + "]").addClass("animated bounce slow");
@@ -32,9 +25,7 @@ $('#table').on('load-success.bs.table refresh.bs.table', function () {
     var historypromise = $.Deferred();
     var productData, storageData, storelocationData, entityData, historyData, bookmarkData;
     // display titles, switch products<>storages selector
-    //if (URLValues.has("entity")) {
     if (urlParams.has("entity")) {
-        //e = URLValues.get("entity")[0];
         e = urlParams.get("entity");
         entitypromise = $.ajax({
             url: proxyPath + "entities/" + e,
@@ -48,7 +39,6 @@ $('#table').on('load-success.bs.table refresh.bs.table', function () {
         entitypromise.resolve();
     }
     if (urlParams.has("storelocation")) {
-        //e = URLValues.get("entity")[0];
         s = urlParams.get("storelocation");
         storelocationpromise = $.ajax({
             url: proxyPath + "storelocations/" + s,
@@ -62,7 +52,6 @@ $('#table').on('load-success.bs.table refresh.bs.table', function () {
         storelocationpromise.resolve();
     }
     if (urlParams.has("storage")) {
-        //e = URLValues.get("entity")[0];
         s = urlParams.get("storage");
         storagepromise = $.ajax({
             url: proxyPath + "storages/" + s,
@@ -77,9 +66,7 @@ $('#table').on('load-success.bs.table refresh.bs.table', function () {
     } else {
         storagepromise.resolve();
     }
-    //if (URLValues.has("product")) {
     if (urlParams.has("product")) {
-        //p = URLValues.get("product")[0];
         p = urlParams.get("product");
         // setting the title
         productpromise = $.ajax({
@@ -187,7 +174,7 @@ function queryParams(params) {
             url: proxyPath + "products/names/" + name,
             method: "GET",
         }).done(function(data, textStatus, jqXHR) {
-            var newOption = new Option(data.name_label, data.name_id, false, false);
+            var newOption = new Option(data.name_label, data.name_id, true, true);
             $('#s_name').append(newOption).trigger('change');
         }).fail(function(jqXHR, textStatus, errorThrown) {
             handleHTTPError(jqXHR.statusText, jqXHR.status);
@@ -198,7 +185,7 @@ function queryParams(params) {
             url: proxyPath + "products/casnumbers/" + casnumber,
             method: "GET",
         }).done(function(data, textStatus, jqXHR) {
-            var newOption = new Option(data.casnumber_label, data.casnumber_id, false, false);
+            var newOption = new Option(data.casnumber_label, data.casnumber_id, true, true);
             $('#s_casnumber').append(newOption).trigger('change');
         }).fail(function(jqXHR, textStatus, errorThrown) {
             handleHTTPError(jqXHR.statusText, jqXHR.status);
@@ -209,7 +196,7 @@ function queryParams(params) {
             url: proxyPath + "products/empiricalformulas/" + empiricalformula,
             method: "GET",
         }).done(function(data, textStatus, jqXHR) {
-            var newOption = new Option(data.empiricalformula_label, data.empiricalformula_id, false, false);
+            var newOption = new Option(data.empiricalformula_label, data.empiricalformula_id, true, true);
             $('#s_empiricalformula').append(newOption).trigger('change');
         }).fail(function(jqXHR, textStatus, errorThrown) {
             handleHTTPError(jqXHR.statusText, jqXHR.status);
@@ -222,20 +209,32 @@ function queryParams(params) {
         $("input#custom_name_part_of").val(custom_name_part_of)
     }
     if (signalword != null) {
+        $("#advancedsearch").collapse('show');
         $.ajax({
             url: proxyPath + "products/signalwords/" + signalword,
             method: "GET",
         }).done(function(data, textStatus, jqXHR) {
-            var newOption = new Option(data.signalword_label.String, data.signalword_id.Int, false, false);
+            var newOption = new Option(data.signalword_label.String, data.signalword_id.Int, true, true);
             $('#s_signalword').append(newOption).trigger('change');
         }).fail(function(jqXHR, textStatus, errorThrown) {
             handleHTTPError(jqXHR.statusText, jqXHR.status);
         })
     }
-    if (symbols != null) {
-        console.log(symbols)
+    if (symbols.length != 0) {
+        $("#advancedsearch").collapse('show');
+        $.each(symbols, function (index, symbol) { 
+            $.ajax({
+                url: proxyPath + "products/symbols/" + symbol,
+                method: "GET",
+            }).done(function(data, textStatus, jqXHR) {
+                var newOption = new Option(data.symbol_label, data.symbol_id, true, true);
+                $('#s_symbols').append(newOption).trigger('change');
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                handleHTTPError(jqXHR.statusText, jqXHR.status);
+            }) 
+        });
     }
-    
+   
     // storage view specific
     if (storage_archive != null && storage_archive == "true") {
         $("#s_storage_archive").prop( "checked", true )
@@ -274,6 +273,9 @@ function queryParams(params) {
     }
     if (signalword != null) {
         params["signalword"] = signalword
+    }
+    if (symbols.length != 0) {
+        params["symbols"] = symbols
     }
     
     return params;

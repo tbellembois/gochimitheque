@@ -2,9 +2,6 @@
 // request performed at table data loading
 //
 function getData(params) {
-    // getting request parameters
-    var urlParams = new URLSearchParams(window.location.search);
-    
     // saving the query parameters
     lastQueryParams = params;
     $.ajax({
@@ -290,83 +287,10 @@ function operateFormatter(value, row, index) {
     
     return actions.join('&nbsp;')    
 }
-            
+
+//
 // items actions callback
-function operateBorrow(e, value, row, index) {
-    $('select#borrower').val(null).trigger('change');
-    $('select#borrower').find('option').remove();
-    
-    $("input#bstorage_id").val(row['storage_id'].Int64);
-    
-    if (row['borrowing']['borrowing_id'].Valid) {
-        saveBorrowing();
-    } else {
-        $("#borrow").modal("show");
-    }
-    
-    var $table = $('#table');
-    $table.bootstrapTable('refresh');
-}
-function operateEdit(e, value, row, index) {
-    // clearing selections
-    $('input#storage_quantity').val(null);
-    $('input#storage_entrydate').val(null);
-    $('input#storage_exitdate').val(null);
-    $('input#storage_openingdate').val(null);
-    $('input#storage_expirationdate').val(null);
-    $('input#storage_reference').val(null);
-    $('input#storage_batchnumber').val(null);
-    $('input#storage_barecode').val(null);
-    $('input#storage_comment').val(null);
-    
-    $('select#storelocation').val(null).trigger('change');
-    $('select#storelocation').find('option').remove();
-    $('select#unit').val(null).trigger('change');
-    $('select#unit').find('option').remove();
-    $('select#supplier').val(null).trigger('change');
-    $('select#supplier').find('option').remove();
-    
-    // getting the storage
-    $.ajax({
-        url: proxyPath + "storages/" + row['storage_id'].Int64,
-        method: "GET",
-    }).done(function(data, textStatus, jqXHR) {
-        // flattening response data
-        fdata = flatten(data);
-        
-        // processing sqlNull values
-        newfdata = global.normalizeSqlNull(fdata);
-        
-        // autofilling form
-        $("#edit-collapse").autofill( newfdata, {"findbyname": false } );
-        
-        // setting index hidden input
-        $("input#index").val(index);
-        
-        // select2 is not autofilled - we need a special operation
-        var newOption = new Option(data.storelocation.storelocation_name.String, data.storelocation.storelocation_id.Int64, true, true);
-        $('select#storelocation').append(newOption).trigger('change');
-        
-        if (data.unit.unit_id.Valid) {
-            var newOption = new Option(data.unit.unit_label.String, data.unit.unit_id.Int64, true, true);
-            $('select#unit').append(newOption).trigger('change');
-        }
-        
-        if (data.supplier.supplier_id.Valid) {
-            var newOption = new Option(data.supplier.supplier_label.String, data.supplier.supplier_id.Int64, true, true);
-            $('select#supplier').append(newOption).trigger('change');
-        }
-        
-    }).fail(function(jqXHR, textStatus, errorThrown) {
-        handleHTTPError(jqXHR.statusText, jqXHR.status)
-    });
-    
-    // finally collapsing the view
-    $('#edit-collapse').collapse('show');
-    $('#list-collapse').collapse('hide');
-    $('div#search').collapse('hide');
-    $(".toggleable").hide();
-}
+//
 window.operateEvents = {
     'click .edit': function (e, value, row, index) {
         operateEdit(e, value, row, index)
@@ -442,3 +366,78 @@ window.operateEvents = {
         });
     }
 };
+function operateBorrow(e, value, row, index) {
+    $('select#borrower').val(null).trigger('change');
+    $('select#borrower').find('option').remove();
+    
+    $("input#bstorage_id").val(row['storage_id'].Int64);
+    
+    if (row['borrowing']['borrowing_id'].Valid) {
+        saveBorrowing();
+    } else {
+        $("#borrow").modal("show");
+    }
+    
+    var $table = $('#table');
+    $table.bootstrapTable('refresh');
+}
+function operateEdit(e, value, row, index) {
+    // clearing selections
+    $('input#storage_quantity').val(null);
+    $('input#storage_entrydate').val(null);
+    $('input#storage_exitdate').val(null);
+    $('input#storage_openingdate').val(null);
+    $('input#storage_expirationdate').val(null);
+    $('input#storage_reference').val(null);
+    $('input#storage_batchnumber').val(null);
+    $('input#storage_barecode').val(null);
+    $('input#storage_comment').val(null);
+    
+    $('select#storelocation').val(null).trigger('change');
+    $('select#storelocation').find('option').remove();
+    $('select#unit').val(null).trigger('change');
+    $('select#unit').find('option').remove();
+    $('select#supplier').val(null).trigger('change');
+    $('select#supplier').find('option').remove();
+    
+    // getting the storage
+    $.ajax({
+        url: proxyPath + "storages/" + row['storage_id'].Int64,
+        method: "GET",
+    }).done(function(data, textStatus, jqXHR) {
+        // flattening response data
+        fdata = flatten(data);
+        
+        // processing sqlNull values
+        newfdata = global.normalizeSqlNull(fdata);
+        
+        // autofilling form
+        $("#edit-collapse").autofill( newfdata, {"findbyname": false } );
+        
+        // setting index hidden input
+        $("input#index").val(index);
+        
+        // select2 is not autofilled - we need a special operation
+        var newOption = new Option(data.storelocation.storelocation_name.String, data.storelocation.storelocation_id.Int64, true, true);
+        $('select#storelocation').append(newOption).trigger('change');
+        
+        if (data.unit.unit_id.Valid) {
+            var newOption = new Option(data.unit.unit_label.String, data.unit.unit_id.Int64, true, true);
+            $('select#unit').append(newOption).trigger('change');
+        }
+        
+        if (data.supplier.supplier_id.Valid) {
+            var newOption = new Option(data.supplier.supplier_label.String, data.supplier.supplier_id.Int64, true, true);
+            $('select#supplier').append(newOption).trigger('change');
+        }
+        
+    }).fail(function(jqXHR, textStatus, errorThrown) {
+        handleHTTPError(jqXHR.statusText, jqXHR.status)
+    });
+    
+    // finally collapsing the view
+    $('#edit-collapse').collapse('show');
+    $('#list-collapse').collapse('hide');
+    $('div#search').collapse('hide');
+    $(".toggleable").hide();
+}

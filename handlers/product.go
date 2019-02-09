@@ -616,6 +616,38 @@ func (env *Env) GetProductsSymbolsHandler(w http.ResponseWriter, r *http.Request
 	return nil
 }
 
+// GetProductsSymbolHandler returns a json of the symbol matching the id
+func (env *Env) GetProductsSymbolHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	log.Debug("GetProductsSymbolHandler")
+
+	vars := mux.Vars(r)
+	var (
+		id  int
+		err error
+	)
+
+	if id, err = strconv.Atoi(vars["id"]); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "id atoi conversion",
+			Code:    http.StatusInternalServerError}
+	}
+
+	symbol, err := env.DB.GetProductsSymbol(id)
+	if err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the symbol",
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(symbol)
+	return nil
+}
+
 // GetProductsHazardStatementsHandler returns a json list of the hazard statements matching the search criteria
 func (env *Env) GetProductsHazardStatementsHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	log.Debug("GetProductsHazardStatementsHandler")

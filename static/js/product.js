@@ -36,6 +36,7 @@ function getData(params) {
 function rowAttributes(row, index) {
     return {"product_id":row["product_id"]}
 }
+
 //
 // table detail formatter
 //
@@ -195,7 +196,49 @@ function operateFormatter(value, row, index) {
     return actions.join('&nbsp;')    
 }
 
+//
 // items actions callback
+//
+window.operateEvents = {
+    'click .bookmark': function (e, value, row, index) {
+        operateBookmark(e, value, row, index)
+    },
+    'click .store': function (e, value, row, index) {
+        window.location.href = proxyPath + "vc/storages?product=" + row['product_id'];
+    },
+    'click .storages': function (e, value, row, index) {
+        var urlParams = new URLSearchParams(window.location.search);
+        var url = proxyPath + "v/storages?product=" + row['product_id'];
+        if (urlParams.has("storelocation")) {
+            s = urlParams.get("storelocation");
+            url = url + "&storelocation=" + s;
+        }
+        window.location.href = url;
+    },
+    'click .edit': function (e, value, row, index) {
+        operateEdit(e, value, row, index)
+    },
+    'click .delete': function (e, value, row, index) {
+        // hiding possible previous confirmation button
+        $(this).confirmation("show").off( "confirmed.bs.confirmation");
+        $(this).confirmation("show").off( "canceled.bs.confirmation");
+        
+        // ask for confirmation and then delete
+        $(this).confirmation("show").on( "confirmed.bs.confirmation", function() {
+            $.ajax({
+                url: proxyPath + "products/" + row['product_id'],
+                method: "DELETE",
+            }).done(function(data, textStatus, jqXHR) {
+                global.displayMessage("product deleted", "success");
+                var $table = $('#table');
+                $table.bootstrapTable('refresh');
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                handleHTTPError(jqXHR.statusText, jqXHR.status)
+            });
+        }).on( "canceled.bs.confirmation", function() {
+        });
+    }
+};
 function operateBookmark(e, value, row, index) {
     // toggling the bookmark
     $.ajax({
@@ -324,43 +367,3 @@ function operateEdit(e, value, row, index) {
     $('div#search').collapse('hide');
     $(".toggleable").hide();
 }
-window.operateEvents = {
-    'click .bookmark': function (e, value, row, index) {
-        operateBookmark(e, value, row, index)
-    },
-    'click .store': function (e, value, row, index) {
-        window.location.href = proxyPath + "vc/storages?product=" + row['product_id'];
-    },
-    'click .storages': function (e, value, row, index) {
-        var urlParams = new URLSearchParams(window.location.search);
-        var url = proxyPath + "v/storages?product=" + row['product_id'];
-        if (urlParams.has("storelocation")) {
-            s = urlParams.get("storelocation");
-            url = url + "&storelocation=" + s;
-        }
-        window.location.href = url;
-    },
-    'click .edit': function (e, value, row, index) {
-        operateEdit(e, value, row, index)
-    },
-    'click .delete': function (e, value, row, index) {
-        // hiding possible previous confirmation button
-        $(this).confirmation("show").off( "confirmed.bs.confirmation");
-        $(this).confirmation("show").off( "canceled.bs.confirmation");
-        
-        // ask for confirmation and then delete
-        $(this).confirmation("show").on( "confirmed.bs.confirmation", function() {
-            $.ajax({
-                url: proxyPath + "products/" + row['product_id'],
-                method: "DELETE",
-            }).done(function(data, textStatus, jqXHR) {
-                global.displayMessage("product deleted", "success");
-                var $table = $('#table');
-                $table.bootstrapTable('refresh');
-            }).fail(function(jqXHR, textStatus, errorThrown) {
-                handleHTTPError(jqXHR.statusText, jqXHR.status)
-            });
-        }).on( "canceled.bs.confirmation", function() {
-        });
-    }
-};
