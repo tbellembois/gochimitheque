@@ -360,6 +360,7 @@ func main() {
 	r.Handle("/{item:products}/signalwords/{id}", securechain.Then(env.AppMiddleware(env.GetProductsSignalWordHandler))).Methods("GET")
 	r.Handle("/{item:products}/synonyms", securechain.Then(env.AppMiddleware(env.GetProductsSynonymsHandler))).Methods("GET")
 	r.Handle("/{item:products}/symbols", securechain.Then(env.AppMiddleware(env.GetProductsSymbolsHandler))).Methods("GET")
+	r.Handle("/{item:products}/symbols/{id}", securechain.Then(env.AppMiddleware(env.GetProductsSymbolHandler))).Methods("GET")
 	r.Handle("/{item:products}/classofcompounds", securechain.Then(env.AppMiddleware(env.GetProductsClassOfCompoundsHandler))).Methods("GET")
 	r.Handle("/{item:products}/hazardstatements", securechain.Then(env.AppMiddleware(env.GetProductsHazardStatementsHandler))).Methods("GET")
 	r.Handle("/{item:products}/precautionarystatements", securechain.Then(env.AppMiddleware(env.GetProductsPrecautionaryStatementsHandler))).Methods("GET")

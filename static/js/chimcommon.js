@@ -143,15 +143,16 @@ var updateQueryStringParam = function (key, value) {
 function cleanQueryParams() {
     // root url
     var root = window.location.protocol + '//' + window.location.hostname + ":" + window.location.port + window.location.pathname;
-    var urlParams = new URLSearchParams(window.location.search);
-    urlParams.delete("search");
-    urlParams.delete("sort");
-    urlParams.delete("order");
-    urlParams.delete("offset");
-    urlParams.delete("limit");
-    urlParams.delete("export");
+    // var urlParams = new URLSearchParams(window.location.search);
+    // urlParams.delete("search");
+    // urlParams.delete("sort");
+    // urlParams.delete("order");
+    // urlParams.delete("offset");
+    // urlParams.delete("limit");
+    // urlParams.delete("export");
 
-    window.history.replaceState("", "", root + "?" + urlParams.toString());
+    // window.history.replaceState("", "", root + "?" + urlParams.toString());
+    window.history.replaceState("", "", root);
 }
 
 function exportAll() {
@@ -257,7 +258,7 @@ function search() {
         if (i.length != 0) {
             s_symbols = [];
             i.forEach(function(e) {
-                s_symbols.push(e.symbol_id);
+                s_symbols.push(e.id);
             });
         }
     }
@@ -268,7 +269,7 @@ function search() {
         if (i.length != 0) {
             s_hazardstatements = [];
             i.forEach(function(e) {
-                s_hazardstatements.push(e.hazardstatement_id);
+                s_hazardstatements.push(e.id);
             });
         }
     }
@@ -279,7 +280,7 @@ function search() {
         if (i.length != 0) {
             s_precautionarystatements = [];
             i.forEach(function(e) {
-                s_precautionarystatements.push(e.precautionarystatement_id);
+                s_precautionarystatements.push(e.id);
             });
         }
     }

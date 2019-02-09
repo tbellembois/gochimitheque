@@ -21,6 +21,7 @@ type Datastore interface {
 	GetProductsNames(helpers.Dbselectparam) ([]Name, int, error)
 	GetProductsName(id int) (Name, error)
 	GetProductsSymbols(helpers.Dbselectparam) ([]Symbol, int, error)
+	GetProductsSymbol(id int) (Symbol, error)
 	GetProductsEmpiricalFormulas(helpers.Dbselectparam) ([]EmpiricalFormula, int, error)
 	GetProductsLinearFormulas(helpers.Dbselectparam) ([]LinearFormula, int, error)
 	GetProductsEmpiricalFormula(id int) (EmpiricalFormula, error)

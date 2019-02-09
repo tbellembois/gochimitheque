@@ -481,6 +481,26 @@ func (db *SQLiteDataStore) GetProductsSignalWord(id int) (SignalWord, error) {
 	return signalword, nil
 }
 
+// GetProductsSymbol return the symbol matching the given id
+func (db *SQLiteDataStore) GetProductsSymbol(id int) (Symbol, error) {
+
+	var (
+		symbol Symbol
+		sqlr   string
+		err    error
+	)
+	log.WithFields(log.Fields{"id": id}).Debug("GetProductsSymbol")
+
+	sqlr = `SELECT symbol.symbol_id, symbol.symbol_label, symbol.symbol_image
+	FROM symbol
+	WHERE symbol_id = ?`
+	if err = db.Get(&symbol, sqlr, id); err != nil {
+		return Symbol{}, err
+	}
+	log.WithFields(log.Fields{"ID": id, "symbol": symbol}).Debug("GetProductsSymbol")
+	return symbol, nil
+}
+
 // GetProductsNames return the names matching the search criteria
 func (db *SQLiteDataStore) GetProductsNames(p helpers.Dbselectparam) ([]Name, int, error) {
 	var (
