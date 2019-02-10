@@ -683,6 +683,38 @@ func (env *Env) GetProductsHazardStatementsHandler(w http.ResponseWriter, r *htt
 	return nil
 }
 
+// GetProductsHazardStatementHandler returns a json of the hazardstatement matching the id
+func (env *Env) GetProductsHazardStatementHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	log.Debug("GetProductsHazardStatementHandler")
+
+	vars := mux.Vars(r)
+	var (
+		id  int
+		err error
+	)
+
+	if id, err = strconv.Atoi(vars["id"]); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "id atoi conversion",
+			Code:    http.StatusInternalServerError}
+	}
+
+	hs, err := env.DB.GetProductsHazardStatement(id)
+	if err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the hazardstatement",
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(hs)
+	return nil
+}
+
 // GetProductsPrecautionaryStatementsHandler returns a json list of the precautionary statements matching the search criteria
 func (env *Env) GetProductsPrecautionaryStatementsHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	log.Debug("GetProductsPrecautionaryStatementsHandler")
@@ -715,6 +747,38 @@ func (env *Env) GetProductsPrecautionaryStatementsHandler(w http.ResponseWriter,
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp{Rows: ps, Total: count})
+	return nil
+}
+
+// GetProductsPrecautionaryStatementHandler returns a json of the precautionarystatement matching the id
+func (env *Env) GetProductsPrecautionaryStatementHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	log.Debug("GetProductsPrecautionaryStatementHandler")
+
+	vars := mux.Vars(r)
+	var (
+		id  int
+		err error
+	)
+
+	if id, err = strconv.Atoi(vars["id"]); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "id atoi conversion",
+			Code:    http.StatusInternalServerError}
+	}
+
+	ps, err := env.DB.GetProductsPrecautionaryStatement(id)
+	if err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the precautionarystatement",
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(ps)
 	return nil
 }
 

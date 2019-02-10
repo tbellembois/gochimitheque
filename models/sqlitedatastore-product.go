@@ -481,6 +481,46 @@ func (db *SQLiteDataStore) GetProductsSignalWord(id int) (SignalWord, error) {
 	return signalword, nil
 }
 
+// GetProductsHazardStatement return the HazardStatement matching the given id
+func (db *SQLiteDataStore) GetProductsHazardStatement(id int) (HazardStatement, error) {
+
+	var (
+		hs   HazardStatement
+		sqlr string
+		err  error
+	)
+	log.WithFields(log.Fields{"id": id}).Debug("GetProductsHazardStatement")
+
+	sqlr = `SELECT hazardstatement.hazardstatement_id, hazardstatement.hazardstatement_label, hazardstatement.hazardstatement_reference
+	FROM hazardstatement
+	WHERE hazardstatement_id = ?`
+	if err = db.Get(&hs, sqlr, id); err != nil {
+		return HazardStatement{}, err
+	}
+	log.WithFields(log.Fields{"ID": id, "hs": hs}).Debug("GetProductsHazardStatement")
+	return hs, nil
+}
+
+// GetProductsPrecautionaryStatement return the PrecautionaryStatement matching the given id
+func (db *SQLiteDataStore) GetProductsPrecautionaryStatement(id int) (PrecautionaryStatement, error) {
+
+	var (
+		ps   PrecautionaryStatement
+		sqlr string
+		err  error
+	)
+	log.WithFields(log.Fields{"id": id}).Debug("GetProductsPrecautionaryStatement")
+
+	sqlr = `SELECT precautionarystatement.precautionarystatement_id, precautionarystatement.precautionarystatement_label, precautionarystatement.precautionarystatement_reference
+	FROM precautionarystatement
+	WHERE precautionarystatement_id = ?`
+	if err = db.Get(&ps, sqlr, id); err != nil {
+		return PrecautionaryStatement{}, err
+	}
+	log.WithFields(log.Fields{"ID": id, "ps": ps}).Debug("GetProductsPrecautionaryStatement")
+	return ps, nil
+}
+
 // GetProductsSymbol return the symbol matching the given id
 func (db *SQLiteDataStore) GetProductsSymbol(id int) (Symbol, error) {
 

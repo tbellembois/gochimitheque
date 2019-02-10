@@ -209,6 +209,7 @@ function clearsearch() {
 }
 
 function search() {
+    var s_storelocation;
     var s_name;
     var s_empiricalformula;
     var s_casnumber;
@@ -219,6 +220,14 @@ function search() {
     var s_hazardstatements;
     var s_precautionarystatements;
 
+    if ($('select#s_storelocation').hasClass("select2-hidden-accessible")) {
+        // Select2 has been initialized
+        // name_id
+        i = $('select#s_storelocation').select2('data')[0];
+        if (i != undefined) {
+            s_storelocation = $('select#s_storelocation').select2('data')[0].id;
+        }
+    }
     if ($('select#s_name').hasClass("select2-hidden-accessible")) {
         // Select2 has been initialized
         // name_id
@@ -291,7 +300,8 @@ function search() {
     var $table = $('#table');
     $table.bootstrapTable('refresh', 
         {query: 
-            {name: s_name, 
+            {storelocation: s_storelocation,
+            name: s_name, 
             casnumber: s_casnumber, 
             empiricalformula: s_empiricalformula, 
             custom_name_part_of: s_custom_name_part_of, 
