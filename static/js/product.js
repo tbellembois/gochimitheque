@@ -31,6 +31,37 @@ function getData(params) {
 }
 
 //
+// when table is loaded
+//
+$('#table').on('load-success.bs.table refresh.bs.table', function () {
+    //FIXME: perms
+    hasPermission("storages", "", "POST").done(function(){
+        $(".store").fadeIn();
+        localStorage.setItem("storages::POST", true);
+    }).fail(function(){
+        localStorage.setItem("storages::POST", false);
+    })  
+    hasPermission("storages", "-2", "GET").done(function(){
+        $(".storages").fadeIn();
+        localStorage.setItem("storages:-2:GET", true);
+    }).fail(function(){
+        localStorage.setItem("storages:-2:GET", false);
+    }) 
+    hasPermission("products", "-1", "PUT").done(function(){
+        $(".edit").fadeIn();
+        localStorage.setItem("products:-1:PUT", true);
+    }).fail(function(){
+        localStorage.setItem("products:-1:PUT", false);
+    }) 
+    hasPermission("products", "-1", "DELETE").done(function(){
+        $(".delete").fadeIn();
+        localStorage.setItem("products:-1:DELETE", true);
+    }).fail(function(){
+        localStorage.setItem("products:-1:DELETE", false);
+    }) 
+});
+
+//
 // table row attributes
 //
 function rowAttributes(row, index) {
@@ -179,21 +210,7 @@ function operateFormatter(value, row, index) {
         actions.push('<span title="restricted access" class="mdi mdi-16px mdi-hand"></span>');
     }  
 
-    //FIXME: perms
-    hasPermission(proxyPath + "f/storages", "POST", pid).done(function(){
-            $("#store"+this.itemId).fadeIn();
-    })
-    hasPermission(proxyPath + "f/storages/-2", "GET", pid).done(function(){
-            $("#storages"+this.itemId).fadeIn();
-    })
-    hasPermission(proxyPath + "f/products/-1", "PUT", pid).done(function(){
-            $("#edit"+this.itemId).fadeIn();
-    })
-    hasPermission(proxyPath + "f/products/-1", "DELETE", pid).done(function(){
-            $("#delete"+this.itemId).fadeIn();
-    })
-
-    return actions.join('&nbsp;')    
+    return actions.join('&nbsp;');
 }
 
 //

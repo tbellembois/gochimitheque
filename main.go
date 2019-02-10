@@ -408,7 +408,7 @@ func main() {
 
 	r.Handle("/f/{item:storages}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 	r.Handle("/f/{item:storages}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT")
-	r.Handle("/f/{item:storages}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("POST")
+	r.Handle("/f/{item:storages}/", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("POST")
 	r.Handle("/f/{item:storages}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE")
 
 	// validators

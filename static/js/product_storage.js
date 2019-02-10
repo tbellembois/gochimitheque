@@ -24,6 +24,7 @@ $('#table').on('load-success.bs.table refresh.bs.table', function () {
     var bookmarkpromise = $.Deferred();
     var historypromise = $.Deferred();
     var productData, storageData, storelocationData, entityData, historyData, bookmarkData;
+
     // display titles, switch products<>storages selector
     if (urlParams.has("entity")) {
         e = urlParams.get("entity");
@@ -80,7 +81,7 @@ $('#table').on('load-success.bs.table refresh.bs.table', function () {
         // hiding the storage<>product view switch
         $(".toggleable").hide();
         
-        hasPermission(proxyPath + "f/storages/-2", "POST").done(function(){
+        hasPermission("storages", "-2", "POST").done(function(){
             // adding a create storage button for the product
             b = $("<button>").addClass("store btn btn-primary btn-sm").attr("title", "store this product").attr("type", "button");
             b.attr("onclick", "window.location.href = '" + proxyPath + "vc/storages?product=" + p + "'");
@@ -89,7 +90,7 @@ $('#table').on('load-success.bs.table refresh.bs.table', function () {
             $("#button-store").html(b);
         })
         
-        hasPermission(proxyPath + "f/storages/-2", "GET").done(function(){
+        hasPermission("storages", "-2", "GET").done(function(){
             // adding a create show stock button for the product
             b = $("<button>").addClass("store btn btn-primary btn-sm").attr("title", "show stock of this product").attr("type", "button").attr("data-toggle", "modal").attr("data-target", "#stock");
             b.attr("onclick", "showStock(" + p + ")");
@@ -130,8 +131,8 @@ $('#table').on('load-success.bs.table refresh.bs.table', function () {
         if (productData !== undefined) {
             $("#filter-item").append(global.createTitle(productData.name.name_label + " (" + productData.casnumber.casnumber_label + ") " + productData.product_specificity.String, "product"));
         };
-    });
-    
+    }); 
+
     cleanQueryParams();
 });
 //

@@ -105,12 +105,30 @@ function readCookie(name) {
     return null;
 }
 
-function hasPermission(url, method, itemId) {
-    return $.ajax({
-        url: url,
-        itemId: itemId,
-        method: method,
-    });
+function hasPermission(item, id, method, itemId) {
+    // promise to be returned
+    var permpromise = $.Deferred();
+
+    // building the cache key
+    key = item + ":" + id + ":" + method
+
+    // getting the permission cache
+    permcache = localStorage.getItem(key);
+
+    if(permcache) {
+        console.log(key + "->" + permcache);
+        permpromise.resolve(itemId);
+    } else {
+        // building ajax url
+        url = proxyPath + "f/" + item + "/" + id;
+        
+        permpromise = $.ajax({
+            url: url,
+            method: method,
+            itemId: itemId,
+        });
+    }
+    return permpromise;
 }
 
 // jwt in web storage

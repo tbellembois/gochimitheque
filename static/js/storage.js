@@ -31,6 +31,22 @@ function getData(params) {
 }
 
 //
+// when table is loaded
+//
+$('#table').on('load-success.bs.table refresh.bs.table', function () {
+    // hasPermission("storages", eid, "PUT", sid).done(function(){
+    //     $("#edit"+this.itemId).fadeIn();
+    //     $("#clone"+this.itemId).fadeIn();
+    //     $("#borrow"+this.itemId).fadeIn();
+    // })
+    // hasPermission("storages", eid, "DELETE", sid).done(function(){
+    //     $("#delete"+this.itemId).fadeIn();
+    //     $("#archive"+this.itemId).fadeIn();
+    //     $("#restore"+this.itemId).fadeIn();
+    // })
+});
+
+//
 // view storages button
 //
 $('#s_storage_archive_button').on('click', function () {
@@ -273,18 +289,7 @@ function operateFormatter(value, row, index) {
         actions.push('<span class="mdi mdi-24px mdi-history"></span>');
         actions.push('</button>');
     }
-    
-    hasPermission(proxyPath + "f/storages/" + eid, "PUT", sid).done(function(){
-        $("#edit"+this.itemId).fadeIn();
-        $("#clone"+this.itemId).fadeIn();
-        $("#borrow"+this.itemId).fadeIn();
-    })
-    hasPermission(proxyPath + "f/storages/" + eid, "DELETE", sid).done(function(){
-        $("#delete"+this.itemId).fadeIn();
-        $("#archive"+this.itemId).fadeIn();
-        $("#restore"+this.itemId).fadeIn();
-    })
-    
+        
     return actions.join('&nbsp;')    
 }
 
