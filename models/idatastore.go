@@ -31,8 +31,10 @@ type Datastore interface {
 	GetProductsClassOfCompounds(helpers.Dbselectparam) ([]ClassOfCompound, int, error)
 	GetProductsHazardStatementByReference(string) (HazardStatement, error)
 	GetProductsHazardStatements(helpers.Dbselectparam) ([]HazardStatement, int, error)
+	GetProductsHazardStatement(id int) (HazardStatement, error)
 	GetProductsPrecautionaryStatementByReference(string) (PrecautionaryStatement, error)
 	GetProductsPrecautionaryStatements(helpers.Dbselectparam) ([]PrecautionaryStatement, int, error)
+	GetProductsPrecautionaryStatement(id int) (PrecautionaryStatement, error)
 	GetProduct(id int) (Product, error)
 	DeleteProduct(id int) error
 	CreateProduct(p Product) (error, int)

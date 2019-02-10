@@ -80,12 +80,47 @@ script.
         //
         // search form
         //
+       $('select#s_storelocation').select2({
+            templateResult: formatStorelocation,
+            placeholder: "store location",
+            ajax: {
+                url: proxyPath + 'storelocations',
+                delay: 400,
+                    data: function (params) {
+                    var query = {
+                        search: params.term,
+                        page: params.page || 1,
+                        offset: (params.page-1)*10 || 0,
+                        limit: 10
+                    }
+
+                    // Query parameters will be ?search=[term]&page=[page]
+                    return query;
+                },
+                dataType: 'json',
+                processResults: function (data) {
+                    // replacing name by text expected by select2
+                    var newdata = $.map(data.rows, function (obj) {
+                        obj.text = obj.text || obj.storelocation_fullpath;
+                        obj.id = obj.id || obj.storelocation_id.Int64;
+                        return obj;
+                    });
+                    // getting the number of loaded select elements
+                    selectnbitems = $("ul#select2-s_storelocation-results li").length + 10;
+
+                    return {
+                        results: newdata,
+                        pagination: {more: selectnbitems<data.total}
+                    };
+                }
+            }
+        });
         $('select#s_casnumber').select2({
             tags: false,
             allowClear: true,
             placeholder: "select a cas number",
             ajax: {
-                url: proxyPath + 'products/casnumbers',
+                url: proxyPath + 'products/casnumbers/',
                 delay: 400,
                 data: function (params) {
                     var query = {
@@ -122,7 +157,7 @@ script.
             allowClear: true,
             placeholder: "select a name",
             ajax: {
-                url: proxyPath + 'products/names',
+                url: proxyPath + 'products/names/',
                 delay: 400,
                 data: function (params) {
                     var query = {
@@ -160,7 +195,7 @@ script.
             allowClear: true,
             placeholder: "select a formula",
             ajax: {
-                url: proxyPath + 'products/empiricalformulas',
+                url: proxyPath + 'products/empiricalformulas/',
                 delay: 400,
                 data: function (params) {
                     var query = {
@@ -198,7 +233,7 @@ script.
             allowClear: true,
             placeholder: "select signal word",
             ajax: {
-                url: proxyPath + 'products/signalwords',
+                url: proxyPath + 'products/signalwords/',
                 delay: 400,
                 data: function (params) {
                     var query = {
@@ -230,7 +265,7 @@ script.
             templateResult: formatSymbol,
             closeOnSelect: false,
             ajax: {
-                url: proxyPath + 'products/symbols',
+                url: proxyPath + 'products/symbols/',
                 delay: 400,
                 dataType: 'json',
                 processResults: function (data) {
@@ -251,7 +286,7 @@ script.
             templateResult: formatHazardStatement,
             closeOnSelect: false,
             ajax: {
-                url: proxyPath + 'products/hazardstatements',
+                url: proxyPath + 'products/hazardstatements/',
                 delay: 400,
                 data: function (params) {
                     var query = {
@@ -287,7 +322,7 @@ script.
             templateResult: formatPrecautionaryStatement,
             closeOnSelect: false,
             ajax: {
-                url: proxyPath + 'products/precautionarystatements',
+                url: proxyPath + 'products/precautionarystatements/',
                 delay: 400,
                 data: function (params) {
                     var query = {
@@ -377,7 +412,7 @@ script.
                 }
             },
             ajax: {
-                url: proxyPath + 'products/casnumbers',
+                url: proxyPath + 'products/casnumbers/',
                 delay: 400,
                 data: function (params) {
                     var query = {
@@ -445,7 +480,7 @@ script.
             },
             placeholder: "select or enter a CE number",
             ajax: {
-                url: proxyPath + 'products/cenumbers',
+                url: proxyPath + 'products/cenumbers/',
                 delay: 400,
                 data: function (params) {
                     var query = {
@@ -502,7 +537,7 @@ script.
             allowClear: true,
             placeholder: "select physical state",
             ajax: {
-                url: proxyPath + 'products/physicalstates',
+                url: proxyPath + 'products/physicalstates/',
                 delay: 400,
                 data: function (params) {
                     var query = {
@@ -540,7 +575,7 @@ script.
             allowClear: true,
             placeholder: "select signal word",
             ajax: {
-                url: proxyPath + 'products/signalwords',
+                url: proxyPath + 'products/signalwords/',
                 delay: 400,
                 data: function (params) {
                     var query = {
@@ -587,7 +622,7 @@ script.
             },
             placeholder: "select class of compound",
             ajax: {
-                url: proxyPath + 'products/classofcompounds',
+                url: proxyPath + 'products/classofcompounds/',
                 delay: 400,
                 data: function (params) {
                     var query = {
@@ -652,7 +687,7 @@ script.
                 }
             },
             ajax: {
-                url: proxyPath + 'products/names',
+                url: proxyPath + 'products/names/',
                 delay: 400,
                 data: function (params) {
                     var query = {
@@ -718,7 +753,7 @@ script.
                 }
             },
             ajax: {
-                url: proxyPath + 'products/empiricalformulas',
+                url: proxyPath + 'products/empiricalformulas/',
                 delay: 400,
                 data: function (params) {
                     var query = {
@@ -786,7 +821,7 @@ script.
             },
             placeholder: "select or enter a linear formula",
             ajax: {
-                url: proxyPath + 'products/linearformulas',
+                url: proxyPath + 'products/linearformulas/',
                 delay: 400,
                 data: function (params) {
                     var query = {
@@ -852,7 +887,7 @@ script.
                 }
             },
             ajax: {
-                url: proxyPath + 'products/synonyms',
+                url: proxyPath + 'products/synonyms/',
                 delay: 400,
                 data: function (params) {
                     var query = {
@@ -908,7 +943,7 @@ script.
             templateResult: formatSymbol,
             closeOnSelect: false,
             ajax: {
-                url: proxyPath + 'products/symbols',
+                url: proxyPath + 'products/symbols/',
                 delay: 400,
                 dataType: 'json',
                 processResults: function (data) {
@@ -932,7 +967,7 @@ script.
             templateResult: formatHazardStatement,
             closeOnSelect: false,
             ajax: {
-                url: proxyPath + 'products/hazardstatements',
+                url: proxyPath + 'products/hazardstatements/',
                 delay: 400,
                 data: function (params) {
                     var query = {
@@ -971,7 +1006,7 @@ script.
             templateResult: formatPrecautionaryStatement,
             closeOnSelect: false,
             ajax: {
-                url: proxyPath + 'products/precautionarystatements',
+                url: proxyPath + 'products/precautionarystatements/',
                 delay: 400,
                 data: function (params) {
                     var query = {

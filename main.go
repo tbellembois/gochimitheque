@@ -347,29 +347,43 @@ func main() {
 	r.Handle("/{view:v}/{item:products}", securechain.Then(env.AppMiddleware(env.VGetProductsHandler))).Methods("GET")
 	r.Handle("/{view:vc}/{item:products}", securechain.Then(env.AppMiddleware(env.VCreateProductHandler))).Methods("GET")
 	r.Handle("/{item:products}", securechain.Then(env.AppMiddleware(env.GetProductsHandler))).Methods("GET")
-	r.Handle("/{item:products}/casnumbers", securechain.Then(env.AppMiddleware(env.GetProductsCasNumbersHandler))).Methods("GET")
-	r.Handle("/{item:products}/casnumbers/{id}", securechain.Then(env.AppMiddleware(env.GetProductsCasNumberHandler))).Methods("GET")
-	r.Handle("/{item:products}/cenumbers", securechain.Then(env.AppMiddleware(env.GetProductsCeNumbersHandler))).Methods("GET")
-	r.Handle("/{item:products}/names", securechain.Then(env.AppMiddleware(env.GetProductsNamesHandler))).Methods("GET")
-	r.Handle("/{item:products}/names/{id}", securechain.Then(env.AppMiddleware(env.GetProductsNameHandler))).Methods("GET")
-	r.Handle("/{item:products}/empiricalformulas", securechain.Then(env.AppMiddleware(env.GetProductsEmpiricalFormulasHandler))).Methods("GET")
-	r.Handle("/{item:products}/linearformulas", securechain.Then(env.AppMiddleware(env.GetProductsLinearFormulasHandler))).Methods("GET")
-	r.Handle("/{item:products}/empiricalformulas/{id}", securechain.Then(env.AppMiddleware(env.GetProductsEmpiricalFormulaHandler))).Methods("GET")
-	r.Handle("/{item:products}/physicalstates", securechain.Then(env.AppMiddleware(env.GetProductsPhysicalStatesHandler))).Methods("GET")
-	r.Handle("/{item:products}/signalwords", securechain.Then(env.AppMiddleware(env.GetProductsSignalWordsHandler))).Methods("GET")
-	r.Handle("/{item:products}/signalwords/{id}", securechain.Then(env.AppMiddleware(env.GetProductsSignalWordHandler))).Methods("GET")
-	r.Handle("/{item:products}/synonyms", securechain.Then(env.AppMiddleware(env.GetProductsSynonymsHandler))).Methods("GET")
-	r.Handle("/{item:products}/symbols", securechain.Then(env.AppMiddleware(env.GetProductsSymbolsHandler))).Methods("GET")
-	r.Handle("/{item:products}/symbols/{id}", securechain.Then(env.AppMiddleware(env.GetProductsSymbolHandler))).Methods("GET")
-	r.Handle("/{item:products}/classofcompounds", securechain.Then(env.AppMiddleware(env.GetProductsClassOfCompoundsHandler))).Methods("GET")
-	r.Handle("/{item:products}/hazardstatements", securechain.Then(env.AppMiddleware(env.GetProductsHazardStatementsHandler))).Methods("GET")
-	r.Handle("/{item:products}/precautionarystatements", securechain.Then(env.AppMiddleware(env.GetProductsPrecautionaryStatementsHandler))).Methods("GET")
 	r.Handle("/{item:products}/{id}", securechain.Then(env.AppMiddleware(env.GetProductHandler))).Methods("GET")
 	r.Handle("/{item:products}/{id}", securechain.Then(env.AppMiddleware(env.UpdateProductHandler))).Methods("PUT")
 	r.Handle("/{item:products}", securechain.Then(env.AppMiddleware(env.CreateProductHandler))).Methods("POST")
 	r.Handle("/{item:products}/{id}", securechain.Then(env.AppMiddleware(env.DeleteProductHandler))).Methods("DELETE")
 	r.Handle("/{item:bookmarks}/{id}", securechain.Then(env.AppMiddleware(env.ToogleProductBookmarkHandler))).Methods("PUT")
 	r.Handle("/{item:products}/magic", securechain.Then(env.AppMiddleware(env.MagicHandler))).Methods("POST")
+
+	r.Handle("/{item:products}/casnumbers/", securechain.Then(env.AppMiddleware(env.GetProductsCasNumbersHandler))).Methods("GET")
+	r.Handle("/{item:products}/casnumbers/{id}", securechain.Then(env.AppMiddleware(env.GetProductsCasNumberHandler))).Methods("GET")
+
+	r.Handle("/{item:products}/cenumbers", securechain.Then(env.AppMiddleware(env.GetProductsCeNumbersHandler))).Methods("GET")
+
+	r.Handle("/{item:products}/names/", securechain.Then(env.AppMiddleware(env.GetProductsNamesHandler))).Methods("GET")
+	r.Handle("/{item:products}/names/{id}", securechain.Then(env.AppMiddleware(env.GetProductsNameHandler))).Methods("GET")
+
+	r.Handle("/{item:products}/linearformulas/", securechain.Then(env.AppMiddleware(env.GetProductsLinearFormulasHandler))).Methods("GET")
+
+	r.Handle("/{item:products}/empiricalformulas/", securechain.Then(env.AppMiddleware(env.GetProductsEmpiricalFormulasHandler))).Methods("GET")
+	r.Handle("/{item:products}/empiricalformulas/{id}", securechain.Then(env.AppMiddleware(env.GetProductsEmpiricalFormulaHandler))).Methods("GET")
+
+	r.Handle("/{item:products}/physicalstates/", securechain.Then(env.AppMiddleware(env.GetProductsPhysicalStatesHandler))).Methods("GET")
+
+	r.Handle("/{item:products}/signalwords/", securechain.Then(env.AppMiddleware(env.GetProductsSignalWordsHandler))).Methods("GET")
+	r.Handle("/{item:products}/signalwords/{id}", securechain.Then(env.AppMiddleware(env.GetProductsSignalWordHandler))).Methods("GET")
+
+	r.Handle("/{item:products}/synonyms/", securechain.Then(env.AppMiddleware(env.GetProductsSynonymsHandler))).Methods("GET")
+
+	r.Handle("/{item:products}/symbols/", securechain.Then(env.AppMiddleware(env.GetProductsSymbolsHandler))).Methods("GET")
+	r.Handle("/{item:products}/symbols/{id}", securechain.Then(env.AppMiddleware(env.GetProductsSymbolHandler))).Methods("GET")
+
+	r.Handle("/{item:products}/classofcompounds/", securechain.Then(env.AppMiddleware(env.GetProductsClassOfCompoundsHandler))).Methods("GET")
+
+	r.Handle("/{item:products}/hazardstatements/", securechain.Then(env.AppMiddleware(env.GetProductsHazardStatementsHandler))).Methods("GET")
+	r.Handle("/{item:products}/hazardstatements/{id}", securechain.Then(env.AppMiddleware(env.GetProductsHazardStatementHandler))).Methods("GET")
+
+	r.Handle("/{item:products}/precautionarystatements/", securechain.Then(env.AppMiddleware(env.GetProductsPrecautionaryStatementsHandler))).Methods("GET")
+	r.Handle("/{item:products}/precautionarystatements/{id}", securechain.Then(env.AppMiddleware(env.GetProductsPrecautionaryStatementHandler))).Methods("GET")
 
 	r.Handle("/f/{view:v}/{item:products}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 	r.Handle("/f/{view:vc}/{item:products}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")

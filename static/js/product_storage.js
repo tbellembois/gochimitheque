@@ -158,6 +158,7 @@ function queryParams(params) {
     // getting request parameters
     var urlParams = new URLSearchParams(window.location.search);
     
+    var storelocation = urlParams.get("storelocation");
     var name = urlParams.get("name");
     var casnumber = urlParams.get("casnumber");
     var empiricalformula = urlParams.get("empiricalformula");
@@ -169,6 +170,17 @@ function queryParams(params) {
     var hazardstatements = urlParams.getAll("hazardstatements[]");
     var precautionarystatements = urlParams.getAll("precautionarystatements[]");
     // need to populate the form in case of product/storage view switch
+    if (storelocation != null) {
+        $.ajax({
+            url: proxyPath + "storelocations/" + storelocation,
+            method: "GET",
+        }).done(function(data, textStatus, jqXHR) {
+            var newOption = new Option(data.storelocation_name.String, data.storelocation_id.Int64, true, true);
+            $('#s_storelocation').append(newOption).trigger('change');
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            handleHTTPError(jqXHR.statusText, jqXHR.status);
+        })
+    }
     if (name != null) {
         $.ajax({
             url: proxyPath + "products/names/" + name,
@@ -234,7 +246,35 @@ function queryParams(params) {
             }) 
         });
     }
-   
+    if (hazardstatements.length != 0) {
+        $("#advancedsearch").collapse('show');
+        $.each(hazardstatements, function (index, hs) { 
+            $.ajax({
+                url: proxyPath + "products/hazardstatements/" + hs,
+                method: "GET",
+            }).done(function(data, textStatus, jqXHR) {
+                var newOption = new Option(data.hazardstatement_reference, data.hazardstatement_id, true, true);
+                $('#s_hazardstatements').append(newOption).trigger('change');
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                handleHTTPError(jqXHR.statusText, jqXHR.status);
+            }) 
+        });
+    }
+    if (precautionarystatements.length != 0) {
+        $("#advancedsearch").collapse('show');
+        $.each(precautionarystatements, function (index, ps) { 
+            $.ajax({
+                url: proxyPath + "products/precautionarystatements/" + ps,
+                method: "GET",
+            }).done(function(data, textStatus, jqXHR) {
+                var newOption = new Option(data.precautionarystatement_reference, data.precautionarystatement_id, true, true);
+                $('#s_precautionarystatements').append(newOption).trigger('change');
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                handleHTTPError(jqXHR.statusText, jqXHR.status);
+            }) 
+        });
+    }
+
     // storage view specific
     if (storage_archive != null && storage_archive == "true") {
         $("#s_storage_archive").prop( "checked", true )
@@ -256,6 +296,9 @@ function queryParams(params) {
         params["export"] = urlParams.get("export")
     }
     
+    if (storelocation != null) {
+        params["storelocation"] = storelocation
+    }
     if (name != null) {
         params["name"] = name
     }
@@ -274,8 +317,11 @@ function queryParams(params) {
     if (signalword != null) {
         params["signalword"] = signalword
     }
-    if (symbols.length != 0) {
-        params["symbols"] = symbols
+    if (hazardstatements.length != 0) {
+        params["hazardstatements"] = hazardstatements
+    }
+    if (precautionarystatements.length != 0) {
+        params["precautionarystatements"] = precautionarystatements
     }
     
     return params;
