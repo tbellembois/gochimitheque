@@ -113,13 +113,13 @@
         function operateFormatter(value, row, index) {
             // show action buttons if permitted
             eid = row.person_id
-            hasPermission(proxyPath + "f/people/" + eid, "GET", eid).done(function(){
+            hasPermission("people", eid, "GET", eid).done(function(){
                      $("#view"+this.itemId).fadeIn();
             })
-            hasPermission(proxyPath + "f/people/" + eid, "PUT", eid).done(function(){
+            hasPermission("people", eid, "PUT", eid).done(function(){
                     $("#edit"+this.itemId).fadeIn();
             })
-            hasPermission(proxyPath + "f/people/" + eid, "DELETE", eid).done(function(){
+            hasPermission("people", eid, "DELETE", eid).done(function(){
                     $("#delete"+this.itemId).fadeIn();
             })
 
