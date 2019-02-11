@@ -34,16 +34,24 @@ function getData(params) {
 // when table is loaded
 //
 $('#table').on('load-success.bs.table refresh.bs.table', function () {
-    // hasPermission("storages", eid, "PUT", sid).done(function(){
-    //     $("#edit"+this.itemId).fadeIn();
-    //     $("#clone"+this.itemId).fadeIn();
-    //     $("#borrow"+this.itemId).fadeIn();
-    // })
-    // hasPermission("storages", eid, "DELETE", sid).done(function(){
-    //     $("#delete"+this.itemId).fadeIn();
-    //     $("#archive"+this.itemId).fadeIn();
-    //     $("#restore"+this.itemId).fadeIn();
-    // })
+    $("button.edit").each(function( index, b ) {
+        hasPermission("storages", $(b).attr("sid"), "PUT").done(function(){
+            $("#edit"+$(b).attr("sid")).fadeIn();
+            $("#clone"+$(b).attr("sid")).fadeIn();
+            $("#borrow"+$(b).attr("sid")).fadeIn();
+            localStorage.setItem("storages:" + $(b).attr("sid") + ":PUT", true);
+        }).fail(function(){
+            localStorage.setItem("storages:" + $(b).attr("sid") + ":PUT", false);
+        })
+        hasPermission("storages", $(b).attr("sid"), "DELETE").done(function(){
+            $("#delete"+$(b).attr("sid")).fadeIn();
+            $("#archive"+$(b).attr("sid")).fadeIn();
+            $("#restore"+$(b).attr("sid")).fadeIn();
+            localStorage.setItem("storages:" + $(b).attr("sid") + ":DELETE", true);
+        }).fail(function(){
+            localStorage.setItem("storages:" + $(b).attr("sid") + ":DELETE", false);
+        })
+    });
 });
 
 //
@@ -243,13 +251,13 @@ function operateFormatter(value, row, index) {
     if (row.storage_archive.Valid && row.storage_archive.Bool) {
         // this is an archive
         var actions = [
-            '<button id="clone' + sid + '" class="clone btn btn-primary btn-sm" style="display: none;" title="clone" type="button">',
+            '<button id="clone' + sid + '" sid="' + sid + '" class="clone btn btn-primary btn-sm" style="display: none;" title="clone" type="button">',
             '<span class="mdi mdi-24px mdi-content-copy"></span>',
             '</button>',
-            '<button id="restore' + sid + '" class="restore btn btn-primary btn-sm" style="display: none;" title="restore" type="button">',
+            '<button id="restore' + sid + '" sid="' + sid + '" class="restore btn btn-primary btn-sm" style="display: none;" title="restore" type="button">',
             '<span class="mdi mdi-24px mdi-undo"></span>',
             '</button>',
-            '<button id="delete' + sid + '" class="delete btn btn-primary btn-sm" style="display: none;" title="delete" type="button">',
+            '<button id="delete' + sid + '" sid="' + sid + '" class="delete btn btn-primary btn-sm" style="display: none;" title="delete" type="button">',
             '<span class="mdi mdi-24px mdi-delete"></span>',
             '</button>']; 
     } else if (row.storage.storage_id.Valid) {
@@ -261,16 +269,16 @@ function operateFormatter(value, row, index) {
     } else {
         // buttons are hidden by default
         var actions = [
-            '<button id="edit' + sid + '" class="edit btn btn-primary btn-sm" style="display: none;" title="edit" type="button">',
+            '<button id="edit' + sid + '" sid="' + sid + '" class="edit btn btn-primary btn-sm" style="display: none;" title="edit" type="button">',
             '<span class="mdi mdi-24px mdi-border-color"></span>',
             '</button>',
-            '<button id="clone' + sid + '" class="clone btn btn-primary btn-sm" style="display: none;" title="clone" type="button">',
+            '<button id="clone' + sid + '" sid="' + sid + '" class="clone btn btn-primary btn-sm" style="display: none;" title="clone" type="button">',
             '<span class="mdi mdi-24px mdi-content-copy"></span>',
             '</button>',
-            '<button id="archive' + sid + '" class="archive btn btn-primary btn-sm" style="display: none;" title="delete" type="button">',
+            '<button id="archive' + sid + '" sid="' + sid + '" class="archive btn btn-primary btn-sm" style="display: none;" title="delete" type="button">',
             '<span class="mdi mdi-24px mdi-delete"></span>',
             '</button>',
-            '<button id="borrow' + sid + '" data-target="#borrow" class="borrow btn btn-primary btn-sm" style="display: none;" title="' + borrowingtitle + '" type="button">',
+            '<button id="borrow' + sid + '" sid="' + sid + '" data-target="#borrow" class="borrow btn btn-primary btn-sm" style="display: none;" title="' + borrowingtitle + '" type="button">',
             '<span class="mdi mdi-24px mdi-' + borrowingicon + '"></span>',
             '</button>'];
     }

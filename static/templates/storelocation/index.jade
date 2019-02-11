@@ -98,6 +98,28 @@
         }
 
         //
+        // when table is loaded
+        //
+        $('#table').on('load-success.bs.table refresh.bs.table', function () {
+            $("button.edit").each(function( index, b ) {
+                hasPermission("storelocations", $(b).attr("slid"), "PUT").done(function(){
+                    $("#edit"+$(b).attr("slid")).fadeIn();
+                    localStorage.setItem("storelocations:" + $(b).attr("slid") + ":PUT", true);
+                }).fail(function(){
+                    localStorage.setItem("storelocations:" + $(b).attr("slid") + ":PUT", false);
+                })
+            });
+            $("button.edit").each(function( index, b ) {
+                hasPermission("storelocations", $(b).attr("slid"), "DELETE").done(function(){
+                    $("#delete"+$(b).attr("slid")).fadeIn();
+                    localStorage.setItem("storelocations:" + $(b).attr("slid") + ":DELETE", true);
+                }).fail(function(){
+                    localStorage.setItem("storelocations:" + $(b).attr("slid") + ":DELETE", false);
+                })
+            });
+        });
+
+        //
         // storelocation_idFormatter formatter
         //
         function storelocation_idFormatter(value, row, index, field) {
@@ -144,19 +166,13 @@
         function operateFormatter(value, row, index) {
             // show action buttons if permitted
             slid = row.storelocation_id.Int64
-            hasPermission("storelocations", slid, "PUT", slid).done(function(){
-                    $("#edit"+this.itemId).fadeIn();
-            })
-            hasPermission("storelocations", slid, "DELETE", slid).done(function(){
-                    $("#delete"+this.itemId).fadeIn();
-            })
 
             // buttons are hidden by default
             var actions = [
-            '<button id="edit' + slid + '" class="edit btn btn-primary btn-sm" style="display: none;" title="edit" type="button">',
+            '<button id="edit' + slid + '" slid="' + slid + '" class="edit btn btn-primary btn-sm" style="display: none;" title="edit" type="button">',
                 '<span class="mdi mdi-24px mdi-border-color"',
             '</button>',
-            '<button id="delete' + slid + '" class="delete btn btn-primary btn-sm" style="display: none;" title="delete" type="button">',
+            '<button id="delete' + slid + '" slid="' + slid + '" class="delete btn btn-primary btn-sm" style="display: none;" title="delete" type="button">',
                 '<span class="mdi mdi-24px mdi-delete"',
             '</button>'];
 

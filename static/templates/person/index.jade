@@ -108,30 +108,51 @@
         }
 
         //
+        // when table is loaded
+        //
+        $('#table').on('load-success.bs.table refresh.bs.table', function () {
+            $("button.view").each(function( index, b ) {
+                hasPermission("people", $(b).attr("eid"), "GET").done(function(){
+                    $("#view"+$(b).attr("eid")).fadeIn();
+                    localStorage.setItem("people:" + $(b).attr("eid") + ":GET", true);
+                }).fail(function(){
+                    localStorage.setItem("people:" + $(b).attr("eid") + ":GET", false);
+                })
+            });
+            $("button.view").each(function( index, b ) {
+                hasPermission("people", $(b).attr("eid"), "PUT").done(function(){
+                    $("#edit"+$(b).attr("eid")).fadeIn();
+                    localStorage.setItem("people:" + $(b).attr("eid") + ":PUT", true);
+                }).fail(function(){
+                    localStorage.setItem("people:" + $(b).attr("eid") + ":PUT", false);
+                })
+            });
+            $("button.view").each(function( index, b ) {
+                hasPermission("people", $(b).attr("eid"), "DELETE").done(function(){
+                    $("#delete"+$(b).attr("eid")).fadeIn();
+                    localStorage.setItem("people:" + $(b).attr("eid") + ":DELETE", true);
+                }).fail(function(){
+                    localStorage.setItem("people:" + $(b).attr("eid") + ":DELETE", false);
+                })
+            });
+        });
+
+        //
         // table items actions
         //
         function operateFormatter(value, row, index) {
             // show action buttons if permitted
             eid = row.person_id
-            hasPermission("people", eid, "GET", eid).done(function(){
-                     $("#view"+this.itemId).fadeIn();
-            })
-            hasPermission("people", eid, "PUT", eid).done(function(){
-                    $("#edit"+this.itemId).fadeIn();
-            })
-            hasPermission("people", eid, "DELETE", eid).done(function(){
-                    $("#delete"+this.itemId).fadeIn();
-            })
 
             // buttons are hidden by default
             var actions = [
-            '<button id="view' + eid + '" class="view btn btn-primary btn-sm" style="display: none;" title="view" type="button">',
+            '<button id="view' + eid + '" eid="' + eid + '" class="view btn btn-primary btn-sm" style="display: none;" title="view" type="button">',
                 '<span class="mdi mdi-eye mdi-24px"></span>',
             '</button>',
-            '<button id="edit' + eid + '" class="edit btn btn-primary btn-sm" style="display: none;" title="edit" type="button">',
+            '<button id="edit' + eid + '" eid="' + eid + '" class="edit btn btn-primary btn-sm" style="display: none;" title="edit" type="button">',
                 '<span class="mdi mdi-border-color mdi-24px"></span>',
             '</button>',
-            '<button id="delete' + eid + '" class="delete btn btn-primary btn-sm" style="display: none;" title="delete" type="button">',
+            '<button id="delete' + eid + '" eid="' + eid + '" class="delete btn btn-primary btn-sm" style="display: none;" title="delete" type="button">',
                 '<span class="mdi mdi-delete mdi-24px"></span>',
             '</button>'];
 
