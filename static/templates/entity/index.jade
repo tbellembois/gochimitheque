@@ -77,6 +77,37 @@
         }
 
         //
+        // when table is loaded
+        //
+        $('#table').on('load-success.bs.table refresh.bs.table', function () {
+            $("button.storelocations").each(function( index, b ) {
+                hasPermission("entities", $(b).attr("eid"), "GET").done(function(){
+                    $("#storelocations"+$(b).attr("eid")).fadeIn();
+                    $("#members"+$(b).attr("eid")).fadeIn();
+                    localStorage.setItem("entities:" + $(b).attr("eid") + ":GET", true);
+                }).fail(function(){
+                    localStorage.setItem("entities:" + $(b).attr("eid") + ":GET", false);
+                })
+            });
+            $("button.storelocations").each(function( index, b ) {
+                hasPermission("entities", $(b).attr("eid"), "PUT").done(function(){
+                    $("#edit"+$(b).attr("eid")).fadeIn();
+                    localStorage.setItem("entities:" + $(b).attr("eid") + ":PUT", true);
+                }).fail(function(){
+                    localStorage.setItem("entities:" + $(b).attr("eid") + ":PUT", false);
+                })
+            });
+            $("button.storelocations").each(function( index, b ) {
+                hasPermission("entities", $(b).attr("eid"), "DELETE").done(function(){
+                    $("#delete"+$(b).attr("eid")).fadeIn();
+                    localStorage.setItem("entities:" + $(b).attr("eid") + ":DELETE", true);
+                }).fail(function(){
+                    localStorage.setItem("entities:" + $(b).attr("eid") + ":DELETE", false);
+                })
+            });
+        });
+
+        //
         // managers formatter
         //
         function managersFormatter(value, row, index, field) {
@@ -94,32 +125,19 @@
         function operateFormatter(value, row, index) {
             // show action buttons if permitted
             eid = row.entity_id
-            hasPermission("entities", eid, "GET", eid).done(function(){
-                    $("#storelocations"+this.itemId).fadeIn();
-            })
-            hasPermission("entities", eid, "GET", eid).done(function(){
-                    $("#members"+this.itemId).fadeIn();
-            })
-            hasPermission("entities", eid, "PUT", eid).done(function(){
-                    $("#edit"+this.itemId).fadeIn();
-            })
-            hasPermission("entities", eid, "DELETE", eid).done(function(){
-                    $("#delete"+this.itemId).fadeIn();
-            }).fail(function(){
-            })  
 
             // buttons are hidden by default
             var actions = [
-            '<button id="storelocations' + eid + '" class="storelocations btn btn-primary btn-sm" style="display: none;" title="store locations" type="button">',
+            '<button id="storelocations' + eid + '" eid="' + eid + '" class="storelocations btn btn-primary btn-sm" style="display: none;" title="store locations" type="button">',
                 '<span class="mdi mdi-docker mdi-24px"></span>',
             '</button>',
-            '<button id="members' + eid + '" class="members btn btn-primary btn-sm" style="display: none;" title="members" type="button">',
+            '<button id="members' + eid + '" eid="' + eid + '" class="members btn btn-primary btn-sm" style="display: none;" title="members" type="button">',
                 '<span class="mdi mdi-account-group mdi-24px"></span>',
             '</button>',
-            '<button id="edit' + eid + '" class="edit btn btn-primary btn-sm" style="display: none;" title="edit" type="button">',
+            '<button id="edit' + eid + '" eid="' + eid + '" class="edit btn btn-primary btn-sm" style="display: none;" title="edit" type="button">',
                 '<span class="mdi mdi-border-color mdi-24px"></span>',
             '</button>',
-            '<button id="delete' + eid + '" class="delete btn btn-primary btn-sm" style="display: none;" title="delete" type="button">',
+            '<button id="delete' + eid + '" eid="' + eid + '" class="delete btn btn-primary btn-sm" style="display: none;" title="delete" type="button">',
                 '<span class="mdi mdi-delete mdi-24px"></span>',
             '</button>'];
 

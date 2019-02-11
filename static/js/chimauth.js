@@ -105,7 +105,7 @@ function readCookie(name) {
     return null;
 }
 
-function hasPermission(item, id, method, itemId) {
+function hasPermission(item, id, method) {
     // promise to be returned
     var permpromise = $.Deferred();
 
@@ -116,16 +116,14 @@ function hasPermission(item, id, method, itemId) {
     permcache = localStorage.getItem(key);
 
     if(permcache) {
-        console.log(key + "->" + permcache);
-        permpromise.resolve(itemId);
+        permpromise.resolve();
     } else {
         // building ajax url
         url = proxyPath + "f/" + item + "/" + id;
-        
+
         permpromise = $.ajax({
             url: url,
             method: method,
-            itemId: itemId,
         });
     }
     return permpromise;
