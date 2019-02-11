@@ -45,15 +45,18 @@
     a(href="https://github.com/tbellembois/gochimitheque")
         img(style="position: absolute; top: 0; right: 0; border: 0;" src="{{.ProxyPath}}img/forkme_right_darkblue_121621.png" alt="Fork me on GitHub")
 
-    .row.mt-sm-5
-        .col.col-sm-4.offset-sm-4.animated.bounceInLeft
+    .fixed-bottom.row
+        .col.col-sm-4
             img.mx-auto.d-block(src="{{.ProxyPath}}img/logo_ens.png", alt="ens_logo" title="Ecole Normale Supérieure de Lyon")
-    .row.mt-sm-5
-        .col.col-sm-4.offset-sm-4.animated.bounceInRight
+        .col.col-sm-4
             img.mx-auto.d-block(src="{{.ProxyPath}}img/logo_uca.jpg", alt="uca_logo" title="Université Clermont Auvergne")
-    .row.mt-sm-5
-        .col.col-sm-4.offset-sm-4.animated.jackInTheBox.delay-1s
-            img.mx-auto.d-block(src="{{.ProxyPath}}img/logo_gopher.png", alt="gopher_logo" title="Developped with fun in Golang")
+        .col.col-sm-4
+            p.blockquote-footer
+                i Chimithèque logo designed by 
+                a(title="mon-aloevera [at] hotmail [dot] com")
+                    b Katia Varet.
+            p.blockquote-footer
+                i Do not use or copy without her permission.
 
 | {{end}}
 | {{define "CONTENTJS"}}
