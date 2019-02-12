@@ -5,30 +5,22 @@
                 div.col.col-sm-4.offset-sm-4
                     div.form-group
                         label(for="person_email")
-                            | {{ T "login.loginlabel" "" }}
-                        | {{ $a := "login.loginplaceholder" }} {{ $b := "" }}
                         input.form-control#person_email(type="email" 
                                                         aria-describedby="emailHelp" 
-                                                        placeholder="{{ T $a $b }}"
+                                                        placeholder="enter your email"
                                                         name="person_email")
-                        small#emailHelp.form-text.text-muted
-                            | {{ T "login.logincomment" "" }}
                     div.form-group
                         label(for="person_password")
-                            | {{ T "login.passwordlabel" "" }}
-                        | {{ $a := "login.passwordplaceholder" }} {{ $b := "" }}
                         input.form-control#person_password(type="password" 
                                                         aria-describedby="passwordHelp" 
-                                                        placeholder="{{ T $a $b }}" 
+                                                        placeholder="enter your password" 
                                                         name="person_password")
             .row
                 .col.offset-sm-4.col-sm-2
-                    button#gettoken.btn.btn-primary(type="button" onclick="getToken();")
-                        | {{ T "global.submit" "" }}
+                    button#gettoken.btn.btn-primary(type="button" onclick="getToken();") submit
                 .col.col-sm-2
                     p.text-right
-                        | {{ $a := "login.resetpasswordtitle" }} {{ $b := "" }}
-                        a#getcaptcha(href="#" onclick="getCaptcha();" title="{{ T $a $b }}")
+                        a#getcaptcha(href="#" onclick="getCaptcha();" title="reset password")
                             span.mdi.mdi-36px.mdi-lock-reset 
         
         form#captcha
@@ -38,8 +30,7 @@
                 div.col.col-sm-12.d-flex.justify-content-center.mb-sm-4
                     input#captcha_uid(type="hidden" name="captcha_uid")
                     input#captcha_text(type="text" name="captcha_text")
-                    | {{ $a := "login.captcharesetpasswordtitle" }} {{ $b := "" }}
-                    a#resetpassword(href="#" onclick="resetPassword();" title="{{ T $a $b }}")
+                    a#resetpassword(href="#" onclick="resetPassword();" title="reset my password, I am not a robot")
                         span.mdi.mdi-36px.mdi-lock-reset 
 
     a(href="https://github.com/tbellembois/gochimitheque")

@@ -13,8 +13,6 @@ import (
 	"github.com/Joker/jade"
 	"github.com/gorilla/mux"
 	"github.com/justinas/alice"
-	"github.com/qor/i18n"
-	"github.com/qor/i18n/backends/yaml"
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/handlers"
@@ -64,13 +62,6 @@ func main() {
 		log.SetLevel(log.InfoLevel)
 	}
 
-	// i18n
-	I18n := i18n.New(
-		yaml.New("locales"),
-	)
-	log.WithFields(log.Fields{"i18n en-US": I18n.T("en-US", "demo.hello")})
-	log.WithFields(log.Fields{"i18n fr-FR": I18n.T("fr-FR", "demo.hello")})
-
 	// global variables init
 	global.ProxyPath = *proxypath
 	global.ProxyURL = *proxyurl
@@ -115,9 +106,9 @@ func main() {
 			return p
 		},
 		// i18n
-		"T": func(key string, value string, args ...interface{}) template.HTML {
-			return I18n.Default(value).T("en-US", key, args...)
-		},
+		// "T": func(key string, value string, args ...interface{}) template.HTML {
+		// 	return I18n.Default(value).T("en-US", key, args...)
+		// },
 	}
 
 	// template compilation
