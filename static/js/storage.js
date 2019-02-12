@@ -144,47 +144,71 @@ function rowAttributes(row, index) {
 function detailFormatter(index, row) {
     var html = [];
     
+    console.log(row)
+
     html.push("<div class='row'>")
     
     html.push("<div class='col-sm-3'>")
-    if ( row["storage_qrcode"] != null ) {
-        html.push("<img src='data:image/png;base64," + row["storage_qrcode"] + "'>")
-    }
+    
+        if ( row["storage_qrcode"] != null ) {
+            html.push("<img src='data:image/png;base64," + row["storage_qrcode"] + "'>")
+        }
+    
     html.push("</div>")
     
     html.push("<div class='col-sm-9'>")
-    html.push("<div class='row mt-sm-3'>")
-    html.push("<div class='col-sm-6'><i class='material-icons'>local_offer</i> " + row["product"]["name"]["name_label"] + "</p></div>")
-    html.push("<div class='col-sm-6'><i class='material-icons'>extension</i> " + row["storelocation"]["storelocation_name"]["String"] + "</p></div>")
-    html.push("</div>")            
+
+        html.push("<div class='row'>")
+            html.push("<div class='col-sm-6'><span class='mdi mdi-24px mdi-tag'></span> " + row["product"]["name"]["name_label"] + "</div>")
+            html.push("<div class='col-sm-6'><span class='mdi mdi-24px mdi-docker'></span> " + row["storelocation"]["storelocation_name"]["String"] + "</div>")
+        html.push("</div>")
     
-    html.push("<div class='row mt-sm-3'>")
-    html.push("<div class='col-sm-3'><p><b>quantity</b> " + row["storage_quantity"]["Float64"] + " " + row["unit"]["unit_label"]["String"] + "</p></div>")
-    html.push("<div class='col-sm-3'><b>barecode</b> " + row["storage_barecode"]["String"] + "</p></div>")
-    html.push("</div>")   
+        html.push("<div class='row'>")
+            html.push("<div class='col-sm-6'> " + row["storage_quantity"]["Float64"] + " " + row["unit"]["unit_label"]["String"] + "</div>")
+            html.push("<div class='col-sm-6'><span class='mdi mdi-24px mdi-barcode'/> " + row["storage_barecode"]["String"] + "</div>")
+        html.push("</div>")
     
-    html.push("<div class='row mt-sm-2'>")
-    html.push("<div class='col-sm-3'><b>batch number</b> " + row["storage_batchnumber"]["String"] + "</p></div>")
-    html.push("<div class='col-sm-3'><p><b>supplier</b> " + row["supplier"]["supplier_label"]["String"] + "</p></div>")
-    html.push("</div>")    
+        html.push("<div class='row'>")
+            if (row["storage_batchnumber"]["Valid"] && row["storage_batchnumber"]["String"] != "") {
+                html.push("<div class='col-sm-6'><span class='mdi mdi-24px mdi-basket'/> " + row["storage_batchnumber"]["String"] + "</div>")
+            }
+            if (row["supplier"]["supplier_label"]["Valid"]) {
+                html.push("<div class='col-sm-6'><span class='mdi mdi-24px mdi-truck'/> " + row["supplier"]["supplier_label"]["String"] + "</div>")
+            }
+        html.push("</div>")
     
-    html.push("<div class='row mt-sm-2'>")
-    html.push("<div class='col-sm-12'><b>entry date</b> " + dateFormatter(row["storage_entrydate"], null, null, null) + "</p></div>")
-    html.push("<div class='col-sm-12'><b>exit date</b> " + dateFormatter(row["storage_exitdate"], null, null, null) + "</p></div>")
-    html.push("<div class='col-sm-12'><b>opening date</b> " + dateFormatter(row["storage_openingdate"], null, null, null) + "</p></div>")
-    html.push("<div class='col-sm-12'><b>expiration date</b> " + dateFormatter(row["storage_expirationdate"], null, null, null) + "</p></div>")
-    html.push("</div>")   
+        html.push("<div class='row'>")
+            if (row["storage_entrydate"]["Valid"]) {
+                html.push("<div class='col-sm-12'><span class='mdi mdi-24px mdi-package-down'/> " + dateFormatter(row["storage_entrydate"], null, null, null) + "</div>")
+            }
+            if (row["storage_exitdate"]["Valid"]) {
+                html.push("<div class='col-sm-12'><span class='mdi mdi-24px mdi-package-up'/> " + dateFormatter(row["storage_exitdate"], null, null, null) + "</div>")
+            }
+            if (row["storage_openingdate"]["Valid"]) {
+                html.push("<div class='col-sm-12'><span class='mdi mdi-24px mdi-package-variant'/> " + dateFormatter(row["storage_openingdate"], null, null, null) + "</div>")
+            }
+            if (row["storage_expirationdate"]["Valid"]) {
+                html.push("<div class='col-sm-12'><span class='mdi mdi-24px mdi-package-variant-closed'/> " + dateFormatter(row["storage_expirationdate"], null, null, null) + "</div>")
+            }
+        html.push("</div>")   
     
-    html.push("<div class='row mt-sm-4'>")
-    html.push("<div class='col-sm-8'>" + dateFormatter(row["storage_creationdate"], null, null, null) + " <i>(" + dateFormatter(row["storage_modificationdate"], null, null, null) + ")</i></div>")
-    html.push("<div class='col-sm-4'>" + row["person"]["person_email"] + "</div>")
-    html.push("</div>")   
-    
-    html.push("<div class='row'>")
-    if (row["storage_todestroy"]["Bool"]) {
-        html.push("<div class='col-sm-12'><i title='to destroy' class='material-icons'>delete_outline</i></div>")
-    }
-    html.push("</div>")             
+        html.push("<div class='row'>")
+        if (row["storage_comment"]["Valid"] && row["storage_comment"]["String"] != "") {
+            html.push("<div class='col-sm-12'><span class='mdi mdi-24px mdi-message-text'/>" + row["storage_comment"]["String"] + "</div>")
+        }
+        html.push("</div>")  
+
+        html.push("<div class='row'>")
+            html.push("<div class='col-sm-8'><span class='mdi mdi-24px mdi-creation'/>" + dateFormatter(row["storage_creationdate"], null, null, null) + " <span class='mdi mdi-24px mdi-update'/>(" + dateFormatter(row["storage_modificationdate"], null, null, null) + ")</div>")
+            html.push("<div class='col-sm-4'><p class='blockquote-footer'>" + row["person"]["person_email"] + "</p></div>")
+        html.push("</div>")   
+      
+        html.push("<div class='row'>")
+            if (row["storage_todestroy"]["Bool"]) {
+                html.push("<div class='col-sm-12'><span title='to destroy' class='mdi mdi-24px mdi-delete-sweep'></span></div>")
+            }
+        html.push("</div>")
+                
     html.push("</div>")
     
     html.push("</div>")  
