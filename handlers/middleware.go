@@ -9,6 +9,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/helpers"
@@ -48,6 +49,10 @@ func (env *Env) HeadersMiddleware(h http.Handler) http.Handler {
 // ContextMiddleware initialize the request context and setup initial variables
 func (env *Env) ContextMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// localization setup
+		accept := r.Header.Get("Accept-Language")
+		env.Localizer = i18n.NewLocalizer(global.Bundle, accept)
+
 		ctx := context.WithValue(r.Context(), "container", helpers.ViewContainer{ProxyPath: global.ProxyPath})
 		h.ServeHTTP(w, r.WithContext(ctx))
 	})

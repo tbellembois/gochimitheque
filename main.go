@@ -13,6 +13,7 @@ import (
 	"github.com/Joker/jade"
 	"github.com/gorilla/mux"
 	"github.com/justinas/alice"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/handlers"
@@ -46,6 +47,31 @@ func main() {
 	importfrom := flag.String("importfrom", "", "full path of the directory containing the CSV to import")
 	flag.Parse()
 
+	// setting the log level
+	if *debug {
+		log.SetLevel(log.DebugLevel)
+	} else {
+		log.SetLevel(log.InfoLevel)
+	}
+
+	// i18n
+	// bundle := &i18n.Bundle{DefaultLanguage: language.English}
+	// bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
+	// bundle.MustParseMessageFileBytes([]byte(`
+	// [test]
+	// one = "One test"
+	// other = "Several tests"
+	// `), "en.toml")
+	// bundle.MustParseMessageFileBytes([]byte(`
+	// [test]
+	// one = "Un test"
+	// other = "Plusieurs tests"
+	// `), "fr.toml")
+	// localizer := i18n.NewLocalizer(bundle, "en-US", "fr-FR")
+	// test
+	//translation := loc.MustLocalize(&i18n.LocalizeConfig{MessageID: "test", PluralCount: 1})
+	//log.Debug(translation)
+
 	// logging to file if logfile parameter specified
 	if *logfile != "" {
 		if logf, err = os.OpenFile(*logfile, os.O_WRONLY|os.O_CREATE, 0755); err != nil {
@@ -53,13 +79,6 @@ func main() {
 		} else {
 			log.SetOutput(logf)
 		}
-	}
-
-	// setting the log level
-	if *debug {
-		log.SetLevel(log.DebugLevel)
-	} else {
-		log.SetLevel(log.InfoLevel)
 	}
 
 	// global variables init
@@ -92,7 +111,8 @@ func main() {
 
 	// environment creation
 	env := handlers.Env{
-		DB:        datastore,
+		DB: datastore,
+		//Localizer: localizer,
 		Templates: make(map[string]*template.Template),
 	}
 
@@ -106,9 +126,9 @@ func main() {
 			return p
 		},
 		// i18n
-		// "T": func(key string, value string, args ...interface{}) template.HTML {
-		// 	return I18n.Default(value).T("en-US", key, args...)
-		// },
+		"T": func(messageID string, pluralCount int) string {
+			return env.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: messageID, PluralCount: pluralCount})
+		},
 	}
 
 	// template compilation

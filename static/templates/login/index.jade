@@ -5,22 +5,26 @@
                 div.col.col-sm-4.offset-sm-4
                     div.form-group
                         label(for="person_email")
+                        | {{ $a := "email_placeholder" }} {{ $b := 1 }}
                         input.form-control#person_email(type="email" 
                                                         aria-describedby="emailHelp" 
-                                                        placeholder="enter your email"
+                                                        placeholder="{{ T $a $b }}"
                                                         name="person_email")
                     div.form-group
                         label(for="person_password")
+                        | {{ $a := "password_placeholder" }} {{ $b := 1 }}
                         input.form-control#person_password(type="password" 
                                                         aria-describedby="passwordHelp" 
-                                                        placeholder="enter your password" 
+                                                        placeholder="{{ T $a $b }}" 
                                                         name="person_password")
             .row
                 .col.offset-sm-4.col-sm-2
-                    button#gettoken.btn.btn-primary(type="button" onclick="getToken();") submit
+                    a#gettoken(href="#" title="go !" onclick="getToken();")
+                        span.mdi.mdi-36px.mdi-login
                 .col.col-sm-2
                     p.text-right
-                        a#getcaptcha(href="#" onclick="getCaptcha();" title="reset password")
+                        | {{ $a := "reset_password_title" }} {{ $b := 1 }}
+                        a#getcaptcha(href="#" onclick="getCaptcha();" title="{{ T $a $b }}")
                             span.mdi.mdi-36px.mdi-lock-reset 
         
         form#captcha
@@ -43,11 +47,13 @@
             img.mx-auto.d-block(src="{{.ProxyPath}}img/logo_uca.jpg", alt="uca_logo" title="Université Clermont Auvergne")
         .col.col-sm-4
             p.blockquote-footer
-                i Chimithèque logo designed by 
+                i 
+                    | {{ T "logo_information1" 1 }} 
                 a(title="mon-aloevera [at] hotmail [dot] com")
                     b Katia Varet.
             p.blockquote-footer
-                i Do not use or copy without her permission.
+                i
+                    | {{ T "logo_information2" 1 }} 
 
 | {{end}}
 | {{define "CONTENTJS"}}

@@ -3,9 +3,14 @@ package global
 import (
 	"database/sql"
 	"database/sql/driver"
-	"github.com/gorilla/schema"
 	"reflect"
 	"time"
+
+	"github.com/BurntSushi/toml"
+	"github.com/gorilla/schema"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"github.com/tbellembois/gochimitheque/locales"
+	"golang.org/x/text/language"
 )
 
 // NullTime represent a nullable time
@@ -39,6 +44,7 @@ var (
 	MailServerPort          string
 	MailServerUseTLS        bool
 	MailServerTLSSkipVerify bool
+	Bundle                  *i18n.Bundle // i18n bundle
 )
 
 // Convertors for sql.Null* types so that they can be
@@ -47,6 +53,12 @@ func init() {
 	TokenSignKey = []byte("secret")
 	Decoder = schema.NewDecoder()
 	SchemaRegisterSQLNulls(Decoder)
+
+	// load translations
+	Bundle = &i18n.Bundle{DefaultLanguage: language.English}
+	Bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
+	Bundle.MustParseMessageFileBytes(locales.LOCALES_EN, "en.toml")
+	Bundle.MustParseMessageFileBytes(locales.LOCALES_FR, "fr.toml")
 }
 
 func SchemaRegisterSQLNulls(d *schema.Decoder) {
