@@ -1,5 +1,6 @@
 package main
 
+//go:generate go run gogenerate/localejs.go
 //go:generate gopherjs build gopherjs/gjs-common.go -o static/js/gjs-common.js
 //go:generate rice embed-go
 
@@ -135,6 +136,7 @@ func main() {
 	b := rice.MustFindBox("static/templates")
 	basejades := []string{
 		"base.jade",
+		"localejs.jade",
 		"mixins.jade",
 		"head.jade",
 		"header.jade",
@@ -142,6 +144,7 @@ func main() {
 		"foot.jade"}
 	basenomenujades := []string{
 		"basenomenu.jade",
+		"localejs.jade",
 		"mixins.jade",
 		"head.jade",
 		"header.jade",
