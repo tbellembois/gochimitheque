@@ -35,17 +35,21 @@ html
                     ul.navbar-nav.mr-auto
                         if HasPermission .PersonID "r" "products" -2
                             li.nav-item.active
-                                a(href="{{.ProxyPath}}v/products" title="home").nav-link
-                                    span.mdi.mdi-home.mdi-36px
+                                a(href="{{.ProxyPath}}v/products").nav-link
+                                    span.mdi.mdi-home.mdi-36px.iconlabel
+                                        | {{ T "menu_home" 1 }} 
+
                         if HasPermission .PersonID "r" "products" -2
                             li.nav-item.active
-                                a(href="{{.ProxyPath}}v/products?bookmark=true" title="my bookmarked products").nav-link
-                                    span.mdi.mdi-star.mdi-36px
+                                a(href="{{.ProxyPath}}v/products?bookmark=true").nav-link
+                                    span.mdi.mdi-star.mdi-36px.iconlabel
+                                        | {{ T "menu_bookmark" 1 }} 
 
                         if HasPermission .PersonID "w" "products" -2
                             li.nav-item
-                                a(href="{{.ProxyPath}}vc/products" title="create product card").nav-link
-                                    span.mdi.mdi-tag.mdi-36px
+                                a(href="{{.ProxyPath}}vc/products").nav-link
+                                    span.mdi.mdi-tag.mdi-36px.iconlabel
+                                        | {{ T "menu_create_productcard" 1 }}
                         if HasPermission .PersonID "r" "entities" -2
                             li.nav-item.dropdown
                                 a(href="#", title="manage entities").nav-link.dropdown-toggle#navbarDropdown(
@@ -53,7 +57,8 @@ html
                                     data-toggle="dropdown" 
                                     aria-haspopup="true" 
                                     aria-expanded="false")
-                                    span.mdi.mdi-store.mdi-36px
+                                    span.mdi.mdi-store.mdi-36px.iconlabel
+                                        | {{ T "menu_entity" 1 }}
                                 div.dropdown-menu(aria-labelledby="navbarDropdown")
                                     a(href="{{.ProxyPath}}v/entities", title="list").dropdown-item list
                                     if HasPermission .PersonID "all" "all" -1
@@ -66,7 +71,8 @@ html
                                     data-toggle="dropdown" 
                                     aria-haspopup="true" 
                                     aria-expanded="false")
-                                    span.mdi.mdi-docker.mdi-36px
+                                    span.mdi.mdi-docker.mdi-36px.iconlabel
+                                        | {{ T "menu_storelocation" 1 }}
                                 div.dropdown-menu(aria-labelledby="navbarDropdown")
                                     a(href="{{.ProxyPath}}v/storelocations", title="list").dropdown-item list
                                     if HasPermission .PersonID "all" "all" -2
@@ -79,7 +85,8 @@ html
                                     data-toggle="dropdown" 
                                     aria-haspopup="true" 
                                     aria-expanded="false")
-                                    span.mdi.mdi-account-group.mdi-36px
+                                    span.mdi.mdi-account-group.mdi-36px.iconlabel
+                                        | {{ T "menu_people" 1 }}
                                 div.dropdown-menu(aria-labelledby="navbarDropdown")
                                     a(href="{{.ProxyPath}}v/people", title="list").dropdown-item list
                                     if HasPermission .PersonID "w" "people" -2
@@ -87,8 +94,9 @@ html
 
                         li.nav-item
                             a.nav-link(title= "change password" href="{{.ProxyPath}}vu/peoplepass")
-                                span.mdi.mdi-shield-lock-outline.mdi-36px
-                                span#logged
+                                span.mdi.mdi-shield-lock-outline.mdi-36px.iconlabel
+                                        | {{ T "menu_password" 1 }}
+                                
 
             | {{template "CONTENT"}}
             | {{template "FOOTER"}}

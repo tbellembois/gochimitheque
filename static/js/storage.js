@@ -72,7 +72,8 @@ $('#s_storage_archive_button').on('click', function () {
     }
     $table.bootstrapTable('refresh');
     $('#s_storage_archive_button').attr("title", btntitle);
-    $('#s_storage_archive_button > span').attr("class", "mdi mdi-24px mdi-"+btnicon);
+    $('#s_storage_archive_button > span').attr("class", "iconlabel mdi mdi-24px mdi-"+btnicon);
+    $('#s_storage_archive_button > span').text(btntitle);
 });
 
 //
