@@ -1123,7 +1123,6 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	for i, p := range products {
 		// note: do not modify p but products[i] instead
 		m := r.FindAllStringSubmatch(p.ProductSL.String, -1)
-		log.Debug(m)
 		// lazily adding only the first match
 		if len(m) > 0 {
 			products[i].ProductSL.String = m[0][1]
