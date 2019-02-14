@@ -19,13 +19,14 @@
                                                         name="person_password")
             .row
                 .col.offset-sm-4.col-sm-2
-                    a#gettoken(href="#" title="go !" onclick="getToken();")
-                        span.mdi.mdi-36px.mdi-login
+                    a#gettoken(href="#" onclick="getToken();")
+                        span.mdi.mdi-36px.mdi-login.iconlabel
+                            | {{ T "submitlogin_text" 1 }} 
                 .col.col-sm-2
                     p.text-right
-                        | {{ $a := "reset_password_title" }} {{ $b := 1 }}
-                        a#getcaptcha(href="#" onclick="getCaptcha();" title="{{ T $a $b }}")
-                            span.mdi.mdi-36px.mdi-lock-reset 
+                        a#getcaptcha(href="#" onclick="getCaptcha();")
+                            span.mdi.mdi-36px.mdi-lock-reset.iconlabel
+                                | {{ T "resetpassword_text" 1 }} 
         
         form#captcha
             .row.invisible#captcha-row
@@ -34,8 +35,9 @@
                 div.col.col-sm-12.d-flex.justify-content-center.mb-sm-4
                     input#captcha_uid(type="hidden" name="captcha_uid")
                     input#captcha_text(type="text" name="captcha_text")
-                    a#resetpassword(href="#" onclick="resetPassword();" title="reset my password, I am not a robot")
-                        span.mdi.mdi-36px.mdi-lock-reset 
+                    a#resetpassword(href="#" onclick="resetPassword();")
+                        span.mdi.mdi-36px.mdi-lock-reset.iconlabel
+                            | {{ T "resetpassword2_text" 1 }} 
 
     a(href="https://github.com/tbellembois/gochimitheque")
         img(style="position: absolute; top: 0; right: 0; border: 0;" src="{{.ProxyPath}}img/forkme_right_darkblue_121621.png" alt="Fork me on GitHub")

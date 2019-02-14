@@ -3,3 +3,13 @@
     text-overflow: ellipsis;
     max-width: 200px;
 }
+.iconlabel {
+    font-family: economicaregular;
+}
+@font-face {
+    font-family: 'economicaregular';
+    src: url('../fonts/economica-regular-webfont.woff2') format('woff2'),
+         url('../fonts/economica-regular-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
