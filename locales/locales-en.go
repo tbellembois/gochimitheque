@@ -5,6 +5,11 @@ var LOCALES_EN = []byte(`
 	one = "One test"
 	other = "Several tests"
 
+[created]
+	one = "created"
+[modified]
+	one = "modified"
+
 [email_placeholder]
 	one = "enter your email"
 [submitlogin_text]
@@ -48,6 +53,27 @@ var LOCALES_EN = []byte(`
 	one = "switch to storage view"
 [export_text]
 	one = "export"
-[showhidedeleted_text]
+[showdeleted_text]
 	one = "show deleted"
+[hidedeleted_text]
+	one = "hide deleted"
+
+[storage_quantity_title]
+	one = "quantity"
+[storage_barecode_title]
+	one = "barecode"
+[storage_batchnumber_title]
+	one = "batch number"
+[supplier_label_title]
+	one = "supplier"
+[storage_entrydate_title]
+	one = "entry date"
+[storage_exitdate_title]
+	one = "exit date"
+[storage_openingdate_title]
+	one = "opening date"
+[storage_expirationdate_title]
+	one = "expiration date"
+[storage_comment_title]
+	one = "comment"
 `)

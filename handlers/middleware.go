@@ -31,7 +31,6 @@ func (env *Env) AppMiddleware(h models.AppHandlerFunc) http.Handler {
 // LogingMiddleware is the application handlers wrapper logging the requests
 func (env *Env) LogingMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		log.Debug(req.RequestURI)
 		h.ServeHTTP(w, req)
 	})
 }
@@ -53,7 +52,8 @@ func (env *Env) ContextMiddleware(h http.Handler) http.Handler {
 		accept := r.Header.Get("Accept-Language")
 		env.Localizer = i18n.NewLocalizer(global.Bundle, accept)
 
-		ctx := context.WithValue(r.Context(), "container", helpers.ViewContainer{ProxyPath: global.ProxyPath})
+		log.Debug(accept)
+		ctx := context.WithValue(r.Context(), "container", helpers.ViewContainer{ProxyPath: global.ProxyPath, PersonLanguage: accept})
 		h.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -131,7 +131,7 @@ func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 		// setting up auth person informations
 		container.PersonEmail = person.PersonEmail
 		container.PersonID = person.PersonID
-		ctx = context.WithValue(r.Context(), "container", helpers.ViewContainer{PersonEmail: container.PersonEmail, PersonID: container.PersonID, ProxyPath: container.ProxyPath})
+		ctx = context.WithValue(r.Context(), "container", helpers.ViewContainer{PersonEmail: container.PersonEmail, PersonID: container.PersonID, ProxyPath: container.ProxyPath, PersonLanguage: container.PersonLanguage})
 
 		h.ServeHTTP(w, r.WithContext(ctx))
 	})

@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
+	"regexp"
+
 	"github.com/gopherjs/gopherjs/js"
 	"honnef.co/go/js/dom"
-	"regexp"
 )
 
 var (
@@ -383,6 +384,31 @@ func NormalizeSqlNull(obj map[string]interface{}) *map[string]interface{} {
 	return &r
 }
 
+func T(s string, accept string) string {
+	// accept is an accept language http header
+	// like fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3
+	r := regexp.MustCompile("([a-zA-Z\\-]+){0,1},{0,1}([a-zA-Z\\-]+){0,1};q=([0-9\\.]+)")
+
+	ms := r.FindAllStringSubmatch(accept, -1)
+	if len(ms) == 0 {
+		return "translation error"
+	}
+
+	// lazily assuming that the entries are
+	// ordered by the preferred language
+	// TODO: improve this
+	for _, m := range ms {
+		for _, i := range m {
+			js_locale_varname := fmt.Sprintf("locale_%s_%s", i, s)
+			translated := js.Global.Get(js_locale_varname)
+			if translated != js.Undefined {
+				return translated.String()
+			}
+		}
+	}
+	return "translation error"
+}
+
 // type Foo struct {
 // 	*js.Object
 // 	Toto                string `js:"toto"`
@@ -410,6 +436,7 @@ func main() {
 		"createTitle":              CreateTitle,
 		"normalizeSqlNull":         NormalizeSqlNull,
 		"displayMessage":           DisplayMessage,
+		"t":                        T,
 	})
 
 }
