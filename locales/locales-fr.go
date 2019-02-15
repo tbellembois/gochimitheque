@@ -5,6 +5,11 @@ var LOCALES_FR = []byte(`
 	one = "Un test"
 	other = "Plusieurs tests"
 
+[created]
+	one = "créé"
+[modified]
+	one = "modifié"
+
 [email_placeholder]
 	one = "entrez votre email"
 [submitlogin_text]
@@ -48,6 +53,27 @@ var LOCALES_FR = []byte(`
 	one = "vue par stockages"
 [export_text]
 	one = "exporter"
-[showhidedeleted_text]
+[showdeleted_text]
 	one = "voir supprimés"
+[hidedeleted_text]
+	one = "cacher supprimés"
+
+[storage_quantity_title]
+	one = "quantité"
+[storage_barecode_title]
+	one = "code barre"
+[storage_batchnumber_title]
+	one = "numéro de lot"
+[supplier_label_title]
+	one = "fournisseur"
+[storage_entrydate_title]
+	one = "date d'entrée"
+[storage_exitdate_title]
+	one = "date de sortie"
+[storage_openingdate_title]
+	one = "date d'ouverture"
+[storage_expirationdate_title]
+	one = "date d'expiration"
+[storage_comment_title]
+	one = "commentaire"
 `)

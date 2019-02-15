@@ -63,11 +63,11 @@ $('#s_storage_archive_button').on('click', function () {
     btnicon = "";
     if ($('#s_storage_archive_button').hasClass("active")) {
         updateQueryStringParam("storage_archive", "false");
-        btntitle = "show deleted";
+        btntitle = global.t("showdeleted_text", container.PersonLanguage);
         btnicon = "delete";
     } else {
         updateQueryStringParam("storage_archive", "true");
-        btntitle = "do not show deleted";       
+        btntitle = global.t("hidedeleted_text", container.PersonLanguage);     
         btnicon = "delete-forever";
     }
     $table.bootstrapTable('refresh');
@@ -159,52 +159,52 @@ function detailFormatter(index, row) {
     
     html.push("<div class='col-sm-9'>")
 
-        html.push("<div class='row'>")
+        html.push("<div class='row mb-sm-3'>")
             html.push("<div class='col-sm-6'><span class='mdi mdi-24px mdi-tag'></span> " + row["product"]["name"]["name_label"] + "</div>")
             html.push("<div class='col-sm-6'><span class='mdi mdi-24px mdi-docker'></span> " + row["storelocation"]["storelocation_name"]["String"] + "</div>")
         html.push("</div>")
     
-        html.push("<div class='row'>")
-            html.push("<div class='col-sm-6'> " + row["storage_quantity"]["Float64"] + " " + row["unit"]["unit_label"]["String"] + "</div>")
-            html.push("<div class='col-sm-6'><span class='mdi mdi-24px mdi-barcode'/> " + row["storage_barecode"]["String"] + "</div>")
+        html.push("<div class='row mb-sm-3'>")
+            html.push("<div class='col-sm-6'><span class='iconlabel'>" + global.t("storage_quantity_title", container.PersonLanguage) + "</span> " + row["storage_quantity"]["Float64"] + " " + row["unit"]["unit_label"]["String"] + "</div>")
+            html.push("<div class='col-sm-6'><span class='iconlabel'>" + global.t("storage_barecode_title", container.PersonLanguage) + "</span> " + row["storage_barecode"]["String"] + "</div>")
         html.push("</div>")
     
-        html.push("<div class='row'>")
+        html.push("<div class='row mb-sm-3'>")
             if (row["storage_batchnumber"]["Valid"] && row["storage_batchnumber"]["String"] != "") {
-                html.push("<div class='col-sm-6'><span class='mdi mdi-24px mdi-basket'/> " + row["storage_batchnumber"]["String"] + "</div>")
+                html.push("<div class='col-sm-6'><span class='iconlabel'> " + global.t("storage_batchnumber_title", container.PersonLanguage) + "</span> " + row["storage_batchnumber"]["String"] + "</div>")
             }
             if (row["supplier"]["supplier_label"]["Valid"]) {
-                html.push("<div class='col-sm-6'><span class='mdi mdi-24px mdi-truck'/> " + row["supplier"]["supplier_label"]["String"] + "</div>")
+                html.push("<div class='col-sm-6'><span class='iconlabel'> " + global.t("supplier_label_title", container.PersonLanguage) + "</span> " + row["supplier"]["supplier_label"]["String"] + "</div>")
             }
         html.push("</div>")
     
-        html.push("<div class='row'>")
+        html.push("<div class='row mb-sm-3'>")
             if (row["storage_entrydate"]["Valid"]) {
-                html.push("<div class='col-sm-12'><span class='mdi mdi-24px mdi-package-down'/> " + dateFormatter(row["storage_entrydate"], null, null, null) + "</div>")
+                html.push("<div class='col-sm-12'><span class='iconlabel'> " + global.t("storage_entrydate_title", container.PersonLanguage) + "</span> " + dateFormatter(row["storage_entrydate"], null, null, null) + "</div>")
             }
             if (row["storage_exitdate"]["Valid"]) {
-                html.push("<div class='col-sm-12'><span class='mdi mdi-24px mdi-package-up'/> " + dateFormatter(row["storage_exitdate"], null, null, null) + "</div>")
+                html.push("<div class='col-sm-12'><span class='iconlabel'> " + global.t("storage_exitdate_title", container.PersonLanguage) + "</span> " + dateFormatter(row["storage_exitdate"], null, null, null) + "</div>")
             }
             if (row["storage_openingdate"]["Valid"]) {
-                html.push("<div class='col-sm-12'><span class='mdi mdi-24px mdi-package-variant'/> " + dateFormatter(row["storage_openingdate"], null, null, null) + "</div>")
+                html.push("<div class='col-sm-12'><span class='iconlabel'> " + global.t("storage_openingdate_title", container.PersonLanguage) + "</span> " + dateFormatter(row["storage_openingdate"], null, null, null) + "</div>")
             }
             if (row["storage_expirationdate"]["Valid"]) {
-                html.push("<div class='col-sm-12'><span class='mdi mdi-24px mdi-package-variant-closed'/> " + dateFormatter(row["storage_expirationdate"], null, null, null) + "</div>")
+                html.push("<div class='col-sm-12'><span class='iconlabel'> " + global.t("storage_expirationdate_title", container.PersonLanguage) + "</span> " + dateFormatter(row["storage_expirationdate"], null, null, null) + "</div>")
             }
         html.push("</div>")   
     
-        html.push("<div class='row'>")
+        html.push("<div class='row mb-sm-3'>")
         if (row["storage_comment"]["Valid"] && row["storage_comment"]["String"] != "") {
-            html.push("<div class='col-sm-12'><span class='mdi mdi-24px mdi-message-text'/>" + row["storage_comment"]["String"] + "</div>")
+            html.push("<div class='col-sm-12'><span class='iconlabel'> " + global.t("storage_comment_title", container.PersonLanguage) + "</span> " + row["storage_comment"]["String"] + "</div>")
         }
         html.push("</div>")  
 
-        html.push("<div class='row'>")
-            html.push("<div class='col-sm-8'><span class='mdi mdi-24px mdi-creation'/>" + dateFormatter(row["storage_creationdate"], null, null, null) + " <span class='mdi mdi-24px mdi-update'/>(" + dateFormatter(row["storage_modificationdate"], null, null, null) + ")</div>")
+        html.push("<div class='row mb-sm-3'>")
+            html.push("<div class='col-sm-8'><span class='iconlabel'> " + global.t("created", container.PersonLanguage) + "</span> " + dateFormatter(row["storage_creationdate"], null, null, null) + " <span class='iconlabel'> " + global.t("modified", container.PersonLanguage) + "</span> " + dateFormatter(row["storage_modificationdate"], null, null, null) + "</div>")
             html.push("<div class='col-sm-4'><p class='blockquote-footer'>" + row["person"]["person_email"] + "</p></div>")
         html.push("</div>")   
       
-        html.push("<div class='row'>")
+        html.push("<div class='row mb-sm-3'>")
             if (row["storage_todestroy"]["Bool"]) {
                 html.push("<div class='col-sm-12'><span title='to destroy' class='mdi mdi-24px mdi-delete-sweep'></span></div>")
             }

@@ -16,7 +16,10 @@ var packageTemplate = template.Must(template.New("").Delims("[[", "]]").Parse(`/
 | {{define "LOCALEJS"}}
 
 script.
-    [[ range $k, $v := . ]]
+    [[ range $k, $v := .EN ]]
+	var [[ $k ]] = "[[ $v ]]";
+	[[ end ]]
+    [[ range $k, $v := .FR ]]
 	var [[ $k ]] = "[[ $v ]]";
 	[[ end ]]
 
@@ -27,28 +30,41 @@ script.
 var r = regexp.MustCompile("\\[(\\S+)\\]\\n\\s+one = \"(.+)\"")
 
 // locales map
-var m map[string]string
+var m_en map[string]string
+var m_fr map[string]string
+
+// template date
+type Tdata struct {
+	EN map[string]string
+	FR map[string]string
+}
 
 func main() {
-	fmt.Println("generating javascript locales file")
-
-	m = make(map[string]string)
+	m_en = make(map[string]string)
+	m_fr = make(map[string]string)
 
 	// finding matches
-	ms := r.FindAllStringSubmatch(string(locales.LOCALES_EN), -1)
-	for _, v := range ms {
+	ms_en := r.FindAllStringSubmatch(string(locales.LOCALES_EN), -1)
+	for _, v := range ms_en {
 		//fmt.Printf("%d. %s\n", k, v)
 		//fmt.Printf("%s -> %s\n", v[1], v[2])
-		k := fmt.Sprintf("locale_%s", v[1])
-		m[k] = v[2]
+		k := fmt.Sprintf("locale_en_%s", v[1])
+		m_en[k] = v[2]
+	}
+	ms_fr := r.FindAllStringSubmatch(string(locales.LOCALES_FR), -1)
+	for _, v := range ms_fr {
+		//fmt.Printf("%d. %s\n", k, v)
+		//fmt.Printf("%s -> %s\n", v[1], v[2])
+		k := fmt.Sprintf("locale_fr_%s", v[1])
+		m_fr[k] = v[2]
 	}
 
 	// opening output file
-	f, err := os.Create("/tmp/test.foo")
+	f, err := os.Create("static/templates/localejs.jade")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer f.Close()
 
-	packageTemplate.Execute(f, m)
+	packageTemplate.Execute(f, Tdata{EN: m_en, FR: m_fr})
 }

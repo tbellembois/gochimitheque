@@ -7,10 +7,11 @@ import (
 
 // ViewContainer is a struct passed to the view
 type ViewContainer struct {
-	PersonEmail string
-	PersonID    int
-	URLValues   url.Values
-	ProxyPath   string
+	PersonEmail    string
+	PersonLanguage string
+	PersonID       int
+	URLValues      url.Values
+	ProxyPath      string
 }
 
 // helpers.ContainerFromRequestContext returns a ViewContainer from the request context
