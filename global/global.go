@@ -9,6 +9,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/gorilla/schema"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
+	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/locales"
 	"golang.org/x/text/language"
 )
@@ -22,6 +23,9 @@ type NullTime struct {
 // Scan implements the Scanner interface.
 func (nt *NullTime) Scan(value interface{}) error {
 	nt.Time, nt.Valid = value.(time.Time)
+	log.Debug("--------------------")
+	log.Debug(nt.Time.String())
+	log.Debug(nt.Valid)
 	return nil
 }
 

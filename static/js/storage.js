@@ -267,43 +267,43 @@ function operateFormatter(value, row, index) {
     eid = row.storelocation.entity.entity_id
     
     var borrowingicon = "hand-okay",
-    borrowingtitle = "borrow";
+    borrowingtitle = global.t("storage_borrow", container.PersonLanguage);
     if (row.borrowing.borrowing_id.Valid) {
         borrowingicon = "hand-pointing-left";
-        borrowingtitle = "unborrow"
+        borrowingtitle = global.t("storage_unborrow", container.PersonLanguage);
     }
     
     if (row.storage_archive.Valid && row.storage_archive.Bool) {
         // this is an archive
         var actions = [
-            '<button id="clone' + sid + '" sid="' + sid + '" class="clone btn btn-primary btn-sm" style="display: none;" title="clone" type="button">',
+            '<button id="clone' + sid + '" sid="' + sid + '" class="clone btn btn-link btn-sm" style="display: none;" title="' + global.t("storage_clone", container.PersonLanguage) + '" type="button">',
             '<span class="mdi mdi-24px mdi-content-copy"></span>',
             '</button>',
-            '<button id="restore' + sid + '" sid="' + sid + '" class="restore btn btn-primary btn-sm" style="display: none;" title="restore" type="button">',
+            '<button id="restore' + sid + '" sid="' + sid + '" class="restore btn btn-link btn-sm" style="display: none;" title="' + global.t("storage_restore", container.PersonLanguage) + '" type="button">',
             '<span class="mdi mdi-24px mdi-undo"></span>',
             '</button>',
-            '<button id="delete' + sid + '" sid="' + sid + '" class="delete btn btn-primary btn-sm" style="display: none;" title="delete" type="button">',
+            '<button id="delete' + sid + '" sid="' + sid + '" class="delete btn btn-link btn-sm" style="display: none;" title="' + global.t("delete", container.PersonLanguage) + '" type="button">',
             '<span class="mdi mdi-24px mdi-delete"></span>',
             '</button>']; 
     } else if (row.storage.storage_id.Valid) {
         // this is an history
         var actions = [
-            '<button id="clone' + sid + '" class="clone btn btn-primary btn-sm" style="display: none;" title="clone" type="button">',
+            '<button id="clone' + sid + '" class="clone btn btn-link btn-sm" style="display: none;" title="' + global.t("storage_clone", container.PersonLanguage) + '" type="button">',
             '<span class="mdi mdi-24px mdi-content-copy"></span>',
             '</button>'];
     } else {
         // buttons are hidden by default
         var actions = [
-            '<button id="edit' + sid + '" sid="' + sid + '" class="edit btn btn-primary btn-sm" style="display: none;" title="edit" type="button">',
+            '<button id="edit' + sid + '" sid="' + sid + '" class="edit btn btn-link btn-sm" style="display: none;" title="' + global.t("edit", container.PersonLanguage) + '" type="button">',
             '<span class="mdi mdi-24px mdi-border-color"></span>',
             '</button>',
-            '<button id="clone' + sid + '" sid="' + sid + '" class="clone btn btn-primary btn-sm" style="display: none;" title="clone" type="button">',
+            '<button id="clone' + sid + '" sid="' + sid + '" class="clone btn btn-link btn-sm" style="display: none;" title="' + global.t("storage_clone", container.PersonLanguage) + '" type="button">',
             '<span class="mdi mdi-24px mdi-content-copy"></span>',
             '</button>',
-            '<button id="archive' + sid + '" sid="' + sid + '" class="archive btn btn-primary btn-sm" style="display: none;" title="delete" type="button">',
+            '<button id="archive' + sid + '" sid="' + sid + '" class="archive btn btn-link btn-sm" style="display: none;" title="' + global.t("delete", container.PersonLanguage) + '" type="button">',
             '<span class="mdi mdi-24px mdi-delete"></span>',
             '</button>',
-            '<button id="borrow' + sid + '" sid="' + sid + '" data-target="#borrow" class="borrow btn btn-primary btn-sm" style="display: none;" title="' + borrowingtitle + '" type="button">',
+            '<button id="borrow' + sid + '" sid="' + sid + '" data-target="#borrow" class="borrow btn btn-link btn-sm" style="display: none;" title="' + borrowingtitle + '" type="button">',
             '<span class="mdi mdi-24px mdi-' + borrowingicon + '"></span>',
             '</button>'];
     }
@@ -318,7 +318,7 @@ function operateFormatter(value, row, index) {
     }
     
     if (row.storage_creationdate != row.storage_modificationdate && !row.storage.storage_id.Valid) {
-        actions.push('<button id="history' + sid + '" class="history btn btn-primary btn-sm" title="show history" type="button">');
+        actions.push('<button id="history' + sid + '" class="history btn btn-link btn-sm" title="' + global.t("storage_showhistory", container.PersonLanguage) + '" type="button">');
         actions.push('<span class="mdi mdi-24px mdi-history"></span>');
         actions.push('</button>');
     }
