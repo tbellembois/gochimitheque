@@ -186,19 +186,19 @@ function operateFormatter(value, row, index) {
 
     // buttons are hidden by default
     var actions = [
-    '<button id="storages' + pid + '" class="storages btn btn-primary btn-sm" style="display: none;" title="storages" type="button">',
+    '<button id="storages' + pid + '" class="storages btn btn-link btn-sm" style="display: none;" title="storages" type="button">',
         '<span class="mdi mdi-24px mdi-cube-unfolded"',
     '</button>',
-    '<button id="store' + pid + '" class="store btn btn-primary btn-sm" style="display: none;" title="store" type="button">',
+    '<button id="store' + pid + '" class="store btn btn-link btn-sm" style="display: none;" title="store" type="button">',
         '<span class="mdi mdi-24px mdi-forklift"',
     '</button>',
-    '<button id="edit' + pid + '" class="edit btn btn-primary btn-sm" style="display: none;" title="edit" type="button">',
+    '<button id="edit' + pid + '" class="edit btn btn-link btn-sm" style="display: none;" title="edit" type="button">',
         '<span class="mdi mdi-24px mdi-border-color"',
     '</button>',
-    '<button id="delete' + pid + '" class="delete btn btn-primary btn-sm" style="display: none;" title="delete" type="button">',
+    '<button id="delete' + pid + '" class="delete btn btn-link btn-sm" style="display: none;" title="delete" type="button">',
         '<span class="mdi mdi-24px mdi-delete"',
     '</button>',
-    '<button id="bookmark' + pid + '" class="bookmark btn btn-primary btn-sm" title="(un)bookmark" type="button">',
+    '<button id="bookmark' + pid + '" class="bookmark btn btn-link btn-sm" title="(un)bookmark" type="button">',
         '<span id="bookmark' + pid + '" class="mdi mdi-24px mdi-' + bookmarkicon + '">',
     '</button>',
     ];

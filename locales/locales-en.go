@@ -10,6 +10,11 @@ var LOCALES_EN = []byte(`
 [modified]
 	one = "modified"
 
+[edit]
+	one = "edit"
+[delete]
+	one = "delete"
+
 [email_placeholder]
 	one = "enter your email"
 [submitlogin_text]
@@ -24,6 +29,25 @@ var LOCALES_EN = []byte(`
 	one = "Chimithèque logo designed by "
 [logo_information2]
 	one = "Do not use or copy without her permission."
+
+[s_custom_name_part_of]
+	one = "part of name"
+[s_name]
+	one = "name"
+[s_casnumber]
+	one = "CAS"
+[s_empiricalformula]
+	one = "emp. formula"
+[s_storage_barecode]
+	one = "barecode"
+[s_signalword]
+	one = "signal word"
+[s_symbols]
+	one = "symbol(s)"
+[s_hazardstatements]
+	one = "hazard statement(s)"
+[s_precautionarystatements]
+	one = "precautionary statement(s)"
 
 [menu_home]
 	one = "home"
@@ -76,4 +100,15 @@ var LOCALES_EN = []byte(`
 	one = "expiration date"
 [storage_comment_title]
 	one = "comment"
+
+[storage_clone]
+	one = "clone"
+[storage_borrow]
+	one = "borrow"
+[storage_unborrow]
+	one = "unborrow"
+[storage_restore]
+	one = "restore"
+[storage_showhistory]
+	one = "show history"
 `)

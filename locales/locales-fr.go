@@ -10,6 +10,11 @@ var LOCALES_FR = []byte(`
 [modified]
 	one = "modifié"
 
+[edit]
+	one = "editer"
+[delete]
+	one = "supprimer"
+
 [email_placeholder]
 	one = "entrez votre email"
 [submitlogin_text]
@@ -24,6 +29,25 @@ var LOCALES_FR = []byte(`
 	one = "Logo Chimithèque réalisé par "
 [logo_information2]
 	one = "Ne pas utiliser ou copier sans sa permission."
+
+[s_custom_name_part_of]
+	one = "partie du nom"
+[s_name]
+	one = "nom"
+[s_casnumber]
+	one = "CAS"
+[s_empiricalformula]
+	one = "formule brute"
+[s_storage_barecode]
+	one = "code barre"
+[s_signalword]
+	one = "mention d'avertissement"
+[s_symbols]
+	one = "symbole(s)"
+[s_hazardstatements]
+	one = "mention(s) de danger H-EUH"
+[s_precautionarystatements]
+	one = "conseil(s) de prudence P"
 
 [menu_home]
 	one = "accueil"
@@ -76,4 +100,15 @@ var LOCALES_FR = []byte(`
 	one = "date d'expiration"
 [storage_comment_title]
 	one = "commentaire"
+
+[storage_clone]
+	one = "cloner"
+[storage_borrow]
+	one = "emprunter"
+[storage_unborrow]
+	one = "restituer"
+[storage_restore]
+	one = "restaurer"
+[storage_showhistory]
+	one = "voir historique"
 `)

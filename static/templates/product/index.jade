@@ -8,36 +8,36 @@
                     +selecticon
             .row
                 .col-sm-6
-                    | {{$label := "part of name"}} {{$name := "s_custom_name_part_of"}}
+                    | {{$label := T "s_custom_name_part_of" 1 }} {{$name := "s_custom_name_part_of"}}
                     +inputtextcompact
                 .col-sm-6
                 .col-sm-6
-                    | {{$label := "exact name"}} {{$name := "s_name"}}
+                    | {{$label := T "s_name" 1 }} {{$name := "s_name"}}
                     +selectcompact
                 .col-sm-6
-                    | {{$label := "cas"}} {{$name := "s_casnumber"}}
+                    | {{$label := T "s_casnumber" 1 }} {{$name := "s_casnumber"}}
                     +selectcompact
                 .col-sm-6
-                    | {{$label := "emp. formula"}} {{$name := "s_empiricalformula"}}
+                    | {{$label := T "s_empiricalformula" 1 }} {{$name := "s_empiricalformula"}}
                     +selectcompact
                 .col-sm-6
-                    | {{$label := "barecode"}} {{$name := "s_storage_barecode"}}
+                    | {{$label := T "s_storage_barecode" 1 }} {{$name := "s_storage_barecode"}}
                     +inputtextcompact
             .row.collapse#advancedsearch
                 .col-sm-12
                     .form-row
                         .form-group.col-sm-6
-                            | {{$label := "signal word"}} {{$name := "s_signalword"}}
+                            | {{$label := T "s_signalword" 1 }} {{$name := "s_signalword"}}
                             +select
                         .form-group.col-sm-6
-                            | {{$label := "symbol(s)"}} {{$name := "s_symbols"}}
+                            | {{$label := T "s_symbols" 1 }} {{$name := "s_symbols"}}
                             +selectmultiple
                     .form-row
                         .form-group.col-sm-6
-                            | {{$label := "hazard statement(s)"}} {{$name := "s_hazardstatements"}}
+                            | {{$label := T "s_hazardstatements" 1 }} {{$name := "s_hazardstatements"}}
                             +selectmultiple
                         .form-group.col-sm-6
-                            | {{$label := "precautionary statement(s)"}} {{$name := "s_precautionarystatements"}}
+                            | {{$label := T "s_precautionarystatements" 1 }} {{$name := "s_precautionarystatements"}}
                             +selectmultiple
             .row
                 .col.col-sm-10
