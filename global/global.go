@@ -9,7 +9,6 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/gorilla/schema"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
-	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/locales"
 	"golang.org/x/text/language"
 )
@@ -23,9 +22,6 @@ type NullTime struct {
 // Scan implements the Scanner interface.
 func (nt *NullTime) Scan(value interface{}) error {
 	nt.Time, nt.Valid = value.(time.Time)
-	log.Debug("--------------------")
-	log.Debug(nt.Time.String())
-	log.Debug(nt.Valid)
 	return nil
 }
 
@@ -35,6 +31,16 @@ func (nt NullTime) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return nt.Time, nil
+}
+
+// UnmarshalText parse the string date from the view
+func (nt *NullTime) UnmarshalText(text []byte) (err error) {
+	var e error
+	nt.Time, e = time.Parse("2006-01-02", string(text))
+	if e == nil {
+		nt.Valid = true
+	}
+	return e
 }
 
 var (
@@ -66,13 +72,14 @@ func init() {
 }
 
 func SchemaRegisterSQLNulls(d *schema.Decoder) {
-	nullString, nullBool, nullInt64, nullFloat64, nullTime := sql.NullString{}, sql.NullBool{}, sql.NullInt64{}, sql.NullFloat64{}, NullTime{}
+	//nullString, nullBool, nullInt64, nullFloat64, nullTime := sql.NullString{}, sql.NullBool{}, sql.NullInt64{}, sql.NullFloat64{}, NullTime{}
+	nullString, nullBool, nullInt64, nullFloat64 := sql.NullString{}, sql.NullBool{}, sql.NullInt64{}, sql.NullFloat64{}
 
 	d.RegisterConverter(nullString, ConvertSQLNullString)
 	d.RegisterConverter(nullBool, ConvertSQLNullBool)
 	d.RegisterConverter(nullInt64, ConvertSQLNullInt64)
 	d.RegisterConverter(nullFloat64, ConvertSQLNullFloat64)
-	d.RegisterConverter(nullTime, ConvertSQLNullTime)
+	//d.RegisterConverter(nullTime, ConvertSQLNullTime)
 }
 
 func ConvertSQLNullTime(value string) reflect.Value {
