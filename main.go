@@ -28,10 +28,11 @@ func main() {
 	//defer profile.Start().Stop()
 
 	var (
-		err       error
-		logf      *os.File
-		dbname    = "/mnt/ramdisk/storage.db"
-		datastore *models.SQLiteDataStore
+		err  error
+		logf *os.File
+		//dbname = "/mnt/ramdisk/storage.db"
+		dbname    = "thbellem:achanger@tcp(berlin.iut.local)/dbthbellem?multiStatements=true&charset=utf8"
+		datastore models.Datastore
 	)
 
 	// getting the program parameters
@@ -55,24 +56,6 @@ func main() {
 		log.SetLevel(log.InfoLevel)
 	}
 
-	// i18n
-	// bundle := &i18n.Bundle{DefaultLanguage: language.English}
-	// bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
-	// bundle.MustParseMessageFileBytes([]byte(`
-	// [test]
-	// one = "One test"
-	// other = "Several tests"
-	// `), "en.toml")
-	// bundle.MustParseMessageFileBytes([]byte(`
-	// [test]
-	// one = "Un test"
-	// other = "Plusieurs tests"
-	// `), "fr.toml")
-	// localizer := i18n.NewLocalizer(bundle, "en-US", "fr-FR")
-	// test
-	//translation := loc.MustLocalize(&i18n.LocalizeConfig{MessageID: "test", PluralCount: 1})
-	//log.Debug(translation)
-
 	// logging to file if logfile parameter specified
 	if *logfile != "" {
 		if logf, err = os.OpenFile(*logfile, os.O_WRONLY|os.O_CREATE, 0755); err != nil {
@@ -92,7 +75,7 @@ func main() {
 	global.MailServerTLSSkipVerify = *mailServerTLSSkipVerify
 
 	// database initialization
-	if datastore, err = models.NewDBstore(dbname); err != nil {
+	if datastore, err = models.NewMySQLDBstore(dbname); err != nil {
 		log.Panic(err)
 	}
 	if err = datastore.CreateDatabase(); err != nil {
