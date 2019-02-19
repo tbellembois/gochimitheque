@@ -22,10 +22,6 @@ import (
 	"github.com/tbellembois/gochimitheque/utils"
 )
 
-const (
-	dbdriver = "sqlite3"
-)
-
 // SQLiteDataStore implements the Datastore interface
 // to store data in SQLite3
 type SQLiteDataStore struct {
@@ -34,14 +30,14 @@ type SQLiteDataStore struct {
 
 // NewDBstore returns a database connection to the given dataSourceName
 // ie. a path to the sqlite database file
-func NewDBstore(dataSourceName string) (*SQLiteDataStore, error) {
+func NewSQLiteDBstore(dataSourceName string) (*SQLiteDataStore, error) {
 	var (
 		db  *sqlx.DB
 		err error
 	)
 
-	log.WithFields(log.Fields{"dbdriver": dbdriver, "dataSourceName": dataSourceName}).Debug("NewDBstore")
-	if db, err = sqlx.Connect(dbdriver, dataSourceName); err != nil {
+	log.WithFields(log.Fields{"dbdriver": "sqlite3", "dataSourceName": dataSourceName}).Debug("NewDBstore")
+	if db, err = sqlx.Connect("sqlite3", dataSourceName); err != nil {
 		return &SQLiteDataStore{}, err
 	}
 	return &SQLiteDataStore{db}, nil
@@ -596,7 +592,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	("m", 1, NULL), ("dm", 0.1, 3), ("cm", 0.01, 3)`
 
 	// tables creation
-	log.Debug("creating tables")
+	log.Debug("creating sqlite tables")
 	if _, err = db.Exec(schema); err != nil {
 		return err
 	}

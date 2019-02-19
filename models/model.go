@@ -98,7 +98,7 @@ type Storage struct {
 	StoreLocation           `db:"storelocation" json:"storelocation" schema:"storelocation"`
 	Unit                    `db:"unit" json:"unit" schema:"unit"`
 	Supplier                `db:"supplier" json:"supplier" schema:"supplier"`
-	Storage                 *Storage   `db:"storage" json:"storage" schema:"storage"`
+	Storage                 *Storage   `db:"storage" json:"storage" schema:"storage"`       // history reference storage
 	Borrowing               *Borrowing `db:"borrowing" json:"borrowing" schema:"borrowing"` // not un db but sqlx requires the "db" entry
 }
 
