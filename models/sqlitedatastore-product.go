@@ -552,12 +552,15 @@ func (db *SQLiteDataStore) GetProductsNames(p helpers.Dbselectparam) ([]Name, in
 		err                                error
 	)
 
+	//select * from name WHERE name_label like "test%" OR name_label like "%test%" order by
+	//case when name_label like "test%" then 0 else 1 end
+
 	precreq.WriteString(" SELECT count(DISTINCT name.name_id)")
 	presreq.WriteString(" SELECT name_id, name_label")
 
 	comreq.WriteString(" FROM name")
-	comreq.WriteString(" WHERE name_label LIKE :search")
-	postsreq.WriteString(" ORDER BY name_label  " + p.GetOrder())
+	comreq.WriteString(" WHERE name_label LIKE :search OR name_label like :searchbegin")
+	postsreq.WriteString(" ORDER BY case when name_label like :searchbegin then 0 else 1 end " + p.GetOrder())
 
 	// limit
 	if p.GetLimit() != constants.MaxUint64 {
@@ -574,10 +577,11 @@ func (db *SQLiteDataStore) GetProductsNames(p helpers.Dbselectparam) ([]Name, in
 
 	// building argument map
 	m := map[string]interface{}{
-		"search": p.GetSearch(),
-		"order":  p.GetOrder(),
-		"limit":  p.GetLimit(),
-		"offset": p.GetOffset(),
+		"search":      p.GetSearch(),
+		"searchbegin": strings.TrimPrefix(p.GetSearch(), "%"),
+		"order":       p.GetOrder(),
+		"limit":       p.GetLimit(),
+		"offset":      p.GetOffset(),
 	}
 
 	// select
