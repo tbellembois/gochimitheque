@@ -34,22 +34,22 @@ function getData(params) {
 // when table is loaded
 //
 $('#table').on('load-success.bs.table refresh.bs.table', function () {
-    $("button.edit").each(function( index, b ) {
-        hasPermission("storages", $(b).attr("sid"), "PUT").done(function(){
-            $("#edit"+$(b).attr("sid")).fadeIn();
-            $("#clone"+$(b).attr("sid")).fadeIn();
-            $("#borrow"+$(b).attr("sid")).fadeIn();
-            localStorage.setItem("storages:" + $(b).attr("sid") + ":PUT", true);
+    $("table#table").find("tr").each(function( index, b ) {
+        hasPermission("storages", $(b).attr("storage_id"), "PUT").done(function(){
+            $("#edit"+$(b).attr("storage_id")).fadeIn();
+            $("#clone"+$(b).attr("storage_id")).fadeIn();
+            $("#borrow"+$(b).attr("storage_id")).fadeIn();
+            localStorage.setItem("storages:" + $(b).attr("storage_id") + ":PUT", true);
         }).fail(function(){
-            localStorage.setItem("storages:" + $(b).attr("sid") + ":PUT", false);
+            localStorage.setItem("storages:" + $(b).attr("storage_id") + ":PUT", false);
         })
-        hasPermission("storages", $(b).attr("sid"), "DELETE").done(function(){
-            $("#delete"+$(b).attr("sid")).fadeIn();
-            $("#archive"+$(b).attr("sid")).fadeIn();
-            $("#restore"+$(b).attr("sid")).fadeIn();
-            localStorage.setItem("storages:" + $(b).attr("sid") + ":DELETE", true);
+        hasPermission("storages", $(b).attr("storage_id"), "DELETE").done(function(){
+            $("#delete"+$(b).attr("storage_id")).fadeIn();
+            $("#archive"+$(b).attr("storage_id")).fadeIn();
+            $("#restore"+$(b).attr("storage_id")).fadeIn();
+            localStorage.setItem("storages:" + $(b).attr("storage_id") + ":DELETE", true);
         }).fail(function(){
-            localStorage.setItem("storages:" + $(b).attr("sid") + ":DELETE", false);
+            localStorage.setItem("storages:" + $(b).attr("storage_id") + ":DELETE", false);
         })
     });
 });
@@ -145,8 +145,6 @@ function rowAttributes(row, index) {
 function detailFormatter(index, row) {
     var html = [];
     
-    console.log(row)
-
     html.push("<div class='row'>")
     
     html.push("<div class='col-sm-3'>")
@@ -180,16 +178,16 @@ function detailFormatter(index, row) {
     
         html.push("<div class='row mb-sm-3'>")
             if (row["storage_entrydate"]["Valid"]) {
-                html.push("<div class='col-sm-12'><span class='iconlabel'> " + global.t("storage_entrydate_title", container.PersonLanguage) + "</span> " + dateFormatter(row["storage_entrydate"], null, null, null) + "</div>")
+                html.push("<div class='col-sm-12'><span class='iconlabel'> " + global.t("storage_entrydate_title", container.PersonLanguage) + "</span> " + dateFormatter(row["storage_entrydate"]["Time"], null, null, null) + "</div>")
             }
             if (row["storage_exitdate"]["Valid"]) {
-                html.push("<div class='col-sm-12'><span class='iconlabel'> " + global.t("storage_exitdate_title", container.PersonLanguage) + "</span> " + dateFormatter(row["storage_exitdate"], null, null, null) + "</div>")
+                html.push("<div class='col-sm-12'><span class='iconlabel'> " + global.t("storage_exitdate_title", container.PersonLanguage) + "</span> " + dateFormatter(row["storage_exitdate"]["Time"], null, null, null) + "</div>")
             }
             if (row["storage_openingdate"]["Valid"]) {
-                html.push("<div class='col-sm-12'><span class='iconlabel'> " + global.t("storage_openingdate_title", container.PersonLanguage) + "</span> " + dateFormatter(row["storage_openingdate"], null, null, null) + "</div>")
+                html.push("<div class='col-sm-12'><span class='iconlabel'> " + global.t("storage_openingdate_title", container.PersonLanguage) + "</span> " + dateFormatter(row["storage_openingdate"]["Time"], null, null, null) + "</div>")
             }
             if (row["storage_expirationdate"]["Valid"]) {
-                html.push("<div class='col-sm-12'><span class='iconlabel'> " + global.t("storage_expirationdate_title", container.PersonLanguage) + "</span> " + dateFormatter(row["storage_expirationdate"], null, null, null) + "</div>")
+                html.push("<div class='col-sm-12'><span class='iconlabel'> " + global.t("storage_expirationdate_title", container.PersonLanguage) + "</span> " + dateFormatter(row["storage_expirationdate"]["Time"], null, null, null) + "</div>")
             }
         html.push("</div>")   
     
@@ -220,11 +218,11 @@ function detailFormatter(index, row) {
 // date formatter
 //
 function dateFormatter(value, row, index, field) {
-    if (value.Valid != undefined && value.Valid == false) {
+    if (value == "") {
         return ""
     } else {
         date = new Date(value);
-        return date.toLocaleString();
+        return date.toLocaleDateString();
     }
 }
 //
@@ -317,7 +315,7 @@ function operateFormatter(value, row, index) {
         actions.push('<span class="mdi mdi-24px mdi-delete"></span>');
     }
     
-    if (row.storage_creationdate != row.storage_modificationdate && !row.storage.storage_id.Valid) {
+    if (row.storage_creationdate != row.storage_modificationdate && !row.storage.storage_id.Valid && !(row.storage_archive.Valid && row.storage_archive.Bool)) {
         actions.push('<button id="history' + sid + '" class="history btn btn-link btn-sm" title="' + global.t("storage_showhistory", container.PersonLanguage) + '" type="button">');
         actions.push('<span class="mdi mdi-24px mdi-history"></span>');
         actions.push('</button>');
@@ -405,19 +403,55 @@ window.operateEvents = {
     }
 };
 function operateBorrow(e, value, row, index) {
+    // clean select2 input selection
     $('select#borrower').val(null).trigger('change');
     $('select#borrower').find('option').remove();
     
+    // get borrowed storage id
     $("input#bstorage_id").val(row['storage_id'].Int64);
     
     if (row['borrowing']['borrowing_id'].Valid) {
+        // unborrow storage
         saveBorrowing();
     } else {
+        // borrow storage, showing the modal
         $("#borrow").modal("show");
+        var $table = $('#table');
+        $table.bootstrapTable('refresh');
+    }   
+
+}
+function saveBorrowing() {
+    var form = $("#borrowing");
+    if (! form.valid()) {
+        return;
+    };
+
+    var borrowing_comment = $("textarea#borrowing_comment").val(),
+        borrower = $('select#borrower').select2('data')[0],
+        storage_id = $("input#bstorage_id").val(),
+        data = {};
+
+    if (borrower !== undefined) {
+        $.extend(data, {
+            "borrowing_comment": borrowing_comment,
+            "borrower.person_id": borrower.id,
+        });
     }
-    
-    var $table = $('#table');
-    $table.bootstrapTable('refresh');
+
+    $.ajax({
+        url: proxyPath + "borrowings/" + storage_id,
+        method: "PUT",
+        dataType: 'json',
+        data: data,
+    }).done(function(jqXHR, textStatus, errorThrown) {
+       $("#borrow").modal("hide");
+       global.displayMessage("borrowing modified", "success");
+       var $table = $('#table');
+       $table.bootstrapTable('refresh');
+    }).fail(function(jqXHR, textStatus, errorThrown) {
+        handleHTTPError(jqXHR.statusText, jqXHR.status);
+    });  
 }
 function operateEdit(e, value, row, index) {
     // clearing selections

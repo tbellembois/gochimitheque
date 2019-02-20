@@ -111,4 +111,37 @@ var LOCALES_EN = []byte(`
 	one = "restore"
 [storage_showhistory]
 	one = "show history"
+
+[empiricalformula_label_title]
+	one = "empirical formula"
+[cenumber_label_title]
+	one = "CE"
+[casnumber_label_title]
+	one = "CAS"
+[casnumber_cmr_title]
+	one = "CMR"
+[signalword_label_title]
+	one = "signal word"
+[linearformula_label_title]
+	one = "liner formula"
+[hazardstatement_label_title]
+	one = "hazard statement(s)"
+[precautionarystatement_label_title]
+	one = "precautionary statement(s)"
+[classofcompound_label_title]
+	one = "class of compounds"
+[physicalstate_label_title]
+	one = "physical state"
+[product_threedformula_title]
+	one = "3D formula"
+[product_msds_title]
+	one = "MSDS"
+[product_disposalcomment_title]
+	one = "disposal comment"
+[product_remark_title]
+	one = "remark"
+[product_radioactive_title]
+	one = "radioactive"
+[product_restricted_title]
+	one = "restricted access"
 `)

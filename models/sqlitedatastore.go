@@ -317,14 +317,14 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		records [][]string
 	)
 
-	// activate the foreign keys feature
-	log.Debug("enabling foreign keys")
-	if _, err = db.Exec("PRAGMA foreign_keys = ON"); err != nil {
-		return err
-	}
-
 	// schema definition
-	schema := `CREATE TABLE IF NOT EXISTS person(
+	schema := `
+	PRAGMA foreign_keys = ON;
+	PRAGMA encoding = "UTF-8"; 
+	PRAGMA temp_store = 2;
+	PRAGMA journal_mode=WAL;
+
+	CREATE TABLE IF NOT EXISTS person(
 		person_id integer PRIMARY KEY,
 		person_email string NOT NULL,
 		person_password string NOT NULL);
@@ -709,6 +709,12 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		db.UpdatePersonPassword(admin)
 	}
 
+	// tables creation
+	log.Debug("vacuuming database")
+	if _, err = db.Exec("VACUUM;"); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -727,7 +733,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 
 		zerocasnumberid        int
 		zeroempiricalformulaid int
-		zeropersonid           int
+		zeropersonid           int // admin id
 
 		// O:old N:new R:reverse
 		mONperson        map[string]string   // oldid <> newid map for user table
@@ -1617,20 +1623,20 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		// do not import archived cards
 		if !newarchive {
 			sqlr = `INSERT INTO product (product_specificity, 
-				product_msds, 
-				product_restricted, 
-				product_radioactive, 
-				product_threedformula, 
-				product_disposalcomment, 
-				product_remark,
-				empiricalformula,
-				linearformula,
-				physicalstate,
-				signalword,
-				person,
-				casnumber,
-				name) 
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                product_msds, 
+                product_restricted, 
+                product_radioactive, 
+                product_threedformula, 
+                product_disposalcomment, 
+                product_remark,
+                empiricalformula,
+                linearformula,
+                physicalstate,
+                signalword,
+                person,
+                casnumber,
+                name) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 			if res, err = tx.Exec(sqlr,
 				newspecificity,
 				newmsds,
@@ -1770,6 +1776,8 @@ func (db *SQLiteDataStore) Import(dir string) error {
 			tx.Rollback()
 			return err
 		}
+		// for debug
+		oldid := line[0]
 		product := line[1]
 		person := line[2]
 		store_location := line[3]
@@ -1785,6 +1793,9 @@ func (db *SQLiteDataStore) Import(dir string) error {
 
 		newproduct := mONproduct[product]
 		newperson := mONperson[person]
+		if newperson == "" {
+			newperson = strconv.Itoa(zeropersonid)
+		}
 		newstore_location := mONstorelocation[store_location]
 		newunit := mONunit[unit]
 		newcomment := comment
@@ -1803,23 +1814,11 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		}
 		newstorage_creationdate := time.Now()
 
+		log.Debug("oldid: " + oldid)
 		// do not import archived cards
 		if !newarchive {
-			sqlr = `INSERT INTO storage (storage_creationdate, 
-				storage_modificationdate, 
-				storage_comment, 
-				storage_reference, 
-				storage_batchnumber, 
-				storage_quantity, 
-				storage_barecode,
-				storage_todestroy,
-				person,
-				product,
-				storelocation,
-				unit,
-				supplier) 
-			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-			if _, err = tx.Exec(sqlr,
+			reqValues := "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
+			reqArgs := []interface{}{
 				newstorage_creationdate,
 				newstorage_creationdate,
 				newcomment,
@@ -1831,8 +1830,31 @@ func (db *SQLiteDataStore) Import(dir string) error {
 				newperson,
 				newproduct,
 				newstore_location,
-				newunit,
-				newsupplier); err != nil {
+			}
+			sqlr = `INSERT INTO storage (storage_creationdate, 
+                storage_modificationdate, 
+                storage_comment, 
+                storage_reference, 
+                storage_batchnumber, 
+                storage_quantity, 
+                storage_barecode,
+                storage_todestroy,
+                person,
+                product,
+				storelocation`
+			if newunit != "" {
+				sqlr += ",unit"
+				reqValues += ",?"
+				reqArgs = append(reqArgs, newunit)
+			}
+			if newsupplier != "" {
+				sqlr += ",supplier"
+				reqValues += ",?"
+				reqArgs = append(reqArgs, newsupplier)
+			}
+
+			sqlr += `) VALUES (` + reqValues + `)`
+			if _, err = tx.Exec(sqlr, reqArgs...); err != nil {
 				tx.Rollback()
 				return err
 			}
@@ -1854,7 +1876,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 	var sts []Storage
 	var png []byte
 	if err = db.Select(&sts, ` SELECT storage_id
-		FROM storage`); err != nil {
+        FROM storage`); err != nil {
 		tx.Rollback()
 		return err
 	}
@@ -1867,8 +1889,8 @@ func (db *SQLiteDataStore) Import(dir string) error {
 			return err
 		}
 		sqlr = `UPDATE storage
-			SET storage_qrcode = ?
-			WHERE storage_id = ?`
+            SET storage_qrcode = ?
+            WHERE storage_id = ?`
 		if _, err = tx.Exec(sqlr, png, s.StorageID); err != nil {
 			log.Error("error updating storage qrcode")
 			tx.Rollback()
@@ -1890,13 +1912,13 @@ func (db *SQLiteDataStore) Import(dir string) error {
 	log.Info("- updating store locations full path")
 	var sls []StoreLocation
 	if err = db.Select(&sls, ` SELECT s.storelocation_id AS "storelocation_id", 
-		s.storelocation_name AS "storelocation_name", 
-		s.storelocation_canstore, 
-		s.storelocation_color,
-		storelocation.storelocation_id AS "storelocation.storelocation_id",
-		storelocation.storelocation_name AS "storelocation.storelocation_name"
-		FROM storelocation AS s
-		LEFT JOIN storelocation on s.storelocation = storelocation.storelocation_id`); err != nil {
+        s.storelocation_name AS "storelocation_name", 
+        s.storelocation_canstore, 
+        s.storelocation_color,
+        storelocation.storelocation_id AS "storelocation.storelocation_id",
+        storelocation.storelocation_name AS "storelocation.storelocation_name"
+        FROM storelocation AS s
+        LEFT JOIN storelocation on s.storelocation = storelocation.storelocation_id`); err != nil {
 		tx.Rollback()
 		return err
 	}

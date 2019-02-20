@@ -82,14 +82,14 @@ func SchemaRegisterSQLNulls(d *schema.Decoder) {
 	//d.RegisterConverter(nullTime, ConvertSQLNullTime)
 }
 
-func ConvertSQLNullTime(value string) reflect.Value {
-	v := NullTime{}
-	if err := v.Scan(value); err != nil {
-		return reflect.Value{}
-	}
+// func ConvertSQLNullTime(value string) reflect.Value {
+// 	v := NullTime{}
+// 	if err := v.Scan(value); err != nil {
+// 		return reflect.Value{}
+// 	}
 
-	return reflect.ValueOf(v)
-}
+// 	return reflect.ValueOf(v)
+// }
 
 func ConvertSQLNullString(value string) reflect.Value {
 	v := sql.NullString{}

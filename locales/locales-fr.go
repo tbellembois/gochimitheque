@@ -111,4 +111,37 @@ var LOCALES_FR = []byte(`
 	one = "restaurer"
 [storage_showhistory]
 	one = "voir historique"
+
+[empiricalformula_label_title]
+	one = "formule brute"
+[cenumber_label_title]
+	one = "CE"
+[casnumber_label_title]
+	one = "CAS"
+[casnumber_cmr_title]
+	one = "CMR"
+[signalword_label_title]
+	one = "mention d'avertissement"
+[linearformula_label_title]
+	one = "formule brute"
+[hazardstatement_label_title]
+	one = "mention(s) de danger H-EUH"
+[precautionarystatement_label_title]
+	one = "conseil(s) de prudence P"
+[classofcompound_label_title]
+	one = "famille chimique"
+[physicalstate_label_title]
+	one = "état physique"
+[product_threedformula_title]
+	one = "formule 3D"
+[product_msds_title]
+	one = "FDS"
+[product_disposalcomment_title]
+	one = "commentaire de destruction"
+[product_remark_title]
+	one = "remarque"
+[product_radioactive_title]
+	one = "radioactif"
+[product_restricted_title]
+	one = "accès restreint"
 `)
