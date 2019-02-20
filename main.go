@@ -28,10 +28,10 @@ func main() {
 	//defer profile.Start().Stop()
 
 	var (
-		err  error
-		logf *os.File
-		//dbname = "/mnt/ramdisk/storage.db"
-		dbname    = "thbellem:achanger@tcp(berlin.iut.local)/dbthbellem?multiStatements=true&charset=utf8"
+		err    error
+		logf   *os.File
+		dbname = "/mnt/ramdisk/storage.db"
+		//dbname    = "thbellem:achanger@tcp(berlin.iut.local)/dbthbellem?multiStatements=true&charset=utf8"
 		datastore models.Datastore
 	)
 
@@ -75,7 +75,7 @@ func main() {
 	global.MailServerTLSSkipVerify = *mailServerTLSSkipVerify
 
 	// database initialization
-	if datastore, err = models.NewMySQLDBstore(dbname); err != nil {
+	if datastore, err = models.NewSQLiteDBstore(dbname); err != nil {
 		log.Panic(err)
 	}
 	if err = datastore.CreateDatabase(); err != nil {
@@ -354,7 +354,7 @@ func main() {
 	r.Handle("/{item:products}/casnumbers/", securechain.Then(env.AppMiddleware(env.GetProductsCasNumbersHandler))).Methods("GET")
 	r.Handle("/{item:products}/casnumbers/{id}", securechain.Then(env.AppMiddleware(env.GetProductsCasNumberHandler))).Methods("GET")
 
-	r.Handle("/{item:products}/cenumbers", securechain.Then(env.AppMiddleware(env.GetProductsCeNumbersHandler))).Methods("GET")
+	r.Handle("/{item:products}/cenumbers/", securechain.Then(env.AppMiddleware(env.GetProductsCeNumbersHandler))).Methods("GET")
 
 	r.Handle("/{item:products}/names/", securechain.Then(env.AppMiddleware(env.GetProductsNamesHandler))).Methods("GET")
 	r.Handle("/{item:products}/names/{id}", securechain.Then(env.AppMiddleware(env.GetProductsNameHandler))).Methods("GET")

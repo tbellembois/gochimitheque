@@ -280,6 +280,15 @@ function queryParams(params) {
     if (storage_archive != null && storage_archive == "true") {
         $("#s_storage_archive").prop( "checked", true )
     }
+    if (urlParams.has("history")) {
+        params["history"] = urlParams.get("history");
+    }
+    if (urlParams.has("storage")) {
+        params["storage"] = urlParams.get("storage");
+    }
+    if (urlParams.has("storage_archive")) {
+        params["storage_archive"] = urlParams.get("storage_archive");
+    }
 
     if (urlParams.has("entity")) {
         params["entity"] = urlParams.get("entity")

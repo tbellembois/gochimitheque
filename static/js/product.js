@@ -75,77 +75,111 @@ function detailFormatter(index, row) {
     var html = [];
 
     html.push("<div class='row mt-sm-3'>")
-    html.push("<div class='col-sm-12'>")
-    $.each(row["synonyms"], function (key, value) {
-        html.push("<span>" + value["name_label"] + "</span> ");
-    });
-    html.push("</div>")
+        html.push("<div class='col-sm-12'>")
+            $.each(row["synonyms"], function (key, value) {
+                html.push("<span>" + value["name_label"] + "</span> ");
+            });
+        html.push("</div>")
     html.push("</div>")
 
     html.push("<div class='row mt-sm-3'>")
-    html.push("<div class='col-sm-4'><span title='empirical formula' class='mdi mdi-36px mdi-alpha-e-box-outline'></span> " + row["empiricalformula"]["empiricalformula_label"] + "</div>")
-    html.push("<div class='col-sm-4'><span title='linear formula' class='mdi mdi-36px mdi-alpha-l-box-outline'></span> " + row["linearformula"]["linearformula_label"]["String"]  + "</div>")
-    html.push("<div class='col-sm-4'><span title='3d formula' class='mdi mdi-36px mdi-cube-outline'></span> " + row["product_threedformula"]["String"] + "</div>")
+        html.push("<div class='col-sm-6'>")
+            html.push("<span class='iconlabel'>" + global.t("casnumber_label_title", container.PersonLanguage) + "</span> " + row["casnumber"]["casnumber_label"])
+            if (row["casnumber"]["casnumber_cmr"]["Valid"]) {
+                html.push("<span class='iconlabel'>" + global.t("casnumber_cmr_title", container.PersonLanguage) + "</span> " + row["casnumber"]["casnumber_cmr"])
+            }
+        html.push("</div>")
+        if (row["cenumber"]["cenumber_id"]["Valid"]) {
+            html.push("<div class='col-sm-6'><span class='iconlabel'>" + global.t("cenumber_label_title", container.PersonLanguage) + "</span> " + row["cenumber"]["cenumber_id"]["String"] + "</div>")
+        }
+    html.push("</div>")
+
+    html.push("<div class='row mt-sm-3'>")
+    
+        html.push("<div class='col-sm-6'><span class='iconlabel'>" + global.t("empiricalformula_label_title", container.PersonLanguage) + "</span> " + row["empiricalformula"]["empiricalformula_label"] + "</div>")
+        if (row["linearformula"]["linearformula_id"]["Valid"]) {
+            html.push("<div class='col-sm-6'><span class='iconlabel'>" + global.t("linearformula_label_title", container.PersonLanguage) + "</span> " + row["linearformula"]["linearformula_label"]["String"] + "</div>")
+        }
+        if (row["product_threedformula"]["Valid"] && row["product_threedformula"]["String"] != "") {
+            html.push("<div class='col-sm-6'><span class='iconlabel'>" + global.t("product_threedformula_title", container.PersonLanguage) + "</span> " + row["product_threedformula"]["String"] + "</div>")
+        }
     html.push("</div>")
 
     html.push("<div class='row mt-sm-4'>")
-    html.push("<div class='col-sm-4'><b>ce</b> " + row["cenumber"]["cenumber_label"]["String"] + "</div>")
-    html.push("<div class='col-sm-8'><b>msds</b> <a href='" + row["product_msds"]["String"] + "'>" + row["product_msds"]["String"] + "</a></div>")
+        if (row["product_msds"]["Valid"]) {
+            html.push("<div class='col-sm-12'><span class='iconlabel'>" + global.t("product_msds_title", container.PersonLanguage) + "</span> " + row["product_msds"]["String"] + "</div>")
+        }
     html.push("</div>")
 
     html.push("<div class='row mt-md-3'>")
-    html.push("<div class='col-sm-6'>")
-    $.each(row["symbols"], function (key, value) {
-        html.push("<img src='data:" + value["symbol_image"] + "' alt='" + value["symbol_label"] + "' title='" + value["symbol_label"] + "'/>");
-    });
-    html.push("</div>")
-    html.push("<div class='col-sm-6'>")
-    html.push("<p><b>signal word</b>: " + row["signalword"]["signalword_label"]["String"] + "</p>")
-    html.push("</div>")
+        html.push("<div class='col-sm-6'>")
+        $.each(row["symbols"], function (key, value) {
+            html.push("<img src='data:" + value["symbol_image"] + "' alt='" + value["symbol_label"] + "' title='" + value["symbol_label"] + "'/>");
+        });
+        html.push("</div>")
+
+        html.push("<div class='col-sm-6'>")
+        if (row["signalword"]["signalword_label"]["Valid"]) {
+            html.push("<div class='col-sm-12'><span class='iconlabel'>" + global.t("signalword_label_title", container.PersonLanguage) + "</span> " + row["signalword"]["signalword_label"]["String"] + "</div>")
+        }
+        html.push("</div>")
     html.push("</div>")
 
     html.push("<div class='row mt-md-3'>")
-    html.push("<div class='col-sm-6'>")
-    html.push("<b>hazardstatements</b>:")
-    html.push("<ul>")
-    $.each(row["hazardstatements"], function (key, value) {
-        html.push("<li>" + value["hazardstatement_reference"] + ": <i>" + value["hazardstatement_label"] + "</i></li>");
-    });
-    html.push("</ul>")
-    html.push("</div>")
-    html.push("<div class='col-sm-4'>")
-    html.push("<b>precautionarystatements</b>:")
-    html.push("<ul>")
-    $.each(row["precautionarystatements"], function (key, value) {
-        html.push("<li>" + value["precautionarystatement_reference"] + ": " + value["precautionarystatement_label"] + "</li>");
-    });
-    html.push("</ul>")
-    html.push("</div>")
+        html.push("<div class='col-sm-6'>")
+        if (row["hazardstatements"] != null && row["hazardstatements"].length != 0) {
+            html.push("<div class='col-sm-12'><span class='iconlabel'>" + global.t("hazardstatement_label_title", container.PersonLanguage) + "</span></div>")
+            html.push("<ul>")
+            $.each(row["hazardstatements"], function (key, value) {
+                html.push("<li>" + value["hazardstatement_reference"] + ": <i>" + value["hazardstatement_label"] + "</i></li>");
+            });
+            html.push("</ul>")
+        }
+        html.push("</div>")
+
+        html.push("<div class='col-sm-6'>")
+        if (row["precautionarystatements"] != null && row["precautionarystatements"].length != 0) {
+            html.push("<div class='col-sm-12'><span class='iconlabel'>" + global.t("precautionarystatement_label_title", container.PersonLanguage) + "</span></div>")
+            html.push("<ul>")
+            $.each(row["precautionarystatements"], function (key, value) {
+                html.push("<li>" + value["precautionarystatement_reference"] + ": " + value["precautionarystatement_label"] + "</li>");
+            });
+        html.push("</ul>")
+        }
+        html.push("</div>")
     html.push("</div>")
 
     html.push("<div class='row mt-md-3'>")
-    html.push("<div class='col-sm-6'><b>classofcompound</b> " + row["classofcompound"]["classofcompound_label"]["String"] + "</div>")
-    html.push("<div class='col-sm-6'><b>physical state</b>: " + row["physicalstate"]["physicalstate_label"]["String"] + "</div>")
+        if (row["classofcompound"]["classofcompound_id"]["Valid"]) {
+            html.push("<div class='col-sm-6'><span class='iconlabel'>" + global.t("classofcompound_label_title", container.PersonLanguage) + "</span> " + row["classofcompound"]["classofcompound_label"]["String"] + "</div>")
+        }
+        if (row["physicalstate"]["physicalstate_id"]["Valid"]) {
+            html.push("<div class='col-sm-6'><span class='iconlabel'>" + global.t("physicalstate_label_title", container.PersonLanguage) + "</span> " + row["physicalstate"]["physicalstate_label"]["String"] + "</div>")
+        }
     html.push("</div>")
 
     html.push("<div class='row mt-md-3'>")
-    html.push("<div class='col-sm-6'><b>disposal comment</b>: " + row["product_disposalcomment"]["String"] + "</div>")
-    html.push("<div class='col-sm-6'><b>remark</b>: " + row["product_remark"]["String"] + "</div>")
+        if (row["product_disposalcomment"]["Valid"] && row["product_disposalcomment"]["String"] != "") {
+            html.push("<div class='col-sm-6'><span class='iconlabel'>" + global.t("product_disposalcomment_title", container.PersonLanguage) + "</span> " + row["product_disposalcomment"]["String"] + "</div>")
+        }
+        if (row["product_remark"]["Valid"] && row["product_remark"]["String"] != "") {
+            html.push("<div class='col-sm-6'><span class='iconlabel'>" + global.t("product_remark_title", container.PersonLanguage) + "</span> " + row["product_remark"]["String"] + "</div>")
+        }
     html.push("</div>")
 
     html.push("<div class='row mt-sm-3'>")
     html.push("<div class='col-sm-12'>")
     if (row["product_radioactive"]["Bool"]) {
-        html.push("<span title='radioactive' class='mdi mdi-36px mdi-radioactive'></span>")
+        html.push("<span title='" + global.t("product_radioactive_title", container.PersonLanguage) + "' class='mdi mdi-36px mdi-radioactive'></span>")
     }
     if (row["product_restricted"]["Bool"]) {
-        html.push("<span title='restricted access' class='mdi mdi-36px mdi-hand'></span>")
+        html.push("<span title='" + global.t("product_restricted_title", container.PersonLanguage) + "' class='mdi mdi-36px mdi-hand'></span>")
     }
     html.push("</div>")
     html.push("</div>")
 
     html.push("<div class='row mt-sm-4'>")
-    html.push("<div class='col-sm-12'>" + row["person"]["person_email"] + "</div>")
+    html.push("<div class='col-sm-12'><p class='blockquote-footer'>" + row["person"]["person_email"] + "</p></div>")
     html.push("</div>") 
     
     return html.join('');

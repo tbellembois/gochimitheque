@@ -598,36 +598,7 @@ script.
         $table.bootstrapTable('refresh');
         global.displayMessage("storage " + data.storage_id.Int64 + " updated", "success");
     }
-    function saveBorrowing() {
-        var form = $("#borrowing");
-        if (! form.valid()) {
-            return;
-        };
 
-        var borrowing_comment = $("textarea#borrowing_comment").val(),
-            borrower = $('select#borrower').select2('data')[0],
-            storage_id = $("input#bstorage_id").val(),
-            data = {};
-
-        if (borrower !== undefined) {
-            $.extend(data, {
-                "borrowing_comment": borrowing_comment,
-                "borrower.person_id": borrower.id,
-            });
-        }
-
-        $.ajax({
-            url: proxyPath + "borrowings/" + storage_id,
-            method: "PUT",
-            dataType: 'json',
-            data: data,
-        }).done(function(jqXHR, textStatus, errorThrown) {
-           $("#borrow").modal("hide");
-           global.displayMessage("borrowing modified", "success");
-        }).fail(function(jqXHR, textStatus, errorThrown) {
-            handleHTTPError(jqXHR.statusText, jqXHR.status);
-        });  
-    }
     function saveStorage() {
         var form = $("#storage");
         if (! form.valid()) {
@@ -668,10 +639,6 @@ script.
                 "storage_comment": storage_comment,
                 "storage_quantity": storage_quantity == "" ? 1 : storage_quantity,
                 "storage_barecode": storage_barecode,
-                "storage_entrydate": storage_entrydate,
-                "storage_exitdate": storage_exitdate,
-                "storage_openingdate": storage_openingdate,
-                "storage_expirationdate": storage_expirationdate,
                 "storage_reference": storage_reference,
                 "storage_batchnumber": storage_batchnumber,
                 "storage_todestroy": storage_todestroy == "on" ? true : false,
@@ -688,6 +655,26 @@ script.
                     "unit.unit_id": unit.id,
                     "unit.unit_label": unit.text,
                 });                    
+            }
+            if (storage_entrydate !== "") {
+                $.extend(data, {
+                    "storage_entrydate": storage_entrydate,
+                });
+            }
+            if (storage_exitdate !== "") {
+                $.extend(data, {
+                    "storage_exitdate": storage_exitdate,
+                });
+            }
+            if (storage_openingdate !== "") {
+                $.extend(data, {
+                    "storage_openingdate": storage_openingdate,
+                });
+            }
+            if (storage_expirationdate !== "") {
+                $.extend(data, {
+                    "storage_expirationdate": storage_expirationdate,
+                });
             }
             $.ajax({
                 url: ajax_url,
