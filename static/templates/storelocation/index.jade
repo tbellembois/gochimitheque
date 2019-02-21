@@ -204,6 +204,8 @@
                 // select2 is not autofilled - we need a special operation
                 var newOption = new Option(data.entity.entity_name, data.entity.entity_id, true, true);
                 $('select#entity').append(newOption).trigger('change');
+                var newOption = new Option(data.storelocation.storelocation_name.String, data.storelocation.storelocation_id.Int64, true, true);
+                $('select#storelocation').append(newOption).trigger('change');
             }).fail(function(jqXHR, textStatus, errorThrown) {
                 handleHTTPError(jqXHR.statusText, jqXHR.status)
             });
