@@ -4,6 +4,8 @@
     +title
 
     form#storelocation
+        input#entity_id(type='hidden', name='entity_id', value='')
+
         .form-group.row
             .form-group.col-sm-12
                 | {{$label := "name"}} {{$name := "storelocation_name"}}

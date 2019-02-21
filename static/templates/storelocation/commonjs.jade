@@ -41,6 +41,10 @@ script.
                     }
                 }
             });
+            $('select#entity').on('select2:select', function (e) {
+                eid = $('select#entity').select2('data')[0].id;
+                $("input#entity_id").val(eid);
+            });
 
             //
             // storelocation select2
@@ -49,6 +53,7 @@ script.
                 ajax: {
                     url: proxyPath + 'storelocations',
                     dataType: 'json',
+                    data: { entity: $("input#entity_id").val() },
                     processResults: function (data) {
                     // replacing email by text expected by select2
                     var newdata = $.map(data.rows, function (obj) {
