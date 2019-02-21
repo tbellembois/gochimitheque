@@ -16,22 +16,33 @@ import (
 )
 
 // buildFullPath builds the store location full path
-func (db *SQLiteDataStore) buildFullPath(s StoreLocation) string {
+// the caller is responsible of opening and commiting the tx transaction
+func (db *SQLiteDataStore) buildFullPath(s StoreLocation, tx *sqlx.Tx) string {
 	// parent
 	var (
 		pp  StoreLocation
 		err error
 	)
+
+	log.WithFields(log.Fields{"s": s}).Debug("buildFullPath")
+
 	// getting the parent
 	if s.StoreLocation != nil && s.StoreLocation.StoreLocationID.Valid {
 		// retrieving the parent from db
-		pp, err = db.GetStoreLocation(int(s.StoreLocation.StoreLocationID.Int64))
-		// just logging errors
-		if err != nil {
+		sqlr := `SELECT s.storelocation_id, s.storelocation_name,
+		storelocation.storelocation_id AS "storelocation.storelocation_id",
+		storelocation.storelocation_name AS "storelocation.storelocation_name" 
+		FROM storelocation AS s
+		LEFT JOIN storelocation on s.storelocation = storelocation.storelocation_id
+		WHERE s.storelocation_id = ?`
+		r := tx.QueryRowx(sqlr, s.StoreLocation.StoreLocationID.Int64)
+		if err = r.StructScan(&pp); err != nil {
 			log.Error(err)
+			return ""
 		}
+
 		// prepending the path with the parent name
-		return db.buildFullPath(pp) + "/" + s.StoreLocationName.String
+		return db.buildFullPath(pp, tx) + "/" + s.StoreLocationName.String
 	}
 
 	return s.StoreLocationName.String
@@ -212,12 +223,17 @@ func (db *SQLiteDataStore) CreateStoreLocation(s StoreLocation) (error, int) {
 		lastid   int64
 		err      error
 		sqla     []interface{}
-		tx       *sql.Tx
+		tx       *sqlx.Tx
 		ibuilder sq.InsertBuilder
 	)
 
+	// beginning transaction
+	if tx, err = db.Beginx(); err != nil {
+		return nil, 0
+	}
+
 	// building full path
-	s.StoreLocationFullPath = db.buildFullPath(s)
+	s.StoreLocationFullPath = db.buildFullPath(s, tx)
 
 	m := make(map[string]interface{})
 	if s.StoreLocationCanStore.Valid {
@@ -250,11 +266,6 @@ func (db *SQLiteDataStore) CreateStoreLocation(s StoreLocation) (error, int) {
 		default:
 			panic("unknown type:" + rt.String())
 		}
-	}
-
-	// beginning transaction
-	if tx, err = db.Begin(); err != nil {
-		return err, 0
 	}
 
 	ibuilder = sq.Insert("storelocation").Columns(col...).Values(val...)
@@ -287,14 +298,18 @@ func (db *SQLiteDataStore) UpdateStoreLocation(s StoreLocation) error {
 	var (
 		sqlr     string
 		sqla     []interface{}
-		tx       *sql.Tx
+		tx       *sqlx.Tx
 		err      error
 		ubuilder sq.UpdateBuilder
 	)
-	log.WithFields(log.Fields{"s": s}).Debug("UpdateStoreLocation")
+
+	// beginning new transaction
+	if tx, err = db.Beginx(); err != nil {
+		return err
+	}
 
 	// building full path
-	s.StoreLocationFullPath = db.buildFullPath(s)
+	s.StoreLocationFullPath = db.buildFullPath(s, tx)
 
 	m := make(map[string]interface{})
 	if s.StoreLocationCanStore.Valid {
@@ -327,11 +342,6 @@ func (db *SQLiteDataStore) UpdateStoreLocation(s StoreLocation) error {
 		default:
 			panic("unknown type:" + rt.String())
 		}
-	}
-
-	// beginning transaction
-	if tx, err = db.Begin(); err != nil {
-		return err
 	}
 
 	ubuilder = sq.Update("storelocation").

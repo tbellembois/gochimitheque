@@ -28,10 +28,9 @@ func main() {
 	//defer profile.Start().Stop()
 
 	var (
-		err    error
-		logf   *os.File
-		dbname = "/mnt/ramdisk/storage.db"
-		//dbname    = "thbellem:achanger@tcp(berlin.iut.local)/dbthbellem?multiStatements=true&charset=utf8"
+		err       error
+		logf      *os.File
+		dbname    = "/mnt/ramdisk/storage.db"
 		datastore models.Datastore
 	)
 
@@ -75,17 +74,21 @@ func main() {
 	global.MailServerTLSSkipVerify = *mailServerTLSSkipVerify
 
 	// database initialization
+	log.Info("- opening database connection")
 	if datastore, err = models.NewSQLiteDBstore(dbname); err != nil {
 		log.Panic(err)
 	}
+	log.Info("- creating database if needed")
 	if err = datastore.CreateDatabase(); err != nil {
 		log.Panic(err)
 	}
 	if *importfrom == "" {
+		log.Info("- inserting database sample values")
 		if err = datastore.InsertSamples(); err != nil {
 			log.Panic(err)
 		}
 	} else {
+		log.Info("- import from csv into database")
 		err := datastore.Import(*importfrom)
 		if err != nil {
 			log.Error("an error occured: " + err.Error())
@@ -445,6 +448,7 @@ func main() {
 
 	http.Handle("/", r)
 
+	log.Info("- application running")
 	if err = http.ListenAndServe(":"+*listenport, nil); err != nil {
 		panic(err)
 	}

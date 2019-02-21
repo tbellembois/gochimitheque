@@ -158,7 +158,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 		// should not be necessary
 		// AuthenticateMiddleware performs a check
 		if personemail == "" {
-			http.Error(w, err.Error(), http.StatusUnauthorized)
+			http.Error(w, "request container personemail empty", http.StatusUnauthorized)
 			return
 		}
 

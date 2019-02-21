@@ -468,10 +468,11 @@ func (s StoreLocation) String() string {
 	StoreLocationName: %s | 
 	StoreLocationCanStore: Valid:%t Bool:%t | 
 	StoreLocationColor: %s | 
-	StoreLocation: %s |
+	parent StoreLocation id: %s |
+	parent StoreLocation name: %s |
 	Entity: %d | 
 	Stocks: %v
-	`, s.StoreLocationID, s.StoreLocationName.String, s.StoreLocationCanStore.Valid, s.StoreLocationCanStore.Bool, s.StoreLocationColor.String, s.StoreLocation, s.EntityID, s.Stocks)
+	`, s.StoreLocationID, s.StoreLocationName.String, s.StoreLocationCanStore.Valid, s.StoreLocationCanStore.Bool, s.StoreLocationColor.String, s.StoreLocation.StoreLocationID, s.StoreLocation.StoreLocationName, s.EntityID, s.Stocks)
 }
 
 func (p Permission) String() string {

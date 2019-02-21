@@ -50,7 +50,7 @@ func (db *SQLiteDataStore) InsertSamples() error {
 		err error
 	)
 	_ = db.Get(&c, `SELECT count(*) FROM person`)
-	if c == 0 {
+	if c == 1 {
 		// inserting sample values
 		// FIXME: remove this before release
 		scas, _ := os.Open("sample_cas.txt")
@@ -322,7 +322,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	PRAGMA foreign_keys = ON;
 	PRAGMA encoding = "UTF-8"; 
 	PRAGMA temp_store = 2;
-	PRAGMA journal_mode=WAL;
+	PRAGMA journal_mode = WAL;
 
 	CREATE TABLE IF NOT EXISTS person(
 		person_id integer PRIMARY KEY,
@@ -727,9 +727,9 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		err       error
 		res       sql.Result
 		lastid    int64
-		c, i      int     // count result
-		tx        *sql.Tx // db transaction
-		sqlr      string  // sql request
+		c, i      int      // count result
+		tx        *sqlx.Tx // db transaction
+		sqlr      string   // sql request
 
 		zerocasnumberid        int
 		zeroempiricalformulaid int
@@ -800,7 +800,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 	}
 
 	// beginning transaction
-	if tx, err = db.Begin(); err != nil {
+	if tx, err = db.Beginx(); err != nil {
 		return err
 	}
 
@@ -1354,11 +1354,6 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		return err
 	}
 
-	// beginning new transaction
-	if tx, err = db.Begin(); err != nil {
-		return err
-	}
-
 	//
 	// products
 	//
@@ -1366,19 +1361,16 @@ func (db *SQLiteDataStore) Import(dir string) error {
 	log.Info("  retrieving zero empirical id")
 	if err = db.Get(&zeroempiricalformulaid, `SELECT empiricalformula_id FROM empiricalformula WHERE empiricalformula_label = "XXXX"`); err != nil {
 		log.Error("error retrieving zero empirical id")
-		tx.Rollback()
 		return err
 	}
 	log.Info("  retrieving zero casnumber id")
 	if err = db.Get(&zerocasnumberid, `SELECT casnumber_id FROM casnumber WHERE casnumber_label = "0000"`); err != nil {
 		log.Error("error retrieving zero casnumber id")
-		tx.Rollback()
 		return err
 	}
 	log.Info("  retrieving default admin id")
 	if err = db.Get(&zeropersonid, `SELECT person_id FROM person WHERE person_email = "user@super.com"`); err != nil {
 		log.Error("error retrieving default admin id")
-		tx.Rollback()
 		return err
 	}
 	log.Info("  gathering hazardstatement ids")
@@ -1399,7 +1391,6 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		if error == io.EOF {
 			break
 		} else if error != nil {
-			tx.Rollback()
 			return err
 		}
 		id := line[0]
@@ -1411,7 +1402,6 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		var nid int
 		if err = db.Get(&nid, `SELECT hazardstatement_id FROM hazardstatement WHERE hazardstatement_reference = ?`, reference); err != nil {
 			log.Error("error gathering hazardstatement id for " + reference)
-			tx.Rollback()
 			return err
 		}
 		mONhazardstatement[id] = strconv.Itoa(nid)
@@ -1434,7 +1424,6 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		if error == io.EOF {
 			break
 		} else if error != nil {
-			tx.Rollback()
 			return err
 		}
 		id := line[0]
@@ -1446,7 +1435,6 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		var nid int
 		if err = db.Get(&nid, `SELECT precautionarystatement_id FROM precautionarystatement WHERE precautionarystatement_reference = ?`, reference); err != nil {
 			log.Error("error gathering precautionarystatement id for " + reference)
-			tx.Rollback()
 			return err
 		}
 		mONprecautionarystatement[id] = strconv.Itoa(nid)
@@ -1469,7 +1457,6 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		if error == io.EOF {
 			break
 		} else if error != nil {
-			tx.Rollback()
 			return err
 		}
 		id := line[0]
@@ -1478,7 +1465,6 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		var nid int
 		if err = db.Get(&nid, `SELECT symbol_id FROM symbol WHERE symbol_label = ?`, label); err != nil {
 			log.Error("error gathering symbol id for " + label)
-			tx.Rollback()
 			return err
 		}
 		mONsymbol[id] = strconv.Itoa(nid)
@@ -1501,7 +1487,6 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		if error == io.EOF {
 			break
 		} else if error != nil {
-			tx.Rollback()
 			return err
 		}
 		id := line[0]
@@ -1510,10 +1495,14 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		var nid int
 		if err = db.Get(&nid, `SELECT signalword_id FROM signalword WHERE signalword_label = ?`, label); err != nil {
 			log.Error("error gathering signalword id for " + label)
-			tx.Rollback()
 			return err
 		}
 		mONsignalword[id] = strconv.Itoa(nid)
+	}
+
+	// beginning new transaction
+	if tx, err = db.Beginx(); err != nil {
+		return err
 	}
 
 	if csvFile, err = os.Open(path.Join(dir, "product.csv")); err != nil {
@@ -1714,11 +1703,6 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		return err
 	}
 
-	// beginning new transaction
-	if tx, err = db.Begin(); err != nil {
-		return err
-	}
-
 	//
 	// storages
 	//
@@ -1741,7 +1725,6 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		if error == io.EOF {
 			break
 		} else if error != nil {
-			tx.Rollback()
 			return err
 		}
 		id := line[0]
@@ -1750,10 +1733,14 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		var nid int
 		if err = db.Get(&nid, `SELECT unit_id FROM unit WHERE unit_label = ?`, label); err != nil {
 			log.Error("error gathering unit id for " + label)
-			tx.Rollback()
 			return err
 		}
 		mONunit[id] = strconv.Itoa(nid)
+	}
+
+	// beginning new transaction
+	if tx, err = db.Beginx(); err != nil {
+		return err
 	}
 
 	if csvFile, err = os.Open(path.Join(dir, "storage.csv")); err != nil {
@@ -1867,11 +1854,6 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		return err
 	}
 
-	// beginning new transaction
-	if tx, err = db.Begin(); err != nil {
-		return err
-	}
-
 	log.Info("- updating storages qr codes")
 	var sts []Storage
 	var png []byte
@@ -1880,7 +1862,13 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		tx.Rollback()
 		return err
 	}
+
+	// beginning new transaction
+	if tx, err = db.Beginx(); err != nil {
+		return err
+	}
 	for _, s := range sts {
+
 		// generating qrcode
 		newqrcode := global.ProxyURL + global.ProxyPath + "v/storages?storage=" + strconv.FormatInt(s.StorageID.Int64, 10)
 		log.Debug("  " + strconv.FormatInt(s.StorageID.Int64, 10) + " " + newqrcode)
@@ -1904,11 +1892,6 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		return err
 	}
 
-	// beginning new transaction
-	if tx, err = db.Begin(); err != nil {
-		return err
-	}
-
 	log.Info("- updating store locations full path")
 	var sls []StoreLocation
 	if err = db.Select(&sls, ` SELECT s.storelocation_id AS "storelocation_id", 
@@ -1919,12 +1902,16 @@ func (db *SQLiteDataStore) Import(dir string) error {
         storelocation.storelocation_name AS "storelocation.storelocation_name"
         FROM storelocation AS s
         LEFT JOIN storelocation on s.storelocation = storelocation.storelocation_id`); err != nil {
-		tx.Rollback()
+		return err
+	}
+
+	// beginning new transaction
+	if tx, err = db.Beginx(); err != nil {
 		return err
 	}
 	for _, sl := range sls {
 		log.Debug("  " + sl.StoreLocationName.String)
-		sl.StoreLocationFullPath = db.buildFullPath(sl)
+		sl.StoreLocationFullPath = db.buildFullPath(sl, tx)
 		sqlr = `UPDATE storelocation SET storelocation_fullpath = ? WHERE storelocation_id = ?`
 		if res, err = tx.Exec(sqlr, sl.StoreLocationFullPath, sl.StoreLocationID.Int64); err != nil {
 			tx.Rollback()
@@ -1939,11 +1926,12 @@ func (db *SQLiteDataStore) Import(dir string) error {
 	}
 
 	// beginning new transaction
-	if tx, err = db.Begin(); err != nil {
+	if tx, err = db.Beginx(); err != nil {
 		return err
 	}
 
 	//TODO: remove before prod
+	log.Info("- cleaning storages for demo")
 	sqlr = `DELETE FROM storage WHERE storage.storelocation NOT in (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 	if res, err = tx.Exec(sqlr,
 		mONstorelocation["221941"],
