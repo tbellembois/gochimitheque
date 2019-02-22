@@ -52,8 +52,12 @@ script.
                         obj.id = obj.id || obj.person_id;
                         return obj;
                     });
+                    // getting the number of loaded select elements
+                    selectnbitems = $("ul#select2-managers li").length + 10;
+
                     return {
-                        results: newdata
+                        results: newdata,
+                        pagination: {more: selectnbitems<data.total}
                     };
                     }
                 }
