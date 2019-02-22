@@ -53,6 +53,17 @@ script.
                 ajax: {
                     url: proxyPath + 'entities',
                     dataType: 'json',
+                    data: function (params) {
+                        var query = {
+                            search: params.term,
+                            page: params.page || 1,
+                            offset: (params.page-1)*10 || 0,
+                            limit: 10
+                        }
+
+                        // Query parameters will be ?search=[term]&page=[page]
+                        return query;
+                    },
                     processResults: function (data) {
                         // replacing email by text expected by select2
                         var newdata = $.map(data.rows, function (obj) {
