@@ -921,9 +921,10 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	)
 	log.WithFields(log.Fields{"p": p}).Debug("GetProducts")
 
-	if rperm, err = db.HasPersonPermission(p.GetLoggedPersonID(), "r", "rproduct", -1); err != nil {
+	if rperm, err = db.HasPersonPermission(p.GetLoggedPersonID(), "r", "rproducts", -1); err != nil {
 		return nil, 0, err
 	}
+	log.WithFields(log.Fields{"rperm": rperm}).Debug("GetProducts")
 
 	// pre request: select or count
 	precreq.WriteString(" SELECT count(DISTINCT p.product_id)")
@@ -1295,7 +1296,7 @@ func (db *SQLiteDataStore) GetProduct(id int) (Product, error) {
 		return product, err
 	}
 
-	log.WithFields(log.Fields{"ID": id, "product": product}).Debug("GetProduct")
+	log.WithFields(log.Fields{"id": id, "product": product}).Debug("GetProduct")
 	return product, nil
 }
 
@@ -1304,6 +1305,7 @@ func (db *SQLiteDataStore) DeleteProduct(id int) error {
 		sqlr string
 		err  error
 	)
+	log.WithFields(log.Fields{"id": id}).Debug("DeleteProduct")
 	// deleting symbols
 	sqlr = `DELETE FROM productsymbols WHERE productsymbols.productsymbols_product_id = (?)`
 	if _, err = db.Exec(sqlr, id); err != nil {

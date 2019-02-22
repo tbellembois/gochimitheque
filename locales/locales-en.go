@@ -14,6 +14,10 @@ var LOCALES_EN = []byte(`
 	one = "edit"
 [delete]
 	one = "delete"
+[save]
+	one = "save"
+[close]
+	one = "close"
 
 [email_placeholder]
 	one = "enter your email"

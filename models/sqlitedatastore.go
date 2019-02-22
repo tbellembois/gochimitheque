@@ -37,7 +37,7 @@ func NewSQLiteDBstore(dataSourceName string) (*SQLiteDataStore, error) {
 	)
 
 	log.WithFields(log.Fields{"dbdriver": "sqlite3", "dataSourceName": dataSourceName}).Debug("NewDBstore")
-	if db, err = sqlx.Connect("sqlite3", dataSourceName); err != nil {
+	if db, err = sqlx.Connect("sqlite3", dataSourceName+"?_journal=wal&_fk=1"); err != nil {
 		return &SQLiteDataStore{}, err
 	}
 	return &SQLiteDataStore{db}, nil

@@ -145,3 +145,31 @@ delphine.pitrat@ens-lyon.fr, laurelise.chapellet@ens-lyon.fr, guillaume.george@e
 ```bash
 SCHEMA="public"; DB="chimitheque"; psql -U [user] -h [host] -p [port] -Atc "select tablename from pg_tables where schemaname='$SCHEMA'" $DB | while read TBL; do psql -U [user] -h [host] -p [port] -c "COPY $SCHEMA.$TBL TO STDOUT WITH CSV HEADER" $DB > $TBL.csv; done;
 ```
+
+# REST API samples
+
+## auth
+
+- get an authentication token
+```
+curl -X POST http://localhost:8081/get-token -d "person_email=user@super.com&person_password=test"
+```
+
+## people
+
+- list people
+```
+curl -X GET --cookie "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXJAc3VwZXIuY29tIiwiZXhwIjoxNTUwODU5MTQxfQ.Az49BEqLmxmsS5OxSe49K9Cbli3yhaWMJe_wDsp8A4w" http://localhost:8081/people
+```
+
+- fake deleting a person
+```
+curl -X DELETE --cookie "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXJAc3VwZXIuY29tIiwiZXhwIjoxNTUwODU5MTQxfQ.Az49BEqLmxmsS5OxSe49K9Cbli3yhaWMJe_wDsp8A4w" http://localhost:8081/f/people/1
+```
+
+## storage
+
+-- fake accessing any storage
+```
+curl -X GET --cookie "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXJAc3VwZXIuY29tIiwiZXhwIjoxNTUwODU5MTQxfQ.Az49BEqLmxmsS5OxSe49K9Cbli3yhaWMJe_wDsp8A4w" http://localhost:8081/f/storages/-2
+```

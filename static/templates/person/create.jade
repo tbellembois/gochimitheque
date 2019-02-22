@@ -34,7 +34,9 @@
                         label.form-check-label(for="permwrproducts-1") w    
         .form-group.row#permissions
 
-    button.btn.btn-primary(type='button', onclick='savePerson()') save changes
+    button.btn.btn-link(type='button', onclick='savePerson()')
+        span.mdi.mdi-content-save.mdi-24px.iconlabel
+            | {{ T "save" 1 }}
 | {{end}}
 | {{define "CONTENTJS"}}
 | {{template "COMMONCONTENTJS"}}

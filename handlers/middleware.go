@@ -52,7 +52,6 @@ func (env *Env) ContextMiddleware(h http.Handler) http.Handler {
 		accept := r.Header.Get("Accept-Language")
 		env.Localizer = i18n.NewLocalizer(global.Bundle, accept)
 
-		log.Debug(accept)
 		ctx := context.WithValue(r.Context(), "container", helpers.ViewContainer{ProxyPath: global.ProxyPath, PersonLanguage: accept})
 		h.ServeHTTP(w, r.WithContext(ctx))
 	})
@@ -121,7 +120,7 @@ func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 
 		// getting the logged user
 		if person, err = env.DB.GetPersonByEmail(email); err != nil {
-			http.Error(w, "can not get logged user", http.StatusBadRequest)
+			http.Error(w, "can not get logged user: "+err.Error(), http.StatusBadRequest)
 		}
 
 		// getting the request context
@@ -167,7 +166,13 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 		item := vars["item"]
 		view := vars["view"]
 		id := vars["id"]
-		log.WithFields(log.Fields{"id": id, "item": item, "view": view, "personemail": personemail}).Debug("AuthorizeMiddleware")
+		log.WithFields(log.Fields{
+			"id":          id,
+			"item":        item,
+			"view":        view,
+			"personemail": personemail,
+			"personid":    personid,
+			"r.Method":    r.Method}).Debug("AuthorizeMiddleware")
 
 		// id and item translations
 		if item == "stocks" {
@@ -188,6 +193,10 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 		switch item {
 		case "peoplepass", "peoplep":
 			// everybody can change his password
+			h.ServeHTTP(w, r)
+			return
+		case "bookmarks":
+			// everybody can bookmark a product
 			h.ServeHTTP(w, r)
 			return
 		}
@@ -217,15 +226,18 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 				// a user can not edit/delete himself
 				if itemid == personid {
 					http.Error(w, "can not edit/delete yourself", http.StatusForbidden)
+					return
 				}
 				// we can not delete a manager
 				if r.Method == "DELETE" {
 					m, e := env.DB.IsPersonManager(itemid)
 					if e != nil {
 						http.Error(w, e.Error(), http.StatusInternalServerError)
+						return
 					}
 					if m {
 						http.Error(w, "can not delete a manager", http.StatusForbidden)
+						return
 					}
 				}
 			case "storelocations":
@@ -240,9 +252,11 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 					m, e := env.DB.IsEntityEmpty(itemid)
 					if e != nil {
 						http.Error(w, e.Error(), http.StatusInternalServerError)
+						return
 					}
 					if !m {
 						http.Error(w, "can not delete a non empty entity", http.StatusForbidden)
+						return
 					}
 				}
 			}

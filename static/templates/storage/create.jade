@@ -64,7 +64,9 @@
                 | {{$label := "to destroy"}} {{$name := "storage_todestroy"}}
                 +checkbox
 
-    button#save.btn.btn-primary(type='button', onclick='saveStorage()') save changes
+    button#save.btn.btn-link(type='button', onclick='saveStorage()')
+        span.mdi.mdi-content-save.mdi-24px.iconlabel
+            | {{ T "save" 1 }}
 | {{end}}
 | {{define "CONTENTJS"}}
 | {{template "COMMONCONTENTJS"}}

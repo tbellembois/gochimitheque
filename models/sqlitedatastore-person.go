@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"encoding/hex"
+
 	"github.com/jmoiron/sqlx"
 
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
@@ -82,10 +83,11 @@ func (db *SQLiteDataStore) GetPeople(p helpers.DbselectparamPerson) ([]Person, i
 	precreq.WriteString("SELECT count(DISTINCT p.person_id)")
 	presreq.WriteString("SELECT p.person_id, p.person_email")
 	comreq.WriteString(" FROM person AS p, entity AS e")
-	comreq.WriteString(" JOIN personentities ON personentities.personentities_person_id = p.person_id")
 	if p.GetEntity() != -1 {
+		comreq.WriteString(" JOIN personentities ON personentities.personentities_person_id = p.person_id")
 		comreq.WriteString(" JOIN entity ON personentities.personentities_entity_id = :entity")
-	} else {
+	} else if !isadmin {
+		comreq.WriteString(" JOIN personentities ON personentities.personentities_person_id = p.person_id")
 		comreq.WriteString(" JOIN entity ON personentities.personentities_entity_id = e.entity_id")
 	}
 	if !isadmin {
@@ -107,7 +109,7 @@ func (db *SQLiteDataStore) GetPeople(p helpers.DbselectparamPerson) ([]Person, i
 	if p.GetLimit() != constants.MaxUint64 {
 		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
 	}
-	log.Debug(presreq.String() + comreq.String() + postsreq.String())
+
 	// building count and select statements
 	if cnstmt, err = db.PrepareNamed(precreq.String() + comreq.String()); err != nil {
 		return nil, 0, err
@@ -215,6 +217,7 @@ func (db *SQLiteDataStore) GetPersonEntities(LoggedPersonID int, id int) ([]Enti
 		sstmt    *sqlx.NamedStmt
 		err      error
 	)
+	log.WithFields(log.Fields{"LoggedPersonID": LoggedPersonID, "id": id}).Debug("GetPersonEntities")
 
 	// is the logged user an admin?
 	if isadmin, err = db.IsPersonAdmin(LoggedPersonID); err != nil {
@@ -250,6 +253,7 @@ func (db *SQLiteDataStore) GetPersonEntities(LoggedPersonID int, id int) ([]Enti
 	if err = sstmt.Select(&entities, m); err != nil {
 		return nil, err
 	}
+	log.WithFields(log.Fields{"entities": entities}).Debug("GetPersonEntities")
 	return entities, nil
 }
 

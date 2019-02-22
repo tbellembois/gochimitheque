@@ -1021,7 +1021,13 @@ func (env *Env) DeleteProductHandler(w http.ResponseWriter, r *http.Request) *he
 			Code:    http.StatusInternalServerError}
 	}
 
-	env.DB.DeleteProduct(id)
+	if err := env.DB.DeleteProduct(id); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "delete product error",
+			Code:    http.StatusInternalServerError}
+	}
+
 	return nil
 }
 
@@ -1032,11 +1038,7 @@ func (env *Env) ConvertProductEmpiricalToLinearFormulaHandler(w http.ResponseWri
 		l2ef string
 	)
 
-	log.Debug(vars["f"])
-
 	l2ef = utils.LinearToEmpiricalFormula(vars["f"])
-
-	log.Debug(l2ef)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)

@@ -107,7 +107,12 @@ script.
             });
         });
 
-
+        //
+        // table row attributes
+        //
+        function rowAttributes(row, index) {
+            return {"person_id":row["person_id"]}
+        }
         //
         // save person callback
         //

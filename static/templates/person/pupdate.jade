@@ -13,7 +13,9 @@
                 +inputpassword
         .row.d-flex.flex-row.justify-content-center
             div
-                button.btn.btn-primary(type='button', onclick='savePersonp()') save password
+                button.btn.btn-link(type='button', onclick='savePersonp()')
+                    span.mdi.mdi-content-save.mdi-24px.iconlabel
+                        | {{ T "save" 1 }}
 | {{end}}
 | {{define "CONTENTJS"}}
 | {{template "COMMONCONTENTJS"}}
