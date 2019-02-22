@@ -11,7 +11,8 @@
                                 data-pagination='true', 
                                 data-ajax='getData', 
                                 data-query-params='queryParams'
-                                data-sort-name='person_email')
+                                data-sort-name='person_email',
+                                data-row-attributes="rowAttributes")
                         thead
                             tr
                                 th(data-field='person_id' data-sortable='true') ID
@@ -57,8 +58,12 @@
                                 label.form-check-label(for="permwrproducts-1") w             
                 .form-group.row#permissions
 
-            button#save.btn.btn-primary(type='button', onclick='savePerson()') save changes
-            button.btn.btn-secondary(type='button', onclick='closeView();') close
+            button#save.btn.btn-link(type='button', onclick='savePerson()')
+                span.mdi.mdi-content-save.mdi-24px.iconlabel
+                    | {{ T "save" 1 }}
+            button.btn.btn-link(type='button', onclick='closeView();')
+                span.mdi.mdi-content-save.mdi-24px.iconlabel
+                    | {{ T "close" 1 }}
 | {{end}}
 | {{define "CONTENTJS"}}
 | {{template "COMMONCONTENTJS"}}
@@ -111,28 +116,28 @@
         // when table is loaded
         //
         $('#table').on('load-success.bs.table refresh.bs.table', function () {
-            $("button.view").each(function( index, b ) {
-                hasPermission("people", $(b).attr("eid"), "GET").done(function(){
-                    $("#view"+$(b).attr("eid")).fadeIn();
-                    localStorage.setItem("people:" + $(b).attr("eid") + ":GET", true);
+            $("table#table").find("tr").each(function( index, b ) {
+                hasPermission("people", $(b).attr("person_id"), "GET").done(function(){
+                    $("#view"+$(b).attr("person_id")).fadeIn();
+                    localStorage.setItem("people:" + $(b).attr("person_id") + ":GET", true);
                 }).fail(function(){
-                    localStorage.setItem("people:" + $(b).attr("eid") + ":GET", false);
+                    localStorage.setItem("people:" + $(b).attr("person_id") + ":GET", false);
                 })
             });
-            $("button.view").each(function( index, b ) {
-                hasPermission("people", $(b).attr("eid"), "PUT").done(function(){
-                    $("#edit"+$(b).attr("eid")).fadeIn();
-                    localStorage.setItem("people:" + $(b).attr("eid") + ":PUT", true);
+            $("table#table").find("tr").each(function( index, b ) {
+                hasPermission("people", $(b).attr("person_id"), "PUT").done(function(){
+                    $("#edit"+$(b).attr("person_id")).fadeIn();
+                    localStorage.setItem("people:" + $(b).attr("person_id") + ":PUT", true);
                 }).fail(function(){
-                    localStorage.setItem("people:" + $(b).attr("eid") + ":PUT", false);
+                    localStorage.setItem("people:" + $(b).attr("person_id") + ":PUT", false);
                 })
             });
-            $("button.view").each(function( index, b ) {
-                hasPermission("people", $(b).attr("eid"), "DELETE").done(function(){
-                    $("#delete"+$(b).attr("eid")).fadeIn();
-                    localStorage.setItem("people:" + $(b).attr("eid") + ":DELETE", true);
+            $("table#table").find("tr").each(function( index, b ) {
+                hasPermission("people", $(b).attr("person_id"), "DELETE").done(function(){
+                    $("#delete"+$(b).attr("person_id")).fadeIn();
+                    localStorage.setItem("people:" + $(b).attr("person_id") + ":DELETE", true);
                 }).fail(function(){
-                    localStorage.setItem("people:" + $(b).attr("eid") + ":DELETE", false);
+                    localStorage.setItem("people:" + $(b).attr("person_id") + ":DELETE", false);
                 })
             });
         });
@@ -146,13 +151,13 @@
 
             // buttons are hidden by default
             var actions = [
-            '<button id="view' + eid + '" eid="' + eid + '" class="view btn btn-primary btn-sm" style="display: none;" title="view" type="button">',
+            '<button id="view' + eid + '" eid="' + eid + '" class="view btn btn-link btn-sm" style="display: none;" title="view" type="button">',
                 '<span class="mdi mdi-eye mdi-24px"></span>',
             '</button>',
-            '<button id="edit' + eid + '" eid="' + eid + '" class="edit btn btn-primary btn-sm" style="display: none;" title="edit" type="button">',
+            '<button id="edit' + eid + '" eid="' + eid + '" class="edit btn btn-link btn-sm" style="display: none;" title="edit" type="button">',
                 '<span class="mdi mdi-border-color mdi-24px"></span>',
             '</button>',
-            '<button id="delete' + eid + '" eid="' + eid + '" class="delete btn btn-primary btn-sm" style="display: none;" title="delete" type="button">',
+            '<button id="delete' + eid + '" eid="' + eid + '" class="delete btn btn-link btn-sm" style="display: none;" title="delete" type="button">',
                 '<span class="mdi mdi-delete mdi-24px"></span>',
             '</button>'];
 
@@ -244,7 +249,6 @@
                 // adding a permission widget for each entity
                 // except for managed entities
                 $("#permissions").empty();
-                console.log(entitydata);
                 for(var i in entitydata) {
                     if ($.inArray(entitydata[i].entity_id, managedentitydataids) == -1){
                         $("#permissions").append(global.buildPermissionWidget(entitydata[i].entity_id, entitydata[i].entity_name, false));

@@ -421,6 +421,7 @@ func (env *Env) GetTokenHandler(w http.ResponseWriter, r *http.Request) *helpers
 	http.SetCookie(w, &cemail)
 
 	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(tokenString))
 
 	return nil
 }

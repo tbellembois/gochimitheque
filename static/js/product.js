@@ -34,7 +34,7 @@ function getData(params) {
 // when table is loaded
 //
 $('#table').on('load-success.bs.table refresh.bs.table', function () {
-    //FIXME: perms
+    
     hasPermission("storages", "", "POST").done(function(){
         $(".store").fadeIn();
         localStorage.setItem("storages::POST", true);
@@ -42,6 +42,8 @@ $('#table').on('load-success.bs.table refresh.bs.table', function () {
         localStorage.setItem("storages::POST", false);
     })  
     hasPermission("storages", "-2", "GET").done(function(){
+        $("#switchview").removeClass("d-none");
+
         $(".storages").fadeIn();
         localStorage.setItem("storages:-2:GET", true);
     }).fail(function(){
@@ -56,8 +58,10 @@ $('#table').on('load-success.bs.table refresh.bs.table', function () {
     hasPermission("products", "-1", "DELETE").done(function(){
         $(".delete").fadeIn();
         localStorage.setItem("products:-1:DELETE", true);
+        console.log("a")
     }).fail(function(){
         localStorage.setItem("products:-1:DELETE", false);
+        console.log("b")
     }) 
 });
 

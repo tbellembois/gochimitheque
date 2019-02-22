@@ -34,7 +34,7 @@
                 | {{$label := "linear formula"}} {{$name := "linearformula"}}
                 +select
             .form-group.col-sm-1
-                button#fconverter.btn.btn-primary(type="button" data-toggle="popover" data-content="no result" title="convert linear to empirical formula" onclick="linearToEmpirical();")
+                button#fconverter.btn.btn-link(type="button" data-toggle="popover" data-content="no result" title="convert linear to empirical formula" onclick="linearToEmpirical();")
                     span.mdi.mdi-rotate-3d.mdi-24px
 
         .form-row
@@ -107,7 +107,9 @@
                 | {{$label := "remark"}} {{$name := "product_remark"}}
                 +inputtextarea
 
-        button#save.btn.btn-primary(type='button', onclick='saveProduct()') save changes
+        button#save.btn.btn-link(type='button', onclick='saveProduct()')
+            span.mdi.mdi-content-save.mdi-24px.iconlabel
+                | {{ T "save" 1 }}
 
 | {{end}}
 | {{define "CONTENTJS"}}

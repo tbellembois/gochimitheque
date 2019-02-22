@@ -115,8 +115,12 @@ function hasPermission(item, id, method) {
     // getting the permission cache
     permcache = localStorage.getItem(key);
 
-    if(permcache) {
-        permpromise.resolve();
+    if (permcache) {
+        if (permcache == "true") {
+            permpromise.resolve();
+        } else {
+            permpromise.reject();
+        }
     } else {
         // building ajax url
         url = proxyPath + "f/" + item + "/" + id;
