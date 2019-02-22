@@ -31,22 +31,33 @@ script.
             // managers select2
             //
             $('select#managers').select2({
-            ajax: {
-                url: proxyPath + 'people',
-                dataType: 'json',
-                processResults: function (data) {
-                // replacing email by text expected by select2
-                var newdata = $.map(data.rows, function (obj) {
-                    obj.text = obj.text || obj.person_email;
-                    obj.id = obj.id || obj.person_id;
-                    return obj;
-                });
-                return {
-                    results: newdata
-                };
+                ajax: {
+                    url: proxyPath + 'people',
+                    dataType: 'json',
+                    data: function (params) {
+                        var query = {
+                            search: params.term,
+                            page: params.page || 1,
+                            offset: (params.page-1)*10 || 0,
+                            limit: 10
+                        }
+
+                        // Query parameters will be ?search=[term]&page=[page]
+                        return query;
+                    },
+                    processResults: function (data) {
+                    // replacing email by text expected by select2
+                    var newdata = $.map(data.rows, function (obj) {
+                        obj.text = obj.text || obj.person_email;
+                        obj.id = obj.id || obj.person_id;
+                        return obj;
+                    });
+                    return {
+                        results: newdata
+                    };
+                    }
                 }
-            }
-            });
+                });
         });
 
         //

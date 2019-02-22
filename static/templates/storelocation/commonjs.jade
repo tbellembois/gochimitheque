@@ -28,6 +28,17 @@ script.
                 ajax: {
                     url: proxyPath + 'entities',
                     dataType: 'json',
+                    data: function (params) {
+                        var query = {
+                            search: params.term,
+                            page: params.page || 1,
+                            offset: (params.page-1)*10 || 0,
+                            limit: 10
+                        }
+
+                        // Query parameters will be ?search=[term]&page=[page]
+                        return query;
+                    },
                     processResults: function (data) {
                     // replacing email by text expected by select2
                     var newdata = $.map(data.rows, function (obj) {
@@ -42,18 +53,32 @@ script.
                 }
             });
             $('select#entity').on('select2:select', function (e) {
-                eid = $('select#entity').select2('data')[0].id;
-                $("input#entity_id").val(eid);
+                $('select#storelocation').val(null).trigger('change');
+                $('select#storelocation').find('option').remove();
             });
+
 
             //
             // storelocation select2
             //
             $('select#storelocation').select2({
+                placeholder: "select an entity first",
                 ajax: {
                     url: proxyPath + 'storelocations',
                     dataType: 'json',
-                    data: { entity: $("input#entity_id").val() },
+                    data: function (params) {
+                        eid = $('select#entity').select2('data')[0].id;
+                        var query = {
+                            entity: eid,
+                            search: params.term,
+                            page: params.page || 1,
+                            offset: (params.page-1)*10 || 0,
+                            limit: 10
+                        }
+
+                        // Query parameters will be ?search=[term]&page=[page]
+                        return query;
+                    },
                     processResults: function (data) {
                     // replacing email by text expected by select2
                     var newdata = $.map(data.rows, function (obj) {
@@ -145,7 +170,5 @@ script.
                 handleHTTPError(jqXHR.statusText, jqXHR.status)
             });  
         }
-
-
 
 | {{end}}
