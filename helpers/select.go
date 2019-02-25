@@ -50,6 +50,7 @@ type DbselectparamProduct interface {
 	SetHazardStatements([]int)
 	SetPrecautionaryStatements([]int)
 	SetSignalWord(int)
+	SetCasNumberCmr(bool)
 
 	GetEntity() int
 	GetProduct() int
@@ -65,6 +66,7 @@ type DbselectparamProduct interface {
 	GetHazardStatements() []int
 	GetPrecautionaryStatements() []int
 	GetSignalWord() int
+	GetCasNumberCmr() bool
 }
 type dbselectparamProduct struct {
 	dbselectparam
@@ -82,6 +84,7 @@ type dbselectparamProduct struct {
 	HazardStatements        []int //ids
 	PrecautionaryStatements []int //ids
 	SignalWord              int   // id
+	CasNumberCmr            bool
 }
 
 // dbselectparamStorage contains the parameters of the GetStorages function
@@ -103,6 +106,7 @@ type DbselectparamStorage interface {
 	SetHazardStatements([]int)
 	SetPrecautionaryStatements([]int)
 	SetSignalWord(int)
+	SetCasNumberCmr(bool)
 
 	GetEntity() int
 	GetProduct() int
@@ -120,6 +124,7 @@ type DbselectparamStorage interface {
 	GetHazardStatements() []int
 	GetPrecautionaryStatements() []int
 	GetSignalWord() int
+	GetCasNumberCmr() bool
 }
 type dbselectparamStorage struct {
 	dbselectparam
@@ -139,6 +144,7 @@ type dbselectparamStorage struct {
 	HazardStatements        []int //ids
 	PrecautionaryStatements []int //ids
 	SignalWord              int   // id
+	CasNumberCmr            bool
 }
 
 // dbselectparamPerson contains the parameters of the GetPeople function
@@ -356,6 +362,14 @@ func (d dbselectparamProduct) GetSignalWord() int {
 	return d.SignalWord
 }
 
+func (d *dbselectparamProduct) SetCasNumberCmr(n bool) {
+	d.CasNumberCmr = n
+}
+
+func (d dbselectparamProduct) GetCasNumberCmr() bool {
+	return d.CasNumberCmr
+}
+
 //
 // dbselectparamStorage functions
 //
@@ -479,6 +493,14 @@ func (d dbselectparamStorage) GetSignalWord() int {
 	return d.SignalWord
 }
 
+func (d *dbselectparamStorage) SetCasNumberCmr(n bool) {
+	d.CasNumberCmr = n
+}
+
+func (d dbselectparamStorage) GetCasNumberCmr() bool {
+	return d.CasNumberCmr
+}
+
 // Newdbselectparam returns a dbselectparam struct
 // with values populated from the request parameters
 func Newdbselectparam(r *http.Request, f func(string) (string, error)) (*dbselectparam, *AppError) {
@@ -570,6 +592,7 @@ func NewdbselectparamProduct(r *http.Request, f func(string) (string, error)) (*
 	dspp.StorageBarecode = ""
 	dspp.CustomNamePartOf = ""
 	dspp.SignalWord = -1
+	dspp.CasNumberCmr = false
 	if dsp, aerr = Newdbselectparam(r, f); aerr != nil {
 		return nil, aerr
 	}
@@ -698,7 +721,15 @@ func NewdbselectparamProduct(r *http.Request, f func(string) (string, error)) (*
 		if custom_name_part_of, ok := r.URL.Query()["custom_name_part_of"]; ok {
 			dspp.CustomNamePartOf = custom_name_part_of[0]
 		}
-
+		if casnumber_cmr, ok := r.URL.Query()["casnumber_cmr"]; ok {
+			if dspp.CasNumberCmr, err = strconv.ParseBool(casnumber_cmr[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "casnumber_cmr bool conversion",
+				}
+			}
+		}
 	}
 	return &dspp, nil
 
@@ -728,6 +759,7 @@ func NewdbselectparamStorage(r *http.Request, f func(string) (string, error)) (*
 	dsps.StorageBarecode = ""
 	dsps.CustomNamePartOf = ""
 	dsps.SignalWord = -1
+	dsps.CasNumberCmr = false
 	if dsp, aerr = Newdbselectparam(r, f); aerr != nil {
 		return nil, aerr
 	}
@@ -878,6 +910,15 @@ func NewdbselectparamStorage(r *http.Request, f func(string) (string, error)) (*
 		}
 		if custom_name_part_of, ok := r.URL.Query()["custom_name_part_of"]; ok {
 			dsps.CustomNamePartOf = custom_name_part_of[0]
+		}
+		if casnumber_cmr, ok := r.URL.Query()["casnumber_cmr"]; ok {
+			if dsps.CasNumberCmr, err = strconv.ParseBool(casnumber_cmr[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "casnumber_cmr bool conversion",
+				}
+			}
 		}
 	}
 	return &dsps, nil

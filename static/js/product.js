@@ -55,14 +55,15 @@ $('#table').on('load-success.bs.table refresh.bs.table', function () {
     }).fail(function(){
         localStorage.setItem("products:-1:PUT", false);
     }) 
-    hasPermission("products", "-1", "DELETE").done(function(){
-        $(".delete").fadeIn();
-        localStorage.setItem("products:-1:DELETE", true);
-        console.log("a")
-    }).fail(function(){
-        localStorage.setItem("products:-1:DELETE", false);
-        console.log("b")
-    }) 
+
+    $("table#table").find("tr").each(function( index, b ) {
+        hasPermission("products", $(b).attr("product_id"), "DELETE").done(function(){
+            $(".delete").fadeIn();
+            localStorage.setItem("products:" + $(b).attr("product_id") + ":DELETE", true);
+        }).fail(function(){
+            localStorage.setItem("products:" + $(b).attr("product_id") + ":DELETE", false);
+        }) 
+    });
 });
 
 //

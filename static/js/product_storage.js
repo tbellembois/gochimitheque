@@ -170,6 +170,7 @@ function queryParams(params) {
     var symbols = urlParams.getAll("symbols[]");
     var hazardstatements = urlParams.getAll("hazardstatements[]");
     var precautionarystatements = urlParams.getAll("precautionarystatements[]");
+    var casnumber_cmr = urlParams.get("casnumber_cmr");
     // need to populate the form in case of product/storage view switch
     if (storelocation != null) {
         $.ajax({
@@ -275,6 +276,10 @@ function queryParams(params) {
             }) 
         });
     }
+    if (casnumber_cmr == "true") {
+        $("#advancedsearch").collapse('show');
+        $('#s_casnumber_cmr').prop('checked', true);
+    }
 
     // storage view specific
     if (storage_archive != null && storage_archive == "true") {
@@ -333,6 +338,9 @@ function queryParams(params) {
     if (precautionarystatements.length != 0) {
         params["precautionarystatements"] = precautionarystatements
     }
-    
+    if (casnumber_cmr == "true") {
+        params["casnumber_cmr"] = true
+    }
+
     return params;
 }

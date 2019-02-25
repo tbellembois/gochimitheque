@@ -962,8 +962,13 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	comreq.WriteString(" FROM product as p")
 	// get name
 	comreq.WriteString(" JOIN name ON p.name = name.name_id")
-	// get casnumber
-	comreq.WriteString(" JOIN casnumber ON p.casnumber = casnumber.casnumber_id")
+	// get CMR
+	if p.GetCasNumberCmr() {
+		comreq.WriteString(" JOIN casnumber ON p.casnumber = casnumber.casnumber_id AND casnumber.casnumber_cmr IS NOT NULL")
+	} else {
+		// get casnumber
+		comreq.WriteString(" JOIN casnumber ON p.casnumber = casnumber.casnumber_id")
+	}
 	// get cenumber
 	comreq.WriteString(" LEFT JOIN cenumber ON p.cenumber = cenumber.cenumber_id")
 	// get person
@@ -1201,6 +1206,22 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	}
 
 	return products, count, nil
+}
+
+func (db *SQLiteDataStore) CountProductStorages(id int) (int, error) {
+	var (
+		count int
+		sqlr  string
+		err   error
+	)
+
+	sqlr = `SELECT count(*) FROM storage WHERE product = ?`
+	if err = db.Get(&count, sqlr, id); err != nil {
+		return 0, err
+	}
+
+	log.WithFields(log.Fields{"count": count}).Debug("CountProductStorages")
+	return count, nil
 }
 
 func (db *SQLiteDataStore) GetProduct(id int) (Product, error) {

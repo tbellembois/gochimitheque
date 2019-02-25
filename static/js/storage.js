@@ -255,6 +255,16 @@ function storage_barecodeFormatter(value, row, index, field) {
         return "";
     }
 }
+//
+// storage_product formatter
+//
+function storage_productFormatter(value, row, index, field) {
+    if (value == "") {
+        return ""
+    } else {
+        return "<a href='/v/products?product=" + row["product"]["product_id"] + "'>" + row["product"]["name"]["name_label"] + "</a>";
+    }
+}
 
 //
 // table items actions

@@ -97,6 +97,10 @@ html
                                 span.mdi.mdi-shield-lock-outline.mdi-36px.iconlabel
                                         | {{ T "menu_password" 1 }}
                                 
+                        li.nav-item
+                            a.nav-link(title= "logout" href="{{.ProxyPath}}delete-token")
+                                span.mdi.mdi-logout.mdi-36px.iconlabel
+                                        | {{ T "menu_logout" 1 }}
 
             | {{template "CONTENT"}}
             | {{template "FOOTER"}}

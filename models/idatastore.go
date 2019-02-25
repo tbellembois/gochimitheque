@@ -37,6 +37,7 @@ type Datastore interface {
 	GetProductsPrecautionaryStatements(helpers.Dbselectparam) ([]PrecautionaryStatement, int, error)
 	GetProductsPrecautionaryStatement(id int) (PrecautionaryStatement, error)
 	GetProduct(id int) (Product, error)
+	CountProductStorages(id int) (int, error)
 	DeleteProduct(id int) error
 	CreateProduct(p Product) (error, int)
 	UpdateProduct(p Product) error
