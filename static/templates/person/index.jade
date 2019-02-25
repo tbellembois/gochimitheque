@@ -25,11 +25,12 @@
                 input#person_id(type='hidden', name='person_id', value='')
 
                 .form-group.row
-                    | {{$label := "email"}} {{$name := "person_email"}}
-                    +inputtext
-                .form-group.row
-                    | {{$label := "entity(ies)"}} {{$name := "entities"}}
-                    +selectmultiple
+                    .col-sm-6
+                        | {{$label := "email"}} {{$name := "person_email"}}
+                        +inputtext
+                    .col-sm-6
+                        | {{$label := "entity(ies)"}} {{$name := "entities"}}
+                        +selectmultiple
                 .form-group.row#permissionsproducts
                         .col-sm-6
                             .alert.alert-primary products

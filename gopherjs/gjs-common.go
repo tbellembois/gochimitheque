@@ -297,6 +297,7 @@ func BuildPermissionWidget(entityID int, entityName string, ismanager bool) *dom
 				"id":        fmt.Sprintf("permn%s%d", i, entityID),
 				"name":      fmt.Sprintf("perm%s%d", i, entityID),
 				"value":     "none",
+				"checked":   "checked",
 				"label":     "_",
 				"perm_name": "n",
 				"item_name": fmt.Sprintf("%s", i),
