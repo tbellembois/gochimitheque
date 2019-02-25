@@ -52,6 +52,8 @@ var LOCALES_EN = []byte(`
 	one = "hazard statement(s)"
 [s_precautionarystatements]
 	one = "precautionary statement(s)"
+[s_casnumber_cmr]
+	one = "CMR"
 
 [menu_home]
 	one = "home"
@@ -67,6 +69,8 @@ var LOCALES_EN = []byte(`
 	one = "people"
 [menu_password]
 	one = "reset my password"
+[menu_logout]
+	one = "logout"
 
 [clearsearch_text]
 	one = "clear search form"

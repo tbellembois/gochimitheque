@@ -219,6 +219,7 @@ function search() {
     var s_symbols;
     var s_hazardstatements;
     var s_precautionarystatements;
+    var s_casnumber_cmr;
 
     if ($('select#s_storelocation').hasClass("select2-hidden-accessible")) {
         // Select2 has been initialized
@@ -293,6 +294,11 @@ function search() {
             });
         }
     }
+    if ($('#s_casnumber_cmr:checked').length > 0) {
+        s_casnumber_cmr = true;
+    } else {
+        s_casnumber_cmr = false;
+    }
 
     s_custom_name_part_of = $('#s_custom_name_part_of').val() ;
     s_storage_barecode = $('#s_storage_barecode').val() ;
@@ -309,7 +315,8 @@ function search() {
             signalword: s_signalword,
             symbols: s_symbols,
             hazardstatements: s_hazardstatements,
-            precautionarystatements: s_precautionarystatements
+            precautionarystatements: s_precautionarystatements,
+            casnumber_cmr: s_casnumber_cmr
             }
         }); 
 }

@@ -244,6 +244,15 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 				// TODO: we can not delete a non empty store location
 			case "products":
 				// TODO: we can not delete a stored product
+				c, e := env.DB.CountProductStorages(itemid)
+				if e != nil {
+					http.Error(w, e.Error(), http.StatusInternalServerError)
+					return
+				}
+				if c != 0 {
+					http.Error(w, "can not delete a product with storages", http.StatusBadRequest)
+					return
+				}
 			case "storages":
 
 			case "entities":

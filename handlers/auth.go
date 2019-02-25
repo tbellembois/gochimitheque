@@ -337,6 +337,25 @@ func (env *Env) ResetPasswordHandler(w http.ResponseWriter, r *http.Request) *he
 	return nil
 }
 
+// DeleteTokenHandler actually reset the token cookie
+func (env *Env) DeleteTokenHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	log.Debug("DeleteTokenHandler")
+	ctoken := http.Cookie{
+		Name:  "token",
+		Value: "",
+	}
+	cemail := http.Cookie{
+		Name:  "email",
+		Value: "",
+	}
+	http.SetCookie(w, &ctoken)
+	http.SetCookie(w, &cemail)
+
+	http.Redirect(w, r, global.ProxyURL+global.ProxyPath+"login", 301)
+
+	return nil
+}
+
 // GetTokenHandler authenticate the user and return a JWT token on success
 func (env *Env) GetTokenHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 

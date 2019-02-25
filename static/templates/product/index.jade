@@ -39,6 +39,10 @@
                         .form-group.col-sm-6
                             | {{$label := T "s_precautionarystatements" 1 }} {{$name := "s_precautionarystatements"}}
                             +selectmultiple
+                    .form-row
+                        .form-group.col-sm-6
+                            | {{$label := T "s_casnumber_cmr" 1 }} {{$name := "s_casnumber_cmr"}}
+                            +checkbox
             .row
                 .col.col-sm-10
                     button#clearsearch.btn.btn-link.mr-sm-2(type="button" onclick="clearsearch();")

@@ -250,8 +250,13 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 
 	// get name
 	//comreq.WriteString(" JOIN name ON product.name = name.name_id")
-	// get casnumber
-	comreq.WriteString(" JOIN casnumber ON product.casnumber = casnumber.casnumber_id")
+	// get CMR
+	if p.GetCasNumberCmr() {
+		comreq.WriteString(" JOIN casnumber ON product.casnumber = casnumber.casnumber_id AND casnumber.casnumber_cmr IS NOT NULL")
+	} else {
+		// get casnumber
+		comreq.WriteString(" JOIN casnumber ON product.casnumber = casnumber.casnumber_id")
+	}
 	// get empirical formula
 	comreq.WriteString(" JOIN empiricalformula ON product.empiricalformula = empiricalformula.empiricalformula_id")
 	// get symbols
