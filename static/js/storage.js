@@ -158,6 +158,12 @@ function detailFormatter(index, row) {
     html.push("<div class='col-sm-9'>")
 
         html.push("<div class='row mb-sm-3'>")
+            html.push("<div class='col-sm-6'>")
+                html.push("<span class='iconlabel'>id</span> " + row["storage_id"]["Int64"])
+            html.push("</div>")
+        html.push("</div>")
+
+        html.push("<div class='row mb-sm-3'>")
             html.push("<div class='col-sm-6'><span class='mdi mdi-24px mdi-tag'></span> " + row["product"]["name"]["name_label"] + "</div>")
             html.push("<div class='col-sm-6'><span class='mdi mdi-24px mdi-docker'></span> " + row["storelocation"]["storelocation_name"]["String"] + "</div>")
         html.push("</div>")
@@ -234,6 +240,19 @@ function storage_idFormatter(value, row, index, field) {
     } else {
         return value;
     }            
+}
+//
+// storage_quantityFormatter
+//
+function storage_quantityFormatter(value, row, index, field) {
+    ret = "";
+    if (row.storage_quantity.Valid) {
+        ret += row.storage_quantity.Float64
+    }
+    if (row.unit.unit_label.Valid) {
+        ret += " " + row.unit.unit_label.String
+    } 
+    return ret;
 }
 //
 // storelocation_name formatter

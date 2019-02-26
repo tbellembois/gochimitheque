@@ -137,8 +137,9 @@
                                 data-row-attributes="rowAttributes")
                         thead
                             tr
-                                th(data-field='storage_id' data-formatter='storage_idFormatter' data-sortable='true') ID
-                                th(data-field='storage_modificationdate' data-formatter='dateFormatter' data-sortable='true') modification date
+                                //th(data-field='storage_id' data-formatter='storage_idFormatter' data-sortable='true') ID
+                                //th(data-field='storage_modificationdate' data-formatter='dateFormatter' data-sortable='true') modification date
+                                th(data-field='storage_quantity' data-formatter='storage_quantityFormatter') quantity
                                 th(data-field='storage_barecode' data-formatter='storage_barecodeFormatter') barecode
                                 th.th-width-200(data-field='product.name.name_label' data-formatter='storage_productFormatter' data-sortable='true') product
                                 th(data-field='storelocation.storelocation_fullpath' data-sortable='true' data-formatter='storelocation_fullpathFormatter') store location
