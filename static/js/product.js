@@ -80,6 +80,12 @@ function detailFormatter(index, row) {
     var html = [];
 
     html.push("<div class='row mt-sm-3'>")
+        html.push("<div class='col-sm-6'>")
+            html.push("<span class='iconlabel'>id</span> " + row["product_id"])
+        html.push("</div>")
+    html.push("</div>")
+
+    html.push("<div class='row mt-sm-3'>")
         html.push("<div class='col-sm-12'>")
             $.each(row["synonyms"], function (key, value) {
                 html.push("<span>" + value["name_label"] + "</span> ");
@@ -242,8 +248,14 @@ function operateFormatter(value, row, index) {
     '</button>',
     ];
 
+    $.each(row.symbols, function( index, value ) {
+        if (value.symbol_label == "SGH02") {
+            actions.push('<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAIvSURBVFiFzdgxbI5BGMDx36uNJsJApFtFIh2QEIkBtYiYJFKsrDaJqYOofhKRMFhsFhNNMBgkTAaD0KUiBomN1EpYBHWGnvi8vu9r7/2eti65vHfv3T3P/57nuXvfuyqlJCRVVQuk1AqRl1LqP9NKpJxbETKjocLgYi0VaLl49wXBxUIFwsVDBcGFQWEAg1FwYZbCGMajLBfmPkzgUZRbw2IKFzGPrRFw/bpvD/bn8jUkXM719f3A9eu+k3iXA/92Bnub2yYx1NgDfbrvXIYZx8dcThjBExxvPOmGltqLIzmuEt63QSVczc+z/2whSw2ThpbajS+4UgOq59O4gYFSuGaByWb8zKvwN8RXXKiBPc7PLaWx3ARqY37O1CBe5/cvO1huVy+ZnfSX7y9MYxRTNeX32lZj+/sXWNfVnV3g1tT/aJeQ5vAGp3L9eXbjTFv7NzzM9VncSSnNF2lp4MqjNYvcxwEcy+0HcQg32/q8Kndl+YrcgM9Z4YdsrZ21PtvxHT9yv1vNgr8cbiIrnMUmbKu177PwVZjLgKPNt4sCOKzF0ww32aF9CA+yxSZKoTqDlVnucI6lMxhpg76OuxhrKr8oIENyXx/xxQKTE/hUkIdLJ1tlRd3TwtF/KtcuSalVVdUwdvQe+Fd6ljhfl9NzRKT5I8cvq/B+xi3vzFfk+FaqbEUPvEtVuipXBIspX9VLlW4Q/8U1VGe4EKgYsED3tefBgt271y7dUlV/ygHpF8bRglXiwx7BAAAAAElFTkSuQmCC" alt="flammable" title="flammable">');
+        }
+    });
+
     if (row.casnumber.casnumber_cmr.Valid) {
-        actions.push('<span title="CMR" class="mdi mdi-16px mdi-alert-outline"></span>' + row.casnumber.casnumber_cmr.String);
+        actions.push('<span title="CMR" class="mdi mdi-16px mdi-alert-outline text-danger"></span><span class="text-danger">' + row.casnumber.casnumber_cmr.String + '</span>');
     }    
     if (row.product_restricted.Valid && row.product_restricted.Bool) {
         actions.push('<span title="restricted access" class="mdi mdi-16px mdi-hand"></span>');

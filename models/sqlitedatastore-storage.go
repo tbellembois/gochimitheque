@@ -549,7 +549,7 @@ func (db *SQLiteDataStore) GenerateAndUpdateStorageBarecode(s *Storage) error {
 	// qrcode
 	//
 	qr := global.ProxyURL + global.ProxyPath + "v/storages?storage=" + strconv.FormatInt(s.StorageID.Int64, 10)
-	if png, err = qrcode.Encode(qr, qrcode.Medium, 256); err != nil {
+	if png, err = qrcode.Encode(qr, qrcode.Medium, 128); err != nil {
 		return err
 	}
 	sqlr = `UPDATE storage 
