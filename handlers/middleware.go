@@ -215,8 +215,28 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			case "vu", "vc":
 				perm = "w"
 			}
-		case "POST", "PUT", "DELETE":
-			// REST update, delete, create methods
+		case "POST", "PUT":
+			// REST update,create methods
+			switch item {
+			case "people":
+				// a user can not edit/delete himself
+				if itemid == personid {
+					http.Error(w, "can not edit/delete yourself", http.StatusForbidden)
+					return
+				}
+			case "storelocations":
+
+			case "products":
+
+			case "storages":
+
+			case "entities":
+
+			}
+
+			perm = "w"
+		case "DELETE":
+			// REST delete method
 			// TODO: we need to perform more permission check here
 			// to ensure that values in the request body
 			// are allowed for the auth user
@@ -229,17 +249,16 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 					return
 				}
 				// we can not delete a manager
-				if r.Method == "DELETE" {
-					m, e := env.DB.IsPersonManager(itemid)
-					if e != nil {
-						http.Error(w, e.Error(), http.StatusInternalServerError)
-						return
-					}
-					if m {
-						http.Error(w, "can not delete a manager", http.StatusForbidden)
-						return
-					}
+				m, e := env.DB.IsPersonManager(itemid)
+				if e != nil {
+					http.Error(w, e.Error(), http.StatusInternalServerError)
+					return
 				}
+				if m {
+					http.Error(w, "can not delete a manager", http.StatusForbidden)
+					return
+				}
+
 			case "storelocations":
 				// TODO: we can not delete a non empty store location
 			case "products":

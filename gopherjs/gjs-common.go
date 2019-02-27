@@ -343,7 +343,7 @@ func DisplayMessage(msgText string, msgType string) {
 	s := document.CreateElement("span").(*dom.HTMLSpanElement)
 	d.SetAttribute("role", "alert")
 	d.SetAttribute("style", "z-index:2;")
-	d.Class().SetString("animated fadeOutUp delay-2s position-absolute w-100 p-3 text-center alert alert-" + msgType)
+	d.Class().SetString("animated fadeOutUp delay-2s fixed-top w-100 p-3 text-center alert alert-" + msgType)
 	s.SetTextContent(msgText)
 	d.AppendChild(s)
 
