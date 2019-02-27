@@ -1019,7 +1019,8 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	(perm.person = :personid and perm.permission_item_name = "products" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
 	(perm.person = :personid and perm.permission_item_name = "products" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
 	`)
-	comreq.WriteString(" WHERE name.name_label LIKE :search")
+	//comreq.WriteString(" WHERE name.name_label LIKE :search")
+	comreq.WriteString(" WHERE 1")
 	if p.GetProduct() != -1 {
 		comreq.WriteString(" AND p.product_id = :product")
 	}
