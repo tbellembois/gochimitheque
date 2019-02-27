@@ -92,8 +92,8 @@ function showStockRecursive(sl, depth) {
     
     if (hasStock) {
         var html = [("<div class='row mt-sm-3'>")];
-        for (i=1; i<=depth; i++) {
-            html.push("<div class='col-sm-1'>&nbsp;</div>");
+        for (i=1; i<=depth-1; i++) {
+            html.push("<div class='col-sm-1'><span class='mdi mdi-square-medium mdi-24px'></span></div>");
         }
         html.push("<div class='col' style='color: " + sl.storelocation_color.String + "'>" + sl.storelocation_name.String + "</div>");
         

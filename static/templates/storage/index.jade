@@ -85,14 +85,18 @@
                 .modal-body#stock-body
                     span.mdi.mdi-36px.mdi-spin.mdi-autorenew
                 .modal-footer
-                    button.btn.btn-secondary(type="button" data-dismiss="modal") close
+                    button.btn.btn-link(type="button" data-dismiss="modal")
+                        span.mdi.mdi-close-box.mdi-24px.iconlabel
+                            | {{ T "close" 1 }}
 
     #exportlink.modal.fade(role="dialog" tabindex="-1" aria-labelledby="exportlinkLabel" aria-hidden="true")
         .modal-dialog.modal-lg(role="document")
             .modal-content
                 .modal-body#exportlink-body
                 .modal-footer
-                    button.btn.btn-secondary(type="button" data-dismiss="modal") close
+                    button.btn.btn-link(type="button" data-dismiss="modal")
+                        span.mdi.mdi-close-box.mdi-24px.iconlabel
+                            | {{ T "close" 1 }}
 
     #borrow.modal.fade(role="dialog" tabindex="-1" aria-labelledby="borrowLabel" aria-hidden="true")
         .modal-dialog.modal-lg(role="document")
@@ -115,7 +119,7 @@
                         span.mdi.mdi-content-save.mdi-24px.iconlabel
                             | {{ T "save" 1 }}
                     button.btn.btn-link(type="button" data-dismiss="modal")
-                        span.mdi.mdi-content-save.mdi-24px.iconlabel
+                        span.mdi.mdi-close-box.mdi-24px.iconlabel
                             | {{ T "close" 1 }}
 
     #accordion
