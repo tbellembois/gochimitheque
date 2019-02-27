@@ -72,6 +72,7 @@ func main() {
 	global.MailServerPort = *mailServerPort
 	global.MailServerUseTLS = *mailServerUseTLS
 	global.MailServerTLSSkipVerify = *mailServerTLSSkipVerify
+	log.Info("- application endpoint: " + global.ProxyURL + global.ProxyPath)
 
 	// database initialization
 	log.Info("- opening database connection")
