@@ -1113,14 +1113,8 @@ script.
         setTimeout(function(){ window.location = proxyPath + "v/products?product="+data.product_id+"&hl="+data.product_id; }, 1000);
     }
     var updateCallBack = function updateCallback(data, textStatus, jqXHR) {
-        $('#list-collapse').collapse('show');
-        $('#edit-collapse').collapse('hide');
-        var $table = $('#table');
-        var index = $('input#index').val();
-        // appending hl parameter to highlight updated row
-        updateQueryStringParam("hl", data.product_id);
-        $table.bootstrapTable('refresh');
         global.displayMessage("product " + data.name.name_label + " updated", "success");
+        setTimeout(function(){ window.location = proxyPath + "v/products?product="+data.product_id+"&hl="+data.product_id; }, 1000);
     }
     function saveProduct() {
         var form = $("#product");
