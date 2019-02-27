@@ -434,6 +434,7 @@ func (db *SQLiteDataStore) GetStorage(id int) (Storage, error) {
 	supplier.supplier_label AS "supplier.supplier_label",
 	person.person_email AS "person.person_email",
 	name.name_label AS "product.name.name_label",
+	product.product_id AS "product.product_id",
 	casnumber.casnumber_label AS "product.casnumber.casnumber_label",
 	storelocation.storelocation_id AS "storelocation.storelocation_id",
 	storelocation.storelocation_name AS "storelocation.storelocation_name",

@@ -589,14 +589,16 @@ script.
         setTimeout(function(){ window.location = proxyPath + "v/storages?product="+data.product.product_id+"&hl="+data.product.product_id; }, 1000);
     }
     var updateCallBack = function updateCallback(data, textStatus, jqXHR) {
-        $('#list-collapse').collapse('show');
-        $('#edit-collapse').collapse('hide');
-        var $table = $('#table');
-        var index = $('input#index').val();
-        // appending hl parameter to highlight updated row
-        updateQueryStringParam("hl", data.storage_id.Int64);
-        $table.bootstrapTable('refresh');
+        //- $('#list-collapse').collapse('show');
+        //- $('#edit-collapse').collapse('hide');
+        //- var $table = $('#table');
+        //- var index = $('input#index').val();
+        //- // appending hl parameter to highlight updated row
+        //- updateQueryStringParam("hl", data.storage_id.Int64);
+        //- $table.bootstrapTable('refresh');
+        console.log(data)
         global.displayMessage("storage " + data.storage_id.Int64 + " updated", "success");
+        setTimeout(function(){ window.location = proxyPath + "v/storages?product="+data.product.product_id+"&hl="+data.product.product_id; }, 1000);
     }
 
     function saveStorage() {
