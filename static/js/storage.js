@@ -102,8 +102,8 @@ function showStockRecursive(sl, depth) {
             
             if (stock.total === 0 && stock.current === 0) {
             } else {
-                html.push("<div class='col'><i title='total stock including sub store locations' class='material-icons'>functions</i> " + stock.total + " <b>" + stock.unit.unit_label.String + "</b></div>");
-                html.push("<div class='col'><i title='total in this store location' class='material-icons'>extensions</i> " + stock.current + " <b>" + stock.unit.unit_label.String + "</b></div>");
+                html.push("<div class='col'><span class='iconlabel'>" + global.t("stock_storelocation_title", container.PersonLanguage) + "</span> " + stock.current + " <b>" + stock.unit.unit_label.String + "</b></div>");
+                html.push("<div class='col'><span class='iconlabel'>" + global.t("stock_storelocation_sub_title", container.PersonLanguage) + "</span> " + stock.total + " <b>" + stock.unit.unit_label.String + "</b></div>");
                 
             }
         }

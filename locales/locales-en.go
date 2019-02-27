@@ -120,6 +120,11 @@ var LOCALES_EN = []byte(`
 [storage_showhistory]
 	one = "show history"
 
+[stock_storelocation_title]
+	one = "in this store location"
+[stock_storelocation_sub_title]
+	one = "including children store locations"
+
 [empiricalformula_label_title]
 	one = "empirical formula"
 [cenumber_label_title]

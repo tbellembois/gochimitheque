@@ -92,7 +92,7 @@ $('#table').on('load-success.bs.table refresh.bs.table', function () {
         
         hasPermission("storages", "-2", "GET").done(function(){
             // adding a create show stock button for the product
-            b = $("<button>").addClass("store btn btn-primary btn-sm").attr("title", "show stock of this product").attr("type", "button").attr("data-toggle", "modal").attr("data-target", "#stock");
+            b = $("<button>").addClass("store btn btn-link btn-sm").attr("title", "show stock of this product").attr("type", "button").attr("data-toggle", "modal").attr("data-target", "#stock");
             b.attr("onclick", "showStock(" + p + ")");
             i = $("<span>").addClass("mdi mdi-24px mdi-sigma");
             b.append(i);
