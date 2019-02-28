@@ -21,9 +21,11 @@ function handleHTTPError(msgText, msgStatus) {
 function getCaptcha() {
     var email = $("#person_email").val();
     if (email == "") {
-        global.displayMessage("enter your email in the login form", "warning");
+        msg = global.t("resetpassword_warning_enteremail", container.PersonLanguage) 
+        global.displayMessage(msg, "warning");
     } else {
-        global.displayMessage("are you a robot?", "success");
+        msg = global.t("resetpassword_areyourobot", container.PersonLanguage) 
+        global.displayMessage(msg, "success");
         $("#getcaptcha").fadeOut("slow");
         $.ajax({
             url: proxyPath + "captcha",
@@ -44,7 +46,8 @@ function resetPassword() {
         captcha = $("input#captcha_text").val(),
         uid = $("input#captcha_uid").val();
     if (email == "") {
-        global.displayMessage("enter your email in the login form", "warning");
+        msg = global.t("resetpassword_warning_enteremail", container.PersonLanguage) 
+        global.displayMessage(msg, "warning");
     } else {
         global.displayMessage("validating...", "success");
         $("#resetpassword").fadeOut("slow");
@@ -57,7 +60,8 @@ function resetPassword() {
                 captcha_uid: uid,
             }
         }).done(function(token) {
-            global.displayMessage("a reinitialization link has been sent to " + email, "success");
+            msg = global.t("resetpassword_message_mailsentto", container.PersonLanguage) 
+            global.displayMessage(msg + " " + email, "success");
         }).fail(function(jqXHR, textStatus, errorThrown) {
             handleHTTPError(jqXHR.responseText, jqXHR.status)
         });

@@ -14,6 +14,10 @@ var LOCALES_FR = []byte(`
 	one = "editer"
 [delete]
 	one = "supprimer"
+[save]
+	one = "enregistrer"
+[close]
+	one = "fermer"
 
 [email_placeholder]
 	one = "entrez votre email"
@@ -25,6 +29,29 @@ var LOCALES_FR = []byte(`
 	one = "réinitialiser mon mot de passe"
 [resetpassword2_text]
 	one = "réinitialiser mon mot de passe, je ne suis pas un robot"
+[resetpassword_warning_enteremail]
+	one = "entrez votre adresse mail dans le formulaire"
+[resetpassword_message_mailsentto]
+	one = "un mail de réinitialisation a été envoyé à"
+[resetpassword_areyourobot]
+	one = "êtes vous un robot ?"
+[resetpassword_mailbody1]
+	one = '''
+	Voici votre mot de passe temporaire pour Chimithèque : %s
+
+	Vous pouvez le changer dans l'application.
+	'''
+[resetpassword_mailsubject1]
+	one = "Chimithèque nouveau mot de passe temporaire\r\n"
+[resetpassword_mailbody2]
+	one = '''
+	Cliquez sur ce lien pour réinitialiser votre mot de passe : %s%sreset?token=%s
+
+	Vous recevrez ensuite un nouveau mail avec un mot de passe temporaire.
+	'''
+[resetpassword_mailsubject2]
+	one = "Chimithèque lien de réinitialisation de mot de passe\r\n"
+
 [logo_information1]
 	one = "Logo Chimithèque réalisé par "
 [logo_information2]
@@ -63,6 +90,8 @@ var LOCALES_FR = []byte(`
 	one = "utilisateurs"
 [menu_password]
 	one = "réinitialiser mon mot de passe"
+[menu_logout]
+	one = "déconnexion"
 
 [clearsearch_text]
 	one = "effacer le formulaire"

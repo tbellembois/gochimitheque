@@ -29,6 +29,29 @@ var LOCALES_EN = []byte(`
 	one = "reset password"
 [resetpassword2_text]
 	one = "reset my password, I am not a robot"
+[resetpassword_warning_enteremail]
+	one = "enter your email in the login form"
+[resetpassword_message_mailsentto]
+	one = "a reinitialization link has been sent to"
+[resetpassword_areyourobot]
+	one = "are you a robot?"
+[resetpassword_mailbody1]
+	one = '''
+	This is your new temporary Chimithèque password: %s
+
+	You can change it in the application.
+	'''
+[resetpassword_mailsubject1]
+	one = "Chimithèque new temporary password\r\n"
+[resetpassword_mailbody2]
+	one = '''
+	Click on this link to reinitialize your password: %s%sreset?token=%s
+
+	You will then receive a new mail with a temporary password.
+	'''
+[resetpassword_mailsubject2]
+	one = "Chimithèque password reset link\r\n"
+
 [logo_information1]
 	one = "Chimithèque logo designed by "
 [logo_information2]

@@ -17,6 +17,7 @@ import (
 	"github.com/dchest/passwordreset"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	log "github.com/sirupsen/logrus"
 	"github.com/steambap/captcha"
 	"github.com/tbellembois/gochimitheque/global"
@@ -226,8 +227,8 @@ func (env *Env) ResetHandler(w http.ResponseWriter, r *http.Request) *helpers.Ap
 	}
 
 	// sending the new mail
-	msgbody := "This is your new password: " + p.PersonPassword
-	msgsubject := "Subject: Chimithèque new password\r\n"
+	msgbody := fmt.Sprintf(env.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "resetpassword_mailbody1", PluralCount: 1}), p.PersonPassword)
+	msgsubject := env.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "resetpassword_mailsubject1", PluralCount: 1})
 	if err = sendMail(login, msgsubject, msgbody); err != nil {
 		return &helpers.AppError{
 			Code:    http.StatusInternalServerError,
@@ -320,8 +321,8 @@ func (env *Env) ResetPasswordHandler(w http.ResponseWriter, r *http.Request) *he
 	// generating the reinitialization token
 	token := passwordreset.NewToken(person.PersonEmail, 12*time.Hour, hash, []byte("secret"))
 	// and the mail body
-	msgbody := "Click on this link to reinitialize your password: " + global.ProxyURL + global.ProxyPath + "reset?token=" + token
-	msgsubject := "Subject: Chimithèque password reinitialization\r\n"
+	msgbody := fmt.Sprintf(env.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "resetpassword_mailbody2", PluralCount: 1}), global.ProxyURL, global.ProxyPath, token)
+	msgsubject := env.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "resetpassword_mailsubject2", PluralCount: 1})
 
 	// sending the reinitialisation email
 	if e = sendMail(person.PersonEmail, msgsubject, msgbody); e != nil {
