@@ -352,7 +352,7 @@ func (env *Env) DeleteTokenHandler(w http.ResponseWriter, r *http.Request) *help
 	http.SetCookie(w, &ctoken)
 	http.SetCookie(w, &cemail)
 
-	http.Redirect(w, r, global.ProxyURL+global.ProxyPath+"login", 301)
+	http.Redirect(w, r, "/login", 301)
 
 	return nil
 }
