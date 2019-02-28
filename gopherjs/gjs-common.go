@@ -227,6 +227,7 @@ func PopulatePermissionWidget(params []*js.Object) {
 			}
 		}
 	}
+
 }
 
 // BuildInlineRadioElement return a radio inline block
