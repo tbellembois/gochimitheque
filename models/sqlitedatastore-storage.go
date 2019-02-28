@@ -188,11 +188,17 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 		cnstmt                             *sqlx.NamedStmt
 		snstmt                             *sqlx.NamedStmt
 		err                                error
+		isadmin                            bool
 	)
 	log.WithFields(log.Fields{"p": p}).Debug("GetStorages")
 
 	if strings.HasPrefix(p.GetOrderBy(), "storage_") {
 		p.SetOrderBy("s." + p.GetOrderBy())
+	}
+
+	// is the user an admin?
+	if isadmin, err = db.IsPersonAdmin(p.GetLoggedPersonID()); err != nil {
+		return nil, 0, err
 	}
 
 	// pre request: select or count
@@ -270,6 +276,11 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 	// get precautionarystatements
 	if len(p.GetPrecautionaryStatements()) != 0 {
 		comreq.WriteString(" JOIN productprecautionarystatements AS pps ON pps.productprecautionarystatements_product_id = product.product_id")
+	}
+
+	// filter by entities
+	if !isadmin {
+		comreq.WriteString(` JOIN personentities ON (personentities_entity_id = storelocation.entity AND personentities_person_id = :personid)`)
 	}
 
 	// filter by permissions
@@ -400,6 +411,10 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 	if err = cnstmt.Get(&count, m); err != nil {
 		return nil, 0, err
 	}
+
+	log.Debug(presreq.String() + comreq.String() + postsreq.String())
+	log.Debug(m)
+	log.Debug(p.GetLoggedPersonID())
 
 	return storages, count, nil
 }
