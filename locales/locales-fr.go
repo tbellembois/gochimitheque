@@ -89,7 +89,7 @@ var LOCALES_FR = []byte(`
 [menu_people]
 	one = "utilisateurs"
 [menu_password]
-	one = "réinitialiser mon mot de passe"
+	one = "changer mon mot de passe"
 [menu_logout]
 	one = "déconnexion"
 

@@ -91,7 +91,7 @@ var LOCALES_EN = []byte(`
 [menu_people]
 	one = "people"
 [menu_password]
-	one = "reset my password"
+	one = "change my password"
 [menu_logout]
 	one = "logout"
 
