@@ -1795,6 +1795,9 @@ func (db *SQLiteDataStore) Import(dir string) error {
 			newarchive = true
 		}
 		newvolume_weight := volume_weight
+		if newvolume_weight == "" {
+			newvolume_weight = "1"
+		}
 		newto_destroy := false
 		if to_destroy == "T" {
 			newto_destroy = true
