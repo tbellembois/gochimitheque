@@ -180,6 +180,10 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			item = "storages"
 			id = "-2"
 		}
+		if item == "storages" {
+			// storages access are global per entity
+			id = "-2"
+		}
 		if id == "" {
 			itemid = -2
 		} else {
@@ -207,8 +211,8 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 		switch r.Method {
 		case "GET":
 			switch view {
-			// view (list) or
-			// REST view methods
+			// "v": view methods
+			// "": REST get method
 			case "v", "":
 				perm = "r"
 			// views update, create
@@ -224,14 +228,6 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 					http.Error(w, "can not edit/delete yourself", http.StatusForbidden)
 					return
 				}
-			case "storelocations":
-
-			case "products":
-
-			case "storages":
-
-			case "entities":
-
 			}
 
 			perm = "w"
@@ -258,7 +254,6 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 					http.Error(w, "can not delete a manager", http.StatusForbidden)
 					return
 				}
-
 			case "storelocations":
 				// TODO: we can not delete a non empty store location
 			case "products":
@@ -272,8 +267,6 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 					http.Error(w, "can not delete a product with storages", http.StatusBadRequest)
 					return
 				}
-			case "storages":
-
 			case "entities":
 				// we can not delete a non empty entity
 				if r.Method == "DELETE" {
