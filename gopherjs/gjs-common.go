@@ -263,7 +263,7 @@ func BuildPermissionWidget(entityID int, entityName string, ismanager bool) *dom
 	widgetdiv.SetID(fmt.Sprintf("perm%d", entityID))
 	widgetdiv.SetClass("col-sm-12")
 	title := document.CreateElement("label").(*dom.HTMLLabelElement)
-	title.SetInnerHTML(entityName)
+	title.SetInnerHTML("<span class='mdi mdi-store mdi-24px'/>" + entityName)
 
 	widgetdiv.AppendChild(title)
 
@@ -285,13 +285,13 @@ func BuildPermissionWidget(entityID int, entityName string, ismanager bool) *dom
 			//println(i)
 			// building main row
 			mainrowdiv := document.CreateElement("div").(*dom.HTMLDivElement)
-			mainrowdiv.SetClass("row")
+			mainrowdiv.SetClass("form-group row")
 			// building first col for table name
 			label := document.CreateElement("div").(*dom.HTMLDivElement)
-			label.SetClass("alert alert-primary")
+			label.SetClass("iconlabel")
 			label.SetInnerHTML(i)
 			firstcoldiv := document.CreateElement("div").(*dom.HTMLDivElement)
-			firstcoldiv.SetClass("col-sm-6")
+			firstcoldiv.SetClass("col-sm-2")
 			firstcoldiv.AppendChild(label)
 			// building second col for radios
 			noneradioattrs := map[string]string{
@@ -323,7 +323,7 @@ func BuildPermissionWidget(entityID int, entityName string, ismanager bool) *dom
 				"entity_id": fmt.Sprintf("%d", entityID),
 				"class":     fmt.Sprintf("perm permw permw%s", i)}
 			secondcoldiv := document.CreateElement("div").(*dom.HTMLDivElement)
-			secondcoldiv.SetClass("col-sm-6")
+			secondcoldiv.SetClass("col-sm-2")
 			secondcoldiv.AppendChild(BuildInlineRadioElement(noneradioattrs))
 			secondcoldiv.AppendChild(BuildInlineRadioElement(readradioattrs))
 			secondcoldiv.AppendChild(BuildInlineRadioElement(writeradioattrs))
