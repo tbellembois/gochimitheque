@@ -734,6 +734,8 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		zerocasnumberid        int
 		zeroempiricalformulaid int
 		zeropersonid           int // admin id
+		zerohsid               string
+		zeropsid               string
 
 		// O:old N:new R:reverse
 		mONperson        map[string]string   // oldid <> newid map for user table
@@ -1396,6 +1398,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		id := line[0]
 		reference := line[2]
 		if reference == "----" {
+			zerohsid = id
 			continue
 		}
 		// finding new id
@@ -1429,6 +1432,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		id := line[0]
 		reference := line[2]
 		if reference == "----" {
+			zeropsid = id
 			continue
 		}
 		// finding new id
@@ -1663,7 +1667,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 				sqlr = `INSERT INTO productsynonyms (productsynonyms_product_id, productsynonyms_name_id) VALUES (?,?)`
 				if res, err = tx.Exec(sqlr, lastid, mONname[s]); err != nil {
 					// not leaving on errors
-					log.Error("error importing product synonym with id " + s)
+					log.Debug("non fatal error importing product synonym with id " + s + ": " + err.Error())
 				}
 			}
 			// symbol
@@ -1672,25 +1676,37 @@ func (db *SQLiteDataStore) Import(dir string) error {
 				sqlr = `INSERT INTO productsymbols (productsymbols_product_id, productsymbols_symbol_id) VALUES (?,?)`
 				if res, err = tx.Exec(sqlr, lastid, mONsymbol[s]); err != nil {
 					// not leaving on errors
-					log.Error("error importing product symbol with id " + s)
+					log.Error("error importing product symbol with id " + s + ": " + err.Error())
+					tx.Rollback()
+					return err
 				}
 			}
 			// hs
 			hss := rnumber.FindAllString(hazardstatement, -1)
 			for _, s := range hss {
+				if s == zerohsid {
+					continue
+				}
 				sqlr = `INSERT INTO producthazardstatements (producthazardstatements_product_id, producthazardstatements_hazardstatement_id) VALUES (?,?)`
 				if res, err = tx.Exec(sqlr, lastid, mONhazardstatement[s]); err != nil {
 					// not leaving on errors
-					log.Error("error importing product hazardstatement with id " + s)
+					log.Error("error importing product hazardstatement with id " + s + ": " + err.Error())
+					tx.Rollback()
+					return err
 				}
 			}
 			// ps
 			pss := rnumber.FindAllString(precautionarystatement, -1)
 			for _, s := range pss {
+				if s == zeropsid {
+					continue
+				}
 				sqlr = `INSERT INTO productprecautionarystatements (productprecautionarystatements_product_id, productprecautionarystatements_precautionarystatement_id) VALUES (?,?)`
 				if res, err = tx.Exec(sqlr, lastid, mONprecautionarystatement[s]); err != nil {
 					// not leaving on errors
-					log.Error("error importing product precautionarystatement with id " + s)
+					log.Error("error importing product precautionarystatement with id " + s + ": " + err.Error())
+					tx.Rollback()
+					return err
 				}
 			}
 		}
