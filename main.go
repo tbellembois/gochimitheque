@@ -84,7 +84,7 @@ func main() {
 		log.Panic(err)
 	}
 	if *importfrom == "" {
-		log.Info("- inserting database sample values")
+		log.Info("- inserting database sample values if needed")
 		if err = datastore.InsertSamples(); err != nil {
 			log.Panic(err)
 		}
