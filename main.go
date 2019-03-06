@@ -275,7 +275,7 @@ func main() {
 	// login
 	r.Handle("/login", commonChain.Then(env.AppMiddleware(env.VLoginHandler))).Methods("GET")
 	r.Handle("/get-token", commonChain.Then(env.AppMiddleware(env.GetTokenHandler))).Methods("POST")
-	r.Handle("/delete-token", securechain.Then(env.AppMiddleware(env.DeleteTokenHandler))).Methods("GET")
+	r.Handle("/{item:delete-token}", securechain.Then(env.AppMiddleware(env.DeleteTokenHandler))).Methods("GET")
 	r.Handle("/reset-password", commonChain.Then(env.AppMiddleware(env.ResetPasswordHandler))).Methods("POST")
 	r.Handle("/reset", commonChain.Then(env.AppMiddleware(env.ResetHandler))).Methods("GET")
 	r.Handle("/captcha", commonChain.Then(env.AppMiddleware(env.CaptchaHandler))).Methods("GET")

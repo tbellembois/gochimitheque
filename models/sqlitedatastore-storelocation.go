@@ -33,7 +33,7 @@ func (db *SQLiteDataStore) buildFullPath(s StoreLocation, tx *sqlx.Tx) string {
 		storelocation.storelocation_id AS "storelocation.storelocation_id",
 		storelocation.storelocation_name AS "storelocation.storelocation_name" 
 		FROM storelocation AS s
-		LEFT JOIN storelocation on s.storelocation = storelocation.storelocation_id
+		JOIN storelocation on s.storelocation = storelocation.storelocation_id
 		WHERE s.storelocation_id = ?`
 		r := tx.QueryRowx(sqlr, s.StoreLocation.StoreLocationID.Int64)
 		if err = r.StructScan(&pp); err != nil {

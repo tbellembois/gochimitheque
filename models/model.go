@@ -464,15 +464,14 @@ func (b Borrowing) String() string {
 }
 
 func (s StoreLocation) String() string {
-	return fmt.Sprintf(`StoreLocationID: %s | 
-	StoreLocationName: %s | 
-	StoreLocationCanStore: Valid:%t Bool:%t | 
-	StoreLocationColor: %s | 
-	parent StoreLocation id: %s |
-	parent StoreLocation name: %s |
-	Entity: %d | 
-	Stocks: %v
-	`, s.StoreLocationID, s.StoreLocationName.String, s.StoreLocationCanStore.Valid, s.StoreLocationCanStore.Bool, s.StoreLocationColor.String, s.StoreLocation.StoreLocationID, s.StoreLocation.StoreLocationName, s.EntityID, s.Stocks)
+	out := fmt.Sprintf("StoreLocationID: %d StoreLocationName: %s StoreLocationCanStore: Valid:%t Bool:%t StoreLocationColor: %s Entity: %d", s.StoreLocationID.Int64, s.StoreLocationName.String, s.StoreLocationCanStore.Valid, s.StoreLocationCanStore.Bool, s.StoreLocationColor.String, s.EntityID)
+	out += " PARENT "
+	if s.StoreLocation != nil {
+		out += fmt.Sprintf("StoreLocationID: Valid: %t Int64: %d", s.StoreLocation.StoreLocationID.Valid, s.StoreLocation.StoreLocationID.Int64)
+	} else {
+		out += "nil"
+	}
+	return out
 }
 
 func (p Permission) String() string {

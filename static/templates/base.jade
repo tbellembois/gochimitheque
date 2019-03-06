@@ -75,7 +75,7 @@ html
                                         | {{ T "menu_storelocation" 1 }}
                                 div.dropdown-menu(aria-labelledby="navbarDropdown")
                                     a(href="{{.ProxyPath}}v/storelocations", title="list").dropdown-item list
-                                    if HasPermission .PersonID "all" "all" -2
+                                    if HasPermission .PersonID "w" "storelocations" -2
                                         a(href="{{.ProxyPath}}vc/storelocations", title="create").dropdown-item create
 
                         if HasPermission .PersonID "r" "people" -2
