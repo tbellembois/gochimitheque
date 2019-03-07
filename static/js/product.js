@@ -112,13 +112,13 @@ function detailFormatter(index, row) {
             html.push("<div class='col-sm-6'><span class='iconlabel'>" + global.t("linearformula_label_title", container.PersonLanguage) + "</span> " + row["linearformula"]["linearformula_label"]["String"] + "</div>")
         }
         if (row["product_threedformula"]["Valid"] && row["product_threedformula"]["String"] != "") {
-            html.push("<div class='col-sm-6'><span class='iconlabel'>" + global.t("product_threedformula_title", container.PersonLanguage) + "</span> " + row["product_threedformula"]["String"] + "</div>")
+            html.push("<div class='col-sm-6'><span class='iconlabel'>" + global.t("product_threedformula_title", container.PersonLanguage) + "</span> <a href='" + row["product_threedformula"]["String"] + "'>" + row["product_threedformula"]["String"] + "</a></div>")
         }
     html.push("</div>")
 
     html.push("<div class='row mt-sm-4'>")
         if (row["product_msds"]["Valid"]) {
-            html.push("<div class='col-sm-12'><span class='iconlabel'>" + global.t("product_msds_title", container.PersonLanguage) + "</span> " + row["product_msds"]["String"] + "</div>")
+            html.push("<div class='col-sm-12'><span class='iconlabel'>" + global.t("product_msds_title", container.PersonLanguage) + "</span> <a href='" + row["product_msds"]["String"] + "'>" + row["product_msds"]["String"] + "</a></div>")
         }
     html.push("</div>")
 
@@ -153,7 +153,7 @@ function detailFormatter(index, row) {
             html.push("<div class='col-sm-12'><span class='iconlabel'>" + global.t("precautionarystatement_label_title", container.PersonLanguage) + "</span></div>")
             html.push("<ul>")
             $.each(row["precautionarystatements"], function (key, value) {
-                html.push("<li>" + value["precautionarystatement_reference"] + ": " + value["precautionarystatement_label"] + "</li>");
+                html.push("<li>" + value["precautionarystatement_reference"] + ": <i>" + value["precautionarystatement_label"] + "</i></li>");
             });
         html.push("</ul>")
         }
