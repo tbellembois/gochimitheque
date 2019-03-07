@@ -535,6 +535,16 @@ script.
         //
         $('select#physicalstate').select2({
             allowClear: true,
+            tags: true,
+            createTag: function (params) {
+                if ($("input#exactMatchPhysicalstate").val() == "true") {
+                    return null
+                }
+                return {
+                    id: params.term,
+                    text: params.term,
+                }
+            },
             placeholder: "select physical state",
             ajax: {
                 url: proxyPath + 'products/physicalstates/',
@@ -552,14 +562,34 @@ script.
                 },
                 dataType: 'json',
                 processResults: function (data) {
+                    isExactMatch=false;
+                    
+                    // looking for an exact match
+                    $.each(data.rows, function( index, value ) {
+                        if(value.c == 1) {
+                            isExactMatch=true;
+                        }
+                    });
+                    
+                    // there is a match: setting the input field
+                    if (isExactMatch) {
+                        $("input#exactMatchPhysicalstate").val("true");
+                    } else {
+                        $("input#exactMatchPhysicalstate").val("false");
+                    }
+
                     // replacing name by text expected by select2
                     var newdata = $.map(data.rows, function (obj) {
                         obj.text = obj.text || obj.physicalstate_label.String;
                         obj.id = obj.id || obj.physicalstate_id.Int64;
                         return obj;
                     });
-                        return {
+                    // getting the number of loaded select elements
+                    selectnbitems = $("ul#select2-physicalstate-results li").length + 10;
+
+                    return {
                         results: newdata,
+                        pagination: {more: selectnbitems<data.total}
                     };
                 }
             }
@@ -1205,7 +1235,7 @@ script.
             }
             if (physicalstate !== undefined) {
                 $.extend(data, {
-                    "physicalstate.physicalstate_id": physicalstate.id,
+                    "physicalstate.physicalstate_id": physicalstate.id == physicalstate.text ? -1 : physicalstate.id,
                     "physicalstate.physicalstate_label": physicalstate.text,
                 });                    
             }

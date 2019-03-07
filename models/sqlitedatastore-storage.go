@@ -609,7 +609,7 @@ func (db *SQLiteDataStore) CreateStorage(s Storage) (error, int) {
 			return err, 0
 		}
 		// updating the storage SupplierId (SupplierLabel already set)
-		s.Supplier.SupplierID = sql.NullInt64{Int64: lastid}
+		s.Supplier.SupplierID = sql.NullInt64{Valid:true, Int64: lastid}
 	}
 	if err != nil {
 		log.Error("supplier error - " + err.Error())
@@ -790,7 +790,7 @@ func (db *SQLiteDataStore) UpdateStorage(s Storage) error {
 			return err
 		}
 		// updating the storage SupplierId (SupplierLabel already set)
-		s.Supplier.SupplierID = sql.NullInt64{Int64: lastid}
+		s.Supplier.SupplierID = sql.NullInt64{Valid:true, Int64: lastid}
 	}
 	if err != nil {
 		log.Error("supplier error - " + err.Error())

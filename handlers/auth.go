@@ -239,7 +239,8 @@ func (env *Env) ResetHandler(w http.ResponseWriter, r *http.Request) *helpers.Ap
 
 	//w.WriteHeader(http.StatusOK)
 	// redirecting to login page
-	http.Redirect(w, r, "/login?message=password%20reinitialized", http.StatusSeeOther)
+	msgdone := fmt.Sprintf(env.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "resetpassword_done", PluralCount: 1}), p.PersonEmail)
+	http.Redirect(w, r, "/login?message="+msgdone, http.StatusSeeOther)
 
 	return nil
 }
@@ -352,7 +353,7 @@ func (env *Env) DeleteTokenHandler(w http.ResponseWriter, r *http.Request) *help
 	http.SetCookie(w, &ctoken)
 	http.SetCookie(w, &cemail)
 
-	http.Redirect(w, r, "/login", 301)
+	http.Redirect(w, r, global.ProxyPath+"/login", 301)
 
 	return nil
 }

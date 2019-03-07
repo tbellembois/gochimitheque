@@ -51,6 +51,8 @@ var LOCALES_EN = []byte(`
 	'''
 [resetpassword_mailsubject2]
 	one = "Chimithèque password reset link\r\n"
+[resetpassword_done]
+	one = "A new temporary password has been sent to %s"
 
 [logo_information1]
 	one = "Chimithèque logo designed by "
