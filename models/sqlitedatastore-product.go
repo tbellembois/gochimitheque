@@ -852,6 +852,23 @@ func (db *SQLiteDataStore) GetProductsPhysicalStates(p helpers.Dbselectparam) ([
 		return nil, 0, err
 	}
 
+	// setting the C attribute for physical states matching exactly the search
+	s := p.GetSearch()
+	s = strings.TrimPrefix(s, "%")
+	s = strings.TrimSuffix(s, "%")
+	var ps PhysicalState
+
+	r := db.QueryRowx(`SELECT physicalstate_id, physicalstate_label FROM physicalstate WHERE physicalstate_label == ?`, s)
+	if err = r.StructScan(&ps); err != nil && err != sql.ErrNoRows {
+		return nil, 0, err
+	} else {
+		for i, e := range physicalstates {
+			if e.PhysicalStateID == ps.PhysicalStateID {
+				physicalstates[i].C = 1
+			}
+		}
+	}
+
 	log.WithFields(log.Fields{"physicalstates": physicalstates}).Debug("GetProductsPhysicalStates")
 	return physicalstates, count, nil
 }
@@ -1404,7 +1421,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 			return err, 0
 		}
 		// updating the product CeNumberID (CeNumberLabel already set)
-		p.CeNumber.CeNumberID = sql.NullInt64{Int64: lastid}
+		p.CeNumber.CeNumberID = sql.NullInt64{Valid: true, Int64: lastid}
 	}
 	if err != nil {
 		log.Error("cenumber error - " + err.Error())
@@ -1469,7 +1486,22 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 			return err, 0
 		}
 		// updating the product LinearFormulaID (LinearFormulaLabel already set)
-		p.LinearFormula.LinearFormulaID = sql.NullInt64{Int64: lastid}
+		p.LinearFormula.LinearFormulaID = sql.NullInt64{Valid: true, Int64: lastid}
+	}
+	// if PhysicalStateID = -1 then it is a new physical state
+	if v, err := p.PhysicalState.PhysicalStateID.Value(); p.PhysicalState.PhysicalStateID.Valid && err == nil && v.(int64) == -1 {
+		sqlr = `INSERT INTO physicalstate (physicalstate_label) VALUES (?)`
+		if res, err = tx.Exec(sqlr, p.PhysicalStateLabel); err != nil {
+			tx.Rollback()
+			return err, 0
+		}
+		// getting the last inserted id
+		if lastid, err = res.LastInsertId(); err != nil {
+			tx.Rollback()
+			return err, 0
+		}
+		// updating the product PhysicalStateID (PhysicalStateLabel already set)
+		p.PhysicalState.PhysicalStateID = sql.NullInt64{Valid: true, Int64: lastid}
 	}
 	// if ClassOfCompoundID = -1 then it is a new class of compound
 	if v, err := p.ClassOfCompound.ClassOfCompoundID.Value(); p.ClassOfCompound.ClassOfCompoundID.Valid && err == nil && v.(int64) == -1 {
@@ -1484,7 +1516,22 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 			return err, 0
 		}
 		// updating the product ClassOfCompoundID (ClassOfCompoundLabel already set)
-		p.ClassOfCompound.ClassOfCompoundID = sql.NullInt64{Int64: lastid}
+		p.ClassOfCompound.ClassOfCompoundID = sql.NullInt64{Valid: true, Int64: lastid}
+	}
+	// if PhysicalStateID = -1 then it is a new physical state
+	if v, err := p.PhysicalState.PhysicalStateID.Value(); p.PhysicalState.PhysicalStateID.Valid && err == nil && v.(int64) == -1 {
+		sqlr = `INSERT INTO physicalstate (physicalstate_label) VALUES (?)`
+		if res, err = tx.Exec(sqlr, p.PhysicalStateLabel); err != nil {
+			tx.Rollback()
+			return err, 0
+		}
+		// getting the last inserted id
+		if lastid, err = res.LastInsertId(); err != nil {
+			tx.Rollback()
+			return err, 0
+		}
+		// updating the product ClassOfCompoundID (ClassOfCompoundLabel already set)
+		p.PhysicalState.PhysicalStateID = sql.NullInt64{Valid: true, Int64: lastid}
 	}
 	if err != nil {
 		log.Error("classofcompound error - " + err.Error())
@@ -1560,6 +1607,8 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 		tx.Rollback()
 		return err, 0
 	}
+
+	log.Debug(ibuilder.ToSql())
 
 	if res, err = tx.Exec(sqlr, sqla...); err != nil {
 		log.Error("product error - " + err.Error())
@@ -1665,7 +1714,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 			return err
 		}
 		// updating the product CeNumberID (CeNumberLabel already set)
-		p.CeNumber.CeNumberID = sql.NullInt64{Int64: lastid}
+		p.CeNumber.CeNumberID = sql.NullInt64{Valid: true, Int64: lastid}
 	}
 	if err != nil {
 		log.Error("cenumber error - " + err.Error())
@@ -1730,7 +1779,22 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 			return err
 		}
 		// updating the product LinearFormulaID (LinearFormulaLabel already set)
-		p.LinearFormula.LinearFormulaID = sql.NullInt64{Int64: lastid}
+		p.LinearFormula.LinearFormulaID = sql.NullInt64{Valid: true, Int64: lastid}
+	}
+	// if PhysicalStateID = -1 then it is a new physical state
+	if v, err := p.PhysicalState.PhysicalStateID.Value(); p.PhysicalState.PhysicalStateID.Valid && err == nil && v.(int64) == -1 {
+		sqlr = `INSERT INTO physicalstate (physicalstate_label) VALUES (?)`
+		if res, err = tx.Exec(sqlr, p.PhysicalStateLabel); err != nil {
+			tx.Rollback()
+			return err
+		}
+		// getting the last inserted id
+		if lastid, err = res.LastInsertId(); err != nil {
+			tx.Rollback()
+			return err
+		}
+		// updating the product ClassOfCompoundID (ClassOfCompoundLabel already set)
+		p.PhysicalState.PhysicalStateID = sql.NullInt64{Valid: true, Int64: lastid}
 	}
 	// if ClassOfCompoundID = -1 then it is a new class of compound
 	if v, err := p.ClassOfCompound.ClassOfCompoundID.Value(); p.ClassOfCompound.ClassOfCompoundID.Valid && err == nil && v.(int64) == -1 {
@@ -1745,7 +1809,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 			return err
 		}
 		// updating the product ClassOfCompoundID (ClassOfCompoundLabel already set)
-		p.ClassOfCompound.ClassOfCompoundID = sql.NullInt64{Int64: lastid}
+		p.ClassOfCompound.ClassOfCompoundID = sql.NullInt64{Valid: true, Int64: lastid}
 	}
 	if err != nil {
 		log.Error("classofcompound error - " + err.Error())

@@ -51,6 +51,8 @@ var LOCALES_FR = []byte(`
 	'''
 [resetpassword_mailsubject2]
 	one = "Chimithèque lien de réinitialisation de mot de passe\r\n"
+[resetpassword_done]
+	one = "Un nouveau mot de passe temporaire a été envoyé à %s"
 
 [logo_information1]
 	one = "Logo Chimithèque réalisé par "
