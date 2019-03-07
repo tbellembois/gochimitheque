@@ -412,10 +412,6 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 		return nil, 0, err
 	}
 
-	log.Debug(presreq.String() + comreq.String() + postsreq.String())
-	log.Debug(m)
-	log.Debug(p.GetLoggedPersonID())
-
 	return storages, count, nil
 }
 
@@ -609,7 +605,7 @@ func (db *SQLiteDataStore) CreateStorage(s Storage) (error, int) {
 			return err, 0
 		}
 		// updating the storage SupplierId (SupplierLabel already set)
-		s.Supplier.SupplierID = sql.NullInt64{Valid:true, Int64: lastid}
+		s.Supplier.SupplierID = sql.NullInt64{Valid: true, Int64: lastid}
 	}
 	if err != nil {
 		log.Error("supplier error - " + err.Error())
@@ -790,7 +786,7 @@ func (db *SQLiteDataStore) UpdateStorage(s Storage) error {
 			return err
 		}
 		// updating the storage SupplierId (SupplierLabel already set)
-		s.Supplier.SupplierID = sql.NullInt64{Valid:true, Int64: lastid}
+		s.Supplier.SupplierID = sql.NullInt64{Valid: true, Int64: lastid}
 	}
 	if err != nil {
 		log.Error("supplier error - " + err.Error())

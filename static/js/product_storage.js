@@ -81,9 +81,10 @@ $('#table').on('load-success.bs.table refresh.bs.table', function () {
         // hiding the storage<>product view switch
         $(".toggleable").hide();
         
-        hasPermission("storages", "-2", "POST").done(function(){
+        // we should put "POST" here but this lead to a 405 error
+        hasPermission("storages", "-2", "PUT").done(function(){
             // adding a create storage button for the product
-            b = $("<button>").addClass("store btn btn-primary btn-sm").attr("title", "store this product").attr("type", "button");
+            b = $("<button>").addClass("store btn btn-link btn-sm").attr("title", "store this product").attr("type", "button");
             b.attr("onclick", "window.location.href = '" + proxyPath + "vc/storages?product=" + p + "'");
             i = $("<span>").addClass("mdi mdi-24px mdi-forklift");
             b.append(i);

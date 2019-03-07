@@ -154,7 +154,7 @@ var LOCALES_FR = []byte(`
 [signalword_label_title]
 	one = "mention d'avertissement"
 [linearformula_label_title]
-	one = "formule brute"
+	one = "formule linéaire"
 [hazardstatement_label_title]
 	one = "mention(s) de danger H-EUH"
 [precautionarystatement_label_title]
