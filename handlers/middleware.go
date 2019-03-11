@@ -180,6 +180,9 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			item = "storages"
 			id = "-2"
 		}
+		if item == "storelocations" {
+			item = "storages"
+		}
 		if item == "storages" {
 			// storages access are global per entity
 			id = "-2"
