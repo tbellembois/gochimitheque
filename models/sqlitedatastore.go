@@ -1785,14 +1785,19 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		person := line[2]
 		store_location := line[3]
 		unit := line[4]
+		entrydate := line[6]
+		exitdate := line[7]
 		comment := line[8]
 		barecode := line[9]
 		reference := line[10]
 		batch_number := line[11]
 		supplier := line[12]
 		archive := line[13]
+		creationdate := line[15]
 		volume_weight := line[16]
+		openingdate := line[17]
 		to_destroy := line[18]
+		expirationdate := line[19]
 
 		newproduct := mONproduct[product]
 		newperson := mONperson[person]
@@ -1801,6 +1806,16 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		}
 		newstore_location := mONstorelocation[store_location]
 		newunit := mONunit[unit]
+		var newentrydate *time.Time
+		if entrydate != "" {
+			newentrydate = &time.Time{}
+			*newentrydate, _ = time.Parse("2006-01-02 15:04:05", entrydate)
+		}
+		var newexitdate *time.Time
+		if exitdate != "" {
+			newexitdate = &time.Time{}
+			*newexitdate, _ = time.Parse("2006-01-02 15:04:05", exitdate)
+		}
 		newcomment := comment
 		newbarecode := barecode
 		newreference := reference
@@ -1810,15 +1825,28 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		if archive == "T" {
 			newarchive = true
 		}
+		newstorage_creationdate := time.Now()
+		if creationdate != "" {
+			newstorage_creationdate, _ = time.Parse("2006-01-02 15:04:05", creationdate)
+		}
 		newvolume_weight := volume_weight
 		if newvolume_weight == "" {
 			newvolume_weight = "1"
+		}
+		var newopeningdate *time.Time
+		if openingdate != "" {
+			newopeningdate = &time.Time{}
+			*newopeningdate, _ = time.Parse("2006-01-02 15:04:05", openingdate)
 		}
 		newto_destroy := false
 		if to_destroy == "T" {
 			newto_destroy = true
 		}
-		newstorage_creationdate := time.Now()
+		var newexpirationdate *time.Time
+		if expirationdate != "" {
+			newexpirationdate = &time.Time{}
+			*newexpirationdate, _ = time.Parse("2006-01-02 15:04:05", expirationdate)
+		}
 
 		log.Debug("oldid: " + oldid)
 		// do not import archived cards
@@ -1857,6 +1885,26 @@ func (db *SQLiteDataStore) Import(dir string) error {
 				sqlr += ",supplier"
 				reqValues += ",?"
 				reqArgs = append(reqArgs, newsupplier)
+			}
+			if newentrydate != nil {
+				sqlr += ",storage_entrydate"
+				reqValues += ",?"
+				reqArgs = append(reqArgs, newentrydate)
+			}
+			if newexitdate != nil {
+				sqlr += ",storage_exitdate"
+				reqValues += ",?"
+				reqArgs = append(reqArgs, newexitdate)
+			}
+			if newopeningdate != nil {
+				sqlr += ",storage_openingdate"
+				reqValues += ",?"
+				reqArgs = append(reqArgs, newopeningdate)
+			}
+			if newexpirationdate != nil {
+				sqlr += ",storage_expirationdate"
+				reqValues += ",?"
+				reqArgs = append(reqArgs, newexpirationdate)
 			}
 
 			sqlr += `) VALUES (` + reqValues + `)`
