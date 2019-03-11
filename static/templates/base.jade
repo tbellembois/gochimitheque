@@ -64,7 +64,7 @@ html
                                     if HasPermission .PersonID "all" "all" -1
                                         a(href="{{.ProxyPath}}vc/entities", title="create").dropdown-item create
 
-                        if HasPermission .PersonID "r" "storelocations" -2
+                        if HasPermission .PersonID "r" "storages" -2
                             li.nav-item.dropdown
                                 a(href="#", title="manage storelocations").nav-link.dropdown-toggle#navbarDropdown(
                                     role="button" 
@@ -75,7 +75,7 @@ html
                                         | {{ T "menu_storelocation" 1 }}
                                 div.dropdown-menu(aria-labelledby="navbarDropdown")
                                     a(href="{{.ProxyPath}}v/storelocations", title="list").dropdown-item list
-                                    if HasPermission .PersonID "w" "storelocations" -2
+                                    if HasPermission .PersonID "all" "all" -2
                                         a(href="{{.ProxyPath}}vc/storelocations", title="create").dropdown-item create
 
                         if HasPermission .PersonID "r" "people" -2

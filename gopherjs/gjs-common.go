@@ -13,10 +13,10 @@ var (
 	document dom.Document
 
 	// permissions
-	permitems = [4]string{
+	permitems = [3]string{
 		"rproducts",
 		"products",
-		"storelocations",
+		//"storelocations",
 		"storages"}
 )
 
@@ -180,32 +180,32 @@ func PopulatePermissionWidget(params []*js.Object) {
 					}
 				}
 			}
-		case "storelocations":
-			switch ppermname {
-			case "w", "all":
-				if pentityid == "-1" {
-					for _, e := range document.GetElementsByClassName("permwstorelocations") {
-						e.(*dom.HTMLInputElement).Checked = true
-					}
-				} else {
-					document.GetElementByID("permw" + pitemname + pentityid).(*dom.HTMLInputElement).Checked = true
-				}
-			case "r":
-				if pentityid == "-1" {
-					for _, e := range document.GetElementsByClassName("permrstorelocations") {
-						// avoid selecting r if w is already selected
-						eid := e.GetAttribute("entity_id")
-						if !document.GetElementByID("permw" + pitemname + eid).(*dom.HTMLInputElement).Checked {
-							e.(*dom.HTMLInputElement).Checked = true
-						}
-					}
-				} else {
-					// avoid selecting r if w is already selected
-					if document.GetElementByID("permw"+pitemname+pentityid).(*dom.HTMLInputElement).Checked == false {
-						document.GetElementByID("permr" + pitemname + pentityid).(*dom.HTMLInputElement).Checked = true
-					}
-				}
-			}
+		// case "storelocations":
+		// 	switch ppermname {
+		// 	case "w", "all":
+		// 		if pentityid == "-1" {
+		// 			for _, e := range document.GetElementsByClassName("permwstorelocations") {
+		// 				e.(*dom.HTMLInputElement).Checked = true
+		// 			}
+		// 		} else {
+		// 			document.GetElementByID("permw" + pitemname + pentityid).(*dom.HTMLInputElement).Checked = true
+		// 		}
+		// 	case "r":
+		// 		if pentityid == "-1" {
+		// 			for _, e := range document.GetElementsByClassName("permrstorelocations") {
+		// 				// avoid selecting r if w is already selected
+		// 				eid := e.GetAttribute("entity_id")
+		// 				if !document.GetElementByID("permw" + pitemname + eid).(*dom.HTMLInputElement).Checked {
+		// 					e.(*dom.HTMLInputElement).Checked = true
+		// 				}
+		// 			}
+		// 		} else {
+		// 			// avoid selecting r if w is already selected
+		// 			if document.GetElementByID("permw"+pitemname+pentityid).(*dom.HTMLInputElement).Checked == false {
+		// 				document.GetElementByID("permr" + pitemname + pentityid).(*dom.HTMLInputElement).Checked = true
+		// 			}
+		// 		}
+		// 	}
 		case "all":
 			switch ppermname {
 			case "w", "all":
