@@ -258,7 +258,6 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			case "storelocations":
 				// TODO: we can not delete a non empty store location
 			case "products":
-				// TODO: we can not delete a stored product
 				c, e := env.DB.CountProductStorages(itemid)
 				if e != nil {
 					http.Error(w, e.Error(), http.StatusInternalServerError)
@@ -269,7 +268,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 					return
 				}
 			case "entities":
-				// we can not delete a non empty entity
+				// TODO: can not delete an entity the connected user is a manager
 				if r.Method == "DELETE" {
 					m, e := env.DB.IsEntityEmpty(itemid)
 					if e != nil {

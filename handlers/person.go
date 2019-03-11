@@ -2,9 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/tbellembois/gochimitheque/utils"
 	"net/http"
 	"strconv"
+
+	"github.com/tbellembois/gochimitheque/utils"
 
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
@@ -236,7 +237,9 @@ func (env *Env) CreatePersonHandler(w http.ResponseWriter, r *http.Request) *hel
 	}
 	log.WithFields(log.Fields{"p": p}).Debug("CreatePersonHandler")
 
-	// TODO
+	// generating a random password
+	// the user will have to get a new password
+	// from the login page
 	p.PersonPassword = utils.RandStringBytes(64)
 
 	if err, _ := env.DB.CreatePerson(p); err != nil {
