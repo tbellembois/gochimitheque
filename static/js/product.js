@@ -97,7 +97,7 @@ function detailFormatter(index, row) {
         html.push("<div class='col-sm-6'>")
             html.push("<span class='iconlabel'>" + global.t("casnumber_label_title", container.PersonLanguage) + "</span> " + row["casnumber"]["casnumber_label"])
             if (row["casnumber"]["casnumber_cmr"]["Valid"]) {
-                html.push("<span class='iconlabel'>" + global.t("casnumber_cmr_title", container.PersonLanguage) + "</span> " + row["casnumber"]["casnumber_cmr"])
+                html.push("<span class='iconlabel'>" + global.t("casnumber_cmr_title", container.PersonLanguage) + "</span> " + row["casnumber"]["casnumber_cmr"]["String"])
             }
         html.push("</div>")
         if (row["cenumber"]["cenumber_id"]["Valid"]) {
