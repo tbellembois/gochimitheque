@@ -150,6 +150,13 @@
                                 th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') 
 
         #edit-collapse.collapse(data-parent='#accordion')
+
+            +titleicon(icon="forklift" label="update storage")
+
+            .row
+                .d-flex.justify-content-center
+                    #filter-product
+
             form#storage
                 input#index(type='hidden', name='index', value='')
                 input#storage_id(type='hidden', name='storage_id', value='')

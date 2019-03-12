@@ -20,6 +20,9 @@
                                 th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') actions
 
         #edit-collapse.collapse(data-parent='#accordion')
+
+            +titleicon(icon="store" label="update entity")
+
             form#entity
                 input#index(type='hidden', name='index', value='')
                 input#entity_id(type='hidden', name='entity_id', value='')
@@ -37,7 +40,7 @@
             button#save.btn.btn-link(type='button', onclick='saveEntity()')
                 span.mdi.mdi-content-save.mdi-24px.iconlabel
                     | {{ T "save" 1 }}
-            button.btn.btn-secondary(type='button', onclick='closeViewEdit();')
+            button.btn.btn-link(type='button', onclick='closeViewEdit();')
                 span.mdi.mdi-close-box.mdi-24px.iconlabel
                     | {{ T "close" 1 }}
 

@@ -23,6 +23,9 @@
                                 th(data-field='operate' data-formatter='operateFormatter' data-events='operateEvents') actions
 
         #edit-collapse.collapse(data-parent='#accordion')
+
+            +titleicon(icon="docker" label="update store location")
+
             form#storelocation
                 input#index(type='hidden', name='index', value='')
                 input#storelocation_id(type='hidden', name='storelocation_id', value='')
