@@ -1992,36 +1992,36 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		return err
 	}
 
-	// beginning new transaction
-	if tx, err = db.Beginx(); err != nil {
-		return err
-	}
+	// // beginning new transaction
+	// if tx, err = db.Beginx(); err != nil {
+	// 	return err
+	// }
 
-	//TODO: remove before prod
-	log.Info("- cleaning storages for demo")
-	sqlr = `DELETE FROM storage WHERE storage.storelocation NOT in (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-	if res, err = tx.Exec(sqlr,
-		mONstorelocation["221941"],
-		mONstorelocation["221947"],
-		mONstorelocation["221950"],
-		mONstorelocation["221949"],
-		mONstorelocation["221951"],
-		mONstorelocation["221959"],
-		mONstorelocation["221953"],
-		mONstorelocation["221940"],
-		mONstorelocation["221666"],
-		mONstorelocation["221667"],
-		mONstorelocation["221668"],
-		mONstorelocation["13"],
-		mONstorelocation["15"]); err != nil {
-		log.Error(err)
-	}
+	// //TODO: remove before prod
+	// log.Info("- cleaning storages for demo")
+	// sqlr = `DELETE FROM storage WHERE storage.storelocation NOT in (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	// if res, err = tx.Exec(sqlr,
+	// 	mONstorelocation["221941"],
+	// 	mONstorelocation["221947"],
+	// 	mONstorelocation["221950"],
+	// 	mONstorelocation["221949"],
+	// 	mONstorelocation["221951"],
+	// 	mONstorelocation["221959"],
+	// 	mONstorelocation["221953"],
+	// 	mONstorelocation["221940"],
+	// 	mONstorelocation["221666"],
+	// 	mONstorelocation["221667"],
+	// 	mONstorelocation["221668"],
+	// 	mONstorelocation["13"],
+	// 	mONstorelocation["15"]); err != nil {
+	// 	log.Error(err)
+	// }
 
-	// committing changes
-	if err = tx.Commit(); err != nil {
-		tx.Rollback()
-		return err
-	}
+	// // committing changes
+	// if err = tx.Commit(); err != nil {
+	// 	tx.Rollback()
+	// 	return err
+	// }
 
 	return nil
 }
