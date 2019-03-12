@@ -262,7 +262,8 @@ func BuildPermissionWidget(entityID int, entityName string, ismanager bool) *dom
 	widgetdiv = document.CreateElement("div").(*dom.HTMLDivElement)
 	widgetdiv.SetID(fmt.Sprintf("perm%d", entityID))
 	widgetdiv.SetClass("col-sm-12")
-	title := document.CreateElement("label").(*dom.HTMLLabelElement)
+	title := document.CreateElement("div").(*dom.HTMLDivElement)
+	title.SetClass("d-flex justify-content-center")
 	title.SetInnerHTML("<span class='mdi mdi-store mdi-24px'/>" + entityName)
 
 	widgetdiv.AppendChild(title)
@@ -285,7 +286,7 @@ func BuildPermissionWidget(entityID int, entityName string, ismanager bool) *dom
 			//println(i)
 			// building main row
 			mainrowdiv := document.CreateElement("div").(*dom.HTMLDivElement)
-			mainrowdiv.SetClass("form-group row")
+			mainrowdiv.SetClass("form-group row d-flex justify-content-center")
 			// building first col for table name
 			label := document.CreateElement("div").(*dom.HTMLDivElement)
 			label.SetClass("iconlabel")

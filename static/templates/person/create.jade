@@ -1,5 +1,5 @@
 | {{define "CONTENT"}}
-    +titleicon(icon="account-group")
+    +titleicon(icon="account-group" label="create user")
 
     form#person
         .row
@@ -9,8 +9,9 @@
             .col-sm-6
                 | {{$label := "entity(ies)"}} {{$name := "entities"}}
                 +selectmultiple
-        hr
-        .form-group.row#permissionsproducts
+        
+        span permissions
+        .d-flex.justify-content-center.form-group.row#permissionsproducts
                 .col-sm-2
                     .iconlabel products
                 .col-sm-2
@@ -21,9 +22,9 @@
                         input.perm.permr.permrproducts#permrproducts-1(name="permproducts-1" value="none" label="r" perm_name="r" item_name="products" entity_id="-1" type="radio" checked="checked")
                         label.form-check-label(for="permrproducts-1") r
                     .form-check.form-check-inline
-                        input.perm.permw.permwproducts#permwproducts-1(name="permproducts-1" value="none" label="w" perm_name="w" item_name="products" entity_id="-1" type="radio")
-                        label.form-check-label(for="permwproducts-1") w
-        .form-group.row#permissionsrproducts
+                        input.perm.permw.permwproducts#permwproducts-1(name="permproducts-1" value="none" label="rw" perm_name="w" item_name="products" entity_id="-1" type="radio")
+                        label.form-check-label(for="permwproducts-1") rw
+        .d-flex.justify-content-center.form-group.row#permissionsrproducts
                 .col-sm-2
                     .iconlabel restricted products
                 .col-sm-2
@@ -34,9 +35,9 @@
                         input.perm.permr.permrrproducts#permrrproducts-1(name="permrproducts-1" value="none" label="r" perm_name="r" item_name="rproducts" entity_id="-1" type="radio")
                         label.form-check-label(for="permrrproducts-1") r
                     .form-check.form-check-inline
-                        input.perm.permw.permwrproducts#permwrproducts-1(name="permrproducts-1" value="none" label="w" perm_name="w" item_name="rproducts" entity_id="-1" type="radio")
-                        label.form-check-label(for="permwrproducts-1") w    
-        .form-group.row#permissions
+                        input.perm.permw.permwrproducts#permwrproducts-1(name="permrproducts-1" value="none" label="rw" perm_name="w" item_name="rproducts" entity_id="-1" type="radio")
+                        label.form-check-label(for="permwrproducts-1") rw    
+        #permissions
 
     button.btn.btn-link(type='button', onclick='savePerson()')
         span.mdi.mdi-content-save.mdi-24px.iconlabel
