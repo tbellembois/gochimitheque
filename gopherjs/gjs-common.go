@@ -289,10 +289,10 @@ func BuildPermissionWidget(entityID int, entityName string, ismanager bool) *dom
 			mainrowdiv.SetClass("form-group row d-flex justify-content-center")
 			// building first col for table name
 			label := document.CreateElement("div").(*dom.HTMLDivElement)
-			label.SetClass("iconlabel")
+			label.SetClass("iconlabel text-right")
 			label.SetInnerHTML(i)
 			firstcoldiv := document.CreateElement("div").(*dom.HTMLDivElement)
-			firstcoldiv.SetClass("col-sm-2")
+			firstcoldiv.SetClass("col-sm-6")
 			firstcoldiv.AppendChild(label)
 			// building second col for radios
 			noneradioattrs := map[string]string{
@@ -300,7 +300,7 @@ func BuildPermissionWidget(entityID int, entityName string, ismanager bool) *dom
 				"name":      fmt.Sprintf("perm%s%d", i, entityID),
 				"value":     "none",
 				"checked":   "checked",
-				"label":     "_",
+				"label":     fmt.Sprintf("<label class=\"form-check-label ml-sm-1 pr-sm-1 pl-sm-1 text-secondary border border-secondary rounded\" for=\"permn%s%d\"><span class=\"mdi mdi-close\"></span></label>", i, entityID),
 				"perm_name": "n",
 				"item_name": fmt.Sprintf("%s", i),
 				"entity_id": fmt.Sprintf("%d", entityID),
@@ -309,7 +309,7 @@ func BuildPermissionWidget(entityID int, entityName string, ismanager bool) *dom
 				"id":        fmt.Sprintf("permr%s%d", i, entityID),
 				"name":      fmt.Sprintf("perm%s%d", i, entityID),
 				"value":     "r",
-				"label":     "r",
+				"label":     fmt.Sprintf("<label class=\"form-check-label ml-sm-1 pr-sm-1 pl-sm-1 text-secondary border border-secondary rounded\" for=\"permn%s%d\"><span class=\"mdi mdi-eye\"></span></label>", i, entityID),
 				"perm_name": "r",
 				"item_name": fmt.Sprintf("%s", i),
 				"entity_id": fmt.Sprintf("%d", entityID),
@@ -318,13 +318,13 @@ func BuildPermissionWidget(entityID int, entityName string, ismanager bool) *dom
 				"id":        fmt.Sprintf("permw%s%d", i, entityID),
 				"name":      fmt.Sprintf("perm%s%d", i, entityID),
 				"value":     "w",
-				"label":     "rw",
+				"label":     fmt.Sprintf("<label class=\"form-check-label ml-sm-1 pr-sm-1 pl-sm-1 text-secondary border border-secondary rounded\" for=\"permn%s%d\"><span class=\"mdi mdi-eye\"></span><span class=\"mdi mdi-creation\"></span><span class=\"mdi mdi-border-color\"></span><span class=\"mdi mdi-delete\"></span></label>", i, entityID),
 				"perm_name": "w",
 				"item_name": fmt.Sprintf("%s", i),
 				"entity_id": fmt.Sprintf("%d", entityID),
 				"class":     fmt.Sprintf("perm permw permw%s", i)}
 			secondcoldiv := document.CreateElement("div").(*dom.HTMLDivElement)
-			secondcoldiv.SetClass("col-sm-2")
+			secondcoldiv.SetClass("col-sm-6")
 			secondcoldiv.AppendChild(BuildInlineRadioElement(noneradioattrs))
 			secondcoldiv.AppendChild(BuildInlineRadioElement(readradioattrs))
 			secondcoldiv.AppendChild(BuildInlineRadioElement(writeradioattrs))

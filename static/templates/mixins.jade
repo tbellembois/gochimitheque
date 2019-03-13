@@ -5,8 +5,14 @@ mixin title
             h5.card-title.text-light {{$label}}
 
 mixin titleicon
-    .d-flex.justify-content-center.mt-sm-2.mb-sm-2
-        span(class='mdi-{{$icon}} mdi mdi-48px iconlabel') &nbsp;{{$label}}
+    .mt-sm-2.mb-sm-2
+        .row
+            .col.d-flex.justify-content-center
+                span(class='mdi-{{$iconitem}} mdi mdi-48px')
+        .row
+            .col.d-flex.justify-content-center
+                span(class='mdi-{{$iconaction}} mdi mdi-18px')
+                span.iconlabel {{$label}}
 
 mixin inlineradio
     .custom-control.custom-radio.custom-control-inline

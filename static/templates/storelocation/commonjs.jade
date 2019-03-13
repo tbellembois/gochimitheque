@@ -113,7 +113,7 @@ script.
     //
     var createCallBack = function createCallback(data, textStatus, jqXHR) {
         global.displayMessage("store location " + data.storelocation_name.String + " created", "success");
-        setTimeout(function(){ window.location = "/v/storelocations"; }, 1000);
+        setTimeout(function(){ window.location = proxyPath + "/v/storelocations"; }, 1000);
     }
     var updateCallBack = function updateCallback(data, textStatus, jqXHR) {
         $('#list-collapse').collapse('show');
