@@ -54,6 +54,19 @@ var LOCALES_EN = []byte(`
 [resetpassword_done]
 	one = "A new temporary password has been sent to %s"
 
+[createperson_mailsubject]
+	one = "Chimithèque new account\r\n"
+[createperson_mailbody]
+	one = '''
+	A Chimithèque account has been created for you.
+
+	You can now initialize your password.
+
+	Go to the login page %s, enter you email address %s and click on the "reset password" link.
+
+	You will then receive a temporary password.
+	'''
+
 [logo_information1]
 	one = "Chimithèque logo designed by "
 [logo_information2]

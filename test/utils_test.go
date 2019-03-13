@@ -7,7 +7,7 @@ import (
 )
 
 func TestIsCasNumber(t *testing.T) {
-	c := "7732-18-5"
+	c := "1825-62-3"
 	if !utils.IsCasNumber(c) {
 		t.Errorf("%s is not a valid cas number", c)
 	}

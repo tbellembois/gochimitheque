@@ -121,7 +121,7 @@ script.
         //
         var createCallBack = function createCallback(data, textStatus, jqXHR) {
             global.displayMessage("person " + data.person_email + " created", "success");
-            setTimeout(function(){ window.location = proxyPath + "/v/people"; }, 1000);
+            setTimeout(function(){ window.location = proxyPath + "v/people"; }, 1000);
         }
         var updateCallBack = function updateCallback(data, textStatus, jqXHR) {
             $('#list-collapse').collapse('show');
@@ -151,7 +151,7 @@ script.
                 data: {"person_password": person_password},
             }).done(function(jqXHR, textStatus, errorThrown) {
                 global.displayMessage("password updated", "success");
-                setTimeout(function(){ window.location = proxyPath + "/v/products"; }, 1000);            
+                setTimeout(function(){ window.location = proxyPath + "v/products"; }, 1000);            
             }).fail(function(jqXHR, textStatus, errorThrown) {
                 handleHTTPError(jqXHR.statusText, jqXHR.status)
             });
