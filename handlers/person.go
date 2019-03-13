@@ -379,6 +379,12 @@ func (env *Env) DeletePersonHandler(w http.ResponseWriter, r *http.Request) *hel
 			Code:    http.StatusInternalServerError}
 	}
 
-	env.DB.DeletePerson(id)
+	if err := env.DB.DeletePerson(id); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "delete person error",
+			Code:    http.StatusInternalServerError}
+	}
+
 	return nil
 }

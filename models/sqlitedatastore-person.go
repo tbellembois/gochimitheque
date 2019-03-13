@@ -435,15 +435,35 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 // DeletePerson deletes the person with id "id"
 func (db *SQLiteDataStore) DeletePerson(id int) error {
 	var (
-		sqlr string
-		err  error
+		sqlr  string
+		err   error
+		admin Person
 	)
+	// getting the admin
+	if admin, err = db.GetPersonByEmail("user@super.com"); err != nil {
+		return err
+	}
+
+	// updating storage ownership to admin
+	sqlr = `UPDATE storage SET person = ? WHERE person = ?`
+	if _, err = db.Exec(sqlr, admin.PersonID, id); err != nil {
+		return err
+	}
+
+	// updating product ownership to admin
+	sqlr = `UPDATE product SET person = ? WHERE person = ?`
+	if _, err = db.Exec(sqlr, admin.PersonID, id); err != nil {
+		return err
+	}
+
 	sqlr = `DELETE FROM personentities 
 	WHERE personentities_person_id = ?`
 	if _, err = db.Exec(sqlr, id); err != nil {
 		return err
 	}
 
+	// remove manager
+	// normally not used as we can not delete a manager
 	sqlr = `DELETE FROM entitypeople 
 	WHERE entitypeople_person_id = ?`
 	if _, err = db.Exec(sqlr, id); err != nil {
@@ -452,6 +472,12 @@ func (db *SQLiteDataStore) DeletePerson(id int) error {
 
 	sqlr = `DELETE FROM permission 
 	WHERE person = ?`
+	if _, err = db.Exec(sqlr, id); err != nil {
+		return err
+	}
+
+	sqlr = `DELETE FROM borrowing 
+	WHERE borrower = ?`
 	if _, err = db.Exec(sqlr, id); err != nil {
 		return err
 	}
