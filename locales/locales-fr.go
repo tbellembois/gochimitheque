@@ -54,6 +54,19 @@ var LOCALES_FR = []byte(`
 [resetpassword_done]
 	one = "Un nouveau mot de passe temporaire a été envoyé à %s"
 
+[createperson_mailsubject]
+	one = "Chimithèque nouveau compte\r\n"
+[createperson_mailbody]
+	one = '''
+	Un compte Chimithèque a été créé pour vous.
+
+	Vous pouvez maintenant initialiser votre mot de passe.
+
+	Rendez vous sur la page de connexion %s, entrez votre adresse mail %s et cliquez sur le lien "réinitialiser mon mot de passe ".
+
+	Vous recevrez ensuite un mot de passe temporaire.
+	'''
+
 [logo_information1]
 	one = "Logo Chimithèque réalisé par "
 [logo_information2]

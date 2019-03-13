@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/tbellembois/gochimitheque/utils"
 
 	"github.com/gorilla/mux"
@@ -221,7 +223,8 @@ func (env *Env) GetPersonPermissionsHandler(w http.ResponseWriter, r *http.Reque
 // CreatePersonHandler creates the person from the request form
 func (env *Env) CreatePersonHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	var (
-		p models.Person
+		p   models.Person
+		err error
 	)
 	if err := r.ParseForm(); err != nil {
 		return &helpers.AppError{
@@ -247,6 +250,17 @@ func (env *Env) CreatePersonHandler(w http.ResponseWriter, r *http.Request) *hel
 			Error:   err,
 			Message: "create person error",
 			Code:    http.StatusInternalServerError}
+	}
+
+	// sending the new mail
+	msgbody := fmt.Sprintf(env.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "createperson_mailbody", PluralCount: 1}), global.ProxyURL+global.ProxyPath+"login", p.PersonEmail)
+	msgsubject := env.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "createperson_mailsubject", PluralCount: 1})
+	if err = sendMail(p.PersonEmail, msgsubject, msgbody); err != nil {
+		return &helpers.AppError{
+			Code:    http.StatusInternalServerError,
+			Error:   err,
+			Message: "error sending the new person mail",
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")

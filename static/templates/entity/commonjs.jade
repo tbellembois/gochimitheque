@@ -69,7 +69,7 @@ script.
         //
         var createCallBack = function createCallback(data, textStatus, jqXHR) {
             global.displayMessage("entity " + data.entity_name + " created", "success");
-            setTimeout(function(){ window.location = proxyPath + "/v/entities"; }, 1000);
+            setTimeout(function(){ window.location = proxyPath + "v/entities"; }, 1000);
         }
         var updateCallBack = function updateCallback(data, textStatus, jqXHR) {
             $('#list-collapse').collapse('show');
