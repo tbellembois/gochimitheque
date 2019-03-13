@@ -1192,6 +1192,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		}
 		id := line[0]
 		label := line[1]
+		label = strings.Replace(label, "@", "_", -1)
 
 		log.Debug("label:" + label)
 		sqlr = `INSERT INTO name(name_id, name_label) VALUES (?, ?)`
