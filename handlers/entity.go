@@ -282,7 +282,13 @@ func (env *Env) DeleteEntityHandler(w http.ResponseWriter, r *http.Request) *hel
 			Message: "id atoi conversion",
 			Code:    http.StatusInternalServerError}
 	}
+	log.WithFields(log.Fields{"id": id}).Debug("DeleteEntityHandler")
 
-	env.DB.DeleteEntity(id)
+	if err := env.DB.DeleteEntity(id); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "delete entity error",
+			Code:    http.StatusInternalServerError}
+	}
 	return nil
 }
