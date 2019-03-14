@@ -716,10 +716,10 @@ func NewdbselectparamProduct(r *http.Request, f func(string) (string, error)) (*
 			}
 		}
 		if storage_barecode, ok := r.URL.Query()["storage_barecode"]; ok {
-			dspp.StorageBarecode = storage_barecode[0]
+			dspp.StorageBarecode = "%" + storage_barecode[0] + "%"
 		}
 		if custom_name_part_of, ok := r.URL.Query()["custom_name_part_of"]; ok {
-			dspp.CustomNamePartOf = custom_name_part_of[0]
+			dspp.CustomNamePartOf = "%" + custom_name_part_of[0] + "%"
 		}
 		if casnumber_cmr, ok := r.URL.Query()["casnumber_cmr"]; ok {
 			if dspp.CasNumberCmr, err = strconv.ParseBool(casnumber_cmr[0]); err != nil {
@@ -906,10 +906,10 @@ func NewdbselectparamStorage(r *http.Request, f func(string) (string, error)) (*
 			}
 		}
 		if storage_barecode, ok := r.URL.Query()["storage_barecode"]; ok {
-			dsps.StorageBarecode = storage_barecode[0]
+			dsps.StorageBarecode = "%" + storage_barecode[0] + "%"
 		}
 		if custom_name_part_of, ok := r.URL.Query()["custom_name_part_of"]; ok {
-			dsps.CustomNamePartOf = custom_name_part_of[0]
+			dsps.CustomNamePartOf = "%" + custom_name_part_of[0] + "%"
 		}
 		if casnumber_cmr, ok := r.URL.Query()["casnumber_cmr"]; ok {
 			if dsps.CasNumberCmr, err = strconv.ParseBool(casnumber_cmr[0]); err != nil {

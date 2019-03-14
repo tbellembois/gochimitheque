@@ -1,6 +1,14 @@
 | {{define "CONTENT"}}
 
     #search.row.pt-sm-4.pb-sm-4.pl-sm-2.pr-sm-2.mt-sm-2.mb-sm-2.ml-sm-5.mr-sm-5.bg-light.border.rounded.collapse.show
+
+        +inputhidden(name="s_entity" value="")
+        +inputhidden(name="s_product" value="")
+        +inputhidden(name="s_history" value="")
+        +inputhidden(name="s_storage" value="")
+        +inputhidden(name="s_storage_archive" value="")
+        +inputhidden(name="s_bookmark" value="")
+
         .col
             .row
                 .col-sm-12
@@ -144,7 +152,7 @@
                                 //th(data-field='storage_id' data-formatter='storage_idFormatter' data-sortable='true') ID
                                 //th(data-field='storage_modificationdate' data-formatter='dateFormatter' data-sortable='true') modification date
                                 th(data-field='storage_quantity' data-formatter='storage_quantityFormatter') quantity
-                                th(data-field='storage_barecode' data-formatter='storage_barecodeFormatter') barecode
+                                th(data-field='storage_barecode' data-formatter='storage_barecodeFormatter' data-sortable='true') barecode
                                 th.th-width-200(data-field='product.name.name_label' data-formatter='storage_productFormatter' data-sortable='true') product
                                 th(data-field='storelocation.storelocation_fullpath' data-sortable='true' data-formatter='storelocation_fullpathFormatter') store location
                                 th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') 
