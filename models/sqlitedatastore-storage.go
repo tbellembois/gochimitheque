@@ -533,8 +533,8 @@ func (db *SQLiteDataStore) GenerateAndUpdateStorageBarecode(s *Storage) error {
 		err      error
 		m        []string
 		png      []byte
-		prefix   string
 		lastbc   string
+		prefix   string
 		major    string
 		minor    string
 		iminor   int
@@ -571,16 +571,16 @@ func (db *SQLiteDataStore) GenerateAndUpdateStorageBarecode(s *Storage) error {
 	// in the same entity
 	sqlr := `SELECT storage_barecode FROM storage 
 	JOIN storelocation on storage.storelocation = storelocation.storelocation_id 
-	WHERE product = ? AND storelocation.entity = ? AND storage_barecode REGEXP '^[a-zA-Z]{0,1}[0-9]+\.[0-9]+$'
+	WHERE product = ? AND storelocation.entity = ? AND regexp('^[a-zA-Z]{0,1}[0-9]+\.[0-9]+$', '' || storage_barecode || '') = true
 	ORDER BY storage_barecode desc 
 	LIMIT 1`
-	if err = db.Get(&lastbc, sqlr, s.ProductID, s.EntityID); err != nil {
+	if err = db.Get(&lastbc, sqlr, s.ProductID, s.EntityID); err != nil && err != sql.ErrNoRows {
 		return err
 	}
 	log.WithFields(log.Fields{"lastbc": lastbc}).Debug("GenerateAndUpdateStorageBarecode")
 
 	// regex to extract the major from a barecode
-	majorr := regexp.MustCompile("^[a-zA-Z]{1}(?P<groupone>[0-9]+)\\.(?P<grouptwo>[0-9]+)$")
+	majorr := regexp.MustCompile("^[a-zA-Z]{0,1}(?P<groupone>[0-9]+)\\.(?P<grouptwo>[0-9]+)$")
 	// finding group names
 	n = majorr.SubexpNames()
 	// finding matches
@@ -600,15 +600,16 @@ func (db *SQLiteDataStore) GenerateAndUpdateStorageBarecode(s *Storage) error {
 		major = strconv.Itoa(s.ProductID)
 		minor = "0"
 	}
+	log.WithFields(log.Fields{"major": major, "minor": minor}).Debug("GenerateAndUpdateStorageBarecode")
 
 	if iminor, err = strconv.Atoi(minor); err != nil {
 		return err
 	}
 	iminor++
 	minor = strconv.Itoa(iminor)
-	log.WithFields(log.Fields{"major": major, "minor": minor}).Debug("GenerateAndUpdateStorageBarecode")
-
 	barecode = prefix + major + "." + minor
+	log.WithFields(log.Fields{"barecode": barecode}).Debug("GenerateAndUpdateStorageBarecode")
+
 	// sqlr := `UPDATE storage
 	// SET storage_barecode = '` + prefix + `' || storage.product || '.' || (select count(*) from storage join storelocation on storage.storelocation = storelocation.storelocation_id join entity on storelocation.entity = entity.entity_id where storage.product = ? and entity_id = ?)
 	// WHERE storage_id = ?`
