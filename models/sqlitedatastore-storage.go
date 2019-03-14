@@ -331,7 +331,7 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 		comreq.WriteString(" AND empiricalformula.empiricalformula_id = :empiricalformula")
 	}
 	if p.GetStorageBarecode() != "" {
-		comreq.WriteString(" AND s.storage_barecode = :storage_barecode")
+		comreq.WriteString(" AND s.storage_barecode LIKE :storage_barecode")
 	}
 	if p.GetCustomNamePartOf() != "" {
 		comreq.WriteString(" AND name.name_label LIKE :custom_name_part_of")

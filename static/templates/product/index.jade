@@ -1,6 +1,14 @@
 | {{define "CONTENT"}}
 
     #search.row.pt-sm-4.pb-sm-4.pl-sm-2.pr-sm-2.mt-sm-2.mb-sm-2.ml-sm-5.mr-sm-5.bg-light.border.rounded.collapse.show
+
+        +inputhidden(name="s_entity" value="")
+        +inputhidden(name="s_product" value="")
+        +inputhidden(name="s_history" value="")
+        +inputhidden(name="s_storage" value="")
+        +inputhidden(name="s_storage_archive" value="")
+        +inputhidden(name="s_bookmark" value="")
+
         .col
             .row
                 .col-sm-12

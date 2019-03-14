@@ -134,6 +134,8 @@ $('#table').on('load-success.bs.table refresh.bs.table', function () {
         };
     }); 
 
+    // need to clean the request from its parameters to avoid selecting
+    // former search parameters
     cleanQueryParams();
 });
 //
@@ -160,6 +162,7 @@ function queryParams(params) {
     // getting request parameters
     var urlParams = new URLSearchParams(window.location.search);
     
+    // search form parameters
     var storelocation = urlParams.get("storelocation");
     var name = urlParams.get("name");
     var casnumber = urlParams.get("casnumber");
@@ -172,7 +175,38 @@ function queryParams(params) {
     var hazardstatements = urlParams.getAll("hazardstatements[]");
     var precautionarystatements = urlParams.getAll("precautionarystatements[]");
     var casnumber_cmr = urlParams.get("casnumber_cmr");
-    // need to populate the form in case of product/storage view switch
+    // parameters passed by url
+    var entity = urlParams.get("entity");
+    var history = urlParams.get("history");
+    var storage = urlParams.get("storage");
+    var storage_archive = urlParams.get("storage_archive");
+    var product = urlParams.get("product");
+    var bookmark = urlParams.get("bookmark");
+
+    //
+    // populating the form in case of product/storage view switch
+    // parameters are passed by URL
+    //
+    // hidden form parameters
+    if (entity != null) {
+        $('#hidden_s_entity').val(entity);
+    }
+    if (product != null) {
+        $('#hidden_s_product').val(product);
+    }
+    if (history != null) {
+        $('#hidden_s_history').val(history);
+    }
+    if (storage != null) {
+        $('#hidden_s_storage').val(storage);
+    }
+    if (storage_archive != null) {
+        $('#hidden_s_storage_archive').val(storage_archive);
+    }
+    if (bookmark != null) {
+        $('#hidden_s_bookmark').val(bookmark);
+    }
+    // search form parameters
     if (storelocation != null) {
         $.ajax({
             url: proxyPath + "storelocations/" + storelocation,
@@ -281,66 +315,120 @@ function queryParams(params) {
         $("#advancedsearch").collapse('show');
         $('#s_casnumber_cmr').prop('checked', true);
     }
-
     // storage view specific
-    if (storage_archive != null && storage_archive == "true") {
-        $("#s_storage_archive").prop( "checked", true )
+    // if (storage_archive != null && storage_archive == "true") {
+    //     $("#s_storage_archive").prop( "checked", true )
+    // }
+
+    //
+    // populating bootstrap table ajax query parameters
+    //
+    if ($("#hidden_s_entity").val() != "") {
+        params["entity"] = $("#hidden_s_entity").val();
     }
-    if (urlParams.has("history")) {
+    if ($("#hidden_s_history").val() != "") {
         params["history"] = urlParams.get("history");
     }
-    if (urlParams.has("storage")) {
+    if ($("#hidden_s_storage").val() != "") {
         params["storage"] = urlParams.get("storage");
     }
-    if (urlParams.has("storage_archive")) {
+    if ($("#hidden_s_storage_archive").val() != "") {
         params["storage_archive"] = urlParams.get("storage_archive");
     }
-
-    if (urlParams.has("entity")) {
-        params["entity"] = urlParams.get("entity")
-    }
-    if (urlParams.has("storelocation")) {
-        params["storelocation"] = urlParams.get("storelocation")
-    }
-    if (urlParams.has("product")) {
+    if ($("#hidden_s_product").val() != "") {
         params["product"] = urlParams.get("product")
     }
-    if (urlParams.has("bookmark")) {
+    if ($("#hidden_s_bookmark").val() != "") {
         params["bookmark"] = urlParams.get("bookmark")
     }
     if (urlParams.has("export")) {
         params["export"] = urlParams.get("export")
     }
-    
+
+    // for select2 items we gather the value:
+    // - from the url in case of storage/product view switch
+    // - html input in case of table sorting use
+    // -> we can NOT rely only on html input selection because
+    //    they are initialize asynchronously by ajax calls 
     if (storelocation != null) {
-        params["storelocation"] = storelocation
+        params["storelocation"] = storelocation;
+    } else if ($('select#s_storelocation').hasClass("select2-hidden-accessible")) {
+        sl = $('select#s_storelocation').select2('data')[0];
+        if (sl != undefined) {
+            params["storelocation"] = sl.id;
+        }
     }
     if (name != null) {
-        params["name"] = name
+        params["name"] = name;
+    } else if ($('select#s_name').hasClass("select2-hidden-accessible")) {
+        na = $('select#s_name').select2('data')[0];
+        if (na != undefined) {
+            params["name"] = na.id;
+        }
     }
     if (casnumber != null) {
-        params["casnumber"] = casnumber
+        params["casnumber"] = casnumber;
+    } else if ($('select#s_casnumber').hasClass("select2-hidden-accessible")) {
+        cas = $('select#s_casnumber').select2('data')[0];
+        if (cas != undefined) {
+            params["casnumber"] = cas.id;
+        }
     }
     if (empiricalformula != null) {
-        params["empiricalformula"] = empiricalformula
-    }
-    if (storage_barecode != null) {
-        params["storage_barecode"] = storage_barecode
-    }
-    if (custom_name_part_of != null && custom_name_part_of != "") {
-        params["custom_name_part_of"] = custom_name_part_of
+        params["empiricalformula"] = empiricalformula;
+    } else if ($('select#s_empiricalformula').hasClass("select2-hidden-accessible")) {
+        ef = $('select#s_empiricalformula').select2('data')[0];
+        if (ef != undefined) {
+            params["empiricalformula"] = ef.id;
+        }
     }
     if (signalword != null) {
-        params["signalword"] = signalword
+        params["signalword"] = signalword;
+    } else if ($('select#s_signalword').hasClass("select2-hidden-accessible")) {
+        sw = $('select#s_signalword').select2('data')[0];
+        if (sw != undefined) {
+            params["signalword"] = sw.id;
+        }
     }
     if (hazardstatements.length != 0) {
-        params["hazardstatements"] = hazardstatements
+        params["hazardstatements"] = hazardstatements;
+    } else if ($('select#s_hazardstatements').hasClass("select2-hidden-accessible")) {
+        hs = $('select#s_hazardstatements').select2('data');
+        if (hs.length != 0) {
+            params["hazardstatements"] = hs;
+        }
     }
     if (precautionarystatements.length != 0) {
-        params["precautionarystatements"] = precautionarystatements
+        params["precautionarystatements"] = precautionarystatements;
+    } else if ($('select#s_precautionarystatements').hasClass("select2-hidden-accessible")) {
+        ps = $('select#s_precautionarystatements').select2('data');
+        if (ps.length != 0) {
+            params["precautionarystatements"] = ps;
+        }
     }
-    if (casnumber_cmr == "true") {
-        params["casnumber_cmr"] = true
+    if (symbols.length != 0) {
+        params["symbols"] = symbols;
+    }
+    else if ($('select#s_symbols').hasClass("select2-hidden-accessible")) {
+        sy = $('select#s_symbols').select2('data');
+        if (sy.length != 0) {
+            s_symbols = [];
+            i.forEach(function(e) {
+                s_symbols.push(e.id);
+            });
+            params["symbols"] = s_symbols;
+        }
+    }
+
+    // non select2 fields
+    if ($('#s_storage_barecode').val() != "") {
+        params["storage_barecode"] = $('#s_storage_barecode').val();
+    }
+    if ($('#s_custom_name_part_of').val() != "") {
+        params["custom_name_part_of"] = $('#s_custom_name_part_of').val();
+    }
+    if ($('#s_casnumber_cmr:checked').length > 0) {
+        params["casnumber_cmr"] = true;
     }
 
     return params;

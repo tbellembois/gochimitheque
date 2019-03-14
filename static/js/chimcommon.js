@@ -209,24 +209,24 @@ function clearsearch() {
 }
 
 function search() {
-    var s_storelocation;
-    var s_name;
-    var s_empiricalformula;
-    var s_casnumber;
+
     var s_custom_name_part_of;
     var s_storage_barecode;
-    var s_signalword;
     var s_symbols;
     var s_hazardstatements;
     var s_precautionarystatements;
-    var s_casnumber_cmr;
+
+    query = {};
 
     if ($('select#s_storelocation').hasClass("select2-hidden-accessible")) {
         // Select2 has been initialized
-        // name_id
+        // storelocation_id
         i = $('select#s_storelocation').select2('data')[0];
         if (i != undefined) {
-            s_storelocation = $('select#s_storelocation').select2('data')[0].id;
+            //s_storelocation = i.id;
+            $.extend(query, {
+                "storelocation": i.id
+            });
         }
     }
     if ($('select#s_name').hasClass("select2-hidden-accessible")) {
@@ -234,7 +234,10 @@ function search() {
         // name_id
         i = $('select#s_name').select2('data')[0];
         if (i != undefined) {
-            s_name = $('select#s_name').select2('data')[0].id;
+            s_name = i.id;
+            $.extend(query, {
+                "name": i.id
+            });
         }
     }
     if ($('select#s_empiricalformula').hasClass("select2-hidden-accessible")) {
@@ -242,7 +245,10 @@ function search() {
         // empiricalformula_id
         i = $('select#s_empiricalformula').select2('data')[0];
         if (i != undefined) {
-            s_empiricalformula = $('select#s_empiricalformula').select2('data')[0].id;
+            //s_empiricalformula = $('select#s_empiricalformula').select2('data')[0].id;
+            $.extend(query, {
+                "empiricalformula": i.id
+            });
         }
     }
     if ($('select#s_casnumber').hasClass("select2-hidden-accessible")) {
@@ -250,7 +256,10 @@ function search() {
         // casnumber_id
         i = $('select#s_casnumber').select2('data')[0];
         if (i != undefined) {
-            s_casnumber = $('select#s_casnumber').select2('data')[0].id;
+            //s_casnumber = $('select#s_casnumber').select2('data')[0].id;
+            $.extend(query, {
+                "casnumber": i.id
+            });
         }
     }
     if ($('select#s_signalword').hasClass("select2-hidden-accessible")) {
@@ -258,7 +267,10 @@ function search() {
         // signalword_id
         i = $('select#s_signalword').select2('data')[0];
         if (i != undefined) {
-            s_signalword = $('select#s_signalword').select2('data')[0].id;
+            //s_signalword = $('select#s_signalword').select2('data')[0].id;
+            $.extend(query, {
+                "signalword": i.id
+            });
         }
     }
     if ($('select#s_symbols').hasClass("select2-hidden-accessible")) {
@@ -269,6 +281,9 @@ function search() {
             s_symbols = [];
             i.forEach(function(e) {
                 s_symbols.push(e.id);
+            });
+            $.extend(query, {
+                "symbols": s_symbols
             });
         }
     }
@@ -281,6 +296,9 @@ function search() {
             i.forEach(function(e) {
                 s_hazardstatements.push(e.id);
             });
+            $.extend(query, {
+                "hazardstatements": s_hazardstatements
+            });
         }
     }
     if ($('select#s_precautionarystatements').hasClass("select2-hidden-accessible")) {
@@ -292,31 +310,34 @@ function search() {
             i.forEach(function(e) {
                 s_precautionarystatements.push(e.id);
             });
+            $.extend(query, {
+                "precautionarystatements": s_precautionarystatements
+            });
         }
     }
     if ($('#s_casnumber_cmr:checked').length > 0) {
-        s_casnumber_cmr = true;
-    } else {
-        s_casnumber_cmr = false;
+        //s_casnumber_cmr = true;
+        $.extend(query, {
+            "casnumber_cmr": true
+        });
     }
 
-    s_custom_name_part_of = $('#s_custom_name_part_of').val() ;
     s_storage_barecode = $('#s_storage_barecode').val() ;
+    if (s_storage_barecode != "") {
+        //params["storage_barecode"] = s_storage_barecode;
+        $.extend(query, {
+            "storage_barecode": s_storage_barecode
+        });
+    }
+    s_custom_name_part_of = $('#s_custom_name_part_of').val() ;
+    if (s_custom_name_part_of != "") {
+        //params["custom_name_part_of"] = s_custom_name_part_of;
+        $.extend(query, {
+            "custom_name_part_of": s_custom_name_part_of
+        });
+    }
+
 
     var $table = $('#table');
-    $table.bootstrapTable('refresh', 
-        {query: 
-            {storelocation: s_storelocation,
-            name: s_name, 
-            casnumber: s_casnumber, 
-            empiricalformula: s_empiricalformula, 
-            custom_name_part_of: s_custom_name_part_of, 
-            storage_barecode: s_storage_barecode,
-            signalword: s_signalword,
-            symbols: s_symbols,
-            hazardstatements: s_hazardstatements,
-            precautionarystatements: s_precautionarystatements,
-            casnumber_cmr: s_casnumber_cmr
-            }
-        }); 
+    $table.bootstrapTable('refresh', {query: query}); 
 }

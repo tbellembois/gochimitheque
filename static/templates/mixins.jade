@@ -4,6 +4,9 @@ mixin title
         .card-body
             h5.card-title.text-light {{$label}}
 
+mixin inputhidden
+    input(id='hidden_{{$name}}' type='hidden' name='{{$name}}' value='{{$value}}')
+
 mixin titleicon
     .mt-sm-2.mb-sm-2
         .row

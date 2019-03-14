@@ -1059,7 +1059,7 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 		comreq.WriteString(" AND empiricalformula.empiricalformula_id = :empiricalformula")
 	}
 	if p.GetStorageBarecode() != "" {
-		comreq.WriteString(" AND storage.storage_barecode = :storage_barecode")
+		comreq.WriteString(" AND storage.storage_barecode LIKE :storage_barecode")
 	}
 	if p.GetCustomNamePartOf() != "" {
 		comreq.WriteString(" AND name.name_label LIKE :custom_name_part_of")
@@ -1134,6 +1134,9 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 		"custom_name_part_of": "%" + p.GetCustomNamePartOf() + "%",
 		"signalword":          p.GetSignalWord(),
 	}
+
+	log.Debug(presreq.String() + comreq.String() + postsreq.String())
+	log.Debug(m)
 
 	// select
 	if err = snstmt.Select(&products, m); err != nil {
