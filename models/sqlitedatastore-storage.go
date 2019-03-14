@@ -521,24 +521,36 @@ func (db *SQLiteDataStore) RestoreStorage(id int) error {
 	return nil
 }
 
+// GenerateAndUpdateStorageBarecode generate and set a barecode for the storage s
+// the barecode is [prefix]major.minor
+// with
+// prefix: extracted from the storelocation name [prefix]storelocation_name, or ""
+// major: unique uid identical for the differents storages of the same product in an entity
+// minor: incremental number for the differents storages of the same product in an entity
 func (db *SQLiteDataStore) GenerateAndUpdateStorageBarecode(s *Storage) error {
 
 	var (
-		err    error
-		prefix string
-		m      []string
-		png    []byte
+		err      error
+		m        []string
+		png      []byte
+		prefix   string
+		lastbc   string
+		major    string
+		minor    string
+		iminor   int
+		barecode string
 	)
+	log.WithFields(log.Fields{"s": s}).Debug("GenerateAndUpdateStorageBarecode")
 
 	//
-	// barecode
+	// prefix
 	//
-	// compiling regex
-	r := regexp.MustCompile("^\\[(?P<groupone>[a-zA-Z]{1})\\].*$")
+	// regex to detect store locations names starting with [a-zA-Z] to build barecode prefixes
+	slr := regexp.MustCompile("^\\[(?P<groupone>[a-zA-Z]{1})\\].*$")
 	// finding group names
-	n := r.SubexpNames()
+	n := slr.SubexpNames()
 	// finding matches
-	ms := r.FindAllStringSubmatch(s.StoreLocationName.String, -1)
+	ms := slr.FindAllStringSubmatch(s.StoreLocationName.String, -1)
 	// then building a map of matches
 	md := map[string]string{}
 	if len(ms) != 0 {
@@ -551,10 +563,58 @@ func (db *SQLiteDataStore) GenerateAndUpdateStorageBarecode(s *Storage) error {
 		prefix = md["groupone"]
 	}
 
-	sqlr := `UPDATE storage 
-	SET storage_barecode = '` + prefix + `' || storage.product || '.' || (select count(*) from storage join storelocation on storage.storelocation = storelocation.storelocation_id join entity on storelocation.entity = entity.entity_id where storage.product = ? and entity_id = ?) 
-	WHERE storage_id = ?`
-	if _, err = db.Exec(sqlr, s.ProductID, s.EntityID, s.StorageID.Int64); err != nil {
+	//
+	// major
+	//
+	// getting the last storage barecode
+	// for the same product
+	// in the same entity
+	sqlr := `SELECT storage_barecode FROM storage 
+	JOIN storelocation on storage.storelocation = storelocation.storelocation_id 
+	WHERE product = ? AND storelocation.entity = ? AND storage_barecode REGEXP '^[a-zA-Z]{0,1}[0-9]+\.[0-9]+$'
+	ORDER BY storage_barecode desc 
+	LIMIT 1`
+	if err = db.Get(&lastbc, sqlr, s.ProductID, s.EntityID); err != nil {
+		return err
+	}
+	log.WithFields(log.Fields{"lastbc": lastbc}).Debug("GenerateAndUpdateStorageBarecode")
+
+	// regex to extract the major from a barecode
+	majorr := regexp.MustCompile("^[a-zA-Z]{1}(?P<groupone>[0-9]+)\\.(?P<grouptwo>[0-9]+)$")
+	// finding group names
+	n = majorr.SubexpNames()
+	// finding matches
+	ms = majorr.FindAllStringSubmatch(lastbc, -1)
+	// then building a map of matches
+	md = map[string]string{}
+	if len(ms) != 0 {
+		m = ms[0]
+		for i, j := range m {
+			md[n[i]] = j
+		}
+	}
+	if len(m) > 0 {
+		major = md["groupone"]
+		minor = md["grouptwo"]
+	} else {
+		major = strconv.Itoa(s.ProductID)
+		minor = "0"
+	}
+
+	if iminor, err = strconv.Atoi(minor); err != nil {
+		return err
+	}
+	iminor++
+	minor = strconv.Itoa(iminor)
+	log.WithFields(log.Fields{"major": major, "minor": minor}).Debug("GenerateAndUpdateStorageBarecode")
+
+	barecode = prefix + major + "." + minor
+	// sqlr := `UPDATE storage
+	// SET storage_barecode = '` + prefix + `' || storage.product || '.' || (select count(*) from storage join storelocation on storage.storelocation = storelocation.storelocation_id join entity on storelocation.entity = entity.entity_id where storage.product = ? and entity_id = ?)
+	// WHERE storage_id = ?`
+	sqlr = `UPDATE storage 
+	SET storage_barecode = ? WHERE storage_id = ?`
+	if _, err = db.Exec(sqlr, barecode, s.StorageID.Int64); err != nil {
 		return err
 	}
 
