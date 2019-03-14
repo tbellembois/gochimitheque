@@ -30,9 +30,9 @@ type SQLiteDataStore struct {
 }
 
 var (
-	regex = func(re, s string) (bool, error) {
-		m, e := regexp.MatchString(re, s)
-		return m, e
+	regex = func(re, s string) bool {
+		m, _ := regexp.MatchString(re, s)
+		return m
 	}
 )
 
@@ -40,7 +40,7 @@ func init() {
 	sql.Register("sqlite3_with_go_func",
 		&sqlite3.SQLiteDriver{
 			ConnectHook: func(conn *sqlite3.SQLiteConn) error {
-				return conn.RegisterFunc("REGEXP", regex, true)
+				return conn.RegisterFunc("regexp", regex, true)
 			},
 		})
 }

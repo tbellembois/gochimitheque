@@ -327,19 +327,19 @@ function queryParams(params) {
         params["entity"] = $("#hidden_s_entity").val();
     }
     if ($("#hidden_s_history").val() != "") {
-        params["history"] = urlParams.get("history");
+        params["history"] = $("#hidden_s_history").val();
     }
     if ($("#hidden_s_storage").val() != "") {
-        params["storage"] = urlParams.get("storage");
+        params["storage"] = $("#hidden_s_storage").val();
     }
     if ($("#hidden_s_storage_archive").val() != "") {
-        params["storage_archive"] = urlParams.get("storage_archive");
+        params["storage_archive"] = $("#hidden_s_storage_archive").val();
     }
     if ($("#hidden_s_product").val() != "") {
-        params["product"] = urlParams.get("product")
+        params["product"] = $("#hidden_s_product").val();
     }
     if ($("#hidden_s_bookmark").val() != "") {
-        params["bookmark"] = urlParams.get("bookmark")
+        params["bookmark"] = $("#hidden_s_bookmark").val();
     }
     if (urlParams.has("export")) {
         params["export"] = urlParams.get("export")
