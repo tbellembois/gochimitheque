@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/constants"
 )
 
@@ -764,6 +765,8 @@ func NewdbselectparamStorage(r *http.Request, f func(string) (string, error)) (*
 		return nil, aerr
 	}
 	dsps.dbselectparam = *dsp
+
+	log.Debug("aaaa")
 
 	if r != nil {
 		if o, ok := r.URL.Query()["sort"]; ok {

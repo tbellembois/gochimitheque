@@ -1135,8 +1135,8 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 		"signalword":          p.GetSignalWord(),
 	}
 
-	log.Debug(presreq.String() + comreq.String() + postsreq.String())
-	log.Debug(m)
+	// log.Debug(presreq.String() + comreq.String() + postsreq.String())
+	// log.Debug(m)
 
 	// select
 	if err = snstmt.Select(&products, m); err != nil {

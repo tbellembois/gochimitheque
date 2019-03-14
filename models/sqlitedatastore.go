@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/mattn/go-sqlite3"
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
 	log "github.com/sirupsen/logrus"
 	qrcode "github.com/skip2/go-qrcode"
@@ -28,6 +29,22 @@ type SQLiteDataStore struct {
 	*sqlx.DB
 }
 
+var (
+	regex = func(re, s string) (bool, error) {
+		m, e := regexp.MatchString(re, s)
+		return m, e
+	}
+)
+
+func init() {
+	sql.Register("sqlite3_with_go_func",
+		&sqlite3.SQLiteDriver{
+			ConnectHook: func(conn *sqlite3.SQLiteConn) error {
+				return conn.RegisterFunc("REGEXP", regex, true)
+			},
+		})
+}
+
 // NewDBstore returns a database connection to the given dataSourceName
 // ie. a path to the sqlite database file
 func NewSQLiteDBstore(dataSourceName string) (*SQLiteDataStore, error) {
@@ -37,7 +54,7 @@ func NewSQLiteDBstore(dataSourceName string) (*SQLiteDataStore, error) {
 	)
 
 	log.WithFields(log.Fields{"dbdriver": "sqlite3", "dataSourceName": dataSourceName}).Debug("NewDBstore")
-	if db, err = sqlx.Connect("sqlite3", dataSourceName+"?_journal=wal&_fk=1"); err != nil {
+	if db, err = sqlx.Connect("sqlite3_with_go_func", dataSourceName+"?_journal=wal&_fk=1"); err != nil {
 		return &SQLiteDataStore{}, err
 	}
 	return &SQLiteDataStore{db}, nil
