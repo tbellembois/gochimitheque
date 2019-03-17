@@ -739,7 +739,7 @@ func (db *SQLiteDataStore) CreateStorage(s Storage) (error, int) {
 		case reflect.Bool:
 			val = append(val, rv.Bool())
 		default:
-			val = append(val, rv.String())
+			val = append(val, v)
 			//panic("unknown type:" + rt.String() + " for " + k)
 		}
 	}
