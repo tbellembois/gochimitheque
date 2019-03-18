@@ -1,5 +1,24 @@
 | {{define "CONTENT"}}
 
+    #test
+    script.
+
+        $( document ).ready(function() {  
+                console.log("test JSmol");
+                var mol = $('html').html().split("MOL DATA\n")[1].split("-->")[0];
+                var Info = {
+                    color: "#FFFFFF",
+                    height: 300,
+                    width: 300,
+                    use: "HTML5",
+                    disableInitialConsole: true
+                };
+
+                Jmol.getTMApplet("myJmol", Info);
+                $("#test").html(myJmol._code);
+                myJmol.__loadModel(mol);
+        });
+
     #search.row.pt-sm-4.pb-sm-4.pl-sm-2.pr-sm-2.mt-sm-2.mb-sm-2.ml-sm-5.mr-sm-5.bg-light.border.rounded.collapse.show
 
         +inputhidden(name="s_entity" value="")
