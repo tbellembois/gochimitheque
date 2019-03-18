@@ -519,6 +519,11 @@ func (db *SQLiteDataStore) CreatePerson(p Person) (error, int) {
 		if _, err = db.Exec(sqlr, p.PersonID, e.EntityID); err != nil {
 			return err, 0
 		}
+		sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id)  
+		VALUES (?, ?, ?, ?)`
+		if _, err = db.Exec(sqlr, p.PersonID, "r", "entities", e.EntityID); err != nil {
+			return err, 0
+		}
 	}
 
 	// inserting permissions
@@ -574,6 +579,13 @@ func (db *SQLiteDataStore) UpdatePerson(p Person) error {
 		return err
 	}
 
+	// lazily deleting former permissions
+	sqlr = `DELETE FROM permission 
+		WHERE person = ?`
+	if _, err = db.Exec(sqlr, p.PersonID); err != nil {
+		return err
+	}
+
 	// updating person entities
 	for _, e := range p.Entities {
 		sqlr = `INSERT INTO personentities(personentities_person_id, personentities_entity_id) 
@@ -581,13 +593,11 @@ func (db *SQLiteDataStore) UpdatePerson(p Person) error {
 		if _, err = db.Exec(sqlr, p.PersonID, e.EntityID); err != nil {
 			return err
 		}
-	}
-
-	// lazily deleting former permissions
-	sqlr = `DELETE FROM permission 
-		WHERE person = ?`
-	if _, err = db.Exec(sqlr, p.PersonID); err != nil {
-		return err
+		sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id)  
+		VALUES (?, ?, ?, ?)`
+		if _, err = db.Exec(sqlr, p.PersonID, "r", "entities", e.EntityID); err != nil {
+			return err
+		}
 	}
 
 	// inserting permissions
