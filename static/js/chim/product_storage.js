@@ -15,6 +15,7 @@ $('#table').on('load-success.bs.table refresh.bs.table', function () {
     // highlight row if needed
     if (urlParams.has("hl")) {
         $("tr[storage_id=" + urlParams.get("hl") + "]").addClass("animated bounce slow");
+        $("tr[product_id=" + urlParams.get("hl") + "]").addClass("animated bounce slow");
     }
     
     var storelocationpromise = $.Deferred();
@@ -113,7 +114,9 @@ $('#table').on('load-success.bs.table refresh.bs.table', function () {
     bookmarkpromise.resolve();
     
     $.when(entitypromise, storelocationpromise, storagepromise, productpromise, bookmarkpromise).done(function() {
-        $("#filter-item").html("");
+        if (bookmarkData !== undefined || historyData !== undefined || entityData !== undefined || storelocationData !== undefined || storageData !== undefined || productData !== undefined) {
+            $("#filter-item").html("");
+        }
         if (bookmarkData !== undefined) {
             $("#filter-item").append(global.createTitle("my bookmarked products", "bookmark"));
         };

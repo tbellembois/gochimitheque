@@ -1,7 +1,7 @@
 package main
 
 //go:generate go run gogenerate/localejs.go
-//go:generate gopherjs build gopherjs/gjs-common.go -o static/js/gjs-common.js
+//go:generate gopherjs build gopherjs/gjs-common.go -o static/js/chim/gjs-common.js
 //go:generate rice embed-go
 
 import (

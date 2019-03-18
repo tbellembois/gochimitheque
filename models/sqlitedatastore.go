@@ -1051,6 +1051,11 @@ func (db *SQLiteDataStore) Import(dir string) error {
 				tx.Rollback()
 				return err
 			}
+			sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id) VALUES (?, ?, ?, ?)`
+			if res, err = tx.Exec(sqlr, newuserid, "r", "entities", newgroupid); err != nil {
+				tx.Rollback()
+				return err
+			}
 		}
 	}
 
