@@ -65,6 +65,7 @@ $('#table').on('load-success.bs.table refresh.bs.table', function () {
         $("#switchview").removeClass("d-none");
 
         $(".storages").fadeIn();
+        $(".ostorages").fadeIn();
         localStorage.setItem("storages:-2:GET", true);
     }).fail(function(){
         localStorage.setItem("storages:-2:GET", false);
@@ -257,6 +258,9 @@ function operateFormatter(value, row, index) {
     '<button id="storages' + pid + '" class="storages btn btn-link btn-sm" style="display: none;" title="storages" type="button">',
         '<span class="mdi mdi-24px mdi-cube-unfolded"',
     '</button>',
+    '<button id="ostorages' + pid + '" class="ostorages btn btn-link btn-sm" style="display: none;" title="global availability" type="button">',
+        '<span class="mdi mdi-24px mdi-cube-scan"',
+    '</button>',
     '<button id="store' + pid + '" class="store btn btn-link btn-sm" style="display: none;" title="store" type="button">',
         '<span class="mdi mdi-24px mdi-forklift"',
     '</button>',
@@ -269,6 +273,7 @@ function operateFormatter(value, row, index) {
     '<button id="bookmark' + pid + '" class="bookmark btn btn-link btn-sm" title="(un)bookmark" type="button">',
         '<span id="bookmark' + pid + '" class="mdi mdi-24px mdi-' + bookmarkicon + '">',
     '</button>',
+    '<div class="collapse" id="ostorages-collapse-' + pid + '"></div>'
     ];
 
     $.each(row.symbols, function( index, value ) {
@@ -305,6 +310,9 @@ window.operateEvents = {
             url = url + "&storelocation=" + s;
         }
         window.location.href = url;
+    },
+    'click .ostorages': function (e, value, row, index) {
+        operateOStorages(e, value, row, index)
     },
     'click .edit': function (e, value, row, index) {
         operateEdit(e, value, row, index)
@@ -346,6 +354,25 @@ function operateBookmark(e, value, row, index) {
     }).fail(function(jqXHR, textStatus, errorThrown) {
         handleHTTPError(jqXHR.statusText, jqXHR.status)
     });
+}
+function operateOStorages(e, value, row, index) {
+   // getting the product
+   $.ajax({
+        url: proxyPath + "storages/others?product=" + row['product_id'],
+        method: "GET",
+    }).done(function(data, textStatus, jqXHR) {
+        var html = [];
+        $.each(data["rows"], function (key, value) {
+            html.push("<p><span class='iconlabel'>" + value.entity_name + "</span><span class='blockquote-footer'>" + value.entity_description+ "</span></p>");
+        });
+        
+        $("#ostorages-collapse-" + row['product_id']).html(html.join('&nbsp;'));
+    }).fail(function(jqXHR, textStatus, errorThrown) {
+        handleHTTPError(jqXHR.statusText, jqXHR.status)
+    });
+
+    // finally collapsing the view
+    $('#ostorages-collapse-' + row['product_id']).collapse('show');
 }
 function operateEdit(e, value, row, index) {
     // clearing selections

@@ -126,7 +126,7 @@ SCHEMA="public"; DB="chimitheque"; psql -U [user] -h [host] -p [port] -Atc "sele
 
 ## testers
 
-delphine.pitrat@ens-lyon.fr, laurelise.chapellet@ens-lyon.fr, guillaume.george@ens-lyon.fr, sylvain.david@ens-lyon.fr, laure.guy@ens-lyon.fr, yann.bretonniere@ens-lyon.fr, loic.richard@irstea.fr, christophe.le-bourlot@insa-lyon.fr, julien.devemy@uca.fr, alix.tordo@ens-lyon.fr
+delphine.pitrat@ens-lyon.fr, laurelise.chapellet@ens-lyon.fr, guillaume.george@ens-lyon.fr, sylvain.david@ens-lyon.fr, laure.guy@ens-lyon.fr, yann.bretonniere@ens-lyon.fr, loic.richard@irstea.fr, christophe.le-bourlot@insa-lyon.fr, julien.devemy@uca.fr, alix.tordo@ens-lyon.fr, clement.courtin@ens-lyon.fr
 
 ## REST API samples
 
