@@ -208,6 +208,7 @@ type Product struct {
 	ProductRestricted       sql.NullBool   `db:"product_restricted" json:"product_restricted" schema:"product_restricted"`
 	ProductRadioactive      sql.NullBool   `db:"product_radioactive" json:"product_radioactive" schema:"product_radioactive"`
 	ProductThreeDFormula    sql.NullString `db:"product_threedformula" json:"product_threedformula" schema:"product_threedformula"`
+	ProductMolFormula       sql.NullString `db:"product_molformula" json:"product_molformula" schema:"product_molformula"`
 	ProductDisposalComment  sql.NullString `db:"product_disposalcomment" json:"product_disposalcomment" schema:"product_disposalcomment"`
 	ProductRemark           sql.NullString `db:"product_remark" json:"product_remark" schema:"product_remark"`
 	ProductQRCode           string         `db:"product_qrcode" json:"product_qrcode" schema:"product_qrcode"`

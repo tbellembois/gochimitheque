@@ -951,6 +951,7 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	p.product_restricted,
 	p.product_radioactive,
 	p.product_threedformula,
+	p.product_molformula,
 	p.product_disposalcomment,
 	p.product_remark,
 	linearformula.linearformula_id AS "linearformula.linearformula_id",
@@ -1258,6 +1259,7 @@ func (db *SQLiteDataStore) GetProduct(id int) (Product, error) {
 	product_restricted,
 	product_radioactive,
 	product_threedformula,
+	product_molformula,
 	product_disposalcomment,
 	product_remark,
 	linearformula.linearformula_id AS "linearformula.linearformula_id",
@@ -1581,6 +1583,9 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 	if p.CeNumberID.Valid {
 		s["cenumber"] = int(p.CeNumberID.Int64)
 	}
+	if p.ProductMolFormula.Valid {
+		s["product_molformula"] = p.ProductMolFormula.String
+	}
 	s["casnumber"] = p.CasNumberID
 	s["name"] = p.NameID
 	s["empiricalformula"] = p.EmpiricalFormulaID
@@ -1611,7 +1616,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (error, int) {
 		return err, 0
 	}
 
-	log.Debug(ibuilder.ToSql())
+	//log.Debug(ibuilder.ToSql())
 
 	if res, err = tx.Exec(sqlr, sqla...); err != nil {
 		log.Error("product error - " + err.Error())
@@ -1858,6 +1863,9 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	if p.CeNumberID.Valid {
 		s["cenumber"] = int(p.CeNumberID.Int64)
 	}
+	if p.ProductMolFormula.Valid {
+		s["product_molformula"] = p.ProductMolFormula.String
+	}
 	s["casnumber"] = p.CasNumberID
 	s["name"] = p.NameID
 	s["empiricalformula"] = p.EmpiricalFormulaID
@@ -1874,6 +1882,8 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 		tx.Rollback()
 		return err
 	}
+
+	//log.Debug(ubuilder.ToSql())
 
 	// deleting symbols
 	sqlr = `DELETE FROM productsymbols WHERE productsymbols.productsymbols_product_id = (?)`

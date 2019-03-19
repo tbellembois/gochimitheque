@@ -983,6 +983,7 @@ func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *he
 	updatedp.ProductRadioactive = p.ProductRadioactive
 	updatedp.LinearFormula = p.LinearFormula
 	updatedp.ProductThreeDFormula = p.ProductThreeDFormula
+	updatedp.ProductMolFormula = p.ProductMolFormula
 	updatedp.ProductDisposalComment = p.ProductDisposalComment
 	updatedp.ProductRemark = p.ProductRemark
 	updatedp.PhysicalState = p.PhysicalState

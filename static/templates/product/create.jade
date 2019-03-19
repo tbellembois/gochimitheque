@@ -54,9 +54,13 @@
                 +inputtext
 
         .form-row
-            .form-group.col-sm-12
+            .form-group.col-sm-6
                 | {{$label := "3D formula link"}} {{$name := "product_threedformula"}}
                 +inputtext
+            .form-group.col-sm-6
+                | {{$label := "3D formula mol file"}} {{$name := "product_molformula"}}
+                +inputfile
+                +inputhidden(name="product_molformula_content" value="")
 
         .form-row
             .form-group.col-sm-6
