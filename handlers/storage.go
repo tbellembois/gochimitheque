@@ -191,6 +191,45 @@ func (env *Env) GetStoragesSuppliersHandler(w http.ResponseWriter, r *http.Reque
 	return nil
 }
 
+// GetOtherStoragesHandler returns a json list of the storages matching the search criteria
+// in other entities with no storage details
+func (env *Env) GetOtherStoragesHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	log.Debug("GetOtherStoragesHandler")
+
+	var (
+		err      error
+		aerr     *helpers.AppError
+		dsps     helpers.DbselectparamStorage
+		exportfn string
+	)
+
+	// init db request parameters
+	if dsps, aerr = helpers.NewdbselectparamStorage(r, nil); err != nil {
+		return aerr
+	}
+
+	entities, count, err := env.DB.GetOtherStorages(dsps)
+	if err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the storages",
+		}
+	}
+
+	type resp struct {
+		Rows     []models.Entity `json:"rows"`
+		Total    int             `json:"total"`
+		ExportFN string          `json:"exportfn"`
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resp{Rows: entities, Total: count, ExportFN: exportfn})
+
+	return nil
+}
+
 // GetStoragesHandler returns a json list of the storages matching the search criteria
 func (env *Env) GetStoragesHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	log.Debug("GetStoragesHandler")

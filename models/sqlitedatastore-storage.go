@@ -415,6 +415,83 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 	return storages, count, nil
 }
 
+func (db *SQLiteDataStore) GetOtherStorages(p helpers.DbselectparamStorage) ([]Entity, int, error) {
+	var (
+		entities                           []Entity
+		count                              int
+		precreq, presreq, comreq, postsreq strings.Builder
+		cnstmt                             *sqlx.NamedStmt
+		snstmt                             *sqlx.NamedStmt
+		err                                error
+	)
+	log.WithFields(log.Fields{"p": p}).Debug("GetOtherStorages")
+
+	// pre request: select or count
+	precreq.WriteString(" SELECT count(DISTINCT e.entity_id)")
+	presreq.WriteString(` SELECT e.entity_id AS "entity_id",
+	e.entity_name AS "entity_name",
+	GROUP_CONCAT(DISTINCT person.person_email) AS "entity_description"
+	`)
+
+	// common parts
+	comreq.WriteString(" FROM entity as e")
+
+	// get store location
+	comreq.WriteString(" JOIN storelocation ON storelocation.entity = e.entity_id")
+	// get storages
+	comreq.WriteString(" JOIN storage ON storage.storelocation = storelocation.storelocation_id")
+
+	// get managers
+	comreq.WriteString(" JOIN entitypeople ON e.entity_id = entitypeople.entitypeople_entity_id")
+	comreq.WriteString(" JOIN person ON entitypeople.entitypeople_person_id = person.person_id")
+
+	comreq.WriteString(" WHERE 1")
+	if p.GetProduct() != -1 {
+		comreq.WriteString(" AND storage.product = :product")
+	}
+
+	// post select request
+	postsreq.WriteString(" GROUP BY e.entity_id")
+
+	// building count and select statements
+	if cnstmt, err = db.PrepareNamed(precreq.String() + comreq.String()); err != nil {
+		return nil, 0, err
+	}
+	if snstmt, err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); err != nil {
+		return nil, 0, err
+	}
+
+	// building argument map
+	m := map[string]interface{}{
+		"search":              p.GetSearch(),
+		"personid":            p.GetLoggedPersonID(),
+		"order":               p.GetOrder(),
+		"limit":               p.GetLimit(),
+		"offset":              p.GetOffset(),
+		"entity":              p.GetEntity(),
+		"product":             p.GetProduct(),
+		"storelocation":       p.GetStorelocation(),
+		"storage":             p.GetStorage(),
+		"name":                p.GetName(),
+		"casnumber":           p.GetCasNumber(),
+		"empiricalformula":    p.GetEmpiricalFormula(),
+		"storage_barecode":    p.GetStorageBarecode(),
+		"custom_name_part_of": "%" + p.GetCustomNamePartOf() + "%",
+		"signalword":          p.GetSignalWord(),
+	}
+
+	// select
+	if err = snstmt.Select(&entities, m); err != nil {
+		return nil, 0, err
+	}
+	// count
+	if err = cnstmt.Get(&count, m); err != nil {
+		return nil, 0, err
+	}
+
+	return entities, count, nil
+}
+
 // GetStorage returns the storage with id "id"
 func (db *SQLiteDataStore) GetStorage(id int) (Storage, error) {
 	var (

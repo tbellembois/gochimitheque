@@ -47,6 +47,7 @@ type Datastore interface {
 
 	// storages
 	GetStorages(helpers.DbselectparamStorage) ([]Storage, int, error)
+	GetOtherStorages(helpers.DbselectparamStorage) ([]Entity, int, error)
 	GetStorage(id int) (Storage, error)
 	GetStoragesUnits(helpers.Dbselectparam) ([]Unit, int, error)
 	GetStoragesSuppliers(helpers.Dbselectparam) ([]Supplier, int, error)
