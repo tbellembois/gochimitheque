@@ -1070,6 +1070,28 @@ script.
 
     });
 
+
+    //
+    // mol file selector
+    //
+    $('#product_molformula').change( function () {
+		if ( ! window.FileReader ) {
+			return alert( 'FileReader API is not supported by your browser.' );
+		}
+        molfile = $('#product_molformula')[0];
+        if ( molfile.files && molfile.files[0] ) {
+			file = molfile.files[0]; // The file
+			fr = new FileReader(); // FileReader instance
+            fr.onload = function () {
+                $('#hidden_product_molformula_content').append(fr.result);
+            };
+			fr.readAsText(file);
+		} else {
+			// Handle errors here
+			alert( "File not selected or browser incompatible." )
+		}
+    });
+
     //
     // store location select2 formatter
     //
@@ -1155,6 +1177,9 @@ script.
         var product_id = $("input#product_id").val(),
             product_specificity = $("input#product_specificity").val(),
             product_threedformula = $("input#product_threedformula").val(),
+
+            product_molformula = $("#hidden_product_molformula_content").html(),
+
             product_msds = $("input#product_msds").val(),
             product_disposalcomment = $("textarea#product_disposalcomment").val(),
             product_remark = $("textarea#product_remark").val(),
@@ -1212,6 +1237,11 @@ script.
                 "name.name_id": name_.id == name_.text ? -1 : name_.id,
                 "name.name_label": name_.text,
             });
+            if (product_molformula !== "") {
+                $.extend(data, {
+                    "product_molformula": product_molformula,
+                });  
+            }
             if (product_specificity !== "") {
                 $.extend(data, {
                     "product_specificity": product_specificity,

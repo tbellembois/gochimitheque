@@ -520,6 +520,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		product_restricted boolean default 0,
 		product_radioactive boolean default 0,
 		product_threedformula string,
+		product_molformula blob,
 		product_disposalcomment string,
 		product_remark string,
 		product_qrcode string,

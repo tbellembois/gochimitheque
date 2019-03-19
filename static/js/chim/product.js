@@ -1,6 +1,26 @@
 //
 // request performed at table data loading
 //
+
+$('#table').bootstrapTable({
+    onExpandRow: function (index, row, $detail) {
+        var mol = row['product_molformula'];
+        var Info = {
+            color: "#FFFFFF",
+            height: 300,
+            width: 300,
+            use: "HTML5",
+            disableInitialConsole: true
+        };
+    
+        if (mol.Valid) {
+            Jmol.getTMApplet("myJmol", Info);
+            $("#jsmol" + row["product_id"]).html(myJmol._code);
+            myJmol.__loadModel(mol.String);
+        }
+    }
+})
+
 function getData(params) {
     // saving the query parameters
     lastQueryParams = params;
@@ -78,6 +98,9 @@ function rowAttributes(row, index) {
 //
 function detailFormatter(index, row) {
     var html = [];
+
+    html.push("<div id='jsmol" + row["product_id"] + "'>")
+    html.push("</div>")
 
     html.push("<div class='row mt-sm-3'>")
         html.push("<div class='col-sm-6'>")
