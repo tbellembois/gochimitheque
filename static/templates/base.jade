@@ -99,7 +99,7 @@ html
                                         | {{ T "menu_password" 1 }}
                                 
                         li.nav-item
-                            a.nav-link(title= "logout" onclick="localStorage.clear();" href="{{.ProxyPath}}delete-token")
+                            a.nav-link(title= "logout" href="{{.ProxyPath}}delete-token")
                                 span.mdi.mdi-logout.mdi-36px.iconlabel
                                         | {{ T "menu_logout" 1 }}
 
@@ -144,8 +144,38 @@ html
                 if (message != null) {
                     global.displayMessage(message, "success");
                 }
+            };
 
-           };
+            // call the "fake" (/f/) endpoints to check
+            // the permission on the given item and
+            // stores the result in the cache
+            function hasPermission(item, id, method) {
+                // promise to be returned
+                var permpromise = $.Deferred();
+
+                // building the cache key
+                key = item + ":" + id + ":" + method
+
+                // getting the permission cache
+                permcache = localStorage.getItem(key);
+
+                if (permcache) {
+                    if (permcache == "true") {
+                        permpromise.resolve();
+                    } else {
+                        permpromise.reject();
+                    }
+                } else {
+                    // building ajax url
+                    url = proxyPath + "f/" + item + "/" + id;
+
+                    permpromise = $.ajax({
+                        url: url,
+                        method: method,
+                    });
+                }
+                return permpromise;
+            }
            
         | <script src="{{.ProxyPath}}js/jquery.formautofill.min.js"></script>
         | <script src="{{.ProxyPath}}js/jquery.validate.min.js"></script>
@@ -160,7 +190,7 @@ html
         | <script src="{{.ProxyPath}}js/JSmol.lite.nojq.js"></script>
         | <script src="{{.ProxyPath}}js/chim/gjs-common.js"></script>
         | <script src="{{.ProxyPath}}js/chim/chimcommon.js"></script>
-        | <script src="{{.ProxyPath}}js/chim/chimauth.js"></script>
+        | <script src="{{.ProxyPath}}js/chim/login.js"></script>
         
         | {{template "CONTENTJS"}}
 | {{end}}

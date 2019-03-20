@@ -174,7 +174,7 @@ func main() {
 		log.Fatal("logintmpl parse:" + e.Error())
 	}
 	// entity
-	entityindextmpl, e := jade.Parse("entity_index", append(append(basejadess, b.MustString("entity/commonjs.jade")...), b.MustString("entity/index.jade")...))
+	entityindextmpl, e := jade.Parse("entity_index", append(append(basejadess), b.MustString("entity/index.jade")...))
 	if e != nil {
 		log.Fatal("entityindextmpl jade:" + e.Error())
 	}
@@ -182,7 +182,7 @@ func main() {
 	if err != nil {
 		log.Fatal("entityindextmpl parse:" + e.Error())
 	}
-	entitycreatetmpl, e := jade.Parse("entity_create", append(append(basejadess, b.MustString("entity/commonjs.jade")...), b.MustString("entity/create.jade")...))
+	entitycreatetmpl, e := jade.Parse("entity_create", append(append(basejadess), b.MustString("entity/create.jade")...))
 	if e != nil {
 		log.Fatal("entitycreatetmpl jade:" + e.Error())
 	}
@@ -191,7 +191,7 @@ func main() {
 		log.Fatal("entitycreatetmpl parse:" + e.Error())
 	}
 	// store location
-	storelocationindextmpl, e := jade.Parse("storelocation_index", append(append(basejadess, b.MustString("storelocation/commonjs.jade")...), b.MustString("storelocation/index.jade")...))
+	storelocationindextmpl, e := jade.Parse("storelocation_index", append(append(basejadess), b.MustString("storelocation/index.jade")...))
 	if e != nil {
 		log.Fatal("storelocationindextmpl jade:" + e.Error())
 	}
@@ -199,7 +199,7 @@ func main() {
 	if err != nil {
 		log.Fatal("storelocationtmpl parse:" + e.Error())
 	}
-	storelocationcreatetmpl, e := jade.Parse("storelocation_create", append(append(basejadess, b.MustString("storelocation/commonjs.jade")...), b.MustString("storelocation/create.jade")...))
+	storelocationcreatetmpl, e := jade.Parse("storelocation_create", append(append(basejadess), b.MustString("storelocation/create.jade")...))
 	if e != nil {
 		log.Fatal("storelocationcreatetmpl jade:" + e.Error())
 	}
@@ -208,7 +208,7 @@ func main() {
 		log.Fatal("storelocationcreatetmpl parse:" + e.Error())
 	}
 	// person
-	personindextmpl, e := jade.Parse("person_index", append(append(basejadess, b.MustString("person/commonjs.jade")...), b.MustString("person/index.jade")...))
+	personindextmpl, e := jade.Parse("person_index", append(append(basejadess), b.MustString("person/index.jade")...))
 	if e != nil {
 		log.Fatal("personindextmpl jade:" + e.Error())
 	}
@@ -216,7 +216,7 @@ func main() {
 	if err != nil {
 		log.Fatal("personindextmpl parse:" + e.Error())
 	}
-	personcreatetmpl, e := jade.Parse("person_create", append(append(basejadess, b.MustString("person/commonjs.jade")...), b.MustString("person/create.jade")...))
+	personcreatetmpl, e := jade.Parse("person_create", append(append(basejadess), b.MustString("person/create.jade")...))
 	if e != nil {
 		log.Fatal("personcreatetmpl jade:" + e.Error())
 	}
@@ -224,7 +224,7 @@ func main() {
 	if err != nil {
 		log.Fatal("personcreatetmpl parse:" + e.Error())
 	}
-	personpupdatetmpl, e := jade.Parse("personp_update", append(append(basejadess, b.MustString("person/commonjs.jade")...), b.MustString("person/pupdate.jade")...))
+	personpupdatetmpl, e := jade.Parse("personp_update", append(append(basejadess), b.MustString("person/pupdate.jade")...))
 	if e != nil {
 		log.Fatal("personpupdatetmpl jade:" + e.Error())
 	}
