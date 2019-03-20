@@ -262,7 +262,7 @@ func (db *SQLiteDataStore) InsertSamples() error {
 		db.UpdatePerson(m2)
 		db.UpdatePerson(m3)
 
-		//p0 := Person{PersonEmail: "user@super.com", Permissions: []Permission{Permission{PermissionPermName: "all", PermissionItemName: "all", PermissionEntityID: -1}}}
+		//p0 := Person{PersonEmail: "admin@chimitheque.fr", Permissions: []Permission{Permission{PermissionPermName: "all", PermissionItemName: "all", PermissionEntityID: -1}}}
 		p1 := Person{PersonEmail: "john@lab-one.com", Entities: []Entity{e1}, Permissions: []Permission{Permission{PermissionPermName: "r", PermissionItemName: "products", PermissionEntityID: -1}}}
 		p2 := Person{PersonEmail: "mickey@lab-one.com", Entities: []Entity{e1}}
 		p3 := Person{PersonEmail: "donald@lab-one.com", Entities: []Entity{e1}}
@@ -721,9 +721,9 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		return err
 	}
 	if c == 0 {
-		admin := Person{PersonEmail: "user@super.com", Permissions: []Permission{Permission{PermissionPermName: "all", PermissionItemName: "all", PermissionEntityID: -1}}}
+		admin := Person{PersonEmail: "admin@chimitheque.fr", Permissions: []Permission{Permission{PermissionPermName: "all", PermissionItemName: "all", PermissionEntityID: -1}}}
 		_, admin.PersonID = db.CreatePerson(admin)
-		admin.PersonPassword = "test"
+		admin.PersonPassword = "chimitheque"
 		db.UpdatePersonPassword(admin)
 	}
 
@@ -1395,7 +1395,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		return err
 	}
 	log.Info("  retrieving default admin id")
-	if err = db.Get(&zeropersonid, `SELECT person_id FROM person WHERE person_email = "user@super.com"`); err != nil {
+	if err = db.Get(&zeropersonid, `SELECT person_id FROM person WHERE person_email = "admin@chimitheque.fr"`); err != nil {
 		log.Error("error retrieving default admin id")
 		return err
 	}
