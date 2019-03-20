@@ -134,7 +134,7 @@ delphine.pitrat@ens-lyon.fr, laurelise.chapellet@ens-lyon.fr, guillaume.george@e
 
 - get an authentication token
 ```
-curl -X POST http://localhost:8081/get-token -d "person_email=user@super.com&person_password=test"
+curl -X POST http://localhost:8081/get-token -d "person_email=admin@chimitheque.fr&person_password=test"
 ```
 
 ### people

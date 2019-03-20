@@ -440,7 +440,7 @@ func (db *SQLiteDataStore) DeletePerson(id int) error {
 		admin Person
 	)
 	// getting the admin
-	if admin, err = db.GetPersonByEmail("user@super.com"); err != nil {
+	if admin, err = db.GetPersonByEmail("admin@chimitheque.fr"); err != nil {
 		return err
 	}
 
