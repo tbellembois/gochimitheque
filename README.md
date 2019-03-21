@@ -9,14 +9,12 @@ Release planned before summer 2019.
 
 Chimithèque is an open source chemical product management application initially initiated by the ENS-Lyon (France) and co-developped with the Université Clermont-Auvergne (France).
 
-The project has started in 2015 and has moved to Github in 2017. The old subversion repository can be found here: https://sourcesup.renater.fr/scm/viewvc.php?root=chimitheque
+The project has started in 2015 and has moved to Github in 2017.
 
-    Why Chimithèque?
+Main goals:
 
-    We needed a global method to manage chemical products of the different departments and laboratories of the ENS to:
-
-    - improve the security with a precise global listing of the chemicals products stored in the entire school
-    - reduce waste by encouraging chemical products managers to search in Chimithèque if a product can be borrowed from another department before ordering a new one
+- improve the security with a precise global listing of the chemicals products stored in the entire school
+- reduce waste by encouraging chemical products managers to search in Chimithèque if a product can be borrowed from another department before ordering a new one
 
 ![screenshot](screenshot.png)
 
