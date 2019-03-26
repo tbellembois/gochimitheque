@@ -39,7 +39,7 @@ function getData(params) {
             $table.bootstrapTable('removeAll');
         }
         if (data.exportfn != "") {
-            var a = $("<a>").attr("href", proxyPath + "download/" + data.exportfn).text("download");
+            var a = $("<a>").attr("href", proxyPath + "download/" + data.exportfn).html("<span class='mdi mdi-48px mdi-file-download'></span>");
             $("#exportlink-body").html("");
             $("#exportlink-body").append(a);
             $("#exportlink").modal("show");

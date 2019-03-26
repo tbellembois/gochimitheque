@@ -1,8 +1,6 @@
 package models
 
 import (
-	"fmt"
-
 	"bufio"
 	"database/sql"
 	"encoding/csv"
@@ -58,271 +56,6 @@ func NewSQLiteDBstore(dataSourceName string) (*SQLiteDataStore, error) {
 		return &SQLiteDataStore{}, err
 	}
 	return &SQLiteDataStore{db}, nil
-}
-
-// InsertSamples insert sample values in the database
-func (db *SQLiteDataStore) InsertSamples() error {
-	var (
-		c   int
-		err error
-	)
-	_ = db.Get(&c, `SELECT count(*) FROM person`)
-	if c == 1 {
-		// inserting sample values
-		// FIXME: remove this before release
-		scas, _ := os.Open("sample_cas.txt")
-		sname, _ := os.Open("sample_name.txt")
-		sempiricalformula, _ := os.Open("sample_empiricalformula.txt")
-		defer scas.Close()
-		defer sname.Close()
-		defer sempiricalformula.Close()
-
-		scanner := bufio.NewScanner(sname)
-		scanner.Split(bufio.ScanLines)
-		log.Debug("- creating sample names")
-		i := 0
-		for scanner.Scan() && i < 50 {
-			if _, err = db.Exec(`INSERT OR IGNORE INTO name ("name_label") VALUES ("` + scanner.Text() + `");`); err != nil {
-				return err
-			}
-			i++
-		}
-
-		scanner = bufio.NewScanner(sempiricalformula)
-		scanner.Split(bufio.ScanLines)
-		log.Debug("- creating sample empirical formulas")
-		i = 0
-		for scanner.Scan() && i < 50 {
-			if _, err = db.Exec(`INSERT OR IGNORE INTO empiricalformula ("empiricalformula_label") VALUES ("` + scanner.Text() + `");`); err != nil {
-				return err
-			}
-			i++
-		}
-
-		m1 := Person{PersonEmail: "manager@lab-one.com"}
-		m2 := Person{PersonEmail: "manager@lab-two.com"}
-		m3 := Person{PersonEmail: "manager@lab-three.com"}
-		m4 := Person{PersonEmail: "delphine.pitrat@ens-lyon.fr"}
-
-		log.Debug("- creating 4 sample managers")
-		_, m1.PersonID = db.CreatePerson(m1)
-		_, m2.PersonID = db.CreatePerson(m2)
-		_, m3.PersonID = db.CreatePerson(m3)
-		_, m4.PersonID = db.CreatePerson(m4)
-
-		e1 := Entity{EntityName: "lab one", EntityDescription: "the lab one", Managers: []Person{m1}}
-		e2 := Entity{EntityName: "lab two", EntityDescription: "the lab two", Managers: []Person{m2}}
-		e3 := Entity{EntityName: "lab three", EntityDescription: "the lab three", Managers: []Person{m3}}
-		e4 := Entity{EntityName: "laboratoire de chimie", EntityDescription: "laboratoire de chimie de l'ENS de Lyon", Managers: []Person{m4}}
-
-		log.Debug("- creating 4 sample entities")
-		_, e1.EntityID = db.CreateEntity(e1)
-		_, e2.EntityID = db.CreateEntity(e2)
-		_, e3.EntityID = db.CreateEntity(e3)
-		_, e4.EntityID = db.CreateEntity(e4)
-
-		sl1 := StoreLocation{StoreLocationColor: sql.NullString{Valid: true, String: "rgb(255, 38, 38)"}, StoreLocationName: sql.NullString{Valid: true, String: "fridgeE1-A"}, Entity: e1, StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true}}
-		sl2 := StoreLocation{StoreLocationColor: sql.NullString{Valid: true, String: "rgb(255, 129, 129)"}, StoreLocationName: sql.NullString{Valid: true, String: "fridgeE1-B"}, Entity: e1, StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true}}
-		sl3 := StoreLocation{StoreLocationColor: sql.NullString{Valid: true, String: "rgb(33, 185, 102)"}, StoreLocationName: sql.NullString{Valid: true, String: "fridgeE2-A"}, Entity: e2, StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true}}
-		sl4 := StoreLocation{StoreLocationColor: sql.NullString{Valid: true, String: "rgb(99, 232, 159)"}, StoreLocationName: sql.NullString{Valid: true, String: "fridgeE2-B"}, Entity: e2, StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true}}
-		sl5 := StoreLocation{StoreLocationColor: sql.NullString{Valid: true, String: "rgb(32, 103, 208)"}, StoreLocationName: sql.NullString{Valid: true, String: "fridgeE3-A"}, Entity: e3, StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true}}
-		sl6 := StoreLocation{StoreLocationColor: sql.NullString{Valid: true, String: "rgb(255, 38, 38)"}, StoreLocationName: sql.NullString{Valid: true, String: "roomE3-B"}, Entity: e3, StoreLocationCanStore: sql.NullBool{Valid: true, Bool: false}}
-
-		log.Debug("- creating 5 sample storelocations")
-		db.CreateStoreLocation(sl1)
-		db.CreateStoreLocation(sl2)
-		db.CreateStoreLocation(sl3)
-		db.CreateStoreLocation(sl4)
-		db.CreateStoreLocation(sl5)
-
-		log.Debug("- creating laboratoire de chimie sample storelocations")
-		var lastid int
-		slch1 := StoreLocation{
-			StoreLocationColor:    sql.NullString{Valid: true, String: "rgb(0, 139, 139)"},
-			StoreLocationName:     sql.NullString{Valid: true, String: "[P]M6"},
-			Entity:                e4,
-			StoreLocationCanStore: sql.NullBool{Valid: true, Bool: false},
-		}
-		_, lastid = db.CreateStoreLocation(slch1)
-		slch1.StoreLocationID = sql.NullInt64{Valid: true, Int64: int64(lastid)}
-		slch2 := StoreLocation{
-			StoreLocationColor:    sql.NullString{Valid: true, String: "rgb(0, 206, 209)"},
-			StoreLocationName:     sql.NullString{Valid: true, String: "[I]Inflammable"},
-			Entity:                e4,
-			StoreLocation:         &slch1,
-			StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true},
-		}
-		slch3 := StoreLocation{
-			StoreLocationColor:    sql.NullString{Valid: true, String: "rgb(32, 178, 170)"},
-			StoreLocationName:     sql.NullString{Valid: true, String: "Labo central"},
-			Entity:                e4,
-			StoreLocation:         &slch1,
-			StoreLocationCanStore: sql.NullBool{Valid: true, Bool: false},
-		}
-		_, lastid = db.CreateStoreLocation(slch3)
-		slch3.StoreLocationID = sql.NullInt64{Valid: true, Int64: int64(lastid)}
-		slch4 := StoreLocation{
-			StoreLocationColor:    sql.NullString{Valid: true, String: "rgb(72, 209, 204)"},
-			StoreLocationName:     sql.NullString{Valid: true, String: "[A]Acides"},
-			Entity:                e4,
-			StoreLocation:         &slch3,
-			StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true},
-		}
-		slch5 := StoreLocation{
-			StoreLocationColor:    sql.NullString{Valid: true, String: "rgb(72, 209, 204)"},
-			StoreLocationName:     sql.NullString{Valid: true, String: "[C]Congélateur"},
-			Entity:                e4,
-			StoreLocation:         &slch3,
-			StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true},
-		}
-		slch6 := StoreLocation{
-			StoreLocationColor:    sql.NullString{Valid: true, String: "rgb(72, 209, 204)"},
-			StoreLocationName:     sql.NullString{Valid: true, String: "[D]Dessicateur"},
-			Entity:                e4,
-			StoreLocation:         &slch3,
-			StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true},
-		}
-		slch7 := StoreLocation{
-			StoreLocationColor:    sql.NullString{Valid: true, String: "rgb(72, 209, 204)"},
-			StoreLocationName:     sql.NullString{Valid: true, String: "[F]Frigo"},
-			Entity:                e4,
-			StoreLocation:         &slch3,
-			StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true},
-		}
-		slch8 := StoreLocation{
-			StoreLocationColor:    sql.NullString{Valid: true, String: "rgb(72, 209, 204)"},
-			StoreLocationName:     sql.NullString{Valid: true, String: "[P]Placard"},
-			Entity:                e4,
-			StoreLocation:         &slch3,
-			StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true},
-		}
-		slch9 := StoreLocation{
-			StoreLocationColor:    sql.NullString{Valid: true, String: "rgb(72, 209, 204)"},
-			StoreLocationName:     sql.NullString{Valid: true, String: "[S]Placard sels et solides"},
-			Entity:                e4,
-			StoreLocation:         &slch3,
-			StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true},
-		}
-		slch10 := StoreLocation{
-			StoreLocationColor:    sql.NullString{Valid: true, String: "rgb(255, 0, 255)"},
-			StoreLocationName:     sql.NullString{Valid: true, String: "[P]M6.072"},
-			Entity:                e4,
-			StoreLocation:         &slch1,
-			StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true},
-		}
-		slch11 := StoreLocation{
-			StoreLocationColor:    sql.NullString{Valid: true, String: "rgb(255, 0, 255)"},
-			StoreLocationName:     sql.NullString{Valid: true, String: "[P]M6.121"},
-			Entity:                e4,
-			StoreLocation:         &slch1,
-			StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true},
-		}
-		slch12 := StoreLocation{
-			StoreLocationColor:    sql.NullString{Valid: true, String: "rgb(255, 0, 255)"},
-			StoreLocationName:     sql.NullString{Valid: true, String: "[P]M6.156"},
-			Entity:                e4,
-			StoreLocation:         &slch1,
-			StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true},
-		}
-		slch13 := StoreLocation{
-			StoreLocationColor:    sql.NullString{Valid: true, String: "rgb(139, 0, 139)"},
-			StoreLocationName:     sql.NullString{Valid: true, String: "Soute - local déchets"},
-			Entity:                e4,
-			StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true},
-		}
-		slch14 := StoreLocation{
-			StoreLocationColor:    sql.NullString{Valid: true, String: "rgb(139, 0, 139)"},
-			StoreLocationName:     sql.NullString{Valid: true, String: "[T]Frigo CMR/Toxiques"},
-			Entity:                e4,
-			StoreLocationCanStore: sql.NullBool{Valid: true, Bool: true},
-		}
-
-		db.CreateStoreLocation(slch2)
-		db.CreateStoreLocation(slch4)
-		db.CreateStoreLocation(slch5)
-		db.CreateStoreLocation(slch6)
-		db.CreateStoreLocation(slch7)
-		db.CreateStoreLocation(slch8)
-		db.CreateStoreLocation(slch9)
-		db.CreateStoreLocation(slch10)
-		db.CreateStoreLocation(slch11)
-		db.CreateStoreLocation(slch12)
-		db.CreateStoreLocation(slch13)
-		db.CreateStoreLocation(slch14)
-
-		m1.Entities = []Entity{e1}
-		m2.Entities = []Entity{e2}
-		m3.Entities = []Entity{e3}
-		m1.Permissions = []Permission{Permission{PermissionPermName: "all", PermissionItemName: "all", PermissionEntityID: e1.EntityID}}
-		m2.Permissions = []Permission{Permission{PermissionPermName: "all", PermissionItemName: "all", PermissionEntityID: e2.EntityID}}
-		m3.Permissions = []Permission{Permission{PermissionPermName: "all", PermissionItemName: "all", PermissionEntityID: e3.EntityID}}
-
-		log.Debug("- updating the 3 managers")
-		db.UpdatePerson(m1)
-		db.UpdatePerson(m2)
-		db.UpdatePerson(m3)
-
-		//p0 := Person{PersonEmail: "admin@chimitheque.fr", Permissions: []Permission{Permission{PermissionPermName: "all", PermissionItemName: "all", PermissionEntityID: -1}}}
-		p1 := Person{PersonEmail: "john@lab-one.com", Entities: []Entity{e1}, Permissions: []Permission{Permission{PermissionPermName: "r", PermissionItemName: "products", PermissionEntityID: -1}}}
-		p2 := Person{PersonEmail: "mickey@lab-one.com", Entities: []Entity{e1}}
-		p3 := Person{PersonEmail: "donald@lab-one.com", Entities: []Entity{e1}}
-		p4 := Person{PersonEmail: "tom@lab-two.com", Entities: []Entity{e2}}
-		p5 := Person{PersonEmail: "mike@lab-two.com", Entities: []Entity{e2}}
-		p6 := Person{PersonEmail: "ralf@lab-two.com", Entities: []Entity{e2}}
-		p7 := Person{PersonEmail: "john@lab-three.com", Entities: []Entity{e3}}
-		p8 := Person{PersonEmail: "rob@lab-three.com", Entities: []Entity{e3}}
-		p9 := Person{PersonEmail: "harrison@lab-three.com", Entities: []Entity{e3}}
-		p10 := Person{PersonEmail: "alone@no-entity.com"}
-
-		log.Debug("- creating 11 sample users")
-		//db.CreatePerson(p0)
-		db.CreatePerson(p1)
-		db.CreatePerson(p2)
-		db.CreatePerson(p3)
-		db.CreatePerson(p4)
-		db.CreatePerson(p5)
-		db.CreatePerson(p6)
-		db.CreatePerson(p7)
-		db.CreatePerson(p8)
-		db.CreatePerson(p9)
-		db.CreatePerson(p10)
-
-		// inserting sample products
-		// attention: values are wrongs, just for devel purposes
-		log.Debug("- creating sample products")
-		for i := 1; i <= 50; i++ {
-			ins := fmt.Sprintf("(\"spec%d\", \"%d\", \"%d\", 1, \"%d\")", i, i, i, i)
-			if _, err = db.Exec(`INSERT INTO product ("product_specificity", "casnumber", "name", "person", "empiricalformula") VALUES ` + ins + `;`); err != nil {
-				return err
-			}
-			if _, err = db.Exec(`INSERT INTO productsymbols ("productsymbols_product_id", "productsymbols_symbol_id") VALUES 
-			(?, ?), (?, ?), (?, ?), (?, ?);`, i, (i%9)+1, i, ((i+1)%9)+1, i, ((i+2)%9)+1, i, ((i+3)%9)+1); err != nil {
-				return err
-			}
-		}
-
-		// inserting sample storages
-		// attention: values are wrongs, just for devel purposes
-		log.Debug("- creating sample storages")
-		for i := 1; i <= 300; i++ {
-			comment := fmt.Sprintf("(\"comment%d\", \"%d\", \"%d\")", i, i, i)
-			datetime := time.Now()
-			person := i%10 + 1
-			product := i%19 + 1
-			storelocation := i%18 + 1
-			unit := i%6 + 1
-			quantity := i
-			if storelocation == int(sl6.StoreLocationID.Int64) {
-				storelocation = int(sl6.StoreLocationID.Int64) + 1
-			}
-			if _, err = db.Exec(`INSERT INTO storage ("storage_creationdate", "storage_modificationdate", "storage_comment", "person", "product", "storelocation", "storage_quantity", "unit") VALUES (?,?,?,?,?,?,?,?);`, datetime, datetime, comment, person, product, storelocation, quantity, unit); err != nil {
-				return err
-			}
-		}
-
-	}
-	log.Debug("done")
-	return nil
 }
 
 // CreateDatabase creates the database tables
@@ -755,6 +488,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		zerohsid               string
 		zeropsid               string
 
+		// ids mappings
 		// O:old N:new R:reverse
 		mONperson        map[string]string   // oldid <> newid map for user table
 		mONsupplier      map[string]string   // oldid <> newid map for supplier table
@@ -800,23 +534,11 @@ func (db *SQLiteDataStore) Import(dir string) error {
 	rnumber := regexp.MustCompile("([0-9]+)")
 
 	// checking tables empty
-	if err = db.Get(&c, `SELECT count(*) FROM person`); err != nil {
-		return err
-	}
-	if c != 1 {
-		panic("person table not empty - can not import")
-	}
-	if err = db.Get(&c, `SELECT count(*) FROM entity`); err != nil {
+	if err = db.Get(&c, `SELECT count(*) FROM product`); err != nil {
 		return err
 	}
 	if c != 0 {
-		panic("entity table not empty - can not import")
-	}
-	if err = db.Get(&c, `SELECT count(*) FROM storelocation`); err != nil {
-		return err
-	}
-	if c != 0 {
-		panic("storelocation table not empty - can not import")
+		panic("person product not empty - can not import")
 	}
 
 	// beginning transaction
@@ -1977,11 +1699,11 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		}
 	}
 
-	// committing changes
-	if err = tx.Commit(); err != nil {
-		tx.Rollback()
-		return err
-	}
+	// // committing changes
+	// if err = tx.Commit(); err != nil {
+	// 	tx.Rollback()
+	// 	return err
+	// }
 
 	log.Info("- updating store locations full path")
 	var sls []StoreLocation
@@ -1996,10 +1718,10 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		return err
 	}
 
-	// beginning new transaction
-	if tx, err = db.Beginx(); err != nil {
-		return err
-	}
+	// // beginning new transaction
+	// if tx, err = db.Beginx(); err != nil {
+	// 	return err
+	// }
 	for _, sl := range sls {
 		log.Debug("  " + sl.StoreLocationName.String)
 		sl.StoreLocationFullPath = db.buildFullPath(sl, tx)

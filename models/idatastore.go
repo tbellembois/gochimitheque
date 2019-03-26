@@ -12,7 +12,6 @@ import (
 type Datastore interface {
 	CreateDatabase() error
 	Import(dir string) error
-	InsertSamples() error
 
 	// products
 	GetProducts(helpers.DbselectparamProduct) ([]Product, int, error)
