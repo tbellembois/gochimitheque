@@ -83,12 +83,7 @@ func main() {
 	if err = datastore.CreateDatabase(); err != nil {
 		log.Panic(err)
 	}
-	if *importfrom == "" {
-		log.Info("- inserting database sample values if needed")
-		if err = datastore.InsertSamples(); err != nil {
-			log.Panic(err)
-		}
-	} else {
+	if *importfrom != "" {
 		log.Info("- import from csv into database")
 		err := datastore.Import(*importfrom)
 		if err != nil {
