@@ -146,16 +146,16 @@ function operateFormatter(value, row, index) {
 
     // buttons are hidden by default
     var actions = [
-    '<button id="storelocations' + eid + '" eid="' + eid + '" class="storelocations btn btn-link btn-sm" style="display: none;" title="store locations" type="button">',
+    '<button id="storelocations' + eid + '" eid="' + eid + '" class="storelocations btn btn-link btn-sm" style="display: none;" title="' + global.t("storelocations", container.PersonLanguage) + '" type="button">',
         '<span class="mdi mdi-docker mdi-24px"></span>',
     '</button>',
-    '<button id="members' + eid + '" eid="' + eid + '" class="members btn btn-link btn-sm" style="display: none;" title="members" type="button">',
+    '<button id="members' + eid + '" eid="' + eid + '" class="members btn btn-link btn-sm" style="display: none;" title="' + global.t("members", container.PersonLanguage) + '" type="button">',
         '<span class="mdi mdi-account-group mdi-24px"></span>',
     '</button>',
-    '<button id="edit' + eid + '" eid="' + eid + '" class="edit btn btn-link btn-sm" style="display: none;" title="edit" type="button">',
+    '<button id="edit' + eid + '" eid="' + eid + '" class="edit btn btn-link btn-sm" style="display: none;" title="' + global.t("edit", container.PersonLanguage) + '" type="button">',
         '<span class="mdi mdi-border-color mdi-24px"></span>',
     '</button>',
-    '<button id="delete' + eid + '" eid="' + eid + '" class="delete btn btn-link btn-sm" style="display: none;" title="delete" type="button">',
+    '<button id="delete' + eid + '" eid="' + eid + '" class="delete btn btn-link btn-sm" style="display: none;" title="' + global.t("delete", container.PersonLanguage) + '" type="button">',
         '<span class="mdi mdi-delete mdi-24px"></span>',
     '</button>'];
 
@@ -221,7 +221,7 @@ window.operateEvents = {
                 url: proxyPath + "entities/" + row['entity_id'],
                 method: "DELETE",
             }).done(function(data, textStatus, jqXHR) {
-                global.displayMessage("entity deleted", "success");
+                global.displayMessage(global.t("entity_deleted_message", container.PersonLanguage), "success");
                 var $table = $('#table');
                 $table.bootstrapTable('refresh');
             }).fail(function(jqXHR, textStatus, errorThrown) {
@@ -241,7 +241,7 @@ function closeViewEdit() { $("#list-collapse").collapse("show"); $("#edit-collap
 // save entity callback
 //
 var createCallBack = function createCallback(data, textStatus, jqXHR) {
-    global.displayMessage("entity " + data.entity_name + " created", "success");
+    global.displayMessage(global.t("entity_created_message") + ": " + data.entity_name, "success");
     setTimeout(function(){ window.location = proxyPath + "v/entities"; }, 1000);
 }
 var updateCallBack = function updateCallback(data, textStatus, jqXHR) {
@@ -256,7 +256,7 @@ var updateCallBack = function updateCallback(data, textStatus, jqXHR) {
             "entity_description": data.entity_description,
         }
     });
-    global.displayMessage("entity " + data.entity_name + " updated", "success");
+    global.displayMessage(global.t("entity_updated_message") + ": " + data.entity_name, "success");
 }
 function saveEntity() {
     var form = $("#entity");

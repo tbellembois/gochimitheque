@@ -14,10 +14,13 @@
                         thead
                             tr
                                 th(data-field='entity_id') ID
-                                th(data-field='entity_name' data-sortable='true') name
-                                th(data-field='entity_description') description
-                                th(data-field='managers' data-formatter='managersFormatter') manager(s)
-                                th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') actions
+                                th(data-field='entity_name' data-sortable='true')
+                                    | {{ T "entity_name_table_header" 1 }}
+                                th(data-field='entity_description')
+                                    | {{ T "entity_description_table_header" 1 }}
+                                th(data-field='managers' data-formatter='managersFormatter')
+                                    | {{ T "entity_manager_table_header" 1 }}
+                                th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents')
 
         #edit-collapse.collapse(data-parent='#accordion')
 

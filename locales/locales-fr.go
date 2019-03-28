@@ -19,6 +19,11 @@ var LOCALES_FR = []byte(`
 [close]
 	one = "fermer"
 
+[members]
+	one = "membres"
+[storelocations]
+	one = "entrepôts"
+
 [email_placeholder]
 	one = "entrez votre email"
 [submitlogin_text]
@@ -188,4 +193,19 @@ var LOCALES_FR = []byte(`
 	one = "radioactif"
 [product_restricted_title]
 	one = "accès restreint"
+
+[entity_create_title]
+	one = "créer une entité"
+[entity_deleted_message]
+	one = "entité supprimée"
+[entity_created_message]
+	one = "entité crée"
+[entity_updated_message]
+	one = "entité mise à jour"
+[entity_name_table_header]
+	one = "nom"
+[entity_description_table_header]
+	one = "description"
+[entity_manager_table_header]
+	one = "responsable(s)"
 `)

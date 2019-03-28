@@ -5,9 +5,7 @@ function resetPassword() {
         uid = $("input#captcha_uid").val();
     if (email == "") {
         msg = global.t("resetpassword_warning_enteremail", container.PersonLanguage) 
-        global.displayMessage(msg, "warning");
     } else {
-        global.displayMessage("validating...", "success");
         $("#resetpassword").fadeOut("slow");
         $.ajax({
             url: proxyPath + "reset-password",
@@ -35,7 +33,7 @@ function getToken() {
         password = $("#person_password").val();
 
     if (email == "") {
-        global.displayMessage("enter your email in the login form", "warning");
+        global.displayMessage(global.t("resetpassword_warning_enteremail", container.PersonLanguage), "warning");
     } else {
         $.ajax({
             url: proxyPath + "get-token",
