@@ -19,6 +19,11 @@ var LOCALES_EN = []byte(`
 [close]
 	one = "close"
 
+[members]
+	one = "members"
+[storelocations]
+	one = "storelocations"
+
 [email_placeholder]
 	one = "enter your email"
 [submitlogin_text]
@@ -195,4 +200,19 @@ var LOCALES_EN = []byte(`
 	one = "radioactive"
 [product_restricted_title]
 	one = "restricted access"
+
+[entity_create_title]
+	one = "create entity"
+[entity_deleted_message]
+	one = "entity deleted"
+[entity_created_message]
+	one = "entity created"
+[entity_updated_message]
+	one = "entity updated"
+[entity_name_table_header]
+	one = "name"
+[entity_description_table_header]
+	one = "description"
+[entity_manager_table_header]
+	one = "manager(s)"
 `)
