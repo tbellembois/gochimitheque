@@ -1,32 +1,35 @@
-| {{define "CONTENT"}}
+extends ../basenomenu.jade
+block CONTENT
+    :go:func
+        Login(c ViewContainer)
     header
         form#authForm
             .row
                 div.col.col-sm-4.offset-sm-4
                     div.form-group
                         label(for="person_email")
-                        | {{ $a := "email_placeholder" }} {{ $b := 1 }}
+                        - var a, b = "email_placeholder", 1
                         input.form-control#person_email(type="email" 
                                                         aria-describedby="emailHelp" 
-                                                        placeholder="{{ T $a $b }}"
+                                                        placeholder=T(a,b)
                                                         name="person_email")
                     div.form-group
                         label(for="person_password")
-                        | {{ $a := "password_placeholder" }} {{ $b := 1 }}
+                        - a, b = "password_placeholder", 1
                         input.form-control#person_password(type="password" 
                                                         aria-describedby="passwordHelp" 
-                                                        placeholder="{{ T $a $b }}" 
+                                                        placeholder=T(a,b) 
                                                         name="person_password")
             .row
                 .col.offset-sm-4.col-sm-2
                     a#gettoken(href="#" onclick="getToken();")
                         span.mdi.mdi-36px.mdi-login.iconlabel
-                            | {{ T "submitlogin_text" 1 }} 
+                            = T("submitlogin_text", 1) 
                 .col.col-sm-2
                     p.text-right
                         a#getcaptcha(href="#" onclick="getCaptcha();")
                             span.mdi.mdi-36px.mdi-lock-reset.iconlabel
-                                | {{ T "resetpassword_text" 1 }} 
+                                = T("resetpassword_text", 1) 
         
         form#captcha
             .row.invisible#captcha-row
@@ -37,31 +40,27 @@
                     input#captcha_text(type="text" name="captcha_text")
                     a#resetpassword(href="#" onclick="resetPassword();")
                         span.mdi.mdi-36px.mdi-lock-reset.iconlabel
-                            | {{ T "resetpassword2_text" 1 }} 
+                            = T("resetpassword2_text", 1) 
 
     a(href="https://github.com/tbellembois/gochimitheque")
-        img(style="position: absolute; top: 0; right: 0; border: 0;" src="{{.ProxyPath}}img/forkme_right_darkblue_121621.png" alt="Fork me on GitHub")
+        img(style="position: absolute; top: 0; right: 0; border: 0;" src=c.ProxyPath + "img/forkme_right_darkblue_121621.png" alt="Fork me on GitHub")
 
     .fixed-bottom.row
         .col.col-sm-3
-            img.mx-auto.d-block(src="{{.ProxyPath}}img/logo_ens.png", alt="ens_logo" title="Ecole Normale Supérieure de Lyon")
+            img.mx-auto.d-block(src=c.ProxyPath + "img/logo_ens.png", alt="ens_logo" title="Ecole Normale Supérieure de Lyon")
         .col.col-sm-3
-            img.mx-auto.d-block(src="{{.ProxyPath}}img/logo_uca.jpg", alt="uca_logo" title="Université Clermont Auvergne")
+            img.mx-auto.d-block(src=c.ProxyPath + "img/logo_uca.jpg", alt="uca_logo" title="Université Clermont Auvergne")
         .col.col-sm-3
-            img.mx-auto.d-block(src="{{.ProxyPath}}img/logo_go.png", alt="go_logo" title="Golang language")
+            img.mx-auto.d-block(src=c.ProxyPath + "img/logo_go.png", alt="go_logo" title="Golang language")
         .col.col-sm-3
-            p.blockquote-footer
                 i 
-                    | {{ T "logo_information1" 1 }} 
+                    = T("logo_information1", 1) 
                 a(title="mon-aloevera [at] hotmail [dot] com")
                     b Katia Varet.
             p.blockquote-footer
                 i
-                    | {{ T "logo_information2" 1 }} 
+                    = T("logo_information2", 1) 
 
-| {{end}}
-| {{define "CONTENTJS"}}
 
-| <script src="../js/chim/login.js"></script>
-
-| {{end}}
+block CONTENTJS
+    script(src="../js/chim/login.js")

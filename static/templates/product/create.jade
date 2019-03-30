@@ -1,4 +1,7 @@
-| {{define "CONTENT"}}
+extends ../base.jade
+block CONTENT
+    :go:func
+        Productcreate(c ViewContainer)
 
     +titleicon(iconaction="creation" iconitem="tag" label="create product")
 
@@ -22,18 +25,15 @@
 
         .form-row
             .form-group.col-sm-12
-                | {{$label := "specificity"}} {{$name := "product_specificity"}}
-                +inputtext
+                +inputtext("specificity", "product_specificity")
 
         .form-row
             .form-group.col-sm-auto
                 span.badge.badge-pill.badge-danger &nbsp;
             .form-group.col-sm-5
-                | {{$label := "empirical formula"}} {{$name := "empiricalformula"}}
-                +select
+                +select("empirical formula", "empiricalformula")
             .form-group.col-sm-5
-                | {{$label := "linear formula"}} {{$name := "linearformula"}}
-                +select
+                +select("linear formula", "linearformula")
             .form-group.col-sm-1
                 button#fconverter.btn.btn-link(type="button" data-toggle="popover" data-content="no result" title="convert linear to empirical formula" onclick="linearToEmpirical();")
                     span.mdi.mdi-rotate-3d.mdi-24px
@@ -42,81 +42,65 @@
             .form-group.col-sm-auto
                 span.badge.badge-pill.badge-danger &nbsp;
             .form-group.col-sm-6
-                | {{$label := "cas number"}} {{$name := "casnumber"}}
-                +select
+                +select("cas number", "casnumber")
             .form-group.col-sm-5
-                | {{$label := "ce number"}} {{$name := "cenumber"}}
-                +select
+                +select("ce number", "cenumber")
 
         .form-row
             .form-group.col-sm-12
-                | {{$label := "MSDS link"}} {{$name := "product_msds"}}
-                +inputtext
+                +inputtext("MSDS link", "product_msds")
 
         .form-row
             .form-group.col-sm-6
-                | {{$label := "3D formula link"}} {{$name := "product_threedformula"}}
-                +inputtext
+                +inputtext("3D formula link", "product_threedformula")
             .form-group.col-sm-6
-                | {{$label := "3D formula mol file"}} {{$name := "product_molformula"}}
-                +inputfile
-                +inputhidden(name="product_molformula_content" value="")
+                +inputfile("3D formula mol file", "product_molformula")
+                +inputhidden("product_molformula_content", "")
 
         .form-row
             .form-group.col-sm-6
-                | {{$label := "physical state"}} {{$name := "physicalstate"}}
-                +select
+                +select("physical state", "physicalstate")
             .form-group.col-sm-6
-                | {{$label := "class of compound"}} {{$name := "classofcompound"}}
-                +select  
+                +select("class of compound", "classofcompound")  
 
         .form-row
             .form-group.col-sm-5.d-flex.align-items-end
-                | {{$label := "magical selector"}} {{$name := "magical"}}
-                +inputtextarea
+                +inputtextarea("magical selector", "magical")
             .form-group.col-sm-1.d-flex.align-items-end
                 button#magical-button(onclick="magic();")
                     span.mdi.mdi-24px.mdi-auto-fix
 
         .form-row
             .form-group.col-sm-6
-                | {{$label := "signal word"}} {{$name := "signalword"}}
-                +select
+                +select("signal word", "signalword")
             .form-group.col-sm-6
-                | {{$label := "symbol(s)"}} {{$name := "symbols"}}
-                +selectmultiple
+                +selectmultiple("symbol(s)", "symbols")
 
         .form-row
             .form-group.col-sm-6
-                | {{$label := "hazard statement(s)"}} {{$name := "hazardstatements"}}
-                +selectmultiple
+                +selectmultiple("hazard statement(s)", "hazardstatements")
             .form-group.col-sm-6
-                | {{$label := "precautionary statement(s)"}} {{$name := "precautionarystatements"}}
-                +selectmultiple
+                +selectmultiple("precautionary statement(s)", "precautionarystatements")
 
         .form-row
             .form-group.col-sm-12
-                | {{$title := "restricted access"}} {{$name := "product_restricted"}} {{$icon := "mdi-hand"}}
-                +checkboxicon2
+                +checkboxicon2("restricted access", "product_restricted", "mdi-hand")
         .form-row
             .form-group.col-sm-12
-                | {{$title := "radioactive"}} {{$name := "product_radioactive"}} {{$icon := "mdi-radioactive"}}
-                +checkboxicon2
+                +checkboxicon2("radioactive", "product_radioactive", "mdi-radioactive")
 
         .form-row
             .form-group.col-sm-12
-                | {{$label := "disposal comment"}} {{$name := "product_disposalcomment"}}
-                +inputtextarea
+                +inputtextarea("disposal comment", "product_disposalcomment")
         .form-row
             .form-group.col-sm-12
-                | {{$label := "remark"}} {{$name := "product_remark"}}
-                +inputtextarea
+                +inputtextarea("remark", "product_remark")
 
         button#save.btn.btn-link(type='button', onclick='saveProduct()')
             span.mdi.mdi-content-save.mdi-24px.iconlabel
-                | {{ T "save" 1 }}
+                = T("save", 1)
 
-| {{end}}
-| {{define "CONTENTJS"}}
-| {{template "COMMONCONTENTJS"}}
-| {{end}}
+
+block CONTENTJS
+	include commonjs.jade
+

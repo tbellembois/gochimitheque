@@ -1,10 +1,13 @@
-| {{define "CONTENT"}}
+extends basenomenu.jade
 
-h2 bla
-h1 bli
-h1 bli
+block CONTENT
+    :go:func
+        Test(c ViewContainer)
 
-| {{end}}
+    h2 bla
+    h1 bli
+    h1 bli
 
-| {{define "CONTENTJS"}}
-| {{end}}
+
+
+block CONTENTJS

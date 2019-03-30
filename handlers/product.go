@@ -8,6 +8,7 @@ import (
 
 	"github.com/tbellembois/gochimitheque/utils"
 
+	"../jade"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/global"
@@ -24,13 +25,8 @@ func (env *Env) VGetProductsHandler(w http.ResponseWriter, r *http.Request) *hel
 
 	c := helpers.ContainerFromRequestContext(r)
 
-	if e := env.Templates["productindex"].ExecuteTemplate(w, "BASE", c); e != nil {
-		return &helpers.AppError{
-			Error:   e,
-			Code:    http.StatusInternalServerError,
-			Message: "error executing template base",
-		}
-	}
+	jade.Productindex(c, w)
+
 	return nil
 }
 
@@ -39,13 +35,8 @@ func (env *Env) VCreateProductHandler(w http.ResponseWriter, r *http.Request) *h
 
 	c := helpers.ContainerFromRequestContext(r)
 
-	if e := env.Templates["productcreate"].ExecuteTemplate(w, "BASE", c); e != nil {
-		return &helpers.AppError{
-			Error:   e,
-			Code:    http.StatusInternalServerError,
-			Message: "error executing template base",
-		}
-	}
+	jade.Productcreate(c, w)
+
 	return nil
 }
 
