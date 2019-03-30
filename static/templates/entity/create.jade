@@ -1,25 +1,22 @@
-| {{define "CONTENT"}}
+extends ../base.jade
+block CONTENT
+    :go:func
+        Entitycreate(c ViewContainer)
 
     +titleicon(iconaction="creation" iconitem="store" label="create entity")
 
     form#entity
         .form-group.row
-            | {{$label := "name"}} {{$name := "entity_name"}}
-            +inputtext
+            +inputtext("name", "entity_name")
         .form-group.row
-            | {{$label := "description"}} {{$name := "entity_description"}}
-            +inputtext
+            +inputtext("description", "entity_description")
         .form-group.row
-            | {{$label := "manager(s)"}} {{$name := "managers"}}
-            +selectmultiple
+            +selectmultiple("manager(s)", "managers")
 
     button#save.btn.btn-link(type='button', onclick='saveEntity()')
         span.mdi.mdi-content-save.mdi-24px.iconlabel
-            | {{ T "save" 1 }}
-| {{end}}
+            = T("save", 1)
 
-| {{define "CONTENTJS"}}
 
-| <script src="../js/chim/entity.js"></script>
-
-| {{end}}
+block CONTENTJS
+    script(src="../js/chim/entity.js")

@@ -1,4 +1,7 @@
-| {{define "CONTENT"}}
+extends ../base.jade
+block CONTENT
+    :go:func
+        Storageindex(c ViewContainer)
 
     #search.row.pt-sm-4.pb-sm-4.pl-sm-2.pr-sm-2.mt-sm-2.mb-sm-2.ml-sm-5.mr-sm-5.bg-light.border.rounded.collapse.show
 
@@ -12,58 +15,47 @@
         .col
             .row
                 .col-sm-12
-                    | {{$icon := "docker"}} {{$name := "s_storelocation"}}
-                    +selecticon
+                    +selecticon("docker", "s_storelocation")
             .row
                 .col-sm-6
-                    | {{$label := T "s_custom_name_part_of" 1 }} {{$name := "s_custom_name_part_of"}}
-                    +inputtextcompact
+                    +inputtextcompact(T("s_custom_name_part_of", 1), "s_custom_name_part_of")
                 .col-sm-6
                 .col-sm-6
-                    | {{$label := T "s_name" 1 }} {{$name := "s_name"}}
-                    +selectcompact
+                    +selectcompact(T("s_name", 1), "s_name")
                 .col-sm-6
-                    | {{$label := T "s_casnumber" 1 }} {{$name := "s_casnumber"}}
-                    +selectcompact
+                    +selectcompact(T("s_casnumber", 1), "s_casnumber")
                 .col-sm-6
-                    | {{$label := T "s_empiricalformula" 1 }} {{$name := "s_empiricalformula"}}
-                    +selectcompact
+                    +selectcompact(T("s_empiricalformula", 1), "s_empiricalformula")
                 .col-sm-6
-                    | {{$label := T "s_storage_barecode" 1 }} {{$name := "s_storage_barecode"}}
-                    +inputtextcompact
+                    +inputtextcompact(T("s_storage_barecode", 1), "s_storage_barecode")
             .row.collapse#advancedsearch
                 .col-sm-12
                     .form-row
                         .form-group.col-sm-6
-                            | {{$label := T "s_signalword" 1 }} {{$name := "s_signalword"}}
-                            +select
+                            +select(T("s_signalword", 1), "s_signalword")
                         .form-group.col-sm-6
-                            | {{$label := T "s_symbols" 1 }} {{$name := "s_symbols"}}
-                            +selectmultiple
+                            +selectmultiple(T("s_symbols", 1), "s_symbols")
                     .form-row
                         .form-group.col-sm-6
-                            | {{$label := T "s_hazardstatements" 1 }} {{$name := "s_hazardstatements"}}
-                            +selectmultiple
+                            +selectmultiple(T("s_hazardstatements", 1), "s_hazardstatements")
                         .form-group.col-sm-6
-                            | {{$label := T "s_precautionarystatements" 1 }} {{$name := "s_precautionarystatements"}}
-                            +selectmultiple
+                            +selectmultiple(T("s_precautionarystatements", 1), "s_precautionarystatements")
                     .form-row
                         .form-group.col-sm-6
-                            | {{$label := T "s_casnumber_cmr" 1 }} {{$name := "s_casnumber_cmr"}}
-                            +checkbox
+                            +checkbox(T("s_casnumber_cmr" ,1), "s_casnumber_cmr")
             .row
                 .col.col-sm-10
                     button#clearsearch.btn.btn-link.mr-sm-2(type="button" onclick="clearsearch();")
                         span.mdi.mdi-broom.mdi-24px.iconlabel
-                            | {{ T "clearsearch_text" 1 }} 
+                            = T("clearsearch_text", 1) 
 
                     button#search.btn.btn-lg.btn-link.mr-sm-2(type="button" onclick="search();")
                         span.mdi.mdi-magnify.mdi-24px.iconlabel
-                            | {{ T "search_text" 1 }} 
+                            = T("search_text", 1) 
                 .col.col-sm-2
                     button.btn.btn-link(data-toggle="collapse" href="#advancedsearch" aria-expanded="false")
                         span.mdi.mdi-magnify-plus-outline.mdi-24px.iconlabel
-                            | {{ T "advancedsearch_text" 1 }} 
+                            = T("advancedsearch_text", 1) 
 
     .row
         .col-sm-8
@@ -77,15 +69,15 @@
         .col.toggleable
             button.btn.btn-link#switchview(type="button" onclick="switchProductStorageView()")
                 span.mdi.mdi-tag.mdi-24px.iconlabel
-                    | {{ T "switchproductview_text" 1 }} 
+                    = T("switchproductview_text", 1) 
         .col
             button.btn.btn-link#export(type="button" onclick="exportAll()")
                 span.mdi.mdi-content-save.mdi-24px.iconlabel
-                    | {{ T "export_text" 1 }} 
+                    = T("export_text", 1) 
         .col
             button#s_storage_archive_button.btn.btn-link(type="button" data-toggle="button" aria-pressed="true" autocomplete="off")
                 span.mdi.mdi-delete.mdi-24px.iconlabel
-                    | {{ T "showdeleted_text" 1 }} 
+                    = T("showdeleted_text", 1) 
 
     #stock.modal.fade(role="dialog" tabindex="-1" aria-labelledby="stockLabel" aria-hidden="true")
         .modal-dialog.modal-lg(role="document")
@@ -95,7 +87,7 @@
                 .modal-footer
                     button.btn.btn-link(type="button" data-dismiss="modal")
                         span.mdi.mdi-close-box.mdi-24px.iconlabel
-                            | {{ T "close" 1 }}
+                            = T("close", 1)
 
     #exportlink.modal.fade(role="dialog" tabindex="-1" aria-labelledby="exportlinkLabel" aria-hidden="true")
         .modal-dialog.modal-sm(role="document")
@@ -104,7 +96,7 @@
                 .modal-footer
                     button.btn.btn-link(type="button" data-dismiss="modal")
                         span.mdi.mdi-close-box.mdi-24px.iconlabel
-                            | {{ T "close" 1 }}
+                            = T("close", 1)
 
     #borrow.modal.fade(role="dialog" tabindex="-1" aria-labelledby="borrowLabel" aria-hidden="true")
         .modal-dialog.modal-lg(role="document")
@@ -116,19 +108,17 @@
                             .form-group.col-sm-auto
                                 span.badge.badge-pill.badge-danger &nbsp;
                             .form-group.col-sm-11
-                                | {{$label := "borrower"}} {{$name := "borrower"}}
-                                +select
+                                +select("borrower", "borrower")
                         .form-group.row
                             .col-sm-12
-                                | {{$label := "comment"}} {{$name := "borrowing_comment"}}
-                                +inputtextarea
+                                +inputtextarea("comment", "borrowing_comment")
                 .modal-footer
                     button.btn.btn-link(type="button" onclick='saveBorrowing()')
                         span.mdi.mdi-content-save.mdi-24px.iconlabel
-                            | {{ T "save" 1 }}
+                            = T("save", 1)
                     button.btn.btn-link(type="button" data-dismiss="modal")
                         span.mdi.mdi-close-box.mdi-24px.iconlabel
-                            | {{ T "close" 1 }}
+                            = T("close", 1)
 
     #accordion
         #list-collapse.collapse.show(data-parent='#accordion')
@@ -175,63 +165,46 @@
                     .form-group.col-sm-auto
                         span.badge.badge-pill.badge-danger &nbsp;
                     .form-group.col-sm-11
-                        | {{$label := "store location"}} {{$name := "storelocation"}}
-                        +select
+                        +select("store location", "storelocation")
                 .form-group.row
                     .col-sm-6
-                        | {{$label := "quantity"}} {{$name := "storage_quantity"}} {{$step := "any"}} {{$min := "1"}} {{$max := "10000000"}} {{$value := ""}}
-                        +inputnumber
+                        +inputnumber("quantity", "storage_quantity", "any", "1", "10000000", "")
                     .col-sm-6
-                        | {{$label := "unit"}} {{$name := "unit"}}
-                        +select 
+                        +select("unit", "unit") 
                 .form-group.row
                     .col-sm-12
-                        | {{$label := "supplier"}} {{$name := "supplier"}}
-                        +select
+                        +select("supplier", "supplier")
                 .form-group.row
                     .col-sm-3
-                        | {{$label := "entry date"}} {{$name := "storage_entrydate"}}
-                        +inputdate
+                        +inputdate("entry date", "storage_entrydate")
                     .col-sm-3
-                        | {{$label := "exit date"}} {{$name := "storage_exitdate"}}
-                        +inputdate
+                        +inputdate("exit date", "storage_exitdate")
                     .col-sm-3
-                        | {{$label := "opening date"}} {{$name := "storage_openingdate"}}
-                        +inputdate
+                        +inputdate("opening date", "storage_openingdate")
                     .col-sm-3
-                        | {{$label := "expiration date"}} {{$name := "storage_expirationdate"}}
-                        +inputdate
+                        +inputdate("expiration date", "storage_expirationdate")
                 .form-group.row
                     .col-sm-6
-                        | {{$label := "reference"}} {{$name := "storage_reference"}}
-                        +inputtext
+                        +inputtext("reference", "storage_reference")
                     .col-sm-6
-                        | {{$label := "batch number"}} {{$name := "storage_batchnumber"}}
-                        +inputtext
+                        +inputtext("batch number", "storage_batchnumber")
                 .form-group.row
                     .col-sm-12
-                        | {{$label := "barecode"}} {{$name := "storage_barecode"}}
-                        +inputtext
+                        +inputtext("barecode", "storage_barecode")
                 .form-group.row
                     .col-sm-12
-                        | {{$label := "comment"}} {{$name := "storage_comment"}}
-                        +inputtext  
+                        +inputtext("comment", "storage_comment")  
                 .form-group.row
                     .col-sm-12
-                        | {{$label := "to destroy"}} {{$name := "storage_todestroy"}}
-                        +checkbox
+                        +checkbox("to destroy", "storage_todestroy")
 
             button#save.btn.btn-link(type='button', onclick='saveStorage()')
                 span.mdi.mdi-content-save.mdi-24px.iconlabel
-                    | {{ T "save" 1 }}
+                    = T("save", 1)
             button.btn.btn-link(type='button', onclick='closeEdit();')
                 span.mdi.mdi-content-save.mdi-24px.iconlabel
-                    | {{ T "close" 1 }}
-| {{end}}
-| {{define "CONTENTJS"}}
+                    = T("close", 1)
 
-| <script src="../js/chim/product_storage.js"></script>
-| <script src="../js/chim/storage.js"></script>
+    script(src="../js/chim/product_storage.js")
+    script(src="../js/chim/storage.js")
 
-| {{template "COMMONCONTENTJS"}}
-| {{end}}

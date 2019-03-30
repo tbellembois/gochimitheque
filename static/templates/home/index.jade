@@ -1,6 +1,9 @@
-| {{define "CONTENT"}}
+extends ../base.jade
+block CONTENT
+    :go:func
+        Home(c ViewContainer)
     header.row
         div.col-sm-12
-| {{end}}
-| {{define "CONTENTJS"}}
-| {{end}}
+
+block CONTENTJS
+
