@@ -9,6 +9,7 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/tbellembois/gochimitheque/utils"
 
+	"../jade"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/global"
@@ -25,13 +26,8 @@ func (env *Env) VUpdatePersonPasswordHandler(w http.ResponseWriter, r *http.Requ
 
 	c := helpers.ContainerFromRequestContext(r)
 
-	if e := env.Templates["personpupdate"].ExecuteTemplate(w, "BASE", c); e != nil {
-		return &helpers.AppError{
-			Error:   e,
-			Code:    http.StatusInternalServerError,
-			Message: "error executing template base",
-		}
-	}
+	jade.Personpupdate(c, w)
+
 	return nil
 }
 
@@ -40,13 +36,8 @@ func (env *Env) VCreatePersonHandler(w http.ResponseWriter, r *http.Request) *he
 
 	c := helpers.ContainerFromRequestContext(r)
 
-	if e := env.Templates["personcreate"].ExecuteTemplate(w, "BASE", c); e != nil {
-		return &helpers.AppError{
-			Error:   e,
-			Code:    http.StatusInternalServerError,
-			Message: "error executing template base",
-		}
-	}
+	jade.Personcreate(c, w)
+
 	return nil
 }
 
@@ -55,13 +46,8 @@ func (env *Env) VGetPeopleHandler(w http.ResponseWriter, r *http.Request) *helpe
 
 	c := helpers.ContainerFromRequestContext(r)
 
-	if e := env.Templates["personindex"].ExecuteTemplate(w, "BASE", c); e != nil {
-		return &helpers.AppError{
-			Error:   e,
-			Code:    http.StatusInternalServerError,
-			Message: "error executing template base",
-		}
-	}
+	jade.Personindex(c, w)
+
 	return nil
 }
 

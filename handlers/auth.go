@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"time"
 
+	"../jade"
 	"github.com/dchest/passwordreset"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
@@ -35,13 +36,7 @@ func (env *Env) VLoginHandler(w http.ResponseWriter, r *http.Request) *helpers.A
 
 	c := helpers.ContainerFromRequestContext(r)
 
-	if e := env.Templates["login"].ExecuteTemplate(w, "BASE", c); e != nil {
-		return &helpers.AppError{
-			Error:   e,
-			Code:    http.StatusInternalServerError,
-			Message: "error executing template base",
-		}
-	}
+	jade.Login(c, w)
 
 	return nil
 }
