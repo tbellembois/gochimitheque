@@ -3,6 +3,7 @@ package main
 //go:generate go run gogenerate/localejs.go
 //go:generate gopherjs build gopherjs/gjs-common.go -o static/js/chim/gjs-common.js
 //go:generate rice embed-go
+//go:generate jade -writer -basedir static/templates -d ./jade home/index.jade login/index.jade entity/index.jade entity/create.jade product/index.jade product/create.jade storage/index.jade storage/create.jade storelocation/index.jade storelocation/create.jade person/index.jade person/create.jade person/pupdate.jade test.jade
 
 import (
 	"flag"
@@ -11,10 +12,8 @@ import (
 	"os"
 
 	rice "github.com/GeertJohan/go.rice"
-	"github.com/Joker/jade"
 	"github.com/gorilla/mux"
 	"github.com/justinas/alice"
-	"github.com/nicksnyder/go-i18n/v2/i18n"
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/handlers"
@@ -100,167 +99,22 @@ func main() {
 	}
 
 	// HasPermission used by template rendering to show/hide html elements
-	funcMap := template.FuncMap{
-		"HasPermission": func(id int, perm string, item string, itemid int) bool {
-			p, e := env.DB.HasPersonPermission(id, perm, item, itemid)
-			if e != nil {
-				log.Error(e.Error())
-			}
-			return p
-		},
-		// i18n
-		"T": func(messageID string, pluralCount int) string {
-			return env.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: messageID, PluralCount: pluralCount})
-		},
-	}
-
-	// template compilation
-	b := rice.MustFindBox("static/templates")
-	basejades := []string{
-		"base.jade",
-		"localejs.jade",
-		"mixins.jade",
-		"head.jade",
-		"header.jade",
-		"footer.jade",
-		"foot.jade"}
-	basenomenujades := []string{
-		"basenomenu.jade",
-		"localejs.jade",
-		"mixins.jade",
-		"head.jade",
-		"header.jade",
-		"footer.jade",
-		"foot.jade"}
-	basejadess := []byte{}
-	basenomenujadess := []byte{}
-	for _, s := range basejades {
-		basejadess = append(basejadess, b.MustBytes(s)...)
-	}
-	for _, s := range basenomenujades {
-		basenomenujadess = append(basenomenujadess, b.MustBytes(s)...)
-	}
-
-	// test
-	testtmpl, e := jade.Parse("test", append(basenomenujadess, b.MustBytes("test.jade")...))
-	if e != nil {
-		log.Fatal("testtmpl jade:" + e.Error())
-	}
-	env.Templates["test"], err = template.New("test").Funcs(funcMap).Parse(testtmpl)
-	if err != nil {
-		log.Fatal("testtmpl parse:" + e.Error())
-	}
-	// home
-	hometmpl, e := jade.Parse("home_index", append(basejadess, b.MustBytes("home/index.jade")...))
-	if e != nil {
-		log.Fatal("hometmpl jade:" + e.Error())
-	}
-	env.Templates["home"], err = template.New("home").Funcs(funcMap).Parse(hometmpl)
-	if err != nil {
-		log.Fatal("hometmpl parse:" + e.Error())
-	}
-	// login
-	logintmpl, e := jade.Parse("login_index", append(basenomenujadess, b.MustBytes("login/index.jade")...))
-	if e != nil {
-		log.Fatal("logintmpl jade:" + e.Error())
-	}
-	env.Templates["login"], err = template.New("login").Funcs(funcMap).Parse(logintmpl)
-	if err != nil {
-		log.Fatal("logintmpl parse:" + e.Error())
-	}
-	// entity
-	entityindextmpl, e := jade.Parse("entity_index", append(append(basejadess), b.MustString("entity/index.jade")...))
-	if e != nil {
-		log.Fatal("entityindextmpl jade:" + e.Error())
-	}
-	env.Templates["entityindex"], err = template.New("entityindex").Funcs(funcMap).Parse(entityindextmpl)
-	if err != nil {
-		log.Fatal("entityindextmpl parse:" + e.Error())
-	}
-	entitycreatetmpl, e := jade.Parse("entity_create", append(append(basejadess), b.MustString("entity/create.jade")...))
-	if e != nil {
-		log.Fatal("entitycreatetmpl jade:" + e.Error())
-	}
-	env.Templates["entitycreate"], err = template.New("entitycreate").Funcs(funcMap).Parse(entitycreatetmpl)
-	if err != nil {
-		log.Fatal("entitycreatetmpl parse:" + e.Error())
-	}
-	// store location
-	storelocationindextmpl, e := jade.Parse("storelocation_index", append(append(basejadess), b.MustString("storelocation/index.jade")...))
-	if e != nil {
-		log.Fatal("storelocationindextmpl jade:" + e.Error())
-	}
-	env.Templates["storelocationindex"], err = template.New("storelocationindex").Funcs(funcMap).Parse(storelocationindextmpl)
-	if err != nil {
-		log.Fatal("storelocationtmpl parse:" + e.Error())
-	}
-	storelocationcreatetmpl, e := jade.Parse("storelocation_create", append(append(basejadess), b.MustString("storelocation/create.jade")...))
-	if e != nil {
-		log.Fatal("storelocationcreatetmpl jade:" + e.Error())
-	}
-	env.Templates["storelocationcreate"], err = template.New("storelocationcreate").Funcs(funcMap).Parse(storelocationcreatetmpl)
-	if err != nil {
-		log.Fatal("storelocationcreatetmpl parse:" + e.Error())
-	}
-	// person
-	personindextmpl, e := jade.Parse("person_index", append(append(basejadess), b.MustString("person/index.jade")...))
-	if e != nil {
-		log.Fatal("personindextmpl jade:" + e.Error())
-	}
-	env.Templates["personindex"], err = template.New("personindex").Funcs(funcMap).Parse(personindextmpl)
-	if err != nil {
-		log.Fatal("personindextmpl parse:" + e.Error())
-	}
-	personcreatetmpl, e := jade.Parse("person_create", append(append(basejadess), b.MustString("person/create.jade")...))
-	if e != nil {
-		log.Fatal("personcreatetmpl jade:" + e.Error())
-	}
-	env.Templates["personcreate"], err = template.New("personcreate").Funcs(funcMap).Parse(personcreatetmpl)
-	if err != nil {
-		log.Fatal("personcreatetmpl parse:" + e.Error())
-	}
-	personpupdatetmpl, e := jade.Parse("personp_update", append(append(basejadess), b.MustString("person/pupdate.jade")...))
-	if e != nil {
-		log.Fatal("personpupdatetmpl jade:" + e.Error())
-	}
-	env.Templates["personpupdate"], err = template.New("personpupdate").Funcs(funcMap).Parse(personpupdatetmpl)
-	if err != nil {
-		log.Fatal("personpupdatetmpl parse:" + e.Error())
-	}
-	// product
-	productindextmpl, e := jade.Parse("product_index", append(append(basejadess, b.MustString("product/commonjs.jade")...), b.MustString("product/index.jade")...))
-	if e != nil {
-		log.Fatal("productindextmpl jade:" + e.Error())
-	}
-	env.Templates["productindex"], err = template.New("productindex").Funcs(funcMap).Parse(productindextmpl)
-	if err != nil {
-		log.Fatal("productindextmpl parse:" + e.Error())
-	}
-	productcreatetmpl, e := jade.Parse("product_create", append(append(basejadess, b.MustString("product/commonjs.jade")...), b.MustString("product/create.jade")...))
-	if err != nil {
-		log.Fatal("productcreatetmpl jade:" + e.Error())
-	}
-	env.Templates["productcreate"], err = template.New("productcreate").Funcs(funcMap).Parse(productcreatetmpl)
-	if err != nil {
-		log.Fatal("productcreatetmpl parse:" + e.Error())
-	}
-	// storage
-	storageindextmpl, e := jade.Parse("storage_index", append(append(basejadess, b.MustString("storage/commonjs.jade")...), b.MustString("storage/index.jade")...))
-	if e != nil {
-		log.Fatal("storageindextmpl jade:" + e.Error())
-	}
-	env.Templates["storageindex"], err = template.New("storageindex").Funcs(funcMap).Parse(storageindextmpl)
-	if err != nil {
-		log.Fatal("storageindextmpl parse:" + e.Error())
-	}
-	storagecreatetmpl, e := jade.Parse("storage_create", append(append(basejadess, b.MustString("storage/commonjs.jade")...), b.MustString("storage/create.jade")...))
-	if e != nil {
-		log.Fatal("storagecreatetmpl jade:" + e.Error())
-	}
-	env.Templates["storagecreate"], err = template.New("storagecreate").Funcs(funcMap).Parse(storagecreatetmpl)
-	if err != nil {
-		log.Fatal("storagecreatetmpl parse:" + e.Error())
-	}
+	/*
+		// TODO move HasPermission, T ./jade/funcs.go
+		funcMap := template.FuncMap{
+			"HasPermission": func(id int, perm string, item string, itemid int) bool {
+				p, e := env.DB.HasPersonPermission(id, perm, item, itemid)
+				if e != nil {
+					log.Error(e.Error())
+				}
+				return p
+			},
+			// i18n
+			"T": func(messageID string, pluralCount int) string {
+				return env.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: messageID, PluralCount: pluralCount})
+			},
+		}
+	*/
 
 	// router definition
 	r := mux.NewRouter()

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"../jade"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/global"
@@ -21,13 +22,8 @@ func (env *Env) VGetEntitiesHandler(w http.ResponseWriter, r *http.Request) *hel
 
 	c := helpers.ContainerFromRequestContext(r)
 
-	if e := env.Templates["entityindex"].ExecuteTemplate(w, "BASE", c); e != nil {
-		return &helpers.AppError{
-			Error:   e,
-			Code:    http.StatusInternalServerError,
-			Message: "error executing template base",
-		}
-	}
+	jade.Entityindex(c, w)
+
 	return nil
 }
 
@@ -36,13 +32,8 @@ func (env *Env) VCreateEntityHandler(w http.ResponseWriter, r *http.Request) *he
 
 	c := helpers.ContainerFromRequestContext(r)
 
-	if e := env.Templates["entitycreate"].ExecuteTemplate(w, "BASE", c); e != nil {
-		return &helpers.AppError{
-			Error:   e,
-			Code:    http.StatusInternalServerError,
-			Message: "error executing template base",
-		}
-	}
+	jade.Entityindex(c, w)
+
 	return nil
 }
 
