@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"../jade"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/global"
@@ -22,13 +23,8 @@ func (env *Env) VGetStoreLocationsHandler(w http.ResponseWriter, r *http.Request
 
 	c := helpers.ContainerFromRequestContext(r)
 
-	if e := env.Templates["storelocationindex"].ExecuteTemplate(w, "BASE", c); e != nil {
-		return &helpers.AppError{
-			Error:   e,
-			Code:    http.StatusInternalServerError,
-			Message: "error executing template base",
-		}
-	}
+	jade.Storelocationindex(c, w)
+
 	return nil
 }
 
@@ -37,13 +33,8 @@ func (env *Env) VCreateStoreLocationHandler(w http.ResponseWriter, r *http.Reque
 
 	c := helpers.ContainerFromRequestContext(r)
 
-	if e := env.Templates["storelocationcreate"].ExecuteTemplate(w, "BASE", c); e != nil {
-		return &helpers.AppError{
-			Error:   e,
-			Code:    http.StatusInternalServerError,
-			Message: "error executing template base",
-		}
-	}
+	jade.Storelocationcreate(c, w)
+
 	return nil
 }
 

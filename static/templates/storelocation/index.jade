@@ -1,4 +1,7 @@
-| {{define "CONTENT"}}
+extends ../base.jade
+block CONTENT
+    :go:func
+        Storelocationindex(c ViewContainer)
     #accordion
         #list-collapse.collapse.show(data-parent='#accordion')
             header.row
@@ -32,34 +35,26 @@
 
                 .form-group.row
                     .form-group.col-sm-12
-                        | {{$label := "name"}} {{$name := "storelocation_name"}}
-                        +inputtext
+                        +inputtext("name", "storelocation_name")
                 .form-group.row
                     .form-group.col-sm-12
-                        | {{$label := "entity"}} {{$name := "entity"}}
-                        +select
+                        +select("entity", "entity")
                 .form-group.row
                     .form-group.col-sm-12
-                        | {{$label := "parent"}} {{$name := "storelocation"}}
-                        +select 
+                        +select("parent", "storelocation") 
                 .form-group.row
                     .form-group.col-sm-12
-                        | {{$label := "can store?"}} {{$name := "storelocation_canstore"}}
-                        +checkbox
+                        +checkbox("can store?", "storelocation_canstore")
                 .form-group.row
                     .form-group.col-sm-12
-                        | {{$label := "color"}} {{$name := "storelocation_color"}}
-                        +inputtext
+                        +inputtext("color", "storelocation_color")
                     
             button#save.btn.btn-link(type='button', onclick='saveStoreLocation()')
                 span.mdi.mdi-content-save.mdi-24px.iconlabel
-                    | {{ T "save" 1 }}
+                    = T("save", 1)
             button.btn.btn-link(type='button', onclick='closeEdit();')
                 span.mdi.mdi-close-box.mdi-24px.iconlabel
-                    | {{ T "close" 1 }}
-| {{end}}
-| {{define "CONTENTJS"}}
-
-| <script src="../js/chim/storelocation.js"></script>
-
-| {{end}}
+                    = T("close", 1)
+                    
+block CONTENTJS
+    script(src="../js/chim/storelocation.js")
