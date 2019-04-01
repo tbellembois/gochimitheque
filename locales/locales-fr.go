@@ -18,6 +18,13 @@ var LOCALES_FR = []byte(`
 	one = "enregistrer"
 [close]
 	one = "fermer"
+[list]
+	one = "lister"
+[create]
+	one = "créer"
+
+[required_input]
+	one = "champs requis"
 
 [members]
 	one = "membres"
@@ -208,4 +215,7 @@ var LOCALES_FR = []byte(`
 	one = "description"
 [entity_manager_table_header]
 	one = "responsable(s)"
+	
+[entity_nameexist_validate]
+	one = "une entité avec ce nom existe déjà"
 `)

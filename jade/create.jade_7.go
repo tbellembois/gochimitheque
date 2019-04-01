@@ -9,9 +9,9 @@ import (
 )
 
 const (
-	create_7__31 = `<div class="row"><div class="d-flex justify-content-center"><div id="filter-product"></div></div></div><form id="storage"><input id="index" type="hidden" name="index" value=""/><input id="product_id" type="hidden" name="product_id" value=""/><input id="exactMatchSupplier" type="hidden"/><div class="form-group row"><div class="col-sm-4">`
-	create_7__32 = `</div></div><hr/><div class="form-group row"><div class="form-group col-sm-auto"><span class="badge badge-pill badge-danger">&nbsp;</span></div><div class="form-group col-sm-11">`
-	create_7__64 = `"></script><script>
+	create_7__37 = `<div class="row"><div class="d-flex justify-content-center"><div id="filter-product"></div></div></div><form id="storage"><input id="index" type="hidden" name="index" value=""/><input id="product_id" type="hidden" name="product_id" value=""/><input id="exactMatchSupplier" type="hidden"/><div class="form-group row"><div class="col-sm-4">`
+	create_7__38 = `</div></div><hr/><div class="form-group row"><div class="form-group col-sm-auto"><span class="badge badge-pill badge-danger">&nbsp;</span></div><div class="form-group col-sm-11">`
+	create_7__70 = `"></script><script>
        $( document ).ready(function() {           
 
             //
@@ -115,28 +115,40 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 	buffer.WriteString(index__18)
 	WriteAll(c.ProxyPath+"v/entities", true, buffer)
 	buffer.WriteString(index__19)
-	WriteAll(c.ProxyPath+"vc/entities", true, buffer)
+	WriteAll(T("list", 1), true, buffer)
 	buffer.WriteString(index__20)
+	WriteAll(c.ProxyPath+"vc/entities", true, buffer)
+	buffer.WriteString(index__21)
+	WriteAll(T("create", 1), true, buffer)
+	buffer.WriteString(index__22)
 	WriteAll(T("menu_storelocation", 1), true, buffer)
 	buffer.WriteString(index__18)
 	WriteAll(c.ProxyPath+"v/storelocations", true, buffer)
-	buffer.WriteString(index__22)
+	buffer.WriteString(index__19)
+	WriteAll(T("list", 1), true, buffer)
+	buffer.WriteString(index__25)
 	WriteAll(c.ProxyPath+"vc/storelocations", true, buffer)
-	buffer.WriteString(index__23)
+	buffer.WriteString(index__21)
+	WriteAll(T("create", 1), true, buffer)
+	buffer.WriteString(index__27)
 	WriteAll(T("menu_people", 1), true, buffer)
 	buffer.WriteString(index__18)
 	WriteAll(c.ProxyPath+"v/people", true, buffer)
-	buffer.WriteString(index__25)
+	buffer.WriteString(index__19)
+	WriteAll(T("list", 1), true, buffer)
+	buffer.WriteString(index__30)
 	WriteAll(c.ProxyPath+"vc/people", true, buffer)
-	buffer.WriteString(index__26)
+	buffer.WriteString(index__21)
+	WriteAll(T("create", 1), true, buffer)
+	buffer.WriteString(index__32)
 	WriteAll(c.ProxyPath+"vu/peoplepass", true, buffer)
-	buffer.WriteString(index__27)
+	buffer.WriteString(index__33)
 	WriteAll(T("menu_password", 1), true, buffer)
-	buffer.WriteString(index__28)
+	buffer.WriteString(index__34)
 	WriteAll(c.ProxyPath+"delete-token", true, buffer)
-	buffer.WriteString(index__29)
+	buffer.WriteString(index__35)
 	WriteAll(T("menu_logout", 1), true, buffer)
-	buffer.WriteString(create__30)
+	buffer.WriteString(create__36)
 
 	{
 		var (
@@ -145,17 +157,17 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 			label      = "create storage"
 		)
 
-		buffer.WriteString(index_2__58)
+		buffer.WriteString(index_2__64)
 		WriteEscString("mdi-"+iconitem+" mdi mdi-48px", buffer)
-		buffer.WriteString(index_2__59)
+		buffer.WriteString(index_2__65)
 		WriteEscString("mdi-"+iconaction+" mdi mdi-18px", buffer)
-		buffer.WriteString(index_2__60)
+		buffer.WriteString(index_2__66)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__61)
+		buffer.WriteString(index_2__67)
 
 	}
 
-	buffer.WriteString(create_7__31)
+	buffer.WriteString(create_7__37)
 
 	{
 		var (
@@ -167,28 +179,28 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 			value = ""
 		)
 
-		buffer.WriteString(index_2__62)
+		buffer.WriteString(index_2__68)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__63)
+		buffer.WriteString(index_2__69)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_6__190)
+		buffer.WriteString(index_6__196)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__65)
+		buffer.WriteString(index_2__71)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__66)
+		buffer.WriteString(index_2__72)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_6__193)
+		buffer.WriteString(index_6__199)
 		WriteEscString(step, buffer)
-		buffer.WriteString(index_6__194)
+		buffer.WriteString(index_6__200)
 		WriteEscString(min, buffer)
-		buffer.WriteString(index_6__195)
+		buffer.WriteString(index_6__201)
 		WriteEscString(max, buffer)
-		buffer.WriteString(index_4__92)
+		buffer.WriteString(index_4__98)
 		WriteEscString(value, buffer)
-		buffer.WriteString(index_2__67)
+		buffer.WriteString(index_2__73)
 	}
 
-	buffer.WriteString(create_7__32)
+	buffer.WriteString(create_7__38)
 
 	{
 		var (
@@ -196,19 +208,19 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 			name  = "storelocation"
 		)
 
-		buffer.WriteString(index_2__62)
+		buffer.WriteString(index_2__68)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__63)
+		buffer.WriteString(index_2__69)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__76)
+		buffer.WriteString(index_2__82)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__65)
+		buffer.WriteString(index_2__71)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__149)
+		buffer.WriteString(index_4__155)
 
 	}
 
-	buffer.WriteString(index_6__56)
+	buffer.WriteString(index_6__62)
 
 	{
 		var (
@@ -220,28 +232,28 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 			value = ""
 		)
 
-		buffer.WriteString(index_2__62)
+		buffer.WriteString(index_2__68)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__63)
+		buffer.WriteString(index_2__69)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_6__190)
+		buffer.WriteString(index_6__196)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__65)
+		buffer.WriteString(index_2__71)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__66)
+		buffer.WriteString(index_2__72)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_6__193)
+		buffer.WriteString(index_6__199)
 		WriteEscString(step, buffer)
-		buffer.WriteString(index_6__194)
+		buffer.WriteString(index_6__200)
 		WriteEscString(min, buffer)
-		buffer.WriteString(index_6__195)
+		buffer.WriteString(index_6__201)
 		WriteEscString(max, buffer)
-		buffer.WriteString(index_4__92)
+		buffer.WriteString(index_4__98)
 		WriteEscString(value, buffer)
-		buffer.WriteString(index_2__67)
+		buffer.WriteString(index_2__73)
 	}
 
-	buffer.WriteString(index_4__34)
+	buffer.WriteString(index_4__40)
 
 	{
 		var (
@@ -249,19 +261,19 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 			name  = "unit"
 		)
 
-		buffer.WriteString(index_2__62)
+		buffer.WriteString(index_2__68)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__63)
+		buffer.WriteString(index_2__69)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__76)
+		buffer.WriteString(index_2__82)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__65)
+		buffer.WriteString(index_2__71)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__149)
+		buffer.WriteString(index_4__155)
 
 	}
 
-	buffer.WriteString(index_6__51)
+	buffer.WriteString(index_6__57)
 
 	{
 		var (
@@ -269,19 +281,19 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 			name  = "supplier"
 		)
 
-		buffer.WriteString(index_2__62)
+		buffer.WriteString(index_2__68)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__63)
+		buffer.WriteString(index_2__69)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__76)
+		buffer.WriteString(index_2__82)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__65)
+		buffer.WriteString(index_2__71)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__149)
+		buffer.WriteString(index_4__155)
 
 	}
 
-	buffer.WriteString(index_6__59)
+	buffer.WriteString(index_6__65)
 
 	{
 		var (
@@ -289,20 +301,20 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 			name  = "storage_entrydate"
 		)
 
-		buffer.WriteString(index_2__62)
+		buffer.WriteString(index_2__68)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__63)
+		buffer.WriteString(index_2__69)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_6__210)
+		buffer.WriteString(index_6__216)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__65)
+		buffer.WriteString(index_2__71)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__66)
+		buffer.WriteString(index_2__72)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__67)
+		buffer.WriteString(index_2__73)
 	}
 
-	buffer.WriteString(index_6__60)
+	buffer.WriteString(index_6__66)
 
 	{
 		var (
@@ -310,20 +322,20 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 			name  = "storage_exitdate"
 		)
 
-		buffer.WriteString(index_2__62)
+		buffer.WriteString(index_2__68)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__63)
+		buffer.WriteString(index_2__69)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_6__210)
+		buffer.WriteString(index_6__216)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__65)
+		buffer.WriteString(index_2__71)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__66)
+		buffer.WriteString(index_2__72)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__67)
+		buffer.WriteString(index_2__73)
 	}
 
-	buffer.WriteString(index_6__60)
+	buffer.WriteString(index_6__66)
 
 	{
 		var (
@@ -331,20 +343,20 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 			name  = "storage_openingdate"
 		)
 
-		buffer.WriteString(index_2__62)
+		buffer.WriteString(index_2__68)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__63)
+		buffer.WriteString(index_2__69)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_6__210)
+		buffer.WriteString(index_6__216)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__65)
+		buffer.WriteString(index_2__71)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__66)
+		buffer.WriteString(index_2__72)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__67)
+		buffer.WriteString(index_2__73)
 	}
 
-	buffer.WriteString(index_6__60)
+	buffer.WriteString(index_6__66)
 
 	{
 		var (
@@ -352,20 +364,20 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 			name  = "storage_expirationdate"
 		)
 
-		buffer.WriteString(index_2__62)
+		buffer.WriteString(index_2__68)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__63)
+		buffer.WriteString(index_2__69)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_6__210)
+		buffer.WriteString(index_6__216)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__65)
+		buffer.WriteString(index_2__71)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__66)
+		buffer.WriteString(index_2__72)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__67)
+		buffer.WriteString(index_2__73)
 	}
 
-	buffer.WriteString(index_6__56)
+	buffer.WriteString(index_6__62)
 
 	{
 		var (
@@ -373,20 +385,20 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 			name  = "storage_reference"
 		)
 
-		buffer.WriteString(index_2__62)
+		buffer.WriteString(index_2__68)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__63)
+		buffer.WriteString(index_2__69)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__64)
+		buffer.WriteString(index_2__70)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__65)
+		buffer.WriteString(index_2__71)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__66)
+		buffer.WriteString(index_2__72)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__67)
+		buffer.WriteString(index_2__73)
 	}
 
-	buffer.WriteString(index_4__34)
+	buffer.WriteString(index_4__40)
 
 	{
 		var (
@@ -394,20 +406,20 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 			name  = "storage_batchnumber"
 		)
 
-		buffer.WriteString(index_2__62)
+		buffer.WriteString(index_2__68)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__63)
+		buffer.WriteString(index_2__69)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__64)
+		buffer.WriteString(index_2__70)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__65)
+		buffer.WriteString(index_2__71)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__66)
+		buffer.WriteString(index_2__72)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__67)
+		buffer.WriteString(index_2__73)
 	}
 
-	buffer.WriteString(index_6__51)
+	buffer.WriteString(index_6__57)
 
 	{
 		var (
@@ -415,20 +427,20 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 			name  = "storage_barecode"
 		)
 
-		buffer.WriteString(index_2__62)
+		buffer.WriteString(index_2__68)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__63)
+		buffer.WriteString(index_2__69)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__64)
+		buffer.WriteString(index_2__70)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__65)
+		buffer.WriteString(index_2__71)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__66)
+		buffer.WriteString(index_2__72)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__67)
+		buffer.WriteString(index_2__73)
 	}
 
-	buffer.WriteString(index_6__51)
+	buffer.WriteString(index_6__57)
 
 	{
 		var (
@@ -436,20 +448,20 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 			name  = "storage_comment"
 		)
 
-		buffer.WriteString(index_2__62)
+		buffer.WriteString(index_2__68)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__63)
+		buffer.WriteString(index_2__69)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__64)
+		buffer.WriteString(index_2__70)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__65)
+		buffer.WriteString(index_2__71)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__66)
+		buffer.WriteString(index_2__72)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__67)
+		buffer.WriteString(index_2__73)
 	}
 
-	buffer.WriteString(index_6__51)
+	buffer.WriteString(index_6__57)
 
 	{
 		var (
@@ -457,18 +469,18 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 			name  = "storage_todestroy"
 		)
 
-		buffer.WriteString(index_4__165)
+		buffer.WriteString(index_4__171)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__166)
+		buffer.WriteString(index_4__172)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__63)
+		buffer.WriteString(index_2__69)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_4__168)
+		buffer.WriteString(index_4__174)
 	}
 
-	buffer.WriteString(index_6__68)
+	buffer.WriteString(index_6__74)
 	WriteAll(T("save", 1), true, buffer)
-	buffer.WriteString(create__35)
+	buffer.WriteString(create__41)
 
 	json, _ := json.Marshal(c)
 
@@ -477,40 +489,40 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 		out += fmt.Sprintf("URLValues.set(%s, %s)\n", key, value)
 	}
 
-	buffer.WriteString(index__31)
+	buffer.WriteString(index__37)
 	WriteAll(c.ProxyPath, false, buffer)
-	buffer.WriteString(index__32)
+	buffer.WriteString(index__38)
 	buffer.WriteString(fmt.Sprintf("%s", json))
-	buffer.WriteString(index__33)
+	buffer.WriteString(index__39)
 	buffer.WriteString(out)
-	buffer.WriteString(index__34)
+	buffer.WriteString(index__40)
 	WriteAll(c.ProxyPath+"js/jquery.formautofill.min.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/jquery.validate.min.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/jquery.validate.additional-methods.min.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/select2.full.min.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/popper.min.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/bootstrap.min.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/bootstrap-table.min.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/bootstrap-confirmation.min.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/bootstrap-colorpicker.min.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/bootstrap-toggle.min.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/JSmol.lite.nojq.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/chim/gjs-common.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/chim/chimcommon.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/chim/login.js", true, buffer)
-	buffer.WriteString(create_7__64)
+	buffer.WriteString(create_7__70)
 
 }

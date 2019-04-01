@@ -38,6 +38,8 @@ const (
 	
 	var locale_en_close = "close";
 	
+	var locale_en_create = "create";
+	
 	var locale_en_created = "created";
 	
 	var locale_en_createperson_mailsubject = "Chimithèque new account\r\n";
@@ -62,6 +64,8 @@ const (
 	
 	var locale_en_entity_name_table_header = "name";
 	
+	var locale_en_entity_nameexist_validate = "entity with this name already present";
+	
 	var locale_en_entity_updated_message = "entity updated";
 	
 	var locale_en_export_text = "export";
@@ -71,6 +75,8 @@ const (
 	var locale_en_hidedeleted_text = "hide deleted";
 	
 	var locale_en_linearformula_label_title = "liner formula";
+	
+	var locale_en_list = "list";
 	
 	var locale_en_logo_information1 = "Chimithèque logo designed by ";
 	
@@ -113,6 +119,8 @@ const (
 	var locale_en_product_restricted_title = "restricted access";
 	
 	var locale_en_product_threedformula_title = "3D formula";
+	
+	var locale_en_required_input = "required input";
 	
 	var locale_en_resetpassword2_text = "reset my password, I am not a robot";
 	
@@ -215,6 +223,8 @@ const (
 	
 	var locale_fr_close = "fermer";
 	
+	var locale_fr_create = "créer";
+	
 	var locale_fr_created = "créé";
 	
 	var locale_fr_createperson_mailsubject = "Chimithèque nouveau compte\r\n";
@@ -239,6 +249,8 @@ const (
 	
 	var locale_fr_entity_name_table_header = "nom";
 	
+	var locale_fr_entity_nameexist_validate = "une entité avec ce nom existe déjà";
+	
 	var locale_fr_entity_updated_message = "entité mise à jour";
 	
 	var locale_fr_export_text = "exporter";
@@ -248,6 +260,8 @@ const (
 	var locale_fr_hidedeleted_text = "cacher supprimés";
 	
 	var locale_fr_linearformula_label_title = "formule linéaire";
+	
+	var locale_fr_list = "lister";
 	
 	var locale_fr_logo_information1 = "Logo Chimithèque réalisé par ";
 	
@@ -290,6 +304,8 @@ const (
 	var locale_fr_product_restricted_title = "accès restreint";
 	
 	var locale_fr_product_threedformula_title = "formule 3D";
+	
+	var locale_fr_required_input = "champs requis";
 	
 	var locale_fr_resetpassword2_text = "réinitialiser mon mot de passe, je ne suis pas un robot";
 	
@@ -455,35 +471,35 @@ func Login(c ViewContainer, wr io.Writer) {
 		out += fmt.Sprintf("URLValues.set(%s, %s)\n", key, value)
 	}
 
-	buffer.WriteString(index__31)
+	buffer.WriteString(index__37)
 	WriteAll(c.ProxyPath, false, buffer)
 	buffer.WriteString(index_1__25)
 	buffer.WriteString(fmt.Sprintf("%s", json))
-	buffer.WriteString(index__33)
+	buffer.WriteString(index__39)
 	buffer.WriteString(out)
 	buffer.WriteString(index_1__27)
 	WriteAll(c.ProxyPath+"js/jquery.formautofill.min.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/jquery.validate.min.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/jquery.validate.additional-methods.min.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/select2.full.min.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/popper.min.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/bootstrap.min.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/bootstrap-table.min.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/bootstrap-confirmation.min.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/bootstrap-colorpicker.min.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/bootstrap-toggle.min.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/chim/gjs-common.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/chim/chimcommon.js", true, buffer)
 	buffer.WriteString(index_1__39)
 
