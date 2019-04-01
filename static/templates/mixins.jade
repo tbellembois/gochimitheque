@@ -1,131 +1,123 @@
-| {{define "MIXINS"}}
-mixin title
+mixin title(label)
     .card.bg-dark.text-center.w-25.mx-auto.mt-md-5.mb-md-5
         .card-body
-            h5.card-title.text-light {{$label}}
+            h5.card-title.text-light= label
 
-mixin inputhidden
-    input(id='hidden_{{$name}}' type='hidden' name='{{$name}}' value='{{$value}}')
+mixin inputhidden(name, value)
+    input(id='hidden_'+ name type='hidden' name=name value=value)
 
-mixin titleicon
+mixin titleicon(iconitem, iconaction, label)
     .mt-sm-2.mb-sm-2
         .row
             .col.d-flex.justify-content-center
-                span(class='mdi-{{$iconitem}} mdi mdi-48px')
+                span(class='mdi-'+ iconitem +' mdi mdi-48px')
         .row
             .col.d-flex.justify-content-center
-                span(class='mdi-{{$iconaction}} mdi mdi-18px')
-                span.iconlabel {{$label}}
+                span(class='mdi-'+ iconaction +' mdi mdi-18px')
+                span.iconlabel= label
 
-mixin inlineradio
+mixin inlineradio(id,value,label,classz,name )
     .custom-control.custom-radio.custom-control-inline
-        input(class='custom-control-input {{$class}}' id='{{$id}}' type='radio' name='{{$name}}' value='{{$value}}')
-        label.custom-control-label(for='{{$id}}') {{$label}}
+        input(class='custom-control-input ' + classz id=id type='radio' name=name value=value)
+        label.custom-control-label(for=id)= label
 
-mixin inlinecheckbox
+mixin inlinecheckbox(id,value,label,classz)
     .form-check.form-check-inline
-        input(class='form-check-input {{$class}}' id='{{$id}}' type='checkbox' value='{{$value}}' title='{{$id}}')
-        label.form-check-label(for='{{$id}}') {{$label}}
+        input(class='form-check-input ' + classz id=id type='checkbox' value=value title=id)
+        label.form-check-label(for=id)= label
 
-mixin inlineimgcheckbox
+mixin inlineimgcheckbox(id,title,value,classz)
     .form-check.form-check-inline
-        input(class='form-check-input {{$class}}' id='{{$id}}' type='checkbox' value='{{$value}}' title='{{$id}}')
-        label.form-check-label(for='{{$id}}')
-            img(src='data:{{$img}}' alt='{{$title}}' title='{{$title}}')
+        input(class='form-check-input ' + classz id=id type='checkbox' value=value title=id)
+        label.form-check-label(for=id)
+            img(src='data:' + img alt=title title=title)
 
-mixin checkbox
+mixin checkbox(label,name)
     .form-check
-        input.form-check-input(type='checkbox' id='{{$name}}')
-        label.form-check-label(for='{{$name}}') {{$label}}
+        input.form-check-input(type='checkbox' id=name)
+        label.form-check-label(for=name)= label
 
-mixin checkboxicon
+mixin checkboxicon(name,icon)
     .form-check
-        input.form-check-input(type='checkbox' id='{{$name}}' title='{{$title}}')
-        label.form-check-label(for='{{$name}}')
-            i.material-icons.md-24 {{$icon}}
+        input.form-check-input(type='checkbox' id=name title=title)
+        label.form-check-label(for=name)
+            i.material-icons.md-24= icon
 
-mixin checkboxicon2
+mixin checkboxicon2(title,name,icon)
     .form-check
-        input.form-check-input(type='checkbox' id='{{$name}}' title='{{$title}}')
-        label.form-check-label(for='{{$name}}')
-            span(class='mdi mdi-36px {{$icon}}' title='{{$title}}')
+        input.form-check-input(type='checkbox' id=name title=title)
+        label.form-check-label(for=name)
+            span(class='mdi mdi-36px ' + icon title=title)
 
-mixin select
+mixin select(label,name)
     .form-group.col-sm-12
-        label(for='{{$name}}') {{$label}}
-        select.form-control(style='width: 100% !important;' id='{{$name}}' name='{{$name}}')
+        label(for=name)= label
+        select.form-control(style='width: 100% !important;' id=name name=name)
 
-mixin selecticon
+mixin selecticon(name,icon)
     .row
         .col-sm-1
-            span(class='mdi-{{$icon}} mdi mdi-36px')
+            span(class="mdi-" + icon + " mdi mdi-36px")
         .col-sm-11
-            select(style='width: 100% !important;' id='{{$name}}' name='{{$name}}')
+            select(style='width: 100% !important;' id=name name=name)
 
-mixin selectcompact
+mixin selectcompact(label,name)
     .form-group.row
-        label.col-sm-3.col-form-label(for='{{$name}}') {{$label}}
+        label.col-sm-3.col-form-label(for=name)= label
         .col-sm-9
-            select.form-control(style='width: 100% !important;' id='{{$name}}' name='{{$name}}')
+            select.form-control(style='width: 100% !important;' id=name name=name)
 
-mixin selectmultiple
+mixin selectmultiple(label,name)
     .form-group.col-sm-12
-        label(for='{{$name}}') {{$label}}
-        select.form-control(style='width: 100% !important;' id='{{$name}}' name='{{$name}}' multiple='multiple')
+        label(for=name)= label
+        select.form-control(style='width: 100% !important;' id=name name=name multiple='multiple')
         
-mixin inputtext
+mixin inputtext(label,name)
     .form-group.col-sm-12
-        label(for='{{$name}}') {{$label}}
-        input.form-control(type='text' id='{{$name}}' name='{{$name}}' title='{{$name}}')
+        label(for=name)= label
+        input.form-control(type='text' id=name name=name title=name)
 
-mixin inputfile
+mixin inputfile(label,name)
     .form-group.col-sm-12
-        label(for='{{$name}}') {{$label}}
-        input.form-control(type='file' id='{{$name}}' name='{{$name}}' title='{{$name}}')
+        label(for=name)= label
+        input.form-control(type='file' id=name name=name title=name)
 
-mixin inputpassword
+mixin inputpassword(label,name)
     .form-group.col-sm-12
-        label(for='{{$name}}') {{$label}}
-        input.form-control(type='password' id='{{$name}}' name='{{$name}}' title='{{$name}}')
+        label(for=name)= label
+        input.form-control(type='password' id=name name=name title=name)
 
-mixin inputtextcompact
+mixin inputtextcompact(label,name)
     .form-group.row
-        label.col-sm-3.col-form-label(for='{{$name}}') {{$label}}
+        label.col-sm-3.col-form-label(for=name)= label
         .col-sm-9
-            input.form-control(type='text' id='{{$name}}' name='{{$name}}' title='{{$name}}')
+            input.form-control(type='text' id=name name=name title=name)
 
-mixin inputdate
+mixin inputdate(label,name)
     .form-group.col-sm-12
-        label(for='{{$name}}') {{$label}}
-        input.form-control(type='date' id='{{$name}}' name='{{$name}}' title='{{$name}}')
+        label(for=name)= label
+        input.form-control(type='date' id=name name=name title=name)
 
-mixin inputnumber
+mixin inputnumber(label,name,step,min,max,value)
     .form-group.col-sm-12
-        label(for='{{$name}}') {{$label}}
-        input.form-control(type='number' id='{{$name}}' name='{{$name}}' title='{{$name}}' step='{{$step}}' min='{{$min}}' max='{{$max}}' value='{{$value}}')
+        label(for=name)= label
+        input.form-control(type='number' id=name name=name title=name step=step min=min max=max value=value)
 
-mixin inputtextarea
+mixin inputtextarea(label,name)
     .form-group.col-sm-12
-        label(for='{{$name}}') {{$label}}
-        textarea.form-control(type='text' id='{{$name}}' name='{{$name}}' title='{{$name}}')
+        label(for=name)= label
+        textarea.form-control(type='text' id=name name=name title=name)
 
 mixin permissions
     .col-sm-6
         .alert.alert-primary product
-    .col-sm-6
-        | {{$id := "permproduct"}} {{$value := "_"}} {{$label := "_"}} {{$class := "perm"}}  {{$name := "product"}}
-        +inlineradio
-        | {{$id := "permproductr"}} {{$value := "r"}} {{$label := "r"}}
-        +inlineradio
-        | {{$id := "permproductrw"}} {{$value := "w"}} {{$label := "rw"}}
-        +inlineradio
+    .col-sm-6 
+        +inlineradio("permproduct", "_", "_", "perm", "product") 
+        +inlineradio("permproductr", "r", "r") 
+        +inlineradio("permproductrw", "w", "rw")
     .col-sm-6
         .alert.alert-primary storage
-    .col-sm-6
-        | {{$id := "permstorage"}} {{$value := "_"}} {{$label := "_"}} {{$class := "perm"}}  {{$name := "storage"}}
-        +inlineradio
-        | {{$id := "permstorager"}} {{$value := "r"}} {{$label := "r"}}
-        +inlineradio
-        | {{$id := "permstoragerw"}} {{$value := "w"}} {{$label := "rw"}}
-        +inlineradio
-| {{end}}
+    .col-sm-6 
+        +inlineradio("permstorage", "_", "_", "perm", "storage") 
+        +inlineradio("permstorager", "r", "r") 
+        +inlineradio("permstoragerw", "w", "rw")

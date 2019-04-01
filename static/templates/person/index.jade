@@ -1,4 +1,7 @@
-| {{define "CONTENT"}}
+extends ../base.jade
+block CONTENT
+    :go:func
+        Personindex(c ViewContainer)
     #accordion
         #list-collapse.collapse.show(data-parent='#accordion')
             header.row
@@ -29,11 +32,9 @@
 
                 .form-group.row
                     .col-sm-6
-                        | {{$label := "email"}} {{$name := "person_email"}}
-                        +inputtext
+                        +inputtext("email", "person_email")
                     .col-sm-6
-                        | {{$label := "entity(ies)"}} {{$name := "entities"}}
-                        +selectmultiple
+                        +selectmultiple("entity(ies)", "entities")
                 
                 span permissions
                 .d-flex.justify-content-center.form-group.row#permissionsproducts
@@ -84,13 +85,10 @@
 
             button#save.btn.btn-link(type='button', onclick='savePerson()')
                 span.mdi.mdi-content-save.mdi-24px.iconlabel
-                    | {{ T "save" 1 }}
+                    = T("save", 1)
             button.btn.btn-link(type='button', onclick='closeView();')
                 span.mdi.mdi-close-box.mdi-24px.iconlabel
-                    | {{ T "close" 1 }}
-| {{end}}
-| {{define "CONTENTJS"}}
-
-| <script src="../js/chim/person.js"></script>
- 
-| {{end}}
+                    = T("close", 1)
+                    
+block CONTENTJS
+    script(src="../js/chim/person.js")

@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"../jade"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/global"
@@ -23,13 +24,8 @@ func (env *Env) VGetStoragesHandler(w http.ResponseWriter, r *http.Request) *hel
 
 	c := helpers.ContainerFromRequestContext(r)
 
-	if e := env.Templates["storageindex"].ExecuteTemplate(w, "BASE", c); e != nil {
-		return &helpers.AppError{
-			Error:   e,
-			Code:    http.StatusInternalServerError,
-			Message: "error executing template base",
-		}
-	}
+	jade.Storageindex(c, w)
+
 	return nil
 }
 
@@ -38,13 +34,8 @@ func (env *Env) VCreateStorageHandler(w http.ResponseWriter, r *http.Request) *h
 
 	c := helpers.ContainerFromRequestContext(r)
 
-	if e := env.Templates["storagecreate"].ExecuteTemplate(w, "BASE", c); e != nil {
-		return &helpers.AppError{
-			Error:   e,
-			Code:    http.StatusInternalServerError,
-			Message: "error executing template base",
-		}
-	}
+	jade.Storagecreate(c, w)
+
 	return nil
 }
 

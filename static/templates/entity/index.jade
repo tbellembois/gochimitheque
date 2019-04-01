@@ -1,4 +1,7 @@
-| {{define "CONTENT"}}
+extends ../base.jade
+block CONTENT
+    :go:func
+        Entityindex(c ViewContainer)
     #accordion
         #list-collapse.collapse.show(data-parent='#accordion')
             header.row
@@ -31,26 +34,19 @@
                 input#entity_id(type='hidden', name='entity_id', value='')
 
                 .form-group.row
-                    | {{$label := "name"}} {{$name := "entity_name"}}
-                    +inputtext
+                    +inputtext("name", "entity_name")
                 .form-group.row
-                    | {{$label := "description"}} {{$name := "entity_description"}}
-                    +inputtext
+                    +inputtext("description", "entity_description")
                 .form-group.row
-                    | {{$label := "manager(s)"}} {{$name := "managers"}}
-                    +selectmultiple
+                    +selectmultiple("manager(s)", "managers")
 
             button#save.btn.btn-link(type='button', onclick='saveEntity()')
                 span.mdi.mdi-content-save.mdi-24px.iconlabel
-                    | {{ T "save" 1 }}
+                    = T("save", 1)
             button.btn.btn-link(type='button', onclick='closeViewEdit();')
                 span.mdi.mdi-close-box.mdi-24px.iconlabel
-                    | {{ T "close" 1 }}
+                    = T("close", 1)
 
-| {{end}}
 
-| {{define "CONTENTJS"}}
-
-| <script src="../js/chim/entity.js"></script>
-
-| {{end}}
+block CONTENTJS
+    script(src="../js/chim/entity.js")
