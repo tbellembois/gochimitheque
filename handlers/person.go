@@ -9,7 +9,8 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/tbellembois/gochimitheque/utils"
 
-	"../jade"
+	"github.com/tbellembois/gochimitheque/jade"
+
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/global"
@@ -239,8 +240,8 @@ func (env *Env) CreatePersonHandler(w http.ResponseWriter, r *http.Request) *hel
 	}
 
 	// sending the new mail
-	msgbody := fmt.Sprintf(env.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "createperson_mailbody", PluralCount: 1}), global.ProxyURL+global.ProxyPath+"login", p.PersonEmail)
-	msgsubject := env.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "createperson_mailsubject", PluralCount: 1})
+	msgbody := fmt.Sprintf(global.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "createperson_mailbody", PluralCount: 1}), global.ProxyURL+global.ProxyPath+"login", p.PersonEmail)
+	msgsubject := global.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "createperson_mailsubject", PluralCount: 1})
 	if err = sendMail(p.PersonEmail, msgsubject, msgbody); err != nil {
 		return &helpers.AppError{
 			Code:    http.StatusInternalServerError,

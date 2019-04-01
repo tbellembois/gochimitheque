@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	create_11__17 = `<form id="person"><div class="row"><div class="col-sm-6">`
-	create_11__19 = `</div></div><span>permissions</span><div class="d-flex justify-content-center form-group row" id="permissionsproducts"><div class="col-sm-6"><div class="iconlabel text-right">products</div></div><div class="col-sm-6"><div class="form-check form-check-inline"><input class="perm permn permnproducts" id="permnproducts-1" name="permproducts-1" value="none" label="_" perm_name="n" item_name="products" entity_id="-1" type="radio" disabled="disabled"/><label class="form-check-label ml-sm-1 pr-sm-1 pl-sm-1 text-secondary border border-secondary rounded" for="permproducts-1"><span class="mdi mdi-close"></span></label></div><div class="form-check form-check-inline"><input class="perm permr permrproducts" id="permrproducts-1" name="permproducts-1" value="none" label="r" perm_name="r" item_name="products" entity_id="-1" type="radio" checked="checked"/><label class="form-check-label ml-sm-1 pr-sm-1 pl-sm-1 text-secondary border border-secondary rounded" for="permrproducts-1"><span class="mdi mdi-eye mdi-18px"></span></label></div><div class="form-check form-check-inline"><input class="perm permw permwproducts" id="permwproducts-1" name="permproducts-1" value="none" label="rw" perm_name="w" item_name="products" entity_id="-1" type="radio"/><label class="form-check-label ml-sm-1 pr-sm-1 pl-sm-1 text-secondary border border-secondary rounded" for="permwproducts-1"><span class="mdi mdi-eye mdi-18px"></span><span class="mdi mdi-creation mdi-18px"></span><span class="mdi mdi-border-color mdi-18px"></span><span class="mdi mdi-delete mdi-18px"></span></label></div></div></div><div class="d-flex justify-content-center form-group row" id="permissionsrproducts"><div class="col-sm-6"><div class="iconlabel text-right">restricted products</div></div><div class="col-sm-6"><div class="form-check form-check-inline"><input class="perm permn permnrproducts" id="permnrproducts-1" name="permrproducts-1" value="none" label="_" perm_name="n" item_name="rproducts" entity_id="-1" type="radio" checked="checked"/><label class="form-check-label ml-sm-1 pr-sm-1 pl-sm-1 text-secondary border border-secondary rounded" for="permrproducts-1"><span class="mdi mdi-close"></span></label></div><div class="form-check form-check-inline"><input class="perm permr permrrproducts" id="permrrproducts-1" name="permrproducts-1" value="none" label="r" perm_name="r" item_name="rproducts" entity_id="-1" type="radio"/><label class="form-check-label ml-sm-1 pr-sm-1 pl-sm-1 text-secondary border border-secondary rounded" for="permrrproducts-1"><span class="mdi mdi-eye mdi-18px"></span></label></div><div class="form-check form-check-inline"><input class="perm permw permwrproducts" id="permwrproducts-1" name="permrproducts-1" value="none" label="rw" perm_name="w" item_name="rproducts" entity_id="-1" type="radio"/><label class="form-check-label ml-sm-1 pr-sm-1 pl-sm-1 text-secondary border border-secondary rounded" for="permwrproducts-1"><span class="mdi mdi-eye mdi-18px"></span><span class="mdi mdi-creation mdi-18px"></span><span class="mdi mdi-border-color mdi-18px"></span><span class="mdi mdi-delete mdi-18px"></span></label></div></div></div><div id="permissions"></div><div class="blockquote-footer"><span class="mdi mdi-close">no permission</span><span class="mdi mdi-creation mdi-18px">create</span><span class="mdi mdi-border-color mdi-18px">update</span><span class="mdi mdi-delete mdi-18px">delete</span></div></form><button class="btn btn-link" type="button" onclick="savePerson()"><span class="mdi mdi-content-save mdi-24px iconlabel">`
+	create_11__31 = `<form id="person"><div class="row"><div class="col-sm-6">`
+	create_11__33 = `</div></div><span>permissions</span><div class="d-flex justify-content-center form-group row" id="permissionsproducts"><div class="col-sm-6"><div class="iconlabel text-right">products</div></div><div class="col-sm-6"><div class="form-check form-check-inline"><input class="perm permn permnproducts" id="permnproducts-1" name="permproducts-1" value="none" label="_" perm_name="n" item_name="products" entity_id="-1" type="radio" disabled="disabled"/><label class="form-check-label ml-sm-1 pr-sm-1 pl-sm-1 text-secondary border border-secondary rounded" for="permproducts-1"><span class="mdi mdi-close"></span></label></div><div class="form-check form-check-inline"><input class="perm permr permrproducts" id="permrproducts-1" name="permproducts-1" value="none" label="r" perm_name="r" item_name="products" entity_id="-1" type="radio" checked="checked"/><label class="form-check-label ml-sm-1 pr-sm-1 pl-sm-1 text-secondary border border-secondary rounded" for="permrproducts-1"><span class="mdi mdi-eye mdi-18px"></span></label></div><div class="form-check form-check-inline"><input class="perm permw permwproducts" id="permwproducts-1" name="permproducts-1" value="none" label="rw" perm_name="w" item_name="products" entity_id="-1" type="radio"/><label class="form-check-label ml-sm-1 pr-sm-1 pl-sm-1 text-secondary border border-secondary rounded" for="permwproducts-1"><span class="mdi mdi-eye mdi-18px"></span><span class="mdi mdi-creation mdi-18px"></span><span class="mdi mdi-border-color mdi-18px"></span><span class="mdi mdi-delete mdi-18px"></span></label></div></div></div><div class="d-flex justify-content-center form-group row" id="permissionsrproducts"><div class="col-sm-6"><div class="iconlabel text-right">restricted products</div></div><div class="col-sm-6"><div class="form-check form-check-inline"><input class="perm permn permnrproducts" id="permnrproducts-1" name="permrproducts-1" value="none" label="_" perm_name="n" item_name="rproducts" entity_id="-1" type="radio" checked="checked"/><label class="form-check-label ml-sm-1 pr-sm-1 pl-sm-1 text-secondary border border-secondary rounded" for="permrproducts-1"><span class="mdi mdi-close"></span></label></div><div class="form-check form-check-inline"><input class="perm permr permrrproducts" id="permrrproducts-1" name="permrproducts-1" value="none" label="r" perm_name="r" item_name="rproducts" entity_id="-1" type="radio"/><label class="form-check-label ml-sm-1 pr-sm-1 pl-sm-1 text-secondary border border-secondary rounded" for="permrrproducts-1"><span class="mdi mdi-eye mdi-18px"></span></label></div><div class="form-check form-check-inline"><input class="perm permw permwrproducts" id="permwrproducts-1" name="permrproducts-1" value="none" label="rw" perm_name="w" item_name="rproducts" entity_id="-1" type="radio"/><label class="form-check-label ml-sm-1 pr-sm-1 pl-sm-1 text-secondary border border-secondary rounded" for="permwrproducts-1"><span class="mdi mdi-eye mdi-18px"></span><span class="mdi mdi-creation mdi-18px"></span><span class="mdi mdi-border-color mdi-18px"></span><span class="mdi mdi-delete mdi-18px"></span></label></div></div></div><div id="permissions"></div><div class="blockquote-footer"><span class="mdi mdi-close">no permission</span><span class="mdi mdi-creation mdi-18px">create</span><span class="mdi mdi-border-color mdi-18px">update</span><span class="mdi mdi-delete mdi-18px">delete</span></div></form><button class="btn btn-link" type="button" onclick="savePerson()"><span class="mdi mdi-content-save mdi-24px iconlabel">`
 )
 
 func Personcreate(c ViewContainer, wr io.Writer) {
@@ -39,88 +39,44 @@ func Personcreate(c ViewContainer, wr io.Writer) {
 	buffer.WriteString(index__10)
 	WriteAll(c.ProxyPath+"img/logo_chimitheque_small.png", true, buffer)
 	buffer.WriteString(index__11)
-
-	if HasPermission(c.PersonID, "r", "products", -2) {
-		buffer.WriteString(index__35)
-		WriteAll(c.ProxyPath+"v/products", true, buffer)
-		buffer.WriteString(index__36)
-		WriteAll(T("menu_home", 1), true, buffer)
-		buffer.WriteString(index__37)
-
-	}
-	if HasPermission(c.PersonID, "r", "products", -2) {
-		buffer.WriteString(index__35)
-		WriteAll(c.ProxyPath+"v/products?bookmark=true", true, buffer)
-		buffer.WriteString(index__39)
-		WriteAll(T("menu_bookmark", 1), true, buffer)
-		buffer.WriteString(index__37)
-
-	}
-	if HasPermission(c.PersonID, "w", "products", -2) {
-		buffer.WriteString(index__41)
-		WriteAll(c.ProxyPath+"vc/products", true, buffer)
-		buffer.WriteString(index__42)
-		WriteAll(T("menu_create_productcard", 1), true, buffer)
-		buffer.WriteString(index__37)
-
-	}
-	if HasPermission(c.PersonID, "r", "entities", -2) {
-		buffer.WriteString(index__44)
-		WriteAll(T("menu_entity", 1), true, buffer)
-		buffer.WriteString(index__45)
-		WriteAll(c.ProxyPath+"v/entities", true, buffer)
-		buffer.WriteString(index__46)
-
-		if HasPermission(c.PersonID, "all", "all", -1) {
-			buffer.WriteString(index__48)
-			WriteAll(c.ProxyPath+"vc/entities", true, buffer)
-			buffer.WriteString(index__49)
-
-		}
-		buffer.WriteString(index__47)
-
-	}
-	if HasPermission(c.PersonID, "r", "storages", -2) {
-		buffer.WriteString(index__50)
-		WriteAll(T("menu_storelocation", 1), true, buffer)
-		buffer.WriteString(index__45)
-		WriteAll(c.ProxyPath+"v/storelocations", true, buffer)
-		buffer.WriteString(index__46)
-
-		if HasPermission(c.PersonID, "all", "all", -2) {
-			buffer.WriteString(index__48)
-			WriteAll(c.ProxyPath+"vc/storelocations", true, buffer)
-			buffer.WriteString(index__49)
-
-		}
-		buffer.WriteString(index__47)
-
-	}
-	if HasPermission(c.PersonID, "r", "people", -2) {
-		buffer.WriteString(index__56)
-		WriteAll(T("menu_people", 1), true, buffer)
-		buffer.WriteString(index__45)
-		WriteAll(c.ProxyPath+"v/people", true, buffer)
-		buffer.WriteString(index__46)
-
-		if HasPermission(c.PersonID, "w", "people", -2) {
-			buffer.WriteString(index__48)
-			WriteAll(c.ProxyPath+"vc/people", true, buffer)
-			buffer.WriteString(index__49)
-
-		}
-		buffer.WriteString(index__47)
-
-	}
+	WriteAll(c.ProxyPath+"v/products", true, buffer)
 	buffer.WriteString(index__12)
-	WriteAll(c.ProxyPath+"vu/peoplepass", true, buffer)
+	WriteAll(T("menu_home", 1), true, buffer)
 	buffer.WriteString(index__13)
-	WriteAll(T("menu_password", 1), true, buffer)
+	WriteAll(c.ProxyPath+"v/products?bookmark=true", true, buffer)
 	buffer.WriteString(index__14)
-	WriteAll(c.ProxyPath+"delete-token", true, buffer)
+	WriteAll(T("menu_bookmark", 1), true, buffer)
 	buffer.WriteString(index__15)
+	WriteAll(c.ProxyPath+"vc/products", true, buffer)
+	buffer.WriteString(index__16)
+	WriteAll(T("menu_create_productcard", 1), true, buffer)
+	buffer.WriteString(index__17)
+	WriteAll(T("menu_entity", 1), true, buffer)
+	buffer.WriteString(index__18)
+	WriteAll(c.ProxyPath+"v/entities", true, buffer)
+	buffer.WriteString(index__19)
+	WriteAll(c.ProxyPath+"vc/entities", true, buffer)
+	buffer.WriteString(index__20)
+	WriteAll(T("menu_storelocation", 1), true, buffer)
+	buffer.WriteString(index__18)
+	WriteAll(c.ProxyPath+"v/storelocations", true, buffer)
+	buffer.WriteString(index__22)
+	WriteAll(c.ProxyPath+"vc/storelocations", true, buffer)
+	buffer.WriteString(index__23)
+	WriteAll(T("menu_people", 1), true, buffer)
+	buffer.WriteString(index__18)
+	WriteAll(c.ProxyPath+"v/people", true, buffer)
+	buffer.WriteString(index__25)
+	WriteAll(c.ProxyPath+"vc/people", true, buffer)
+	buffer.WriteString(index__26)
+	WriteAll(c.ProxyPath+"vu/peoplepass", true, buffer)
+	buffer.WriteString(index__27)
+	WriteAll(T("menu_password", 1), true, buffer)
+	buffer.WriteString(index__28)
+	WriteAll(c.ProxyPath+"delete-token", true, buffer)
+	buffer.WriteString(index__29)
 	WriteAll(T("menu_logout", 1), true, buffer)
-	buffer.WriteString(create__16)
+	buffer.WriteString(create__30)
 
 	{
 		var (
@@ -129,17 +85,17 @@ func Personcreate(c ViewContainer, wr io.Writer) {
 			label      = "create user"
 		)
 
-		buffer.WriteString(index_2__68)
+		buffer.WriteString(index_2__58)
 		WriteEscString("mdi-"+iconitem+" mdi mdi-48px", buffer)
-		buffer.WriteString(index_2__69)
+		buffer.WriteString(index_2__59)
 		WriteEscString("mdi-"+iconaction+" mdi mdi-18px", buffer)
-		buffer.WriteString(index_2__70)
+		buffer.WriteString(index_2__60)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__71)
+		buffer.WriteString(index_2__61)
 
 	}
 
-	buffer.WriteString(create_11__17)
+	buffer.WriteString(create_11__31)
 
 	{
 		var (
@@ -147,20 +103,20 @@ func Personcreate(c ViewContainer, wr io.Writer) {
 			name  = "person_email"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__74)
+		buffer.WriteString(index_2__64)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__76)
+		buffer.WriteString(index_2__66)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__77)
+		buffer.WriteString(index_2__67)
 	}
 
-	buffer.WriteString(index_4__20)
+	buffer.WriteString(index_4__34)
 
 	{
 		var (
@@ -168,21 +124,21 @@ func Personcreate(c ViewContainer, wr io.Writer) {
 			name  = "entities"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__86)
+		buffer.WriteString(index_2__76)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__88)
+		buffer.WriteString(index_2__78)
 
 	}
 
-	buffer.WriteString(create_11__19)
+	buffer.WriteString(create_11__33)
 	WriteAll(T("save", 1), true, buffer)
-	buffer.WriteString(create__21)
+	buffer.WriteString(create__35)
 
 	json, _ := json.Marshal(c)
 
@@ -191,40 +147,40 @@ func Personcreate(c ViewContainer, wr io.Writer) {
 		out += fmt.Sprintf("URLValues.set(%s, %s)\n", key, value)
 	}
 
-	buffer.WriteString(index__17)
+	buffer.WriteString(index__31)
 	WriteAll(c.ProxyPath, false, buffer)
-	buffer.WriteString(index__18)
+	buffer.WriteString(index__32)
 	buffer.WriteString(fmt.Sprintf("%s", json))
-	buffer.WriteString(index__19)
+	buffer.WriteString(index__33)
 	buffer.WriteString(out)
-	buffer.WriteString(index__20)
+	buffer.WriteString(index__34)
 	WriteAll(c.ProxyPath+"js/jquery.formautofill.min.js", true, buffer)
-	buffer.WriteString(index__21)
+	buffer.WriteString(index__35)
 	WriteAll(c.ProxyPath+"js/jquery.validate.min.js", true, buffer)
-	buffer.WriteString(index__21)
+	buffer.WriteString(index__35)
 	WriteAll(c.ProxyPath+"js/jquery.validate.additional-methods.min.js", true, buffer)
-	buffer.WriteString(index__21)
+	buffer.WriteString(index__35)
 	WriteAll(c.ProxyPath+"js/select2.full.min.js", true, buffer)
-	buffer.WriteString(index__21)
+	buffer.WriteString(index__35)
 	WriteAll(c.ProxyPath+"js/popper.min.js", true, buffer)
-	buffer.WriteString(index__21)
+	buffer.WriteString(index__35)
 	WriteAll(c.ProxyPath+"js/bootstrap.min.js", true, buffer)
-	buffer.WriteString(index__21)
+	buffer.WriteString(index__35)
 	WriteAll(c.ProxyPath+"js/bootstrap-table.min.js", true, buffer)
-	buffer.WriteString(index__21)
+	buffer.WriteString(index__35)
 	WriteAll(c.ProxyPath+"js/bootstrap-confirmation.min.js", true, buffer)
-	buffer.WriteString(index__21)
+	buffer.WriteString(index__35)
 	WriteAll(c.ProxyPath+"js/bootstrap-colorpicker.min.js", true, buffer)
-	buffer.WriteString(index__21)
+	buffer.WriteString(index__35)
 	WriteAll(c.ProxyPath+"js/bootstrap-toggle.min.js", true, buffer)
-	buffer.WriteString(index__21)
+	buffer.WriteString(index__35)
 	WriteAll(c.ProxyPath+"js/JSmol.lite.nojq.js", true, buffer)
-	buffer.WriteString(index__21)
+	buffer.WriteString(index__35)
 	WriteAll(c.ProxyPath+"js/chim/gjs-common.js", true, buffer)
-	buffer.WriteString(index__21)
+	buffer.WriteString(index__35)
 	WriteAll(c.ProxyPath+"js/chim/chimcommon.js", true, buffer)
-	buffer.WriteString(index__21)
+	buffer.WriteString(index__35)
 	WriteAll(c.ProxyPath+"js/chim/login.js", true, buffer)
-	buffer.WriteString(index_10__39)
+	buffer.WriteString(index_10__53)
 
 }

@@ -61,7 +61,6 @@ block CONTENT
             = T("save", 1)
 
 block CONTENTJS
-	include commonjs.jade
     script.
 
        $( document ).ready(function() {           
@@ -123,3 +122,4 @@ block CONTENTJS
 
         });
 
+    script(src="../js/chim/storage.js")

@@ -17,7 +17,7 @@ block CONTENT
         .col
             .row
                 .col-sm-12
-                    +selecticon("docker", "s_storelocation")
+                    +selecticon("s_storelocation", "docker")
             .row
                 .col-sm-6
                     +inputtextcompact(T("s_custom_name_part_of", 1), "s_custom_name_part_of")
@@ -213,6 +213,7 @@ block CONTENT
                     span.mdi.mdi-content-save.mdi-24px.iconlabel
                         = T("close", 1)
 
+block CONTENTJS
     script(src="../js/chim/product_storage.js")
     script(src="../js/chim/product.js")
 

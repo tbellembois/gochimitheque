@@ -14,7 +14,8 @@ import (
 	"strconv"
 	"time"
 
-	"../jade"
+	"github.com/tbellembois/gochimitheque/jade"
+
 	"github.com/dchest/passwordreset"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
@@ -222,8 +223,8 @@ func (env *Env) ResetHandler(w http.ResponseWriter, r *http.Request) *helpers.Ap
 	}
 
 	// sending the new mail
-	msgbody := fmt.Sprintf(env.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "resetpassword_mailbody1", PluralCount: 1}), p.PersonPassword)
-	msgsubject := env.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "resetpassword_mailsubject1", PluralCount: 1})
+	msgbody := fmt.Sprintf(global.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "resetpassword_mailbody1", PluralCount: 1}), p.PersonPassword)
+	msgsubject := global.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "resetpassword_mailsubject1", PluralCount: 1})
 	if err = sendMail(login, msgsubject, msgbody); err != nil {
 		return &helpers.AppError{
 			Code:    http.StatusInternalServerError,
@@ -234,7 +235,7 @@ func (env *Env) ResetHandler(w http.ResponseWriter, r *http.Request) *helpers.Ap
 
 	//w.WriteHeader(http.StatusOK)
 	// redirecting to login page
-	msgdone := fmt.Sprintf(env.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "resetpassword_done", PluralCount: 1}), p.PersonEmail)
+	msgdone := fmt.Sprintf(global.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "resetpassword_done", PluralCount: 1}), p.PersonEmail)
 	http.Redirect(w, r, "/login?message="+msgdone, http.StatusSeeOther)
 
 	return nil
@@ -317,8 +318,8 @@ func (env *Env) ResetPasswordHandler(w http.ResponseWriter, r *http.Request) *he
 	// generating the reinitialization token
 	token := passwordreset.NewToken(person.PersonEmail, 12*time.Hour, hash, []byte("secret"))
 	// and the mail body
-	msgbody := fmt.Sprintf(env.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "resetpassword_mailbody2", PluralCount: 1}), global.ProxyURL, global.ProxyPath, token)
-	msgsubject := env.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "resetpassword_mailsubject2", PluralCount: 1})
+	msgbody := fmt.Sprintf(global.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "resetpassword_mailbody2", PluralCount: 1}), global.ProxyURL, global.ProxyPath, token)
+	msgsubject := global.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "resetpassword_mailsubject2", PluralCount: 1})
 
 	// sending the reinitialisation email
 	if e = sendMail(person.PersonEmail, msgsubject, msgbody); e != nil {

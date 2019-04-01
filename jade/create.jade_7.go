@@ -9,694 +9,9 @@ import (
 )
 
 const (
-	create_7__17 = `<div class="row"><div class="d-flex justify-content-center"><div id="filter-product"></div></div></div><form id="storage"><input id="index" type="hidden" name="index" value=""/><input id="product_id" type="hidden" name="product_id" value=""/><input id="exactMatchSupplier" type="hidden"/><div class="form-group row"><div class="col-sm-4">`
-	create_7__18 = `</div></div><hr/><div class="form-group row"><div class="form-group col-sm-auto"><span class="badge badge-pill badge-danger">&nbsp;</span></div><div class="form-group col-sm-11">`
-	create_7__50 = `"></script><script>
-    $( document ).ready(function() {  
-    
-            //
-            // form validation
-            //
-            $( "#storage" ).validate({
-                errorClass: "alert alert-danger",
-                rules: {
-                    storelocation: {
-                        required: true,
-                    },
-                },
-            });
-            $( "#borrowing" ).validate({
-                errorClass: "alert alert-danger",
-                rules: {
-                    borrower: {
-                        required: true,
-                    },
-                },
-            });
-
-            //
-            // search form
-            //
-            $('select#s_storelocation').select2({
-                templateResult: formatStorelocation,
-                placeholder: "store location",
-                ajax: {
-                    url: proxyPath + 'storelocations',
-                    delay: 400,
-                        data: function (params) {
-                        var query = {
-                            search: params.term,
-                            page: params.page || 1,
-                            offset: (params.page-1)*10 || 0,
-                            limit: 10
-                        }
-
-                        // Query parameters will be ?search=[term]&page=[page]
-                        return query;
-                    },
-                    dataType: 'json',
-                    processResults: function (data) {
-                        // replacing name by text expected by select2
-                        var newdata = $.map(data.rows, function (obj) {
-                            obj.text = obj.text || obj.storelocation_fullpath;
-                            obj.id = obj.id || obj.storelocation_id.Int64;
-                            return obj;
-                        });
-                        // getting the number of loaded select elements
-                        selectnbitems = $("ul#select2-s_storelocation-results li").length + 10;
-
-                        return {
-                            results: newdata,
-                            pagination: {more: selectnbitems<data.total}
-                        };
-                    }
-                }
-            });
-
-            $('select#s_casnumber').select2({
-                tags: false,
-                allowClear: true,
-                placeholder: "select a cas number",
-                ajax: {
-                    url: proxyPath + 'products/casnumbers/',
-                    delay: 400,
-                    data: function (params) {
-                        var query = {
-                            search: params.term,
-                            page: params.page || 1,
-                            offset: (params.page-1)*10 || 0,
-                            limit: 10
-                        }
-
-                        // Query parameters will be ?search=[term]&page=[page]
-                        return query;
-                    },
-                    dataType: 'json',
-                    processResults: function (data) {
-                        // replacing name by text expected by select2
-                        var newdata = $.map(data.rows, function (obj) {
-                            obj.text = obj.text || obj.casnumber_label;
-                            obj.id = obj.id || obj.casnumber_id;
-                            return obj;
-                        });
-                        // getting the number of loaded select elements
-                        selectnbitems = $("ul#select2-s_casnumber-results li").length + 10;
-
-                        return {
-                            results: newdata,
-                            pagination: {more: selectnbitems<data.total}
-                        };
-                    }
-                }
-            });
-
-            $('select#s_name').select2({
-                tags: false,
-                allowClear: true,
-                placeholder: "select a name",
-                ajax: {
-                    url: proxyPath + 'products/names/',
-                    delay: 400,
-                    data: function (params) {
-                        var query = {
-                            search: params.term,
-                            page: params.page || 1,
-                            offset: (params.page-1)*10 || 0,
-                            limit: 10
-                        }
-
-                        // Query parameters will be ?search=[term]&page=[page]
-                        return query;
-                    },
-                    dataType: 'json',
-                    processResults: function (data) {
-
-                        // replacing name by text expected by select2
-                        var newdata = $.map(data.rows, function (obj) {
-                            obj.text = obj.text || obj.name_label;
-                            obj.id = obj.id || obj.name_id;
-                            return obj;
-                        });
-                        // getting the number of loaded select elements
-                        selectnbitems = $("ul#select2-s_name-results li").length + 10;
-
-                        return {
-                            results: newdata,
-                            pagination: {more: selectnbitems<data.total}
-                        };
-                    }
-                }
-            });
-
-            $('select#s_empiricalformula').select2({
-                tags: false,
-                allowClear: true,
-                placeholder: "select a formula",
-                ajax: {
-                    url: proxyPath + 'products/empiricalformulas/',
-                    delay: 400,
-                    data: function (params) {
-                        var query = {
-                            search: params.term,
-                            page: params.page || 1,
-                            offset: (params.page-1)*10 || 0,
-                            limit: 10
-                        }
-
-                        // Query parameters will be ?search=[term]&page=[page]
-                        return query;
-                    },
-                    dataType: 'json',
-                    processResults: function (data) {
-
-                        // replacing name by text expected by select2
-                        var newdata = $.map(data.rows, function (obj) {
-                            obj.text = obj.text || obj.empiricalformula_label;
-                            obj.id = obj.id || obj.empiricalformula_id;
-                            return obj;
-                        });
-                        // getting the number of loaded select elements
-                        selectnbitems = $("ul#select2-s_empiricalformula-results li").length + 10;
-
-                        return {
-                            results: newdata,
-                            pagination: {more: selectnbitems<data.total}
-                        };
-                    }
-                }
-            });
-
-            $('select#s_signalword').select2({
-                templateResult: formatSignalWord,
-                allowClear: true,
-                placeholder: "select signal word",
-                ajax: {
-                    url: proxyPath + 'products/signalwords/',
-                    delay: 400,
-                    data: function (params) {
-                        var query = {
-                            search: params.term,
-                            page: params.page || 1,
-                            offset: (params.page-1)*10 || 0,
-                            limit: 10
-                        }
-
-                        // Query parameters will be ?search=[term]&page=[page]
-                        return query;
-                    },
-                    dataType: 'json',
-                    processResults: function (data) {
-                        // replacing name by text expected by select2
-                        var newdata = $.map(data.rows, function (obj) {
-                            obj.text = obj.text || obj.signalword_label.String;
-                            obj.id = obj.id || obj.signalword_id.Int64;
-                            return obj;
-                        });
-                            return {
-                            results: newdata,
-                        };
-                    }
-                }
-            });
-
-            $('select#s_symbols').select2({
-                templateResult: formatSymbol,
-                closeOnSelect: false,
-                ajax: {
-                    url: proxyPath + 'products/symbols/',
-                    delay: 400,
-                    dataType: 'json',
-                    processResults: function (data) {
-                        // replacing name by text expected by select2
-                        var newdata = $.map(data.rows, function (obj) {
-                            obj.text = obj.text || obj.symbol_label;
-                            obj.id = obj.id || obj.symbol_id;
-                            return obj;
-                        });
-                            return {
-                            results: newdata,
-                        };
-                    }
-                }
-            });
-
-            $('select#s_hazardstatements').select2({
-                templateResult: formatHazardStatement,
-                closeOnSelect: false,
-                ajax: {
-                    url: proxyPath + 'products/hazardstatements/',
-                    delay: 400,
-                    data: function (params) {
-                        var query = {
-                            search: params.term,
-                            page: params.page || 1,
-                            offset: (params.page-1)*10 || 0,
-                            limit: 10
-                        }
-
-                        // Query parameters will be ?search=[term]&page=[page]
-                        return query;
-                    },
-                    dataType: 'json',
-                    processResults: function (data) {
-                        // replacing name by text expected by select2
-                        var newdata = $.map(data.rows, function (obj) {
-                            obj.text = obj.text || obj.hazardstatement_reference;
-                            obj.id = obj.id || obj.hazardstatement_id;
-                            return obj;
-                        });
-                        // getting the number of loaded select elements
-                        selectnbitems = $("ul#select2-hazardstatements-results li").length + 10;
-
-                        return {
-                            results: newdata,
-                            pagination: {more: selectnbitems<data.total}
-                        };
-                    }
-                }
-            });
-
-            $('select#s_precautionarystatements').select2({
-                templateResult: formatPrecautionaryStatement,
-                closeOnSelect: false,
-                ajax: {
-                    url: proxyPath + 'products/precautionarystatements/',
-                    delay: 400,
-                    data: function (params) {
-                        var query = {
-                            search: params.term,
-                            page: params.page || 1,
-                            offset: (params.page-1)*10 || 0,
-                            limit: 10
-                        }
-
-                        // Query parameters will be ?search=[term]&page=[page]
-                        return query;
-                    },
-                    dataType: 'json',
-                    processResults: function (data) {
-                        // replacing name by text expected by select2
-                        var newdata = $.map(data.rows, function (obj) {
-                            obj.text = obj.text || obj.precautionarystatement_reference;
-                            obj.id = obj.id || obj.precautionarystatement_id;
-                            return obj;
-                        });
-                        // getting the number of loaded select elements
-                        selectnbitems = $("ul#select2-precautionarystatements-results li").length + 10;
-
-                        return {
-                            results: newdata,
-                            pagination: {more: selectnbitems<data.total}
-                        };
-                    }
-                }
-            });
-
-            //
-            // store locations selector select2
-            //
-            $('select#storelocationselector').select2({
-                templateResult: formatStorelocation,
-                placeholder: "direct store location access",
-                ajax: {
-                    url: proxyPath + 'storelocations',
-                    data: function (params) {
-                        var query = {
-                            search: params.term,
-                            page: params.page || 1,
-                            offset: (params.page-1)*10 || 0,
-                            limit: 10
-                        }
-
-                        // Query parameters will be ?search=[term]&page=[page]
-                        return query;
-                    },
-                    dataType: 'json',
-                    processResults: function (data) {
-                        // replacing name by text expected by select2
-                        var newdata = $.map(data.rows, function (obj) {
-                            obj.text = obj.text || obj.storelocation_fullpath;
-                            obj.id = obj.id || obj.storelocation_id.Int64;
-                            return obj;
-                        });
-                        // getting the number of loaded select elements
-                        selectnbitems = $("ul#select2-storelocationselector-results li").length + 10;
-                        
-                        return {
-                            results: newdata,
-                            pagination: {more: selectnbitems<data.total}
-                        };
-                    }
-                }
-            }).on("select2:select", function (e) {
-                var data = e.params.data;
-                var slid = data.storelocation_id.Int64;
-                window.location.href = proxyPath + "v/products?storelocation=" + slid;
-            });
-
-            //
-            // store location select2
-            //
-            $('select#storelocation').select2({
-                templateResult: formatStorelocation,
-                ajax: {
-                    url: proxyPath + 'storelocations',
-                    delay: 400,
-                    data: function (params) {
-                        var query = {
-                            storelocation_canstore: true,
-                            search: params.term,
-                            page: params.page || 1,
-                            offset: (params.page-1)*10 || 0,
-                            limit: 10
-                        }
-
-                        // Query parameters will be ?search=[term]&page=[page]
-                        return query;
-                    },
-                    dataType: 'json',
-                    processResults: function (data) {
-                        // replacing name by text expected by select2
-                        var newdata = $.map(data.rows, function (obj) {
-                            obj.text = obj.text || obj.storelocation_name.String;
-                            obj.id = obj.id || obj.storelocation_id.Int64;
-                            return obj;
-                        });
-                        // getting the number of loaded select elements
-                        selectnbitems = $("ul#select2-storelocation-results li").length + 10;
-                        
-                        return {
-                            results: newdata,
-                            pagination: {more: selectnbitems<data.total}
-                        };
-                    }
-                }
-            }).on("change", function (e) {
-                $(this).valid(); // FIXME: see https://github.com/select2/select2/issues/3901
-            });
-
-            //
-            // unit select2
-            //
-            $('select#unit').select2({
-                allowClear: true,
-                placeholder: "select a unit",
-                ajax: {
-                    url: proxyPath + 'storages/units',
-                    delay: 400,
-                    data: function (params) {
-                        var query = {
-                            search: params.term,
-                            page: params.page || 1,
-                            offset: (params.page-1)*10 || 0,
-                            limit: 10
-                        }
-
-                        // Query parameters will be ?search=[term]&page=[page]
-                        return query;
-                    },
-                    dataType: 'json',
-                    processResults: function (data) {
-                        // replacing name by text expected by select2
-                        var newdata = $.map(data.rows, function (obj) {
-                            obj.text = obj.text || obj.unit_label.String;
-                            obj.id = obj.id || obj.unit_id.Int64;
-                            return obj;
-                        });
-                        // getting the number of loaded select elements
-                        selectnbitems = $("ul#select2-unit-results li").length + 10;
-
-                        return {
-                            results: newdata,
-                            pagination: {more: selectnbitems<data.total}
-                        };
-                    }
-                }
-            }).on("change", function (e) {
-                $(this).valid(); // FIXME: see https://github.com/select2/select2/issues/3901
-            });
-
-            //
-            // suppliers select2
-            //
-            $('select#supplier').select2({
-                allowClear: true,
-                tags: true,
-                placeholder: "select or enter a supplier",
-                createTag: function (params) {
-                    if ($("input#exactMatchSupplier").val() == "true") {
-                        return null
-                    }
-                    return {
-                        id: params.term,
-                        text: params.term,
-                    }
-                },
-                ajax: {
-                    url: proxyPath + 'storages/suppliers',
-                    delay: 400,
-                        data: function (params) {
-                        var query = {
-                            search: params.term,
-                            page: params.page || 1,
-                            offset: (params.page-1)*10 || 0,
-                            limit: 10
-                        }
-
-                        // Query parameters will be ?search=[term]&page=[page]
-                        return query;
-                    },
-                    dataType: 'json',
-                    processResults: function (data) {
-                        isExactMatch=false;
-                        
-                        // looking for an exact match
-                        $.each(data.rows, function( index, value ) {
-                            if(value.c == 1) {
-                                isExactMatch=true;
-                            }
-                        });
-                        
-                        // there is a match: setting the input field
-                        if (isExactMatch) {
-                            $("input#exactMatchSupplier").val("true");
-                        } else {
-                            $("input#exactMatchSupplier").val("false");
-                        }
-
-                        // replacing name by text expected by select2
-                        var newdata = $.map(data.rows, function (obj) {
-                            obj.text = obj.text || obj.supplier_label.String;
-                            obj.id = obj.id || obj.supplier_id.Int64;
-                            return obj;
-                        });
-                        // getting the number of loaded select elements
-                        selectnbitems = $("ul#select2-supplier-results li").length + 10;
-
-                        return {
-                            results: newdata,
-                            pagination: {more: selectnbitems<data.total}
-                        };
-                    }
-                }
-            }).on("change", function (e) {
-                $(this).valid(); // FIXME: see https://github.com/select2/select2/issues/3901
-            });
-
-            //
-            // borrowers select2
-            //
-            $('select#borrower').select2({
-            ajax: {
-                url: proxyPath + 'people',
-                dataType: 'json',
-                processResults: function (data) {
-                // replacing email by text expected by select2
-                var newdata = $.map(data.rows, function (obj) {
-                    obj.text = obj.text || obj.person_email;
-                    obj.id = obj.id || obj.person_id;
-                    return obj;
-                });
-                return {
-                    results: newdata
-                };
-                }
-            }
-            });
-
-    });
-
-    //
-    // store location select2 formatter
-    //
-    function formatStorelocation (sl) {
-        if (!sl.storelocation_id) {
-            return sl.storelocation_fullpath;
-        }
-        var canstore = '<span class="mdi mdi-close"></span>';
-        var icon = '<span class="mdi mdi-gesture" style="color: ' + sl.storelocation_color.String + ';"></span>';
-        if (sl.storelocation_canstore.Valid && sl.storelocation_canstore.Bool) {
-            canstore = '<span class="mdi mdi-check"></span>'
-        }
-        var s = $(
-            '<div>' + icon + '<span>' + sl.storelocation_fullpath + '</span>' + canstore + '</div>'
-        );
-        return s;
-    };
-    //
-    // signalwords select2 formatter
-    //
-    function formatSignalWord (signalword) {
-        if (!signalword.signalword_id) {
-            return signalword.signalword_label;
-        }
-        if (signalword.signalword_id.Valid) {
-            return signalword.signalword_label.String;
-        }
-    };
-    //
-    // symbols select2 formatter
-    //
-    function formatSymbol (symbol) {
-        if (!symbol.symbol_id) {
-            return symbol.symbol_label;
-        }
-        var s = $(
-            '<span><img src="data:' + symbol.symbol_image + '" title="' + symbol.symbol_label + '" /> ' + symbol.symbol_label + '</span>'
-        );
-        return s;
-    };
-    //
-    // precautionary statements select2 formatter
-    //
-    function formatPrecautionaryStatement (ps) {
-        if (!ps.precautionarystatement_id) {
-            return ps.precautionarystatement_label;
-        }
-        var s = $(
-            '<span><b>' + ps.precautionarystatement_reference + '</b> ' + ps.precautionarystatement_label + '</span>'
-        );
-        return s;
-    };
-    //
-    // hazard statements select2 formatter
-    //
-    function formatHazardStatement (hs) {
-        if (!hs.hazardstatement_id) {
-            return hs.hazardstatement_label;
-        }
-        var s = $(
-            '<span><b>' + hs.hazardstatement_reference + '</b> ' + hs.hazardstatement_label + '</span>'
-        );
-        return s;
-    };
-    
-    //
-    // save storage callback
-    //
-    var createCallBack = function createCallback(data, textStatus, jqXHR) {
-        global.displayMessage("storage created", "success");
-        setTimeout(function(){ window.location = proxyPath + "v/storages?product="+data.product.product_id+"&hl="+data.product.product_id; }, 1000);
-    }
-    var updateCallBack = function updateCallback(data, textStatus, jqXHR) {
-        //- $('#list-collapse').collapse('show');
-        //- $('#edit-collapse').collapse('hide');
-        //- var $table = $('#table');
-        //- var index = $('input#index').val();
-        //- // appending hl parameter to highlight updated row
-        //- updateQueryStringParam("hl", data.storage_id.Int64);
-        //- $table.bootstrapTable('refresh');
-        console.log(data)
-        global.displayMessage("storage " + data.storage_id.Int64 + " updated", "success");
-        setTimeout(function(){ window.location = proxyPath + "v/storages?product="+data.product.product_id+"&hl="+data.product.product_id; }, 1000);
-    }
-
-    function saveStorage() {
-        var form = $("#storage");
-        if (! form.valid()) {
-            return;
-        };
-
-        var product_id = $("input#product_id").val(),
-            storage_id = $("input#storage_id").val(),
-            storage_nbitem = $("input#storage_nbitem").val(),
-            storage_comment = $("input#storage_comment").val(),
-            storage_quantity = $("input#storage_quantity").val(),
-            storage_barecode = $("input#storage_barecode").val(),
-            storage_entrydate = $("input#storage_entrydate").val(),
-            storage_exitdate = $("input#storage_exitdate").val(),
-            storage_openingdate = $("input#storage_openingdate").val(),
-            storage_expirationdate = $("input#storage_expirationdate").val(),
-            storage_reference = $("input#storage_reference").val(),
-            storage_batchnumber = $("input#storage_batchnumber").val(),
-            storage_todestroy = $("input#storage_todestroy:CHECKED").val(),
-            unit = $('select#unit').select2('data')[0],
-            supplier = $('select#supplier').select2('data')[0],
-            storelocation = $('select#storelocation').select2('data')[0],
-            ajax_url = proxyPath + "storages",
-            ajax_method = "POST",
-            ajax_callback = createCallBack,
-            data = {};
-
-            if ($("form#storage input#storage_id").length) {
-                ajax_url = proxyPath + "storages/" + storage_id
-                ajax_method = "PUT"
-                ajax_callback = updateCallBack
-            }
-
-            $.extend(data, {
-                "product.product_id": product_id,
-                "storage_id": storage_id,
-                "storage_nbitem": storage_nbitem == 0 ? 1 : storage_nbitem,
-                "storage_comment": storage_comment,
-                "storage_quantity": storage_quantity == "" ? 1 : storage_quantity,
-                "storage_barecode": storage_barecode,
-                "storage_reference": storage_reference,
-                "storage_batchnumber": storage_batchnumber,
-                "storage_todestroy": storage_todestroy == "on" ? true : false,
-                "storelocation.storelocation_id": storelocation.id,
-            });
-            if (supplier !== undefined) {
-                $.extend(data, {
-                    "supplier.supplier_id": supplier.id == supplier.text ? -1 : supplier.id,
-                    "supplier.supplier_label": supplier === undefined ? "" : supplier.text,
-                });                    
-            }
-            if (unit !== undefined) {
-                $.extend(data, {
-                    "unit.unit_id": unit.id,
-                    "unit.unit_label": unit.text,
-                });                    
-            }
-            if (storage_entrydate !== "") {
-                $.extend(data, {
-                    "storage_entrydate": storage_entrydate,
-                });
-            }
-            if (storage_exitdate !== "") {
-                $.extend(data, {
-                    "storage_exitdate": storage_exitdate,
-                });
-            }
-            if (storage_openingdate !== "") {
-                $.extend(data, {
-                    "storage_openingdate": storage_openingdate,
-                });
-            }
-            if (storage_expirationdate !== "") {
-                $.extend(data, {
-                    "storage_expirationdate": storage_expirationdate,
-                });
-            }
-            $.ajax({
-                url: ajax_url,
-                method: ajax_method,
-                dataType: 'json',
-                data: data,
-            }).done(ajax_callback).fail(function(jqXHR, textStatus, errorThrown) {
-                handleHTTPError(jqXHR.statusText, jqXHR.status)
-            });  
-    }</script><script>
+	create_7__31 = `<div class="row"><div class="d-flex justify-content-center"><div id="filter-product"></div></div></div><form id="storage"><input id="index" type="hidden" name="index" value=""/><input id="product_id" type="hidden" name="product_id" value=""/><input id="exactMatchSupplier" type="hidden"/><div class="form-group row"><div class="col-sm-4">`
+	create_7__32 = `</div></div><hr/><div class="form-group row"><div class="form-group col-sm-auto"><span class="badge badge-pill badge-danger">&nbsp;</span></div><div class="form-group col-sm-11">`
+	create_7__64 = `"></script><script>
        $( document ).ready(function() {           
 
             //
@@ -755,7 +70,7 @@ const (
             }
 
         });
-</script></body></html>`
+</script><script src="../js/chim/storage.js"></script></body></html>`
 )
 
 func Storagecreate(c ViewContainer, wr io.Writer) {
@@ -784,88 +99,44 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 	buffer.WriteString(index__10)
 	WriteAll(c.ProxyPath+"img/logo_chimitheque_small.png", true, buffer)
 	buffer.WriteString(index__11)
-
-	if HasPermission(c.PersonID, "r", "products", -2) {
-		buffer.WriteString(index__35)
-		WriteAll(c.ProxyPath+"v/products", true, buffer)
-		buffer.WriteString(index__36)
-		WriteAll(T("menu_home", 1), true, buffer)
-		buffer.WriteString(index__37)
-
-	}
-	if HasPermission(c.PersonID, "r", "products", -2) {
-		buffer.WriteString(index__35)
-		WriteAll(c.ProxyPath+"v/products?bookmark=true", true, buffer)
-		buffer.WriteString(index__39)
-		WriteAll(T("menu_bookmark", 1), true, buffer)
-		buffer.WriteString(index__37)
-
-	}
-	if HasPermission(c.PersonID, "w", "products", -2) {
-		buffer.WriteString(index__41)
-		WriteAll(c.ProxyPath+"vc/products", true, buffer)
-		buffer.WriteString(index__42)
-		WriteAll(T("menu_create_productcard", 1), true, buffer)
-		buffer.WriteString(index__37)
-
-	}
-	if HasPermission(c.PersonID, "r", "entities", -2) {
-		buffer.WriteString(index__44)
-		WriteAll(T("menu_entity", 1), true, buffer)
-		buffer.WriteString(index__45)
-		WriteAll(c.ProxyPath+"v/entities", true, buffer)
-		buffer.WriteString(index__46)
-
-		if HasPermission(c.PersonID, "all", "all", -1) {
-			buffer.WriteString(index__48)
-			WriteAll(c.ProxyPath+"vc/entities", true, buffer)
-			buffer.WriteString(index__49)
-
-		}
-		buffer.WriteString(index__47)
-
-	}
-	if HasPermission(c.PersonID, "r", "storages", -2) {
-		buffer.WriteString(index__50)
-		WriteAll(T("menu_storelocation", 1), true, buffer)
-		buffer.WriteString(index__45)
-		WriteAll(c.ProxyPath+"v/storelocations", true, buffer)
-		buffer.WriteString(index__46)
-
-		if HasPermission(c.PersonID, "all", "all", -2) {
-			buffer.WriteString(index__48)
-			WriteAll(c.ProxyPath+"vc/storelocations", true, buffer)
-			buffer.WriteString(index__49)
-
-		}
-		buffer.WriteString(index__47)
-
-	}
-	if HasPermission(c.PersonID, "r", "people", -2) {
-		buffer.WriteString(index__56)
-		WriteAll(T("menu_people", 1), true, buffer)
-		buffer.WriteString(index__45)
-		WriteAll(c.ProxyPath+"v/people", true, buffer)
-		buffer.WriteString(index__46)
-
-		if HasPermission(c.PersonID, "w", "people", -2) {
-			buffer.WriteString(index__48)
-			WriteAll(c.ProxyPath+"vc/people", true, buffer)
-			buffer.WriteString(index__49)
-
-		}
-		buffer.WriteString(index__47)
-
-	}
+	WriteAll(c.ProxyPath+"v/products", true, buffer)
 	buffer.WriteString(index__12)
-	WriteAll(c.ProxyPath+"vu/peoplepass", true, buffer)
+	WriteAll(T("menu_home", 1), true, buffer)
 	buffer.WriteString(index__13)
-	WriteAll(T("menu_password", 1), true, buffer)
+	WriteAll(c.ProxyPath+"v/products?bookmark=true", true, buffer)
 	buffer.WriteString(index__14)
-	WriteAll(c.ProxyPath+"delete-token", true, buffer)
+	WriteAll(T("menu_bookmark", 1), true, buffer)
 	buffer.WriteString(index__15)
+	WriteAll(c.ProxyPath+"vc/products", true, buffer)
+	buffer.WriteString(index__16)
+	WriteAll(T("menu_create_productcard", 1), true, buffer)
+	buffer.WriteString(index__17)
+	WriteAll(T("menu_entity", 1), true, buffer)
+	buffer.WriteString(index__18)
+	WriteAll(c.ProxyPath+"v/entities", true, buffer)
+	buffer.WriteString(index__19)
+	WriteAll(c.ProxyPath+"vc/entities", true, buffer)
+	buffer.WriteString(index__20)
+	WriteAll(T("menu_storelocation", 1), true, buffer)
+	buffer.WriteString(index__18)
+	WriteAll(c.ProxyPath+"v/storelocations", true, buffer)
+	buffer.WriteString(index__22)
+	WriteAll(c.ProxyPath+"vc/storelocations", true, buffer)
+	buffer.WriteString(index__23)
+	WriteAll(T("menu_people", 1), true, buffer)
+	buffer.WriteString(index__18)
+	WriteAll(c.ProxyPath+"v/people", true, buffer)
+	buffer.WriteString(index__25)
+	WriteAll(c.ProxyPath+"vc/people", true, buffer)
+	buffer.WriteString(index__26)
+	WriteAll(c.ProxyPath+"vu/peoplepass", true, buffer)
+	buffer.WriteString(index__27)
+	WriteAll(T("menu_password", 1), true, buffer)
+	buffer.WriteString(index__28)
+	WriteAll(c.ProxyPath+"delete-token", true, buffer)
+	buffer.WriteString(index__29)
 	WriteAll(T("menu_logout", 1), true, buffer)
-	buffer.WriteString(create__16)
+	buffer.WriteString(create__30)
 
 	{
 		var (
@@ -874,17 +145,17 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 			label      = "create storage"
 		)
 
-		buffer.WriteString(index_2__68)
+		buffer.WriteString(index_2__58)
 		WriteEscString("mdi-"+iconitem+" mdi mdi-48px", buffer)
-		buffer.WriteString(index_2__69)
+		buffer.WriteString(index_2__59)
 		WriteEscString("mdi-"+iconaction+" mdi mdi-18px", buffer)
-		buffer.WriteString(index_2__70)
+		buffer.WriteString(index_2__60)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__71)
+		buffer.WriteString(index_2__61)
 
 	}
 
-	buffer.WriteString(create_7__17)
+	buffer.WriteString(create_7__31)
 
 	{
 		var (
@@ -896,28 +167,28 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 			value = ""
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_6__203)
+		buffer.WriteString(index_6__190)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__76)
+		buffer.WriteString(index_2__66)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_6__206)
+		buffer.WriteString(index_6__193)
 		WriteEscString(step, buffer)
-		buffer.WriteString(index_6__207)
+		buffer.WriteString(index_6__194)
 		WriteEscString(min, buffer)
-		buffer.WriteString(index_6__208)
+		buffer.WriteString(index_6__195)
 		WriteEscString(max, buffer)
-		buffer.WriteString(index_4__105)
+		buffer.WriteString(index_4__92)
 		WriteEscString(value, buffer)
-		buffer.WriteString(index_2__77)
+		buffer.WriteString(index_2__67)
 	}
 
-	buffer.WriteString(create_7__18)
+	buffer.WriteString(create_7__32)
 
 	{
 		var (
@@ -925,19 +196,19 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 			name  = "storelocation"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__86)
+		buffer.WriteString(index_2__76)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__162)
+		buffer.WriteString(index_4__149)
 
 	}
 
-	buffer.WriteString(index_6__42)
+	buffer.WriteString(index_6__56)
 
 	{
 		var (
@@ -949,28 +220,28 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 			value = ""
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_6__203)
+		buffer.WriteString(index_6__190)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__76)
+		buffer.WriteString(index_2__66)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_6__206)
+		buffer.WriteString(index_6__193)
 		WriteEscString(step, buffer)
-		buffer.WriteString(index_6__207)
+		buffer.WriteString(index_6__194)
 		WriteEscString(min, buffer)
-		buffer.WriteString(index_6__208)
+		buffer.WriteString(index_6__195)
 		WriteEscString(max, buffer)
-		buffer.WriteString(index_4__105)
+		buffer.WriteString(index_4__92)
 		WriteEscString(value, buffer)
-		buffer.WriteString(index_2__77)
+		buffer.WriteString(index_2__67)
 	}
 
-	buffer.WriteString(index_4__20)
+	buffer.WriteString(index_4__34)
 
 	{
 		var (
@@ -978,19 +249,19 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 			name  = "unit"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__86)
+		buffer.WriteString(index_2__76)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__162)
+		buffer.WriteString(index_4__149)
 
 	}
 
-	buffer.WriteString(index_6__37)
+	buffer.WriteString(index_6__51)
 
 	{
 		var (
@@ -998,19 +269,19 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 			name  = "supplier"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__86)
+		buffer.WriteString(index_2__76)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__162)
+		buffer.WriteString(index_4__149)
 
 	}
 
-	buffer.WriteString(index_6__45)
+	buffer.WriteString(index_6__59)
 
 	{
 		var (
@@ -1018,20 +289,20 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 			name  = "storage_entrydate"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_6__223)
+		buffer.WriteString(index_6__210)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__76)
+		buffer.WriteString(index_2__66)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__77)
+		buffer.WriteString(index_2__67)
 	}
 
-	buffer.WriteString(index_6__46)
+	buffer.WriteString(index_6__60)
 
 	{
 		var (
@@ -1039,20 +310,20 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 			name  = "storage_exitdate"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_6__223)
+		buffer.WriteString(index_6__210)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__76)
+		buffer.WriteString(index_2__66)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__77)
+		buffer.WriteString(index_2__67)
 	}
 
-	buffer.WriteString(index_6__46)
+	buffer.WriteString(index_6__60)
 
 	{
 		var (
@@ -1060,20 +331,20 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 			name  = "storage_openingdate"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_6__223)
+		buffer.WriteString(index_6__210)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__76)
+		buffer.WriteString(index_2__66)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__77)
+		buffer.WriteString(index_2__67)
 	}
 
-	buffer.WriteString(index_6__46)
+	buffer.WriteString(index_6__60)
 
 	{
 		var (
@@ -1081,20 +352,20 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 			name  = "storage_expirationdate"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_6__223)
+		buffer.WriteString(index_6__210)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__76)
+		buffer.WriteString(index_2__66)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__77)
+		buffer.WriteString(index_2__67)
 	}
 
-	buffer.WriteString(index_6__42)
+	buffer.WriteString(index_6__56)
 
 	{
 		var (
@@ -1102,20 +373,20 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 			name  = "storage_reference"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__74)
+		buffer.WriteString(index_2__64)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__76)
+		buffer.WriteString(index_2__66)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__77)
+		buffer.WriteString(index_2__67)
 	}
 
-	buffer.WriteString(index_4__20)
+	buffer.WriteString(index_4__34)
 
 	{
 		var (
@@ -1123,20 +394,20 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 			name  = "storage_batchnumber"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__74)
+		buffer.WriteString(index_2__64)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__76)
+		buffer.WriteString(index_2__66)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__77)
+		buffer.WriteString(index_2__67)
 	}
 
-	buffer.WriteString(index_6__37)
+	buffer.WriteString(index_6__51)
 
 	{
 		var (
@@ -1144,20 +415,20 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 			name  = "storage_barecode"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__74)
+		buffer.WriteString(index_2__64)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__76)
+		buffer.WriteString(index_2__66)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__77)
+		buffer.WriteString(index_2__67)
 	}
 
-	buffer.WriteString(index_6__37)
+	buffer.WriteString(index_6__51)
 
 	{
 		var (
@@ -1165,20 +436,20 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 			name  = "storage_comment"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__74)
+		buffer.WriteString(index_2__64)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__76)
+		buffer.WriteString(index_2__66)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__77)
+		buffer.WriteString(index_2__67)
 	}
 
-	buffer.WriteString(index_6__37)
+	buffer.WriteString(index_6__51)
 
 	{
 		var (
@@ -1186,18 +457,18 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 			name  = "storage_todestroy"
 		)
 
-		buffer.WriteString(index_4__178)
+		buffer.WriteString(index_4__165)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__179)
+		buffer.WriteString(index_4__166)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_4__181)
+		buffer.WriteString(index_4__168)
 	}
 
-	buffer.WriteString(index_6__54)
+	buffer.WriteString(index_6__68)
 	WriteAll(T("save", 1), true, buffer)
-	buffer.WriteString(create__21)
+	buffer.WriteString(create__35)
 
 	json, _ := json.Marshal(c)
 
@@ -1206,40 +477,40 @@ func Storagecreate(c ViewContainer, wr io.Writer) {
 		out += fmt.Sprintf("URLValues.set(%s, %s)\n", key, value)
 	}
 
-	buffer.WriteString(index__17)
+	buffer.WriteString(index__31)
 	WriteAll(c.ProxyPath, false, buffer)
-	buffer.WriteString(index__18)
+	buffer.WriteString(index__32)
 	buffer.WriteString(fmt.Sprintf("%s", json))
-	buffer.WriteString(index__19)
+	buffer.WriteString(index__33)
 	buffer.WriteString(out)
-	buffer.WriteString(index__20)
+	buffer.WriteString(index__34)
 	WriteAll(c.ProxyPath+"js/jquery.formautofill.min.js", true, buffer)
-	buffer.WriteString(index__21)
+	buffer.WriteString(index__35)
 	WriteAll(c.ProxyPath+"js/jquery.validate.min.js", true, buffer)
-	buffer.WriteString(index__21)
+	buffer.WriteString(index__35)
 	WriteAll(c.ProxyPath+"js/jquery.validate.additional-methods.min.js", true, buffer)
-	buffer.WriteString(index__21)
+	buffer.WriteString(index__35)
 	WriteAll(c.ProxyPath+"js/select2.full.min.js", true, buffer)
-	buffer.WriteString(index__21)
+	buffer.WriteString(index__35)
 	WriteAll(c.ProxyPath+"js/popper.min.js", true, buffer)
-	buffer.WriteString(index__21)
+	buffer.WriteString(index__35)
 	WriteAll(c.ProxyPath+"js/bootstrap.min.js", true, buffer)
-	buffer.WriteString(index__21)
+	buffer.WriteString(index__35)
 	WriteAll(c.ProxyPath+"js/bootstrap-table.min.js", true, buffer)
-	buffer.WriteString(index__21)
+	buffer.WriteString(index__35)
 	WriteAll(c.ProxyPath+"js/bootstrap-confirmation.min.js", true, buffer)
-	buffer.WriteString(index__21)
+	buffer.WriteString(index__35)
 	WriteAll(c.ProxyPath+"js/bootstrap-colorpicker.min.js", true, buffer)
-	buffer.WriteString(index__21)
+	buffer.WriteString(index__35)
 	WriteAll(c.ProxyPath+"js/bootstrap-toggle.min.js", true, buffer)
-	buffer.WriteString(index__21)
+	buffer.WriteString(index__35)
 	WriteAll(c.ProxyPath+"js/JSmol.lite.nojq.js", true, buffer)
-	buffer.WriteString(index__21)
+	buffer.WriteString(index__35)
 	WriteAll(c.ProxyPath+"js/chim/gjs-common.js", true, buffer)
-	buffer.WriteString(index__21)
+	buffer.WriteString(index__35)
 	WriteAll(c.ProxyPath+"js/chim/chimcommon.js", true, buffer)
-	buffer.WriteString(index__21)
+	buffer.WriteString(index__35)
 	WriteAll(c.ProxyPath+"js/chim/login.js", true, buffer)
-	buffer.WriteString(create_7__50)
+	buffer.WriteString(create_7__64)
 
 }

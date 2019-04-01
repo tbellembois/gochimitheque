@@ -3,7 +3,8 @@ package handlers
 import (
 	"net/http"
 
-	"../jade"
+	"github.com/tbellembois/gochimitheque/jade"
+
 	"github.com/tbellembois/gochimitheque/helpers"
 )
 

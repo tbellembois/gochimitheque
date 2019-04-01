@@ -93,8 +93,7 @@ func main() {
 
 	// environment creation
 	env := handlers.Env{
-		DB: datastore,
-		//Localizer: localizer,
+		DB:        datastore,
 		Templates: make(map[string]*template.Template),
 	}
 
@@ -111,7 +110,7 @@ func main() {
 			},
 			// i18n
 			"T": func(messageID string, pluralCount int) string {
-				return env.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: messageID, PluralCount: pluralCount})
+				return global.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: messageID, PluralCount: pluralCount})
 			},
 		}
 	*/
@@ -260,7 +259,7 @@ func main() {
 
 	r.Handle("/f/{item:storages}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 	r.Handle("/f/{item:storages}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT")
-	r.Handle("/f/{item:storages}/", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("POST")
+	r.Handle("/f/{item:storages}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("POST")
 	r.Handle("/f/{item:storages}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE")
 
 	// validators

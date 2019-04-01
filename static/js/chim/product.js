@@ -1,25 +1,1091 @@
 //
 // request performed at table data loading
 //
-
-$('#table').bootstrapTable({
-    onExpandRow: function (index, row, $detail) {
-        var mol = row['product_molformula'];
-        var Info = {
-            color: "#FFFFFF",
-            height: 300,
-            width: 300,
-            use: "HTML5",
-            disableInitialConsole: true
-        };
-    
-        if (mol.Valid) {
-            Jmol.getTMApplet("myJmol", Info);
-            $("#jsmol" + row["product_id"]).html(myJmol._code);
-            myJmol.__loadModel(mol.String);
+$( document ).ready(function() {  
+    $('#table').bootstrapTable({
+        onExpandRow: function (index, row, $detail) {
+            var mol = row['product_molformula'];
+            var Info = {
+                color: "#FFFFFF",
+                height: 300,
+                width: 300,
+                use: "HTML5",
+                disableInitialConsole: true
+            };
+        
+            if (mol.Valid) {
+                Jmol.getTMApplet("myJmol", Info);
+                $("#jsmol" + row["product_id"]).html(myJmol._code);
+                myJmol.__loadModel(mol.String);
+            }
         }
-    }
-})
+    })
+
+    //
+    // update form validation
+    //
+    $( "#product" ).validate({
+        // ignore required to validate select2
+        ignore: "",
+        errorClass: "alert alert-danger",
+        rules: {
+            name: {
+                required: true,
+            },
+            empiricalformula: {
+                required: true,
+                remote: {
+                    url: "",
+                    type: "post",
+                    beforeSend: function(jqXhr, settings) {
+                        id = -1
+                        if ($("form#product input#product_id").length) {
+                            id = $("form#product input#product_id").val()
+                        }
+                        settings.url = proxyPath + "validate/product/" + id + "/empiricalformula/";
+                    },
+                    data: {
+                        empiricalformula: function() {
+                            return $('select#empiricalformula').select2('data')[0].text;
+                        },
+                    },
+                },
+            },
+            casnumber: {
+                required: true,
+                remote: {
+                    url: "",
+                    type: "post",
+                    beforeSend: function(jqXhr, settings) {
+                        id = -1
+                        if ($("form#product input#product_id").length) {
+                            id = $("form#product input#product_id").val()
+                        }
+                        settings.url = proxyPath + "validate/product/" + id + "/casnumber/";
+                    },
+                    data: {
+                        casnumber: function() {
+                            return $('select#casnumber').select2('data')[0].text;
+                        },
+                        product_specificity:  function() {
+                            return $('#product_specificity').val();
+                        },
+                    },
+                },
+            },
+            cenumber: {
+                remote: {
+                    url: "",
+                    type: "post",
+                    beforeSend: function(jqXhr, settings) {
+                        id = -1
+                        if ($("form#product input#product_id").length) {
+                            id = $("form#product input#product_id").val()
+                        }
+                        settings.url = proxyPath + "validate/product/" + id + "/cenumber/";
+                    },
+                    data: {
+                        cenumber: function() {
+                            return $('select#cenumber').select2('data')[0].text;
+                        },
+                    },
+                },
+            },
+        },
+    });
+
+    //
+    // search form
+    //
+    $('select#s_storelocation').select2({
+        templateResult: formatStorelocation,
+        placeholder: "store location",
+        ajax: {
+            url: proxyPath + 'storelocations',
+            delay: 400,
+                data: function (params) {
+                var query = {
+                    search: params.term,
+                    page: params.page || 1,
+                    offset: (params.page-1)*10 || 0,
+                    limit: 10
+                }
+
+                // Query parameters will be ?search=[term]&page=[page]
+                return query;
+            },
+            dataType: 'json',
+            processResults: function (data) {
+                // replacing name by text expected by select2
+                var newdata = $.map(data.rows, function (obj) {
+                    obj.text = obj.text || obj.storelocation_fullpath;
+                    obj.id = obj.id || obj.storelocation_id.Int64;
+                    return obj;
+                });
+                // getting the number of loaded select elements
+                selectnbitems = $("ul#select2-s_storelocation-results li").length + 10;
+
+                return {
+                    results: newdata,
+                    pagination: {more: selectnbitems<data.total}
+                };
+            }
+        }
+    });
+
+    $('select#s_casnumber').select2({
+        tags: false,
+        allowClear: true,
+        placeholder: "select a cas number",
+        ajax: {
+            url: proxyPath + 'products/casnumbers/',
+            delay: 400,
+            data: function (params) {
+                var query = {
+                    search: params.term,
+                    page: params.page || 1,
+                    offset: (params.page-1)*10 || 0,
+                    limit: 10
+                }
+
+                // Query parameters will be ?search=[term]&page=[page]
+                return query;
+            },
+            dataType: 'json',
+            processResults: function (data) {
+                // replacing name by text expected by select2
+                var newdata = $.map(data.rows, function (obj) {
+                    obj.text = obj.text || obj.casnumber_label;
+                    obj.id = obj.id || obj.casnumber_id;
+                    return obj;
+                });
+                // getting the number of loaded select elements
+                selectnbitems = $("ul#select2-s_casnumber-results li").length + 10;
+
+                return {
+                    results: newdata,
+                    pagination: {more: selectnbitems<data.total}
+                };
+            }
+        }
+    });
+
+    $('select#s_name').select2({
+        tags: false,
+        allowClear: true,
+        placeholder: "select a name",
+        ajax: {
+            url: proxyPath + 'products/names/',
+            delay: 400,
+            data: function (params) {
+                var query = {
+                    search: params.term,
+                    page: params.page || 1,
+                    offset: (params.page-1)*10 || 0,
+                    limit: 10
+                }
+
+                // Query parameters will be ?search=[term]&page=[page]
+                return query;
+            },
+            dataType: 'json',
+            processResults: function (data) {
+
+                // replacing name by text expected by select2
+                var newdata = $.map(data.rows, function (obj) {
+                    obj.text = obj.text || obj.name_label;
+                    obj.id = obj.id || obj.name_id;
+                    return obj;
+                });
+                // getting the number of loaded select elements
+                selectnbitems = $("ul#select2-s_name-results li").length + 10;
+
+                return {
+                    results: newdata,
+                    pagination: {more: selectnbitems<data.total}
+                };
+            }
+        }
+    });
+
+    $('select#s_empiricalformula').select2({
+        tags: false,
+        allowClear: true,
+        placeholder: "select a formula",
+        ajax: {
+            url: proxyPath + 'products/empiricalformulas/',
+            delay: 400,
+            data: function (params) {
+                var query = {
+                    search: params.term,
+                    page: params.page || 1,
+                    offset: (params.page-1)*10 || 0,
+                    limit: 10
+                }
+
+                // Query parameters will be ?search=[term]&page=[page]
+                return query;
+            },
+            dataType: 'json',
+            processResults: function (data) {
+
+                // replacing name by text expected by select2
+                var newdata = $.map(data.rows, function (obj) {
+                    obj.text = obj.text || obj.empiricalformula_label;
+                    obj.id = obj.id || obj.empiricalformula_id;
+                    return obj;
+                });
+                // getting the number of loaded select elements
+                selectnbitems = $("ul#select2-s_empiricalformula-results li").length + 10;
+
+                return {
+                    results: newdata,
+                    pagination: {more: selectnbitems<data.total}
+                };
+            }
+        }
+    });
+
+    $('select#s_signalword').select2({
+        templateResult: formatSignalWord,
+        allowClear: true,
+        placeholder: "select signal word",
+        ajax: {
+            url: proxyPath + 'products/signalwords/',
+            delay: 400,
+            data: function (params) {
+                var query = {
+                    search: params.term,
+                    page: params.page || 1,
+                    offset: (params.page-1)*10 || 0,
+                    limit: 10
+                }
+
+                // Query parameters will be ?search=[term]&page=[page]
+                return query;
+            },
+            dataType: 'json',
+            processResults: function (data) {
+                // replacing name by text expected by select2
+                var newdata = $.map(data.rows, function (obj) {
+                    obj.text = obj.text || obj.signalword_label.String;
+                    obj.id = obj.id || obj.signalword_id.Int64;
+                    return obj;
+                });
+                    return {
+                    results: newdata,
+                };
+            }
+        }
+    });
+
+    $('select#s_symbols').select2({
+        templateResult: formatSymbol,
+        closeOnSelect: false,
+        ajax: {
+            url: proxyPath + 'products/symbols/',
+            delay: 400,
+            dataType: 'json',
+            processResults: function (data) {
+                // replacing name by text expected by select2
+                var newdata = $.map(data.rows, function (obj) {
+                    obj.text = obj.text || obj.symbol_label;
+                    obj.id = obj.id || obj.symbol_id;
+                    return obj;
+                });
+                    return {
+                    results: newdata,
+                };
+            }
+        }
+    });
+
+    $('select#s_hazardstatements').select2({
+        templateResult: formatHazardStatement,
+        closeOnSelect: false,
+        ajax: {
+            url: proxyPath + 'products/hazardstatements/',
+            delay: 400,
+            data: function (params) {
+                var query = {
+                    search: params.term,
+                    page: params.page || 1,
+                    offset: (params.page-1)*10 || 0,
+                    limit: 10
+                }
+
+                // Query parameters will be ?search=[term]&page=[page]
+                return query;
+            },
+            dataType: 'json',
+            processResults: function (data) {
+                // replacing name by text expected by select2
+                var newdata = $.map(data.rows, function (obj) {
+                    obj.text = obj.text || obj.hazardstatement_reference;
+                    obj.id = obj.id || obj.hazardstatement_id;
+                    return obj;
+                });
+                // getting the number of loaded select elements
+                selectnbitems = $("ul#select2-hazardstatements-results li").length + 10;
+
+                return {
+                    results: newdata,
+                    pagination: {more: selectnbitems<data.total}
+                };
+            }
+        }
+    });
+
+    $('select#s_precautionarystatements').select2({
+        templateResult: formatPrecautionaryStatement,
+        closeOnSelect: false,
+        ajax: {
+            url: proxyPath + 'products/precautionarystatements/',
+            delay: 400,
+            data: function (params) {
+                var query = {
+                    search: params.term,
+                    page: params.page || 1,
+                    offset: (params.page-1)*10 || 0,
+                    limit: 10
+                }
+
+                // Query parameters will be ?search=[term]&page=[page]
+                return query;
+            },
+            dataType: 'json',
+            processResults: function (data) {
+                // replacing name by text expected by select2
+                var newdata = $.map(data.rows, function (obj) {
+                    obj.text = obj.text || obj.precautionarystatement_reference;
+                    obj.id = obj.id || obj.precautionarystatement_id;
+                    return obj;
+                });
+                // getting the number of loaded select elements
+                selectnbitems = $("ul#select2-precautionarystatements-results li").length + 10;
+
+                return {
+                    results: newdata,
+                    pagination: {more: selectnbitems<data.total}
+                };
+            }
+        }
+    });
+
+    //
+    // store locations selector select2
+    //
+    $('select#storelocationselector').select2({
+        templateResult: formatStorelocation,
+        placeholder: "direct store location access",
+        ajax: {
+            url: proxyPath + 'storelocations',
+            delay: 400,
+                data: function (params) {
+                var query = {
+                    search: params.term,
+                    page: params.page || 1,
+                    offset: (params.page-1)*10 || 0,
+                    limit: 10
+                }
+
+                // Query parameters will be ?search=[term]&page=[page]
+                return query;
+            },
+            dataType: 'json',
+            processResults: function (data) {
+                // replacing name by text expected by select2
+                var newdata = $.map(data.rows, function (obj) {
+                    obj.text = obj.text || obj.storelocation_fullpath;
+                    obj.id = obj.id || obj.storelocation_id.Int64;
+                    return obj;
+                });
+                // getting the number of loaded select elements
+                selectnbitems = $("ul#select2-storelocationselector-results li").length + 10;
+
+                return {
+                    results: newdata,
+                    pagination: {more: selectnbitems<data.total}
+                };
+            }
+        }
+    }).on("select2:select", function (e) {
+        var data = e.params.data;
+        var slid = data.storelocation_id.Int64;
+        window.location.href = proxyPath + "v/products?storelocation=" + slid;
+    });
+
+    //
+    // casnumber select2
+    //
+    $('select#casnumber').select2({
+        tags: true,
+        createTag: function (params) {
+            if ($("input#exactMatchCasNumber").val() == "true") {
+                return null
+            }
+            return {
+                id: params.term,
+                text: params.term,
+            }
+        },
+        ajax: {
+            url: proxyPath + 'products/casnumbers/',
+            delay: 400,
+            data: function (params) {
+                var query = {
+                    search: params.term,
+                    page: params.page || 1,
+                    offset: (params.page-1)*10 || 0,
+                    limit: 10
+                }
+
+                // Query parameters will be ?search=[term]&page=[page]
+                return query;
+            },
+            dataType: 'json',
+            processResults: function (data) {
+
+                isExactMatch=false;
+                
+                // looking for an exact match
+                $.each(data.rows, function( index, value ) {
+                    if(value.c == 1) {
+                        isExactMatch=true;
+                    }
+                });
+                
+                // there is a match: setting the input field
+                if (isExactMatch) {
+                    $("input#exactMatchCasNumber").val("true");
+                } else {
+                    $("input#exactMatchCasNumber").val("false");
+                }
+
+                // replacing name by text expected by select2
+                var newdata = $.map(data.rows, function (obj) {
+                    obj.text = obj.text || obj.casnumber_label;
+                    obj.id = obj.id || obj.casnumber_id;
+                    return obj;
+                });
+                // getting the number of loaded select elements
+                selectnbitems = $("ul#select2-casnumber-results li").length + 10;
+
+                return {
+                    results: newdata,
+                    pagination: {more: selectnbitems<data.total}
+                };
+            }
+        }
+    }).on("change", function (e) {
+        $(this).valid(); // FIXME: see https://github.com/select2/select2/issues/3901
+    });
+
+    //
+    // cenumber select2
+    //
+    $('select#cenumber').select2({
+        tags: true,
+        allowClear: true,
+        createTag: function (params) {
+            if ($("input#exactMatchCeNumber").val() == "true") {
+                return null
+            }
+            return {
+                id: params.term,
+                text: params.term,
+            }
+        },
+        placeholder: "select or enter a CE number",
+        ajax: {
+            url: proxyPath + 'products/cenumbers/',
+            delay: 400,
+            data: function (params) {
+                var query = {
+                    search: params.term,
+                    page: params.page || 1,
+                    offset: (params.page-1)*10 || 0,
+                    limit: 10
+                }
+
+                // Query parameters will be ?search=[term]&page=[page]
+                return query;
+            },
+            dataType: 'json',
+            processResults: function (data) {
+                isExactMatch=false;
+                
+                // looking for an exact match
+                $.each(data.rows, function( index, value ) {
+                    if(value.c == 1) {
+                        isExactMatch=true;
+                    }
+                });
+                
+                // there is a match: setting the input field
+                if (isExactMatch) {
+                    $("input#exactMatchCeNumber").val("true");
+                } else {
+                    $("input#exactMatchCeNumber").val("false");
+                }
+
+                // replacing name by text expected by select2
+                var newdata = $.map(data.rows, function (obj) {
+                    obj.text = obj.text || obj.cenumber_label.String;
+                    obj.id = obj.id || obj.cenumber_id.Int64;
+                    return obj;
+                });
+                // getting the number of loaded select elements
+                selectnbitems = $("ul#select2-cenumber-results li").length + 10;
+
+                return {
+                    results: newdata,
+                    pagination: {more: selectnbitems<data.total}
+                };
+            }
+        }
+    }).on("change", function (e) {
+        $(this).valid(); // FIXME: see https://github.com/select2/select2/issues/3901
+    });
+
+    //
+    // physicalstate select2
+    //
+    $('select#physicalstate').select2({
+        allowClear: true,
+        tags: true,
+        createTag: function (params) {
+            if ($("input#exactMatchPhysicalstate").val() == "true") {
+                return null
+            }
+            return {
+                id: params.term,
+                text: params.term,
+            }
+        },
+        placeholder: "select physical state",
+        ajax: {
+            url: proxyPath + 'products/physicalstates/',
+            delay: 400,
+            data: function (params) {
+                var query = {
+                    search: params.term,
+                    page: params.page || 1,
+                    offset: (params.page-1)*10 || 0,
+                    limit: 10
+                }
+
+                // Query parameters will be ?search=[term]&page=[page]
+                return query;
+            },
+            dataType: 'json',
+            processResults: function (data) {
+                isExactMatch=false;
+                
+                // looking for an exact match
+                $.each(data.rows, function( index, value ) {
+                    if(value.c == 1) {
+                        isExactMatch=true;
+                    }
+                });
+                
+                // there is a match: setting the input field
+                if (isExactMatch) {
+                    $("input#exactMatchPhysicalstate").val("true");
+                } else {
+                    $("input#exactMatchPhysicalstate").val("false");
+                }
+
+                // replacing name by text expected by select2
+                var newdata = $.map(data.rows, function (obj) {
+                    obj.text = obj.text || obj.physicalstate_label.String;
+                    obj.id = obj.id || obj.physicalstate_id.Int64;
+                    return obj;
+                });
+                // getting the number of loaded select elements
+                selectnbitems = $("ul#select2-physicalstate-results li").length + 10;
+
+                return {
+                    results: newdata,
+                    pagination: {more: selectnbitems<data.total}
+                };
+            }
+        }
+    }).on("change", function (e) {
+        $(this).valid(); // FIXME: see https://github.com/select2/select2/issues/3901
+    });
+
+    //
+    // signalword select2
+    //
+    $('select#signalword').select2({
+        templateResult: formatSignalWord,
+        allowClear: true,
+        placeholder: "select signal word",
+        ajax: {
+            url: proxyPath + 'products/signalwords/',
+            delay: 400,
+            data: function (params) {
+                var query = {
+                    search: params.term,
+                    page: params.page || 1,
+                    offset: (params.page-1)*10 || 0,
+                    limit: 10
+                }
+
+                // Query parameters will be ?search=[term]&page=[page]
+                return query;
+            },
+            dataType: 'json',
+            processResults: function (data) {
+                // replacing name by text expected by select2
+                var newdata = $.map(data.rows, function (obj) {
+                    obj.text = obj.text || obj.signalword_label.String;
+                    obj.id = obj.id || obj.signalword_id.Int64;
+                    return obj;
+                });
+                    return {
+                    results: newdata,
+                };
+            }
+        }
+    }).on("change", function (e) {
+        $(this).valid(); // FIXME: see https://github.com/select2/select2/issues/3901
+    });
+
+    //
+    // classofcompound select2
+    //
+    $('select#classofcompound').select2({
+        allowClear: true,
+        tags: true,
+        createTag: function (params) {
+            if ($("input#exactMatchClassofcompounds").val() == "true") {
+                return null
+            }
+            return {
+                id: params.term,
+                text: params.term,
+            }
+        },
+        placeholder: "select class of compound",
+        ajax: {
+            url: proxyPath + 'products/classofcompounds/',
+            delay: 400,
+            data: function (params) {
+                var query = {
+                    search: params.term,
+                    page: params.page || 1,
+                    offset: (params.page-1)*10 || 0,
+                    limit: 10
+                }
+
+                // Query parameters will be ?search=[term]&page=[page]
+                return query;
+            },
+            dataType: 'json',
+            processResults: function (data) {
+                isExactMatch=false;
+                
+                // looking for an exact match
+                $.each(data.rows, function( index, value ) {
+                    if(value.c == 1) {
+                        isExactMatch=true;
+                    }
+                });
+                
+                // there is a match: setting the input field
+                if (isExactMatch) {
+                    $("input#exactMatchClassofcompounds").val("true");
+                } else {
+                    $("input#exactMatchClassofcompounds").val("false");
+                }
+
+                // replacing name by text expected by select2
+                var newdata = $.map(data.rows, function (obj) {
+                    obj.text = obj.text || obj.classofcompound_label.String;
+                    obj.id = obj.id || obj.classofcompound_id.Int64;
+                    return obj;
+                });
+                // getting the number of loaded select elements
+                selectnbitems = $("ul#select2-classofcompounds-results li").length + 10;
+
+                return {
+                    results: newdata,
+                    pagination: {more: selectnbitems<data.total}
+                };
+            }
+        }
+    }).on("change", function (e) {
+        $(this).valid(); // FIXME: see https://github.com/select2/select2/issues/3901
+    });
+
+    //
+    // name select2
+    //
+    $('select#name').select2({
+        tags: true,
+        createTag: function (params) {
+            if ($("input#exactMatchName").val() == "true") {
+                return null
+            }
+            return {
+                id: params.term,
+                text: params.term,
+            }
+        },
+        ajax: {
+            url: proxyPath + 'products/names/',
+            delay: 400,
+            data: function (params) {
+                var query = {
+                    search: params.term,
+                    page: params.page || 1,
+                    offset: (params.page-1)*10 || 0,
+                    limit: 10
+                }
+
+                // Query parameters will be ?search=[term]&page=[page]
+                return query;
+            },
+            dataType: 'json',
+            processResults: function (data) {
+
+                isExactMatch=false;
+                
+                // looking for an exact match
+                $.each(data.rows, function( index, value ) {
+                    if(value.c == 1) {
+                        isExactMatch=true;
+                    }
+                });
+                
+                // there is a match: setting the input field
+                if (isExactMatch) {
+                    $("input#exactMatchName").val("true");
+                } else {
+                    $("input#exactMatchName").val("false");
+                }
+
+                // replacing name by text expected by select2
+                var newdata = $.map(data.rows, function (obj) {
+                    obj.text = obj.text || obj.name_label;
+                    obj.id = obj.id || obj.name_id;
+                    return obj;
+                });
+                // getting the number of loaded select elements
+                selectnbitems = $("ul#select2-name-results li").length + 10;
+
+                return {
+                    results: newdata,
+                    pagination: {more: selectnbitems<data.total}
+                };
+            }
+        }
+    }).on("change", function (e) {
+        $(this).valid(); // FIXME: see https://github.com/select2/select2/issues/3901
+    });
+
+    //
+    // empirical formula select2
+    //
+    $('select#empiricalformula').select2({
+        tags: true,
+        createTag: function (params) {
+            if ($("input#exactMatchEmpiricalFormula").val() == "true") {
+                return null
+            }
+            return {
+                id: params.term,
+                text: params.term,
+            }
+        },
+        ajax: {
+            url: proxyPath + 'products/empiricalformulas/',
+            delay: 400,
+            data: function (params) {
+                var query = {
+                    search: params.term,
+                    page: params.page || 1,
+                    offset: (params.page-1)*10 || 0,
+                    limit: 10
+                }
+
+                // Query parameters will be ?search=[term]&page=[page]
+                return query;
+            },
+            dataType: 'json',
+            processResults: function (data) {
+
+                isExactMatch=false;
+                
+                // looking for an exact match
+                $.each(data.rows, function( index, value ) {
+                    if(value.c == 1) {
+                        isExactMatch=true;
+                    }
+                });
+                
+                // there is a match: setting the input field
+                if (isExactMatch) {
+                    $("input#exactMatchEmpiricalFormula").val("true");
+                } else {
+                    $("input#exactMatchEmpiricalFormula").val("false");
+                }
+
+                // replacing name by text expected by select2
+                var newdata = $.map(data.rows, function (obj) {
+                    obj.text = obj.text || obj.empiricalformula_label;
+                    obj.id = obj.id || obj.empiricalformula_id;
+                    return obj;
+                });
+                // getting the number of loaded select elements
+                selectnbitems = $("ul#select2-empiricalformula-results li").length + 10;
+
+                return {
+                    results: newdata,
+                    pagination: {more: selectnbitems<data.total}
+                };
+            }
+        }
+    }).on("change", function (e) {
+        $(this).valid(); // FIXME: see https://github.com/select2/select2/issues/3901
+    });
+
+    //
+    // linear formula select2
+    //
+    $('select#linearformula').select2({
+        tags: true,
+        allowClear: true,
+        createTag: function (params) {
+            if ($("input#exactMatchLinearFormula").val() == "true") {
+                return null
+            }
+            return {
+                id: params.term,
+                text: params.term,
+            }
+        },
+        placeholder: "select or enter a linear formula",
+        ajax: {
+            url: proxyPath + 'products/linearformulas/',
+            delay: 400,
+            data: function (params) {
+                var query = {
+                    search: params.term,
+                    page: params.page || 1,
+                    offset: (params.page-1)*10 || 0,
+                    limit: 10
+                }
+
+                // Query parameters will be ?search=[term]&page=[page]
+                return query;
+            },
+            dataType: 'json',
+            processResults: function (data) {
+
+                isExactMatch=false;
+                
+                // looking for an exact match
+                $.each(data.rows, function( index, value ) {
+                    if(value.c == 1) {
+                        isExactMatch=true;
+                    }
+                });
+                
+                // there is a match: setting the input field
+                if (isExactMatch) {
+                    $("input#exactMatchLinearFormula").val("true");
+                } else {
+                    $("input#exactMatchLinearFormula").val("false");
+                }
+
+                // replacing name by text expected by select2
+                var newdata = $.map(data.rows, function (obj) {
+                    obj.text = obj.text || obj.linearformula_label.String;
+                    obj.id = obj.id || obj.linearformula_id.Int64;
+                    return obj;
+                });
+                // getting the number of loaded select elements
+                selectnbitems = $("ul#select2-linearformula-results li").length + 10;
+
+                return {
+                    results: newdata,
+                    pagination: {more: selectnbitems<data.total}
+                };
+            }
+        }
+    }).on("change", function (e) {
+        $(this).valid(); // FIXME: see https://github.com/select2/select2/issues/3901
+    });
+
+    //
+    // synonyms select2
+    //
+    $('select#synonyms').select2({
+        tags: true,
+        createTag: function (params) {
+            if ($("input#exactMatchSynonyms").val() == "true") {
+                return null
+            }
+            return {
+                id: params.term,
+                text: params.term,
+            }
+        },
+        ajax: {
+            url: proxyPath + 'products/synonyms/',
+            delay: 400,
+            data: function (params) {
+                var query = {
+                    search: params.term,
+                    page: params.page || 1,
+                    offset: (params.page-1)*10 || 0,
+                    limit: 10
+                }
+
+                // Query parameters will be ?search=[term]&page=[page]
+                return query;
+            },
+            dataType: 'json',
+            processResults: function (data) {
+
+                isExactMatch=false;
+                
+                // looking for an exact match
+                $.each(data.rows, function( index, value ) {
+                    if(value.c == 1) {
+                        isExactMatch=true;
+                    }
+                });
+                
+                // there is a match: setting the input field
+                if (isExactMatch) {
+                    $("input#exactMatchSynonyms").val("true");
+                } else {
+                    $("input#exactMatchSynonyms").val("false");
+                }
+
+                // replacing name by text expected by select2
+                var newdata = $.map(data.rows, function (obj) {
+                    obj.text = obj.text || obj.name_label;
+                    obj.id = obj.id || obj.name_id;
+                    return obj;
+                });
+                // getting the number of loaded select elements
+                selectnbitems = $("ul#select2-synonyms-results li").length + 10;
+
+                return {
+                    results: newdata,
+                    pagination: {more: selectnbitems<data.total}
+                };
+            }
+        }
+    });
+
+    //
+    // symbols select2
+    //
+    $('select#symbols').select2({
+        templateResult: formatSymbol,
+        closeOnSelect: false,
+        ajax: {
+            url: proxyPath + 'products/symbols/',
+            delay: 400,
+            dataType: 'json',
+            processResults: function (data) {
+                // replacing name by text expected by select2
+                var newdata = $.map(data.rows, function (obj) {
+                    obj.text = obj.text || obj.symbol_label;
+                    obj.id = obj.id || obj.symbol_id;
+                    return obj;
+                });
+                    return {
+                    results: newdata,
+                };
+            }
+        }
+    });
+
+    //
+    // hazardstatements select2
+    //
+    $('select#hazardstatements').select2({
+        templateResult: formatHazardStatement,
+        closeOnSelect: false,
+        ajax: {
+            url: proxyPath + 'products/hazardstatements/',
+            delay: 400,
+            data: function (params) {
+                var query = {
+                    search: params.term,
+                    page: params.page || 1,
+                    offset: (params.page-1)*10 || 0,
+                    limit: 10
+                }
+
+                // Query parameters will be ?search=[term]&page=[page]
+                return query;
+            },
+            dataType: 'json',
+            processResults: function (data) {
+                // replacing name by text expected by select2
+                var newdata = $.map(data.rows, function (obj) {
+                    obj.text = obj.text || obj.hazardstatement_reference;
+                    obj.id = obj.id || obj.hazardstatement_id;
+                    return obj;
+                });
+                // getting the number of loaded select elements
+                selectnbitems = $("ul#select2-hazardstatements-results li").length + 10;
+
+                return {
+                    results: newdata,
+                    pagination: {more: selectnbitems<data.total}
+                };
+            }
+        }
+    });
+
+    //
+    // precautionarystatements select2
+    //
+    $('select#precautionarystatements').select2({
+        templateResult: formatPrecautionaryStatement,
+        closeOnSelect: false,
+        ajax: {
+            url: proxyPath + 'products/precautionarystatements/',
+            delay: 400,
+            data: function (params) {
+                var query = {
+                    search: params.term,
+                    page: params.page || 1,
+                    offset: (params.page-1)*10 || 0,
+                    limit: 10
+                }
+
+                // Query parameters will be ?search=[term]&page=[page]
+                return query;
+            },
+            dataType: 'json',
+            processResults: function (data) {
+                // replacing name by text expected by select2
+                var newdata = $.map(data.rows, function (obj) {
+                    obj.text = obj.text || obj.precautionarystatement_reference;
+                    obj.id = obj.id || obj.precautionarystatement_id;
+                    return obj;
+                });
+                // getting the number of loaded select elements
+                selectnbitems = $("ul#select2-precautionarystatements-results li").length + 10;
+
+                return {
+                    results: newdata,
+                    pagination: {more: selectnbitems<data.total}
+                };
+            }
+        }
+    });
+});
 
 function getData(params) {
     // saving the query parameters
@@ -485,3 +1551,281 @@ function operateEdit(e, value, row, index) {
     $('div#search').collapse('hide');
     $(".toggleable").hide();
 }
+
+    //
+    // mol file selector
+    //
+    $('#product_molformula').change( function () {
+		if ( ! window.FileReader ) {
+			return alert( 'FileReader API is not supported by your browser.' );
+		}
+        molfile = $('#product_molformula')[0];
+        if ( molfile.files && molfile.files[0] ) {
+			file = molfile.files[0]; // The file
+			fr = new FileReader(); // FileReader instance
+            fr.onload = function () {
+                $('#hidden_product_molformula_content').append(fr.result);
+            };
+			fr.readAsText(file);
+		} else {
+			// Handle errors here
+			alert( "File not selected or browser incompatible." )
+		}
+    });
+
+    //
+    // store location select2 formatter
+    //
+    function formatStorelocation (sl) {
+        if (!sl.storelocation_id) {
+            return sl.storelocation_fullpath;
+        }
+        var canstore = '<span class="mdi mdi-close"></span>';
+        var icon = '<span class="mdi mdi-gesture" style="color: ' + sl.storelocation_color.String + ';"></span>';
+        if (sl.storelocation_canstore.Valid && sl.storelocation_canstore.Bool) {
+            canstore = '<span class="mdi mdi-check"></span>'
+        }
+        var s = $(
+            '<div>' + icon + '<span>' + sl.storelocation_fullpath + '</span>' + canstore + '</div>'
+        );
+        return s;
+    };
+    //
+    // signalwords select2 formatter
+    //
+    function formatSignalWord (signalword) {
+        if (!signalword.signalword_id) {
+            return signalword.signalword_label;
+        }
+        if (signalword.signalword_id.Valid) {
+            return signalword.signalword_label.String;
+        }
+    };
+    //
+    // symbols select2 formatter
+    //
+    function formatSymbol (symbol) {
+        if (!symbol.symbol_id) {
+            return symbol.symbol_label;
+        }
+        var s = $(
+            '<span><img src="data:' + symbol.symbol_image + '" title="' + symbol.symbol_label + '" /> ' + symbol.symbol_label + '</span>'
+        );
+        return s;
+    };
+    //
+    // precautionary statements select2 formatter
+    //
+    function formatPrecautionaryStatement (ps) {
+        if (!ps.precautionarystatement_id) {
+            return ps.precautionarystatement_label;
+        }
+        var s = $(
+            '<span><b>' + ps.precautionarystatement_reference + '</b> ' + ps.precautionarystatement_label + '</span>'
+        );
+        return s;
+    };
+    //
+    // hazard statements select2 formatter
+    //
+    function formatHazardStatement (hs) {
+        if (!hs.hazardstatement_id) {
+            return hs.hazardstatement_label;
+        }
+        var s = $(
+            '<span><b>' + hs.hazardstatement_reference + '</b> ' + hs.hazardstatement_label + '</span>'
+        );
+        return s;
+    };
+
+    //
+    // save store location callback
+    //
+    var createCallBack = function createCallback(data, textStatus, jqXHR) {
+        global.displayMessage("product " + data.name.name_label + " created", "success");
+        setTimeout(function(){ window.location = proxyPath + "v/products?product="+data.product_id+"&hl="+data.product_id; }, 1000);
+    }
+    var updateCallBack = function updateCallback(data, textStatus, jqXHR) {
+        global.displayMessage("product " + data.name.name_label + " updated", "success");
+        setTimeout(function(){ window.location = proxyPath + "v/products?product="+data.product_id+"&hl="+data.product_id; }, 1000);
+    }
+    function saveProduct() {
+        var form = $("#product");
+        if (! form.valid()) {
+            return;
+        };
+
+        var product_id = $("input#product_id").val(),
+            product_specificity = $("input#product_specificity").val(),
+            product_threedformula = $("input#product_threedformula").val(),
+
+            product_molformula = $("#hidden_product_molformula_content").html(),
+
+            product_msds = $("input#product_msds").val(),
+            product_disposalcomment = $("textarea#product_disposalcomment").val(),
+            product_remark = $("textarea#product_remark").val(),
+            product_restricted = $("input#product_restricted:CHECKED").val(),
+            product_radioactive = $("input#product_radioactive:CHECKED").val(),
+            casnumber = $('select#casnumber').select2('data')[0],
+            cenumber = $('select#cenumber').select2('data')[0],
+            empiricalformula = $('select#empiricalformula').select2('data')[0],
+            linearformula = $('select#linearformula').select2('data')[0],
+            name_ = $('select#name').select2('data')[0],
+            physicalstate = $('select#physicalstate').select2('data')[0],
+            signalword = $('select#signalword').select2('data')[0],
+            classofcompound = $('select#classofcompound').select2('data')[0],
+            synonyms = $('select#synonyms').select2('data'),
+            symbols = $('select#symbols').select2('data'),
+            hazardstatements = $('select#hazardstatements').select2('data'),
+            precautionarystatements = $('select#precautionarystatements').select2('data'),
+            ajax_url = proxyPath + "products",
+            ajax_method = "POST",
+            ajax_callback = createCallBack,
+            data = {};
+
+            if ($("form#product input#product_id").length) {
+                ajax_url = proxyPath + "products/" + product_id
+                ajax_method = "PUT"
+                ajax_callback = updateCallBack
+            }
+
+            $.each(symbols, function( index, s ) {
+                data["symbols." + index +".symbol_id"] = s.id;
+                data["symbols." + index +".symbol_label"] = s.text;
+            });
+            $.each(synonyms, function( index, s ) {
+                data["synonyms." + index +".name_id"] = s.id == s.text ? -1 : s.id;
+                data["synonyms." + index +".name_label"] = s.text;
+            });
+            $.each(hazardstatements, function( index, s ) {
+                data["hazardstatements." + index +".hazardstatement_id"] = s.id;
+                data["hazardstatements." + index +".hazardstatement_reference"] = s.text;
+            });
+            $.each(precautionarystatements, function( index, s ) {
+                data["precautionarystatements." + index +".precautionarystatement_id"] = s.id;
+                data["precautionarystatements." + index +".precautionarystatement_reference"] = s.text;
+            });
+            $.extend(data, {
+                "product_id": product_id,
+                "product_disposalcomment": product_disposalcomment,
+                "product_remark": product_remark,
+                "product_restricted": product_restricted == "on" ? true : false,
+                "product_radioactive": product_radioactive == "on" ? true : false,
+                "casnumber.casnumber_id": casnumber.id == casnumber.text ? -1 : casnumber.id,
+                "casnumber.casnumber_label": casnumber.text,
+                "empiricalformula.empiricalformula_id": empiricalformula.id == empiricalformula.text ? -1 : empiricalformula.id,
+                "empiricalformula.empiricalformula_label": empiricalformula.text,
+                "name.name_id": name_.id == name_.text ? -1 : name_.id,
+                "name.name_label": name_.text,
+            });
+            if (product_molformula !== "") {
+                $.extend(data, {
+                    "product_molformula": product_molformula,
+                });  
+            }
+            if (product_specificity !== "") {
+                $.extend(data, {
+                    "product_specificity": product_specificity,
+                });                    
+            }
+            if (product_msds !== "") {
+                $.extend(data, {
+                    "product_msds": product_msds,
+                });                    
+            } 
+            if (product_threedformula !== "") {
+                $.extend(data, {
+                    "product_threedformula": product_threedformula,
+                });                    
+            } 
+            if (cenumber !== undefined) {
+                $.extend(data, {
+                    "cenumber.cenumber_id": cenumber.id == cenumber.text ? -1 : cenumber.id,
+                    "cenumber.cenumber_label": cenumber === undefined ? "" : cenumber.text,
+                });                    
+            }
+            if (physicalstate !== undefined) {
+                $.extend(data, {
+                    "physicalstate.physicalstate_id": physicalstate.id == physicalstate.text ? -1 : physicalstate.id,
+                    "physicalstate.physicalstate_label": physicalstate.text,
+                });                    
+            }
+            if (signalword !== undefined) {
+                $.extend(data, {
+                    "signalword.signalword_id": signalword.id == signalword.text ? -1 : signalword.id,
+                    "signalword.signalword_label": signalword.text,
+                });                    
+            }
+            if (classofcompound !== undefined) {
+                $.extend(data, {
+                    "classofcompound.classofcompound_id": classofcompound.id == classofcompound.text ? -1 : classofcompound.id,
+                    "classofcompound.classofcompound_label": classofcompound.text,
+                });                    
+            }
+            if (linearformula !== undefined) {
+                $.extend(data, {
+                    "linearformula.linearformula_id": linearformula.id == linearformula.text ? -1 : linearformula.id,
+                    "linearformula.linearformula_label": linearformula.text,
+                });                    
+            } 
+            $.ajax({
+                url: ajax_url,
+                method: ajax_method,
+                dataType: 'json',
+                data: data,
+            }).done(ajax_callback).fail(function(jqXHR, textStatus, errorThrown) {
+                handleHTTPError(jqXHR.statusText, jqXHR.status)
+            });  
+        }
+
+    //
+    // magical selector
+    //
+    function magic() {
+        var m = $('textarea#magical').val();
+        if (m != "") {
+            $.ajax({
+                url: proxyPath + "products/magic",
+                method: "POST",
+                data: {"msds": m}
+            }).done(function(data, textStatus, jqXHR) {
+                $('select#hazardstatements').val(null).trigger('change');
+                $('select#hazardstatements').find('option').remove();
+                $('select#precautionarystatements').val(null).trigger('change');
+                $('select#precautionarystatements').find('option').remove();
+                
+                var hs = data.hs,
+                    ps = data.ps;
+                for(var i= 0; i < hs.length; i++)
+                {
+                   var newOption = new Option(data.hs[i].hazardstatement_reference, data.hs[i].hazardstatement_id, true, true);
+                   $('select#hazardstatements').append(newOption).trigger('change');
+                }
+                for(var i= 0; i < ps.length; i++)
+                {
+                   var newOption = new Option(data.ps[i].precautionarystatement_reference, data.ps[i].precautionarystatement_id, true, true);
+                   $('select#precautionarystatements').append(newOption).trigger('change');
+                }
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                handleHTTPError(jqXHR.statusText, jqXHR.status)
+            });
+        }
+    }
+
+    //
+    // linear to empirical formula converter
+    //
+    function linearToEmpirical() {
+        var f = $('select#linearformula').select2('data')[0].text;
+        if (f != "") {
+            $.ajax({
+                url: proxyPath + "products/l2eformula/" + f,
+                method: "GET",
+            }).done(function(data, textStatus, jqXHR) {
+                $("#fconverter").attr("data-content", data);
+                $("#fconverter").popover('show');
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                handleHTTPError(jqXHR.statusText, jqXHR.status)
+            });
+        }
+    }
