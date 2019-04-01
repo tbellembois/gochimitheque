@@ -9,12 +9,12 @@ import (
 )
 
 const (
-	index_8__30 = `</span></a></li></ul></div></nav><div id="accordion"><div id="list-collapse" class="collapse show" data-parent="#accordion"><header class="row"><div class="col-sm-12"><table id="table" data-toggle="table" data-striped="true" data-search="true" data-side-pagination="server" data-page-list="[10, 20, 50, 100]" data-pagination="true" data-ajax="getData" data-query-params="queryParams" data-sort-name="storelocation_fullpath"><thead><tr><th data-field="storelocation_id" data-sortable="true" data-formatter="storelocation_idFormatter">ID</th><th data-field="storelocation_fullpath" data-sortable="true">name</th><th data-field="entity.entity_name" data-sortable="true">entity</th><th data-field="storelocation_color" data-sortable="false" data-formatter="storelocation_colorFormatter">color</th><th data-field="storelocation_canstore" data-sortable="false" data-formatter="storelocation_canstoreFormatter">can store</th><th data-field="storelocation" data-sortable="true" data-formatter="storelocationFormatter">parent</th><th data-field="operate" data-formatter="operateFormatter" data-events="operateEvents">actions</th></tr></thead></table></div></header></div><div id="edit-collapse" class="collapse" data-parent="#accordion">`
-	index_8__31 = `<form id="storelocation"><input id="index" type="hidden" name="index" value=""/><input id="storelocation_id" type="hidden" name="storelocation_id" value=""/><div class="form-group row"><div class="form-group col-sm-12">`
-	index_8__32 = `</div></div><div class="form-group row"><div class="form-group col-sm-12">`
-	index_8__36 = `</div></div></form><button id="save" class="btn btn-link" type="button" onclick="saveStoreLocation()"><span class="mdi mdi-content-save mdi-24px iconlabel">`
-	index_8__37 = `</span></button><button class="btn btn-link" type="button" onclick="closeEdit();"><span class="mdi mdi-close-box mdi-24px iconlabel">`
-	index_8__56 = `"></script><script src="../js/chim/storelocation.js"></script></body></html>`
+	index_8__36 = `</span></a></li></ul></div></nav><div id="accordion"><div id="list-collapse" class="collapse show" data-parent="#accordion"><header class="row"><div class="col-sm-12"><table id="table" data-toggle="table" data-striped="true" data-search="true" data-side-pagination="server" data-page-list="[10, 20, 50, 100]" data-pagination="true" data-ajax="getData" data-query-params="queryParams" data-sort-name="storelocation_fullpath"><thead><tr><th data-field="storelocation_id" data-sortable="true" data-formatter="storelocation_idFormatter">ID</th><th data-field="storelocation_fullpath" data-sortable="true">name</th><th data-field="entity.entity_name" data-sortable="true">entity</th><th data-field="storelocation_color" data-sortable="false" data-formatter="storelocation_colorFormatter">color</th><th data-field="storelocation_canstore" data-sortable="false" data-formatter="storelocation_canstoreFormatter">can store</th><th data-field="storelocation" data-sortable="true" data-formatter="storelocationFormatter">parent</th><th data-field="operate" data-formatter="operateFormatter" data-events="operateEvents">actions</th></tr></thead></table></div></header></div><div id="edit-collapse" class="collapse" data-parent="#accordion">`
+	index_8__37 = `<form id="storelocation"><input id="index" type="hidden" name="index" value=""/><input id="storelocation_id" type="hidden" name="storelocation_id" value=""/><div class="form-group row"><div class="form-group col-sm-12">`
+	index_8__38 = `</div></div><div class="form-group row"><div class="form-group col-sm-12">`
+	index_8__42 = `</div></div></form><button id="save" class="btn btn-link" type="button" onclick="saveStoreLocation()"><span class="mdi mdi-content-save mdi-24px iconlabel">`
+	index_8__43 = `</span></button><button class="btn btn-link" type="button" onclick="closeEdit();"><span class="mdi mdi-close-box mdi-24px iconlabel">`
+	index_8__62 = `"></script><script src="../js/chim/storelocation.js"></script></body></html>`
 )
 
 func Storelocationindex(c ViewContainer, wr io.Writer) {
@@ -59,28 +59,40 @@ func Storelocationindex(c ViewContainer, wr io.Writer) {
 	buffer.WriteString(index__18)
 	WriteAll(c.ProxyPath+"v/entities", true, buffer)
 	buffer.WriteString(index__19)
-	WriteAll(c.ProxyPath+"vc/entities", true, buffer)
+	WriteAll(T("list", 1), true, buffer)
 	buffer.WriteString(index__20)
+	WriteAll(c.ProxyPath+"vc/entities", true, buffer)
+	buffer.WriteString(index__21)
+	WriteAll(T("create", 1), true, buffer)
+	buffer.WriteString(index__22)
 	WriteAll(T("menu_storelocation", 1), true, buffer)
 	buffer.WriteString(index__18)
 	WriteAll(c.ProxyPath+"v/storelocations", true, buffer)
-	buffer.WriteString(index__22)
+	buffer.WriteString(index__19)
+	WriteAll(T("list", 1), true, buffer)
+	buffer.WriteString(index__25)
 	WriteAll(c.ProxyPath+"vc/storelocations", true, buffer)
-	buffer.WriteString(index__23)
+	buffer.WriteString(index__21)
+	WriteAll(T("create", 1), true, buffer)
+	buffer.WriteString(index__27)
 	WriteAll(T("menu_people", 1), true, buffer)
 	buffer.WriteString(index__18)
 	WriteAll(c.ProxyPath+"v/people", true, buffer)
-	buffer.WriteString(index__25)
+	buffer.WriteString(index__19)
+	WriteAll(T("list", 1), true, buffer)
+	buffer.WriteString(index__30)
 	WriteAll(c.ProxyPath+"vc/people", true, buffer)
-	buffer.WriteString(index__26)
+	buffer.WriteString(index__21)
+	WriteAll(T("create", 1), true, buffer)
+	buffer.WriteString(index__32)
 	WriteAll(c.ProxyPath+"vu/peoplepass", true, buffer)
-	buffer.WriteString(index__27)
+	buffer.WriteString(index__33)
 	WriteAll(T("menu_password", 1), true, buffer)
-	buffer.WriteString(index__28)
+	buffer.WriteString(index__34)
 	WriteAll(c.ProxyPath+"delete-token", true, buffer)
-	buffer.WriteString(index__29)
+	buffer.WriteString(index__35)
 	WriteAll(T("menu_logout", 1), true, buffer)
-	buffer.WriteString(index_8__30)
+	buffer.WriteString(index_8__36)
 
 	{
 		var (
@@ -89,17 +101,17 @@ func Storelocationindex(c ViewContainer, wr io.Writer) {
 			label      = "update store location"
 		)
 
-		buffer.WriteString(index_2__58)
+		buffer.WriteString(index_2__64)
 		WriteEscString("mdi-"+iconitem+" mdi mdi-48px", buffer)
-		buffer.WriteString(index_2__59)
+		buffer.WriteString(index_2__65)
 		WriteEscString("mdi-"+iconaction+" mdi mdi-18px", buffer)
-		buffer.WriteString(index_2__60)
+		buffer.WriteString(index_2__66)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__61)
+		buffer.WriteString(index_2__67)
 
 	}
 
-	buffer.WriteString(index_8__31)
+	buffer.WriteString(index_8__37)
 
 	{
 		var (
@@ -107,20 +119,20 @@ func Storelocationindex(c ViewContainer, wr io.Writer) {
 			name  = "storelocation_name"
 		)
 
-		buffer.WriteString(index_2__62)
+		buffer.WriteString(index_2__68)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__63)
+		buffer.WriteString(index_2__69)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__64)
+		buffer.WriteString(index_2__70)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__65)
+		buffer.WriteString(index_2__71)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__66)
+		buffer.WriteString(index_2__72)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__67)
+		buffer.WriteString(index_2__73)
 	}
 
-	buffer.WriteString(index_8__32)
+	buffer.WriteString(index_8__38)
 
 	{
 		var (
@@ -128,19 +140,19 @@ func Storelocationindex(c ViewContainer, wr io.Writer) {
 			name  = "entity"
 		)
 
-		buffer.WriteString(index_2__62)
+		buffer.WriteString(index_2__68)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__63)
+		buffer.WriteString(index_2__69)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__76)
+		buffer.WriteString(index_2__82)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__65)
+		buffer.WriteString(index_2__71)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__149)
+		buffer.WriteString(index_4__155)
 
 	}
 
-	buffer.WriteString(index_8__32)
+	buffer.WriteString(index_8__38)
 
 	{
 		var (
@@ -148,19 +160,19 @@ func Storelocationindex(c ViewContainer, wr io.Writer) {
 			name  = "storelocation"
 		)
 
-		buffer.WriteString(index_2__62)
+		buffer.WriteString(index_2__68)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__63)
+		buffer.WriteString(index_2__69)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__76)
+		buffer.WriteString(index_2__82)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__65)
+		buffer.WriteString(index_2__71)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__149)
+		buffer.WriteString(index_4__155)
 
 	}
 
-	buffer.WriteString(index_8__32)
+	buffer.WriteString(index_8__38)
 
 	{
 		var (
@@ -168,16 +180,16 @@ func Storelocationindex(c ViewContainer, wr io.Writer) {
 			name  = "storelocation_canstore"
 		)
 
-		buffer.WriteString(index_4__165)
+		buffer.WriteString(index_4__171)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__166)
+		buffer.WriteString(index_4__172)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__63)
+		buffer.WriteString(index_2__69)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_4__168)
+		buffer.WriteString(index_4__174)
 	}
 
-	buffer.WriteString(index_8__32)
+	buffer.WriteString(index_8__38)
 
 	{
 		var (
@@ -185,24 +197,24 @@ func Storelocationindex(c ViewContainer, wr io.Writer) {
 			name  = "storelocation_color"
 		)
 
-		buffer.WriteString(index_2__62)
+		buffer.WriteString(index_2__68)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__63)
+		buffer.WriteString(index_2__69)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__64)
+		buffer.WriteString(index_2__70)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__65)
+		buffer.WriteString(index_2__71)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__66)
+		buffer.WriteString(index_2__72)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__67)
+		buffer.WriteString(index_2__73)
 	}
 
-	buffer.WriteString(index_8__36)
+	buffer.WriteString(index_8__42)
 	WriteAll(T("save", 1), true, buffer)
-	buffer.WriteString(index_8__37)
+	buffer.WriteString(index_8__43)
 	WriteAll(T("close", 1), true, buffer)
-	buffer.WriteString(index_2__39)
+	buffer.WriteString(index_2__45)
 
 	json, _ := json.Marshal(c)
 
@@ -211,40 +223,40 @@ func Storelocationindex(c ViewContainer, wr io.Writer) {
 		out += fmt.Sprintf("URLValues.set(%s, %s)\n", key, value)
 	}
 
-	buffer.WriteString(index__31)
+	buffer.WriteString(index__37)
 	WriteAll(c.ProxyPath, false, buffer)
-	buffer.WriteString(index__32)
+	buffer.WriteString(index__38)
 	buffer.WriteString(fmt.Sprintf("%s", json))
-	buffer.WriteString(index__33)
+	buffer.WriteString(index__39)
 	buffer.WriteString(out)
-	buffer.WriteString(index__34)
+	buffer.WriteString(index__40)
 	WriteAll(c.ProxyPath+"js/jquery.formautofill.min.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/jquery.validate.min.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/jquery.validate.additional-methods.min.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/select2.full.min.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/popper.min.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/bootstrap.min.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/bootstrap-table.min.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/bootstrap-confirmation.min.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/bootstrap-colorpicker.min.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/bootstrap-toggle.min.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/JSmol.lite.nojq.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/chim/gjs-common.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/chim/chimcommon.js", true, buffer)
-	buffer.WriteString(index__35)
+	buffer.WriteString(index__41)
 	WriteAll(c.ProxyPath+"js/chim/login.js", true, buffer)
-	buffer.WriteString(index_8__56)
+	buffer.WriteString(index_8__62)
 
 }

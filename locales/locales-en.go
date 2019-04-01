@@ -18,6 +18,13 @@ var LOCALES_EN = []byte(`
 	one = "save"
 [close]
 	one = "close"
+[list]
+	one = "list"
+[create]
+	one = "create"
+
+[required_input]
+	one = "required input"
 
 [members]
 	one = "members"
@@ -215,4 +222,7 @@ var LOCALES_EN = []byte(`
 	one = "description"
 [entity_manager_table_header]
 	one = "manager(s)"
+	
+[entity_nameexist_validate]
+	one = "entity with this name already present" 
 `)

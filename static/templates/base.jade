@@ -56,8 +56,10 @@ html
                                 span.mdi.mdi-store.mdi-36px.iconlabel
                                     = T("menu_entity", 1)
                             div.dropdown-menu(aria-labelledby="navbarDropdown")
-                                a(href=c.ProxyPath + "v/entities", title="list").dropdown-item list
-                                    a#menu_create_entity.collapse(href=c.ProxyPath + "vc/entities", title="create").dropdown-item create
+                                a(href=c.ProxyPath + "v/entities", title="list").dropdown-item
+                                    = T("list", 1)
+                                    a#menu_create_entity.collapse(href=c.ProxyPath + "vc/entities", title="create").dropdown-item
+                                        = T("create", 1)
 
                         li.nav-item.dropdown#menu_storelocations.collapse
                             a(href="#", title="manage storelocations").nav-link.dropdown-toggle#navbarDropdown(
@@ -68,8 +70,10 @@ html
                                 span.mdi.mdi-docker.mdi-36px.iconlabel
                                     = T("menu_storelocation", 1)
                             div.dropdown-menu(aria-labelledby="navbarDropdown")
-                                a(href=c.ProxyPath + "v/storelocations", title="list").dropdown-item list
-                                    a#menu_create_storelocation.collapse(href=c.ProxyPath + "vc/storelocations", title="create").dropdown-item create
+                                a(href=c.ProxyPath + "v/storelocations", title="list").dropdown-item
+                                    = T("list", 1)
+                                    a#menu_create_storelocation.collapse(href=c.ProxyPath + "vc/storelocations", title="create").dropdown-item
+                                        = T("create", 1)
 
                         li.nav-item.dropdown#menu_people.collapse
                             a(href="#", title="manage people").nav-link.dropdown-toggle#navbarDropdown(
@@ -80,8 +84,10 @@ html
                                 span.mdi.mdi-account-group.mdi-36px.iconlabel
                                     = T("menu_people", 1)
                             div.dropdown-menu(aria-labelledby="navbarDropdown")
-                                a(href=c.ProxyPath + "v/people", title="list").dropdown-item list
-                                    a#menu_create_person.collapse(href=c.ProxyPath + "vc/people", title="create").dropdown-item create
+                                a(href=c.ProxyPath + "v/people", title="list").dropdown-item
+                                    = T("list", 1)
+                                    a#menu_create_person.collapse(href=c.ProxyPath + "vc/people", title="create").dropdown-item
+                                        = T("create", 1)
 
                         li.nav-item
                             a.nav-link(title= "change password" href=c.ProxyPath + "vu/peoplepass")

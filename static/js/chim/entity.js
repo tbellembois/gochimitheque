@@ -28,9 +28,14 @@ $( document ).ready(function() {
                         }
                         settings.url = proxyPath + "validate/entity/" + id + "/name/";
                     },
-                },
+                },               
             },
         },
+        messages: {
+            entity_name: {
+                required: global.t("required_input", container.PersonLanguage)
+            }
+        }, 
     });
 
     //

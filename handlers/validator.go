@@ -5,6 +5,9 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"github.com/tbellembois/gochimitheque/global"
+
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/helpers"
@@ -159,7 +162,7 @@ func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request
 
 	log.WithFields(log.Fields{"vars": vars, "res": res}).Debug("ValidateEntityNameHandler")
 	if res {
-		resp = "entity with this name already present"
+		resp = global.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "entity_nameexist_validate", PluralCount: 1})
 	} else {
 		resp = "true"
 	}

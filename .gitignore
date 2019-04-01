@@ -14,9 +14,6 @@
 # Databases
 *.db
 
-# GopherJS
-gjs-*.js*
-
 # vscode
 .vscode
 
