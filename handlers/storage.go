@@ -7,7 +7,8 @@ import (
 	"strconv"
 	"time"
 
-	"../jade"
+	"github.com/tbellembois/gochimitheque/jade"
+
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/global"

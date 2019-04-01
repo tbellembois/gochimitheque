@@ -20,5 +20,18 @@ gjs-*.js*
 # vscode
 .vscode
 
-# Dist
+# dist
 dist/
+
+# generated locales
+locales/
+
+# generated gopherjs
+static/js/gjs-common*
+
+# generated rice
+rice-box.go
+
+# generated jade
+jade/
+!jade/funcs.go

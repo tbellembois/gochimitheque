@@ -9,30 +9,29 @@ import (
 )
 
 const (
-	index_4__16 = `</span></a></li></ul></div></nav><div id="test"></div><div id="search" class="row pt-sm-4 pb-sm-4 pl-sm-2 pr-sm-2 mt-sm-2 mb-sm-2 ml-sm-5 mr-sm-5 bg-light border rounded collapse show">`
-	index_4__17 = `<div class="col"><div class="row"><div class="col-sm-12">`
-	index_4__18 = `</div></div><div class="row"><div class="col-sm-6">`
-	index_4__19 = `</div><div class="col-sm-6"></div><div class="col-sm-6">`
-	index_4__20 = `</div><div class="col-sm-6">`
-	index_4__23 = `</div></div><div class="row collapse" id="advancedsearch"><div class="col-sm-12"><div class="form-row"><div class="form-group col-sm-6">`
-	index_4__24 = `</div><div class="form-group col-sm-6">`
-	index_4__25 = `</div></div><div class="form-row"><div class="form-group col-sm-6">`
-	index_4__28 = `</div></div></div></div><div class="row"><div class="col col-sm-10"><button id="clearsearch" class="btn btn-link mr-sm-2" type="button" onclick="clearsearch();"><span class="mdi mdi-broom mdi-24px iconlabel">`
-	index_4__29 = `</span></button><button id="search" class="btn btn-lg btn-link mr-sm-2" type="button" onclick="search();"><span class="mdi mdi-magnify mdi-24px iconlabel">`
-	index_4__30 = `</span></button></div><div class="col col-sm-2"><button class="btn btn-link" data-toggle="collapse" href="#advancedsearch" aria-expanded="false"><span class="mdi mdi-magnify-plus-outline mdi-24px iconlabel">`
-	index_4__31 = `</span></button></div></div></div></div><div class="row"><div class="col-sm-10"><div id="filter-item"></div></div><div class="col-sm-2 d-flex justify-content-end"><div id="button-store"></div></div></div><div id="toolbar" class="row"><div class="col toggleable"><button class="btn btn-link d-none" id="switchview" type="button" onclick="switchProductStorageView()"><span class="mdi mdi-cube-unfolded mdi-24px iconlabel">`
-	index_4__32 = `</span></button></div><div class="col"><button class="btn btn-link" id="export" type="button" onclick="exportAll()"><span class="mdi mdi-content-save mdi-24px iconlabel">`
-	index_4__33 = `</span></button></div></div><div id="exportlink" class="modal fade" role="dialog" tabindex="-1" aria-labelledby="exportlinkLabel" aria-hidden="true"><div class="modal-dialog modal-sm" role="document"><div class="modal-content"><div class="modal-body mx-auto" id="exportlink-body"></div><div class="modal-footer"><button class="btn btn-link" type="button" data-dismiss="modal"><span class="mdi mdi-close-box mdi-24px iconlabel">`
-	index_4__34 = `</span></button></div></div></div></div><div id="accordion"><div id="list-collapse" class="collapse show" data-parent="#accordion"><header class="row"><div class="col-sm-12"><table id="table" data-toggle="table" data-striped="true" data-search="false" data-toolbar="#toolbar" data-side-pagination="server" data-page-list="[5, 10, 20, 50, 100, 200, 500]" data-pagination="true" data-ajax="getData" data-query-params="queryParams" data-sort-name="name.name_label" data-detail-view="true" data-detail-formatter="detailFormatter" data-row-attributes="rowAttributes"><thead><tr><!--  th(data-field='product_id' data-sortable='true') ID --><th class="th-width-200" data-field="name.name_label" data-sortable="true">name</th><th data-field="empiricalformula.empiricalformula_label" data-sortable="true">empirical formula</th><th data-field="casnumber.casnumber_label" data-sortable="true">CAS</th><th data-field="product_specificity" data-sortable="false" data-formatter="product_specificityFormatter">specificity</th><th data-field="product_sl" data-formatter="product_slFormatter" data-sortable="false"></th><th data-field="operate" data-formatter="operateFormatter" data-events="operateEvents"></th></tr></thead></table></div></header></div><div id="edit-collapse" class="collapse" data-parent="#accordion">`
-	index_4__35 = `<form id="product"><input id="index" type="hidden" name="index" value=""/><input id="product_id" type="hidden" name="product_id" value=""/><input id="exactMatchEmpiricalFormula" type="hidden"/><input id="exactMatchlinearFormula" type="hidden"/><input id="exactMatchCasNumber" type="hidden"/><input id="exactMatchCeNumber" type="hidden"/><input id="exactMatchName" type="hidden"/><input id="exactMatchSynonyms" type="hidden"/><input id="exactMatchClassofcompounds" type="hidden"/><input id="exactMatchPhysicalstate" type="hidden"/><div class="form-row"><div class="form-group col-sm-auto"><span class="badge badge-pill badge-danger">&nbsp;</span></div><div class="form-group col-sm-5">`
-	index_4__36 = `</div><div class="form-group col-sm-5">`
-	index_4__37 = `</div></div><div class="form-row"><div class="form-group col-sm-12">`
-	index_4__38 = `</div></div><div class="form-row"><div class="form-group col-sm-auto"><span>magic selector coming soon</span></div></div><div class="form-row"><div class="form-group col-sm-auto"><span class="badge badge-pill badge-danger">&nbsp;</span></div><div class="form-group col-sm-5">`
-	index_4__40 = `</div><div class="form-group col-sm-1"><button id="fconverter" class="btn btn-link" type="button" data-toggle="popover" data-content="no result" title="convert linear to empirical formula" onclick="linearToEmpirical();"><i class="material-icons">loop</i></button></div></div><div class="form-row"><div class="form-group col-sm-auto"><span class="badge badge-pill badge-danger">&nbsp;</span></div><div class="form-group col-sm-6">`
-	index_4__55 = `</div></div><button id="save" class="btn btn-link" type="button" onclick="saveProduct()"><span class="mdi mdi-content-save mdi-24px iconlabel">`
-	index_4__56 = `</span></button><button class="btn btn-link" type="button" onclick="closeEdit();"><span class="mdi mdi-content-save mdi-24px iconlabel">`
-	index_4__57 = `</span></button></form></div></div><script src="../js/chim/product_storage.js"></script><script src="../js/chim/product.js"></script></div><!--  Code generated by go generate; DO NOT EDIT.
- --><script>    
+	index_4__30 = `</span></a></li></ul></div></nav><div id="test"></div><div id="search" class="row pt-sm-4 pb-sm-4 pl-sm-2 pr-sm-2 mt-sm-2 mb-sm-2 ml-sm-5 mr-sm-5 bg-light border rounded collapse show">`
+	index_4__31 = `<div class="col"><div class="row"><div class="col-sm-12">`
+	index_4__32 = `</div></div><div class="row"><div class="col-sm-6">`
+	index_4__33 = `</div><div class="col-sm-6"></div><div class="col-sm-6">`
+	index_4__34 = `</div><div class="col-sm-6">`
+	index_4__37 = `</div></div><div class="row collapse" id="advancedsearch"><div class="col-sm-12"><div class="form-row"><div class="form-group col-sm-6">`
+	index_4__38 = `</div><div class="form-group col-sm-6">`
+	index_4__39 = `</div></div><div class="form-row"><div class="form-group col-sm-6">`
+	index_4__42 = `</div></div></div></div><div class="row"><div class="col col-sm-10"><button id="clearsearch" class="btn btn-link mr-sm-2" type="button" onclick="clearsearch();"><span class="mdi mdi-broom mdi-24px iconlabel">`
+	index_4__43 = `</span></button><button id="search" class="btn btn-lg btn-link mr-sm-2" type="button" onclick="search();"><span class="mdi mdi-magnify mdi-24px iconlabel">`
+	index_4__44 = `</span></button></div><div class="col col-sm-2"><button class="btn btn-link" data-toggle="collapse" href="#advancedsearch" aria-expanded="false"><span class="mdi mdi-magnify-plus-outline mdi-24px iconlabel">`
+	index_4__45 = `</span></button></div></div></div></div><div class="row"><div class="col-sm-10"><div id="filter-item"></div></div><div class="col-sm-2 d-flex justify-content-end"><div id="button-store"></div></div></div><div id="toolbar" class="row"><div class="col toggleable"><button class="btn btn-link d-none" id="switchview" type="button" onclick="switchProductStorageView()"><span class="mdi mdi-cube-unfolded mdi-24px iconlabel">`
+	index_4__46 = `</span></button></div><div class="col"><button class="btn btn-link" id="export" type="button" onclick="exportAll()"><span class="mdi mdi-content-save mdi-24px iconlabel">`
+	index_4__47 = `</span></button></div></div><div id="exportlink" class="modal fade" role="dialog" tabindex="-1" aria-labelledby="exportlinkLabel" aria-hidden="true"><div class="modal-dialog modal-sm" role="document"><div class="modal-content"><div class="modal-body mx-auto" id="exportlink-body"></div><div class="modal-footer"><button class="btn btn-link" type="button" data-dismiss="modal"><span class="mdi mdi-close-box mdi-24px iconlabel">`
+	index_4__48 = `</span></button></div></div></div></div><div id="accordion"><div id="list-collapse" class="collapse show" data-parent="#accordion"><header class="row"><div class="col-sm-12"><table id="table" data-toggle="table" data-striped="true" data-search="false" data-toolbar="#toolbar" data-side-pagination="server" data-page-list="[5, 10, 20, 50, 100, 200, 500]" data-pagination="true" data-ajax="getData" data-query-params="queryParams" data-sort-name="name.name_label" data-detail-view="true" data-detail-formatter="detailFormatter" data-row-attributes="rowAttributes"><thead><tr><!--  th(data-field='product_id' data-sortable='true') ID --><th class="th-width-200" data-field="name.name_label" data-sortable="true">name</th><th data-field="empiricalformula.empiricalformula_label" data-sortable="true">empirical formula</th><th data-field="casnumber.casnumber_label" data-sortable="true">CAS</th><th data-field="product_specificity" data-sortable="false" data-formatter="product_specificityFormatter">specificity</th><th data-field="product_sl" data-formatter="product_slFormatter" data-sortable="false"></th><th data-field="operate" data-formatter="operateFormatter" data-events="operateEvents"></th></tr></thead></table></div></header></div><div id="edit-collapse" class="collapse" data-parent="#accordion">`
+	index_4__49 = `<form id="product"><input id="index" type="hidden" name="index" value=""/><input id="product_id" type="hidden" name="product_id" value=""/><input id="exactMatchEmpiricalFormula" type="hidden"/><input id="exactMatchlinearFormula" type="hidden"/><input id="exactMatchCasNumber" type="hidden"/><input id="exactMatchCeNumber" type="hidden"/><input id="exactMatchName" type="hidden"/><input id="exactMatchSynonyms" type="hidden"/><input id="exactMatchClassofcompounds" type="hidden"/><input id="exactMatchPhysicalstate" type="hidden"/><div class="form-row"><div class="form-group col-sm-auto"><span class="badge badge-pill badge-danger">&nbsp;</span></div><div class="form-group col-sm-5">`
+	index_4__50 = `</div><div class="form-group col-sm-5">`
+	index_4__51 = `</div></div><div class="form-row"><div class="form-group col-sm-12">`
+	index_4__52 = `</div></div><div class="form-row"><div class="form-group col-sm-auto"><span>magic selector coming soon</span></div></div><div class="form-row"><div class="form-group col-sm-auto"><span class="badge badge-pill badge-danger">&nbsp;</span></div><div class="form-group col-sm-5">`
+	index_4__54 = `</div><div class="form-group col-sm-1"><button id="fconverter" class="btn btn-link" type="button" data-toggle="popover" data-content="no result" title="convert linear to empirical formula" onclick="linearToEmpirical();"><i class="material-icons">loop</i></button></div></div><div class="form-row"><div class="form-group col-sm-auto"><span class="badge badge-pill badge-danger">&nbsp;</span></div><div class="form-group col-sm-6">`
+	index_4__69 = `</div></div><button id="save" class="btn btn-link" type="button" onclick="saveProduct()"><span class="mdi mdi-content-save mdi-24px iconlabel">`
+	index_4__70 = `</span></button><button class="btn btn-link" type="button" onclick="closeEdit();"><span class="mdi mdi-content-save mdi-24px iconlabel">`
+	index_4__71 = `</span></button></form></div></div></div><!--  Code generated by go generate; DO NOT EDIT. --><script>    
 	var locale_en_advancedsearch_text = "advanced search";
 	
 	var locale_en_casnumber_cmr_title = "CMR";
@@ -59,6 +58,20 @@ const (
 	
 	var locale_en_empiricalformula_label_title = "empirical formula";
 	
+	var locale_en_entity_create_title = "create entity";
+	
+	var locale_en_entity_created_message = "entity created";
+	
+	var locale_en_entity_deleted_message = "entity deleted";
+	
+	var locale_en_entity_description_table_header = "description";
+	
+	var locale_en_entity_manager_table_header = "manager(s)";
+	
+	var locale_en_entity_name_table_header = "name";
+	
+	var locale_en_entity_updated_message = "entity updated";
+	
 	var locale_en_export_text = "export";
 	
 	var locale_en_hazardstatement_label_title = "hazard statement(s)";
@@ -70,6 +83,8 @@ const (
 	var locale_en_logo_information1 = "Chimithèque logo designed by ";
 	
 	var locale_en_logo_information2 = "Do not use or copy without her permission.";
+	
+	var locale_en_members = "members";
 	
 	var locale_en_menu_bookmark = "my bookmarks";
 	
@@ -181,6 +196,8 @@ const (
 	
 	var locale_en_storage_unborrow = "unborrow";
 	
+	var locale_en_storelocations = "storelocations";
+	
 	var locale_en_submitlogin_text = "enter";
 	
 	var locale_en_supplier_label_title = "supplier";
@@ -218,6 +235,20 @@ const (
 	
 	var locale_fr_empiricalformula_label_title = "formule brute";
 	
+	var locale_fr_entity_create_title = "créer une entité";
+	
+	var locale_fr_entity_created_message = "entité crée";
+	
+	var locale_fr_entity_deleted_message = "entité supprimée";
+	
+	var locale_fr_entity_description_table_header = "description";
+	
+	var locale_fr_entity_manager_table_header = "responsable(s)";
+	
+	var locale_fr_entity_name_table_header = "nom";
+	
+	var locale_fr_entity_updated_message = "entité mise à jour";
+	
 	var locale_fr_export_text = "exporter";
 	
 	var locale_fr_hazardstatement_label_title = "mention(s) de danger H-EUH";
@@ -229,6 +260,8 @@ const (
 	var locale_fr_logo_information1 = "Logo Chimithèque réalisé par ";
 	
 	var locale_fr_logo_information2 = "Ne pas utiliser ou copier sans sa permission.";
+	
+	var locale_fr_members = "membres";
 	
 	var locale_fr_menu_bookmark = "mes favoris";
 	
@@ -334,6 +367,8 @@ const (
 	
 	var locale_fr_storage_unborrow = "restituer";
 	
+	var locale_fr_storelocations = "entrepôts";
+	
 	var locale_fr_submitlogin_text = "entrer";
 	
 	var locale_fr_supplier_label_title = "fournisseur";
@@ -343,27 +378,26 @@ const (
 	var locale_fr_switchstorageview_text = "vue par stockages";
 	
 	var locale_fr_test = "Un test";
-	
-
-</script>`
-	index_4__103 = `<input id="`
-	index_4__104 = `" type="hidden" name="`
-	index_4__105 = `" value="`
-	index_4__106 = `"/>`
-	index_4__127 = `<div class="row"><div class="col-sm-1"><span class="`
-	index_4__128 = `"></span></div><div class="col-sm-11"><select style="width: 100% !important;" id="`
-	index_4__130 = `"></select></div></div>`
-	index_4__131 = `<div class="form-group row"><label class="col-sm-3 col-form-label" for="`
-	index_4__133 = `</label><div class="col-sm-9"><input class="form-control" type="text" id="`
-	index_4__136 = `"/></div></div>`
-	index_4__139 = `</label><div class="col-sm-9"><select class="form-control" style="width: 100% !important;" id="`
-	index_4__162 = `"></select></div>`
-	index_4__178 = `<div class="form-check"><input class="form-check-input" type="checkbox" id="`
-	index_4__179 = `"/><label class="form-check-label" for="`
-	index_4__181 = `</label></div>`
-	index_4__236 = `</label><input class="form-control" type="file" id="`
-	index_4__284 = `</label><textarea class="form-control" type="text" id="`
-	index_4__287 = `"></textarea></div>`
+	</script>`
+	index_4__89  = `"></script><script src="../js/chim/product_storage.js"></script><script src="../js/chim/product.js"></script></body></html>`
+	index_4__90  = `<input id="`
+	index_4__91  = `" type="hidden" name="`
+	index_4__92  = `" value="`
+	index_4__93  = `"/>`
+	index_4__114 = `<div class="row"><div class="col-sm-1"><span class="`
+	index_4__115 = `"></span></div><div class="col-sm-11"><select style="width: 100% !important;" id="`
+	index_4__117 = `"></select></div></div>`
+	index_4__118 = `<div class="form-group row"><label class="col-sm-3 col-form-label" for="`
+	index_4__120 = `</label><div class="col-sm-9"><input class="form-control" type="text" id="`
+	index_4__123 = `"/></div></div>`
+	index_4__126 = `</label><div class="col-sm-9"><select class="form-control" style="width: 100% !important;" id="`
+	index_4__149 = `"></select></div>`
+	index_4__165 = `<div class="form-check"><input class="form-check-input" type="checkbox" id="`
+	index_4__166 = `"/><label class="form-check-label" for="`
+	index_4__168 = `</label></div>`
+	index_4__223 = `</label><input class="form-control" type="file" id="`
+	index_4__271 = `</label><textarea class="form-control" type="text" id="`
+	index_4__274 = `"></textarea></div>`
 )
 
 func Productindex(c ViewContainer, wr io.Writer) {
@@ -392,88 +426,44 @@ func Productindex(c ViewContainer, wr io.Writer) {
 	buffer.WriteString(index__10)
 	WriteAll(c.ProxyPath+"img/logo_chimitheque_small.png", true, buffer)
 	buffer.WriteString(index__11)
-
-	if HasPermission(c.PersonID, "r", "products", -2) {
-		buffer.WriteString(index__35)
-		WriteAll(c.ProxyPath+"v/products", true, buffer)
-		buffer.WriteString(index__36)
-		WriteAll(T("menu_home", 1), true, buffer)
-		buffer.WriteString(index__37)
-
-	}
-	if HasPermission(c.PersonID, "r", "products", -2) {
-		buffer.WriteString(index__35)
-		WriteAll(c.ProxyPath+"v/products?bookmark=true", true, buffer)
-		buffer.WriteString(index__39)
-		WriteAll(T("menu_bookmark", 1), true, buffer)
-		buffer.WriteString(index__37)
-
-	}
-	if HasPermission(c.PersonID, "w", "products", -2) {
-		buffer.WriteString(index__41)
-		WriteAll(c.ProxyPath+"vc/products", true, buffer)
-		buffer.WriteString(index__42)
-		WriteAll(T("menu_create_productcard", 1), true, buffer)
-		buffer.WriteString(index__37)
-
-	}
-	if HasPermission(c.PersonID, "r", "entities", -2) {
-		buffer.WriteString(index__44)
-		WriteAll(T("menu_entity", 1), true, buffer)
-		buffer.WriteString(index__45)
-		WriteAll(c.ProxyPath+"v/entities", true, buffer)
-		buffer.WriteString(index__46)
-
-		if HasPermission(c.PersonID, "all", "all", -1) {
-			buffer.WriteString(index__48)
-			WriteAll(c.ProxyPath+"vc/entities", true, buffer)
-			buffer.WriteString(index__49)
-
-		}
-		buffer.WriteString(index__47)
-
-	}
-	if HasPermission(c.PersonID, "r", "storages", -2) {
-		buffer.WriteString(index__50)
-		WriteAll(T("menu_storelocation", 1), true, buffer)
-		buffer.WriteString(index__45)
-		WriteAll(c.ProxyPath+"v/storelocations", true, buffer)
-		buffer.WriteString(index__46)
-
-		if HasPermission(c.PersonID, "all", "all", -2) {
-			buffer.WriteString(index__48)
-			WriteAll(c.ProxyPath+"vc/storelocations", true, buffer)
-			buffer.WriteString(index__49)
-
-		}
-		buffer.WriteString(index__47)
-
-	}
-	if HasPermission(c.PersonID, "r", "people", -2) {
-		buffer.WriteString(index__56)
-		WriteAll(T("menu_people", 1), true, buffer)
-		buffer.WriteString(index__45)
-		WriteAll(c.ProxyPath+"v/people", true, buffer)
-		buffer.WriteString(index__46)
-
-		if HasPermission(c.PersonID, "w", "people", -2) {
-			buffer.WriteString(index__48)
-			WriteAll(c.ProxyPath+"vc/people", true, buffer)
-			buffer.WriteString(index__49)
-
-		}
-		buffer.WriteString(index__47)
-
-	}
+	WriteAll(c.ProxyPath+"v/products", true, buffer)
 	buffer.WriteString(index__12)
-	WriteAll(c.ProxyPath+"vu/peoplepass", true, buffer)
+	WriteAll(T("menu_home", 1), true, buffer)
 	buffer.WriteString(index__13)
-	WriteAll(T("menu_password", 1), true, buffer)
+	WriteAll(c.ProxyPath+"v/products?bookmark=true", true, buffer)
 	buffer.WriteString(index__14)
-	WriteAll(c.ProxyPath+"delete-token", true, buffer)
+	WriteAll(T("menu_bookmark", 1), true, buffer)
 	buffer.WriteString(index__15)
+	WriteAll(c.ProxyPath+"vc/products", true, buffer)
+	buffer.WriteString(index__16)
+	WriteAll(T("menu_create_productcard", 1), true, buffer)
+	buffer.WriteString(index__17)
+	WriteAll(T("menu_entity", 1), true, buffer)
+	buffer.WriteString(index__18)
+	WriteAll(c.ProxyPath+"v/entities", true, buffer)
+	buffer.WriteString(index__19)
+	WriteAll(c.ProxyPath+"vc/entities", true, buffer)
+	buffer.WriteString(index__20)
+	WriteAll(T("menu_storelocation", 1), true, buffer)
+	buffer.WriteString(index__18)
+	WriteAll(c.ProxyPath+"v/storelocations", true, buffer)
+	buffer.WriteString(index__22)
+	WriteAll(c.ProxyPath+"vc/storelocations", true, buffer)
+	buffer.WriteString(index__23)
+	WriteAll(T("menu_people", 1), true, buffer)
+	buffer.WriteString(index__18)
+	WriteAll(c.ProxyPath+"v/people", true, buffer)
+	buffer.WriteString(index__25)
+	WriteAll(c.ProxyPath+"vc/people", true, buffer)
+	buffer.WriteString(index__26)
+	WriteAll(c.ProxyPath+"vu/peoplepass", true, buffer)
+	buffer.WriteString(index__27)
+	WriteAll(T("menu_password", 1), true, buffer)
+	buffer.WriteString(index__28)
+	WriteAll(c.ProxyPath+"delete-token", true, buffer)
+	buffer.WriteString(index__29)
 	WriteAll(T("menu_logout", 1), true, buffer)
-	buffer.WriteString(index_4__16)
+	buffer.WriteString(index_4__30)
 
 	{
 		var (
@@ -481,13 +471,13 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			value = ""
 		)
 
-		buffer.WriteString(index_4__103)
+		buffer.WriteString(index_4__90)
 		WriteEscString("hidden_"+name, buffer)
-		buffer.WriteString(index_4__104)
+		buffer.WriteString(index_4__91)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__105)
+		buffer.WriteString(index_4__92)
 		WriteEscString(value, buffer)
-		buffer.WriteString(index_4__106)
+		buffer.WriteString(index_4__93)
 	}
 
 	{
@@ -496,13 +486,13 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			value = ""
 		)
 
-		buffer.WriteString(index_4__103)
+		buffer.WriteString(index_4__90)
 		WriteEscString("hidden_"+name, buffer)
-		buffer.WriteString(index_4__104)
+		buffer.WriteString(index_4__91)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__105)
+		buffer.WriteString(index_4__92)
 		WriteEscString(value, buffer)
-		buffer.WriteString(index_4__106)
+		buffer.WriteString(index_4__93)
 	}
 
 	{
@@ -511,13 +501,13 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			value = ""
 		)
 
-		buffer.WriteString(index_4__103)
+		buffer.WriteString(index_4__90)
 		WriteEscString("hidden_"+name, buffer)
-		buffer.WriteString(index_4__104)
+		buffer.WriteString(index_4__91)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__105)
+		buffer.WriteString(index_4__92)
 		WriteEscString(value, buffer)
-		buffer.WriteString(index_4__106)
+		buffer.WriteString(index_4__93)
 	}
 
 	{
@@ -526,13 +516,13 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			value = ""
 		)
 
-		buffer.WriteString(index_4__103)
+		buffer.WriteString(index_4__90)
 		WriteEscString("hidden_"+name, buffer)
-		buffer.WriteString(index_4__104)
+		buffer.WriteString(index_4__91)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__105)
+		buffer.WriteString(index_4__92)
 		WriteEscString(value, buffer)
-		buffer.WriteString(index_4__106)
+		buffer.WriteString(index_4__93)
 	}
 
 	{
@@ -541,13 +531,13 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			value = ""
 		)
 
-		buffer.WriteString(index_4__103)
+		buffer.WriteString(index_4__90)
 		WriteEscString("hidden_"+name, buffer)
-		buffer.WriteString(index_4__104)
+		buffer.WriteString(index_4__91)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__105)
+		buffer.WriteString(index_4__92)
 		WriteEscString(value, buffer)
-		buffer.WriteString(index_4__106)
+		buffer.WriteString(index_4__93)
 	}
 
 	{
@@ -556,34 +546,34 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			value = ""
 		)
 
-		buffer.WriteString(index_4__103)
+		buffer.WriteString(index_4__90)
 		WriteEscString("hidden_"+name, buffer)
-		buffer.WriteString(index_4__104)
+		buffer.WriteString(index_4__91)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__105)
+		buffer.WriteString(index_4__92)
 		WriteEscString(value, buffer)
-		buffer.WriteString(index_4__106)
+		buffer.WriteString(index_4__93)
 	}
 
-	buffer.WriteString(index_4__17)
+	buffer.WriteString(index_4__31)
 
 	{
 		var (
-			name = "docker"
-			icon = "s_storelocation"
+			name = "s_storelocation"
+			icon = "docker"
 		)
 
-		buffer.WriteString(index_4__127)
+		buffer.WriteString(index_4__114)
 		WriteEscString("mdi-"+icon+" mdi mdi-36px", buffer)
-		buffer.WriteString(index_4__128)
+		buffer.WriteString(index_4__115)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__130)
+		buffer.WriteString(index_4__117)
 
 	}
 
-	buffer.WriteString(index_4__18)
+	buffer.WriteString(index_4__32)
 
 	{
 		var (
@@ -591,21 +581,21 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			name  = "s_custom_name_part_of"
 		)
 
-		buffer.WriteString(index_4__131)
+		buffer.WriteString(index_4__118)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteAll(label, true, buffer)
-		buffer.WriteString(index_4__133)
+		buffer.WriteString(index_4__120)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__76)
+		buffer.WriteString(index_2__66)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__136)
+		buffer.WriteString(index_4__123)
 
 	}
 
-	buffer.WriteString(index_4__19)
+	buffer.WriteString(index_4__33)
 
 	{
 		var (
@@ -613,19 +603,19 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			name  = "s_name"
 		)
 
-		buffer.WriteString(index_4__131)
+		buffer.WriteString(index_4__118)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteAll(label, true, buffer)
-		buffer.WriteString(index_4__139)
+		buffer.WriteString(index_4__126)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__130)
+		buffer.WriteString(index_4__117)
 
 	}
 
-	buffer.WriteString(index_4__20)
+	buffer.WriteString(index_4__34)
 
 	{
 		var (
@@ -633,19 +623,19 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			name  = "s_casnumber"
 		)
 
-		buffer.WriteString(index_4__131)
+		buffer.WriteString(index_4__118)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteAll(label, true, buffer)
-		buffer.WriteString(index_4__139)
+		buffer.WriteString(index_4__126)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__130)
+		buffer.WriteString(index_4__117)
 
 	}
 
-	buffer.WriteString(index_4__20)
+	buffer.WriteString(index_4__34)
 
 	{
 		var (
@@ -653,19 +643,19 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			name  = "s_empiricalformula"
 		)
 
-		buffer.WriteString(index_4__131)
+		buffer.WriteString(index_4__118)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteAll(label, true, buffer)
-		buffer.WriteString(index_4__139)
+		buffer.WriteString(index_4__126)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__130)
+		buffer.WriteString(index_4__117)
 
 	}
 
-	buffer.WriteString(index_4__20)
+	buffer.WriteString(index_4__34)
 
 	{
 		var (
@@ -673,21 +663,21 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			name  = "s_storage_barecode"
 		)
 
-		buffer.WriteString(index_4__131)
+		buffer.WriteString(index_4__118)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteAll(label, true, buffer)
-		buffer.WriteString(index_4__133)
+		buffer.WriteString(index_4__120)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__76)
+		buffer.WriteString(index_2__66)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__136)
+		buffer.WriteString(index_4__123)
 
 	}
 
-	buffer.WriteString(index_4__23)
+	buffer.WriteString(index_4__37)
 
 	{
 		var (
@@ -695,19 +685,19 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			name  = "s_signalword"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteAll(label, true, buffer)
-		buffer.WriteString(index_2__86)
+		buffer.WriteString(index_2__76)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__162)
+		buffer.WriteString(index_4__149)
 
 	}
 
-	buffer.WriteString(index_4__24)
+	buffer.WriteString(index_4__38)
 
 	{
 		var (
@@ -715,19 +705,19 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			name  = "s_symbols"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteAll(label, true, buffer)
-		buffer.WriteString(index_2__86)
+		buffer.WriteString(index_2__76)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__88)
+		buffer.WriteString(index_2__78)
 
 	}
 
-	buffer.WriteString(index_4__25)
+	buffer.WriteString(index_4__39)
 
 	{
 		var (
@@ -735,19 +725,19 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			name  = "s_hazardstatements"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteAll(label, true, buffer)
-		buffer.WriteString(index_2__86)
+		buffer.WriteString(index_2__76)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__88)
+		buffer.WriteString(index_2__78)
 
 	}
 
-	buffer.WriteString(index_4__24)
+	buffer.WriteString(index_4__38)
 
 	{
 		var (
@@ -755,19 +745,19 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			name  = "s_precautionarystatements"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteAll(label, true, buffer)
-		buffer.WriteString(index_2__86)
+		buffer.WriteString(index_2__76)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__88)
+		buffer.WriteString(index_2__78)
 
 	}
 
-	buffer.WriteString(index_4__25)
+	buffer.WriteString(index_4__39)
 
 	{
 		var (
@@ -775,28 +765,28 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			name  = "s_casnumber_cmr"
 		)
 
-		buffer.WriteString(index_4__178)
+		buffer.WriteString(index_4__165)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__179)
+		buffer.WriteString(index_4__166)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteAll(label, true, buffer)
-		buffer.WriteString(index_4__181)
+		buffer.WriteString(index_4__168)
 	}
 
-	buffer.WriteString(index_4__28)
+	buffer.WriteString(index_4__42)
 	WriteAll(T("clearsearch_text", 1), true, buffer)
-	buffer.WriteString(index_4__29)
+	buffer.WriteString(index_4__43)
 	WriteAll(T("search_text", 1), true, buffer)
-	buffer.WriteString(index_4__30)
+	buffer.WriteString(index_4__44)
 	WriteAll(T("advancedsearch_text", 1), true, buffer)
-	buffer.WriteString(index_4__31)
+	buffer.WriteString(index_4__45)
 	WriteAll(T("switchstorageview_text", 1), true, buffer)
-	buffer.WriteString(index_4__32)
+	buffer.WriteString(index_4__46)
 	WriteAll(T("export_text", 1), true, buffer)
-	buffer.WriteString(index_4__33)
+	buffer.WriteString(index_4__47)
 	WriteAll(T("close", 1), true, buffer)
-	buffer.WriteString(index_4__34)
+	buffer.WriteString(index_4__48)
 
 	{
 		var (
@@ -805,17 +795,17 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			label      = "update product"
 		)
 
-		buffer.WriteString(index_2__68)
+		buffer.WriteString(index_2__58)
 		WriteEscString("mdi-"+iconitem+" mdi mdi-48px", buffer)
-		buffer.WriteString(index_2__69)
+		buffer.WriteString(index_2__59)
 		WriteEscString("mdi-"+iconaction+" mdi mdi-18px", buffer)
-		buffer.WriteString(index_2__70)
+		buffer.WriteString(index_2__60)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__71)
+		buffer.WriteString(index_2__61)
 
 	}
 
-	buffer.WriteString(index_4__35)
+	buffer.WriteString(index_4__49)
 
 	{
 		var (
@@ -823,19 +813,19 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			name  = "name"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__86)
+		buffer.WriteString(index_2__76)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__162)
+		buffer.WriteString(index_4__149)
 
 	}
 
-	buffer.WriteString(index_4__36)
+	buffer.WriteString(index_4__50)
 
 	{
 		var (
@@ -843,19 +833,19 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			name  = "synonyms"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__86)
+		buffer.WriteString(index_2__76)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__88)
+		buffer.WriteString(index_2__78)
 
 	}
 
-	buffer.WriteString(index_4__37)
+	buffer.WriteString(index_4__51)
 
 	{
 		var (
@@ -863,20 +853,20 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			name  = "product_specificity"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__74)
+		buffer.WriteString(index_2__64)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__76)
+		buffer.WriteString(index_2__66)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__77)
+		buffer.WriteString(index_2__67)
 	}
 
-	buffer.WriteString(index_4__38)
+	buffer.WriteString(index_4__52)
 
 	{
 		var (
@@ -884,19 +874,19 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			name  = "empiricalformula"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__86)
+		buffer.WriteString(index_2__76)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__162)
+		buffer.WriteString(index_4__149)
 
 	}
 
-	buffer.WriteString(index_4__36)
+	buffer.WriteString(index_4__50)
 
 	{
 		var (
@@ -904,19 +894,19 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			name  = "linearformula"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__86)
+		buffer.WriteString(index_2__76)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__162)
+		buffer.WriteString(index_4__149)
 
 	}
 
-	buffer.WriteString(index_4__40)
+	buffer.WriteString(index_4__54)
 
 	{
 		var (
@@ -924,19 +914,19 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			name  = "casnumber"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__86)
+		buffer.WriteString(index_2__76)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__162)
+		buffer.WriteString(index_4__149)
 
 	}
 
-	buffer.WriteString(index_4__36)
+	buffer.WriteString(index_4__50)
 
 	{
 		var (
@@ -944,19 +934,19 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			name  = "cenumber"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__86)
+		buffer.WriteString(index_2__76)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__162)
+		buffer.WriteString(index_4__149)
 
 	}
 
-	buffer.WriteString(index_4__37)
+	buffer.WriteString(index_4__51)
 
 	{
 		var (
@@ -964,20 +954,20 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			name  = "product_msds"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__74)
+		buffer.WriteString(index_2__64)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__76)
+		buffer.WriteString(index_2__66)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__77)
+		buffer.WriteString(index_2__67)
 	}
 
-	buffer.WriteString(index_4__25)
+	buffer.WriteString(index_4__39)
 
 	{
 		var (
@@ -985,20 +975,20 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			name  = "product_threedformula"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__74)
+		buffer.WriteString(index_2__64)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__76)
+		buffer.WriteString(index_2__66)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__77)
+		buffer.WriteString(index_2__67)
 	}
 
-	buffer.WriteString(index_4__24)
+	buffer.WriteString(index_4__38)
 
 	{
 		var (
@@ -1006,17 +996,17 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			name  = "product_molformula"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_4__236)
+		buffer.WriteString(index_4__223)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__76)
+		buffer.WriteString(index_2__66)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__77)
+		buffer.WriteString(index_2__67)
 	}
 
 	{
@@ -1025,16 +1015,16 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			value = ""
 		)
 
-		buffer.WriteString(index_4__103)
+		buffer.WriteString(index_4__90)
 		WriteEscString("hidden_"+name, buffer)
-		buffer.WriteString(index_4__104)
+		buffer.WriteString(index_4__91)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__105)
+		buffer.WriteString(index_4__92)
 		WriteEscString(value, buffer)
-		buffer.WriteString(index_4__106)
+		buffer.WriteString(index_4__93)
 	}
 
-	buffer.WriteString(index_4__25)
+	buffer.WriteString(index_4__39)
 
 	{
 		var (
@@ -1042,19 +1032,19 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			name  = "physicalstate"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__86)
+		buffer.WriteString(index_2__76)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__162)
+		buffer.WriteString(index_4__149)
 
 	}
 
-	buffer.WriteString(index_4__24)
+	buffer.WriteString(index_4__38)
 
 	{
 		var (
@@ -1062,19 +1052,19 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			name  = "classofcompound"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__86)
+		buffer.WriteString(index_2__76)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__162)
+		buffer.WriteString(index_4__149)
 
 	}
 
-	buffer.WriteString(index_4__25)
+	buffer.WriteString(index_4__39)
 
 	{
 		var (
@@ -1082,19 +1072,19 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			name  = "signalword"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__86)
+		buffer.WriteString(index_2__76)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__162)
+		buffer.WriteString(index_4__149)
 
 	}
 
-	buffer.WriteString(index_4__24)
+	buffer.WriteString(index_4__38)
 
 	{
 		var (
@@ -1102,19 +1092,19 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			name  = "symbols"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__86)
+		buffer.WriteString(index_2__76)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__88)
+		buffer.WriteString(index_2__78)
 
 	}
 
-	buffer.WriteString(index_4__25)
+	buffer.WriteString(index_4__39)
 
 	{
 		var (
@@ -1122,19 +1112,19 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			name  = "hazardstatements"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__86)
+		buffer.WriteString(index_2__76)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__88)
+		buffer.WriteString(index_2__78)
 
 	}
 
-	buffer.WriteString(index_4__24)
+	buffer.WriteString(index_4__38)
 
 	{
 		var (
@@ -1142,19 +1132,19 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			name  = "precautionarystatements"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_2__86)
+		buffer.WriteString(index_2__76)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__88)
+		buffer.WriteString(index_2__78)
 
 	}
 
-	buffer.WriteString(index_4__37)
+	buffer.WriteString(index_4__51)
 
 	{
 		var (
@@ -1162,16 +1152,16 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			name  = "product_restricted"
 		)
 
-		buffer.WriteString(index_4__178)
+		buffer.WriteString(index_4__165)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__179)
+		buffer.WriteString(index_4__166)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_4__181)
+		buffer.WriteString(index_4__168)
 	}
 
-	buffer.WriteString(index_4__37)
+	buffer.WriteString(index_4__51)
 
 	{
 		var (
@@ -1179,16 +1169,16 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			name  = "product_radioactive"
 		)
 
-		buffer.WriteString(index_4__178)
+		buffer.WriteString(index_4__165)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__179)
+		buffer.WriteString(index_4__166)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_4__181)
+		buffer.WriteString(index_4__168)
 	}
 
-	buffer.WriteString(index_4__37)
+	buffer.WriteString(index_4__51)
 
 	{
 		var (
@@ -1196,21 +1186,21 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			name  = "product_disposalcomment"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_4__284)
+		buffer.WriteString(index_4__271)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__76)
+		buffer.WriteString(index_2__66)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__287)
+		buffer.WriteString(index_4__274)
 
 	}
 
-	buffer.WriteString(index_4__37)
+	buffer.WriteString(index_4__51)
 
 	{
 		var (
@@ -1218,25 +1208,25 @@ func Productindex(c ViewContainer, wr io.Writer) {
 			name  = "product_remark"
 		)
 
-		buffer.WriteString(index_2__72)
+		buffer.WriteString(index_2__62)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__73)
+		buffer.WriteString(index_2__63)
 		WriteEscString(label, buffer)
-		buffer.WriteString(index_4__284)
+		buffer.WriteString(index_4__271)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__75)
+		buffer.WriteString(index_2__65)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_2__76)
+		buffer.WriteString(index_2__66)
 		WriteEscString(name, buffer)
-		buffer.WriteString(index_4__287)
+		buffer.WriteString(index_4__274)
 
 	}
 
-	buffer.WriteString(index_4__55)
+	buffer.WriteString(index_4__69)
 	WriteAll(T("save", 1), true, buffer)
-	buffer.WriteString(index_4__56)
+	buffer.WriteString(index_4__70)
 	WriteAll(T("close", 1), true, buffer)
-	buffer.WriteString(index_4__57)
+	buffer.WriteString(index_4__71)
 
 	json, _ := json.Marshal(c)
 
@@ -1245,40 +1235,40 @@ func Productindex(c ViewContainer, wr io.Writer) {
 		out += fmt.Sprintf("URLValues.set(%s, %s)\n", key, value)
 	}
 
-	buffer.WriteString(index__17)
+	buffer.WriteString(index__31)
 	WriteAll(c.ProxyPath, false, buffer)
-	buffer.WriteString(index__18)
+	buffer.WriteString(index__32)
 	buffer.WriteString(fmt.Sprintf("%s", json))
-	buffer.WriteString(index__19)
+	buffer.WriteString(index__33)
 	buffer.WriteString(out)
-	buffer.WriteString(index__20)
-	WriteAll(c.ProxyPath+"js/jquery.formautofill.min.js", true, buffer)
-	buffer.WriteString(index__21)
-	WriteAll(c.ProxyPath+"js/jquery.validate.min.js", true, buffer)
-	buffer.WriteString(index__21)
-	WriteAll(c.ProxyPath+"js/jquery.validate.additional-methods.min.js", true, buffer)
-	buffer.WriteString(index__21)
-	WriteAll(c.ProxyPath+"js/select2.full.min.js", true, buffer)
-	buffer.WriteString(index__21)
-	WriteAll(c.ProxyPath+"js/popper.min.js", true, buffer)
-	buffer.WriteString(index__21)
-	WriteAll(c.ProxyPath+"js/bootstrap.min.js", true, buffer)
-	buffer.WriteString(index__21)
-	WriteAll(c.ProxyPath+"js/bootstrap-table.min.js", true, buffer)
-	buffer.WriteString(index__21)
-	WriteAll(c.ProxyPath+"js/bootstrap-confirmation.min.js", true, buffer)
-	buffer.WriteString(index__21)
-	WriteAll(c.ProxyPath+"js/bootstrap-colorpicker.min.js", true, buffer)
-	buffer.WriteString(index__21)
-	WriteAll(c.ProxyPath+"js/bootstrap-toggle.min.js", true, buffer)
-	buffer.WriteString(index__21)
-	WriteAll(c.ProxyPath+"js/JSmol.lite.nojq.js", true, buffer)
-	buffer.WriteString(index__21)
-	WriteAll(c.ProxyPath+"js/chim/gjs-common.js", true, buffer)
-	buffer.WriteString(index__21)
-	WriteAll(c.ProxyPath+"js/chim/chimcommon.js", true, buffer)
-	buffer.WriteString(index__21)
-	WriteAll(c.ProxyPath+"js/chim/login.js", true, buffer)
 	buffer.WriteString(index__34)
+	WriteAll(c.ProxyPath+"js/jquery.formautofill.min.js", true, buffer)
+	buffer.WriteString(index__35)
+	WriteAll(c.ProxyPath+"js/jquery.validate.min.js", true, buffer)
+	buffer.WriteString(index__35)
+	WriteAll(c.ProxyPath+"js/jquery.validate.additional-methods.min.js", true, buffer)
+	buffer.WriteString(index__35)
+	WriteAll(c.ProxyPath+"js/select2.full.min.js", true, buffer)
+	buffer.WriteString(index__35)
+	WriteAll(c.ProxyPath+"js/popper.min.js", true, buffer)
+	buffer.WriteString(index__35)
+	WriteAll(c.ProxyPath+"js/bootstrap.min.js", true, buffer)
+	buffer.WriteString(index__35)
+	WriteAll(c.ProxyPath+"js/bootstrap-table.min.js", true, buffer)
+	buffer.WriteString(index__35)
+	WriteAll(c.ProxyPath+"js/bootstrap-confirmation.min.js", true, buffer)
+	buffer.WriteString(index__35)
+	WriteAll(c.ProxyPath+"js/bootstrap-colorpicker.min.js", true, buffer)
+	buffer.WriteString(index__35)
+	WriteAll(c.ProxyPath+"js/bootstrap-toggle.min.js", true, buffer)
+	buffer.WriteString(index__35)
+	WriteAll(c.ProxyPath+"js/JSmol.lite.nojq.js", true, buffer)
+	buffer.WriteString(index__35)
+	WriteAll(c.ProxyPath+"js/chim/gjs-common.js", true, buffer)
+	buffer.WriteString(index__35)
+	WriteAll(c.ProxyPath+"js/chim/chimcommon.js", true, buffer)
+	buffer.WriteString(index__35)
+	WriteAll(c.ProxyPath+"js/chim/login.js", true, buffer)
+	buffer.WriteString(index_4__89)
 
 }

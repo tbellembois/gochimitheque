@@ -3,24 +3,19 @@ block CONTENT
     :go:func
         Entitycreate(c ViewContainer)
 
-    | {{$label := T "entity_create_title" 1}} {{$iconitem := "store"}} {{$iconaction := "creation"}}
-    +titleicon
+    +titleicon("store", "creation", "create entity")
 
     form#entity
         .form-group.row
-            | {{$label := T "entity_name_table_header" 1}} {{$name := "entity_name"}}
-            +inputtext
+            +inputtext("name", "entity_name")
         .form-group.row
-            | {{$label := T "entity_description_table_header" 1}} {{$name := "entity_description"}}
-            +inputtext
+            +inputtext("description", "entity_description")
         .form-group.row
-            | {{$label := T "entity_manager_table_header" 1}} {{$name := "managers"}}
-            +selectmultiple
+            +selectmultiple("manager(s)", "managers")
 
     button#save.btn.btn-link(type='button', onclick='saveEntity()')
         span.mdi.mdi-content-save.mdi-24px.iconlabel
             = T("save", 1)
-
 
 block CONTENTJS
     script(src="../js/chim/entity.js")

@@ -18,11 +18,11 @@ block CONTENT
                             tr
                                 th(data-field='entity_id') ID
                                 th(data-field='entity_name' data-sortable='true')
-                                    | {{ T "entity_name_table_header" 1 }}
+                                    = T("entity_name_table_header", 1)
                                 th(data-field='entity_description')
-                                    | {{ T "entity_description_table_header" 1 }}
+                                    = T("entity_description_table_header", 1)
                                 th(data-field='managers' data-formatter='managersFormatter')
-                                    | {{ T "entity_manager_table_header" 1 }}
+                                    = T("entity_manager_table_header", 1)
                                 th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents')
 
         #edit-collapse.collapse(data-parent='#accordion')
@@ -46,7 +46,6 @@ block CONTENT
             button.btn.btn-link(type='button', onclick='closeViewEdit();')
                 span.mdi.mdi-close-box.mdi-24px.iconlabel
                     = T("close", 1)
-
 
 block CONTENTJS
     script(src="../js/chim/entity.js")

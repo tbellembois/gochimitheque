@@ -33,64 +33,55 @@ html
 
                 div.collapse.navbar-collapse#navbarSupportedContent
                     ul.navbar-nav.mr-auto
-                        if HasPermission(c.PersonID, "r", "products", -2)
-                            li.nav-item.active
-                                a(href=c.ProxyPath + "v/products").nav-link
-                                    span.mdi.mdi-home.mdi-36px.iconlabel
-                                        = T("menu_home", 1) 
+                        li.nav-item.active#menu_list_products.collapse
+                            a(href=c.ProxyPath + "v/products").nav-link
+                                span.mdi.mdi-home.mdi-36px.iconlabel
+                                    = T("menu_home", 1) 
 
-                        if HasPermission(c.PersonID, "r", "products", -2)
-                            li.nav-item.active
-                                a(href=c.ProxyPath + "v/products?bookmark=true").nav-link
-                                    span.mdi.mdi-star.mdi-36px.iconlabel
-                                        = T("menu_bookmark", 1) 
+                        li.nav-item.active#menu_list_bookmarks.collapse
+                            a(href=c.ProxyPath + "v/products?bookmark=true").nav-link
+                                span.mdi.mdi-star.mdi-36px.iconlabel
+                                    = T("menu_bookmark", 1) 
 
-                        if HasPermission(c.PersonID, "w", "products", -2)
-                            li.nav-item
-                                a(href=c.ProxyPath + "vc/products").nav-link
-                                    span.mdi.mdi-tag.mdi-36px.iconlabel
-                                        = T("menu_create_productcard", 1)
-                        if HasPermission(c.PersonID, "r", "entities", -2)
-                            li.nav-item.dropdown
-                                a(href="#", title="manage entities").nav-link.dropdown-toggle#navbarDropdown(
-                                    role="button" 
-                                    data-toggle="dropdown" 
-                                    aria-haspopup="true" 
-                                    aria-expanded="false")
-                                    span.mdi.mdi-store.mdi-36px.iconlabel
-                                        = T("menu_entity", 1)
-                                div.dropdown-menu(aria-labelledby="navbarDropdown")
-                                    a(href=c.ProxyPath + "v/entities", title="list").dropdown-item list
-                                    if HasPermission(c.PersonID, "all", "all", -1)
-                                        a(href=c.ProxyPath + "vc/entities", title="create").dropdown-item create
+                        li.nav-item#menu_create_product.collapse
+                            a(href=c.ProxyPath + "vc/products").nav-link
+                                span.mdi.mdi-tag.mdi-36px.iconlabel
+                                    = T("menu_create_productcard", 1)
+                        li.nav-item.dropdown#menu_entities.collapse
+                            a(href="#", title="manage entities").nav-link.dropdown-toggle#navbarDropdown(
+                                role="button" 
+                                data-toggle="dropdown" 
+                                aria-haspopup="true" 
+                                aria-expanded="false")
+                                span.mdi.mdi-store.mdi-36px.iconlabel
+                                    = T("menu_entity", 1)
+                            div.dropdown-menu(aria-labelledby="navbarDropdown")
+                                a(href=c.ProxyPath + "v/entities", title="list").dropdown-item list
+                                    a#menu_create_entity.collapse(href=c.ProxyPath + "vc/entities", title="create").dropdown-item create
 
-                        if HasPermission(c.PersonID, "r", "storages", -2)
-                            li.nav-item.dropdown
-                                a(href="#", title="manage storelocations").nav-link.dropdown-toggle#navbarDropdown(
-                                    role="button" 
-                                    data-toggle="dropdown" 
-                                    aria-haspopup="true" 
-                                    aria-expanded="false")
-                                    span.mdi.mdi-docker.mdi-36px.iconlabel
-                                        = T("menu_storelocation", 1)
-                                div.dropdown-menu(aria-labelledby="navbarDropdown")
-                                    a(href=c.ProxyPath + "v/storelocations", title="list").dropdown-item list
-                                    if HasPermission(c.PersonID, "all", "all", -2)
-                                        a(href=c.ProxyPath + "vc/storelocations", title="create").dropdown-item create
+                        li.nav-item.dropdown#menu_storelocations.collapse
+                            a(href="#", title="manage storelocations").nav-link.dropdown-toggle#navbarDropdown(
+                                role="button" 
+                                data-toggle="dropdown" 
+                                aria-haspopup="true" 
+                                aria-expanded="false")
+                                span.mdi.mdi-docker.mdi-36px.iconlabel
+                                    = T("menu_storelocation", 1)
+                            div.dropdown-menu(aria-labelledby="navbarDropdown")
+                                a(href=c.ProxyPath + "v/storelocations", title="list").dropdown-item list
+                                    a#menu_create_storelocation.collapse(href=c.ProxyPath + "vc/storelocations", title="create").dropdown-item create
 
-                        if HasPermission(c.PersonID, "r", "people", -2)
-                            li.nav-item.dropdown
-                                a(href="#", title="manage people").nav-link.dropdown-toggle#navbarDropdown(
-                                    role="button" 
-                                    data-toggle="dropdown" 
-                                    aria-haspopup="true" 
-                                    aria-expanded="false")
-                                    span.mdi.mdi-account-group.mdi-36px.iconlabel
-                                        = T("menu_people", 1)
-                                div.dropdown-menu(aria-labelledby="navbarDropdown")
-                                    a(href=c.ProxyPath + "v/people", title="list").dropdown-item list
-                                    if HasPermission(c.PersonID, "w", "people", -2)
-                                        a(href=c.ProxyPath + "vc/people", title="create").dropdown-item create
+                        li.nav-item.dropdown#menu_people.collapse
+                            a(href="#", title="manage people").nav-link.dropdown-toggle#navbarDropdown(
+                                role="button" 
+                                data-toggle="dropdown" 
+                                aria-haspopup="true" 
+                                aria-expanded="false")
+                                span.mdi.mdi-account-group.mdi-36px.iconlabel
+                                    = T("menu_people", 1)
+                            div.dropdown-menu(aria-labelledby="navbarDropdown")
+                                a(href=c.ProxyPath + "v/people", title="list").dropdown-item list
+                                    a#menu_create_person.collapse(href=c.ProxyPath + "vc/people", title="create").dropdown-item create
 
                         li.nav-item
                             a.nav-link(title= "change password" href=c.ProxyPath + "vu/peoplepass")
@@ -98,7 +89,7 @@ html
                                         = T("menu_password", 1)
                                 
                         li.nav-item
-                            a.nav-link(title= "logout" href=c.ProxyPath+"delete-token")
+                            a.nav-link(title= "logout" onclick="localStorage.clear();" href=c.ProxyPath+"delete-token")
                                 span.mdi.mdi-logout.mdi-36px.iconlabel
                                         = T("menu_logout", 1 )
 
@@ -149,6 +140,52 @@ html
                 if (message != null) {
                     global.displayMessage(message, "success");
                 }
+
+                // showing menu items given the connected person permissions
+                hasPermission("products", "-2", "GET").done(function(){
+                    $("#menu_list_products").show();
+                    $("#menu_list_bookmarks").show();
+                    localStorage.setItem("products:-2:GET", true);
+                }).fail(function(){
+                    localStorage.setItem("products:-2:GET", false);
+                })
+                hasPermission("products", "", "POST").done(function(){
+                    $("#menu_create_product").show();
+                    localStorage.setItem("products::POST", true);
+                }).fail(function(){
+                    localStorage.setItem("products::POST", false);
+                })
+                hasPermission("entities", "", "POST").done(function(){
+                    $("#menu_entities").show();
+                    $("#menu_create_entity").show();
+                    localStorage.setItem("entities::POST", true);
+                }).fail(function(){
+                    localStorage.setItem("entities::POST", false);
+                })
+                hasPermission("storages", "-2", "GET").done(function(){
+                    $("#menu_storelocations").show();
+                    localStorage.setItem("storages:-2:GET", true);
+                }).fail(function(){
+                    localStorage.setItem("storages:-2:GET", false);
+                })
+                hasPermission("storages", "", "POST").done(function(){
+                    $("#menu_create_storelocation").show();
+                    localStorage.setItem("storages::POST", true);
+                }).fail(function(){
+                    localStorage.setItem("storages::POST", false);
+                })
+                hasPermission("people", "-2", "GET").done(function(){
+                    $("#menu_people").show();
+                    localStorage.setItem("people:-2:GET", true);
+                }).fail(function(){
+                    localStorage.setItem("people:-2:GET", false);
+                })
+                hasPermission("people", "", "POST").done(function(){
+                    $("#menu_create_person").show();
+                    localStorage.setItem("people::POST", true);
+                }).fail(function(){
+                    localStorage.setItem("people::POST", false);
+                })
             };
 
             // call the "fake" (/f/) endpoints to check
@@ -172,7 +209,11 @@ html
                     }
                 } else {
                     // building ajax url
-                    url = proxyPath + "f/" + item + "/" + id;
+                    if (id != "") {
+                        url = proxyPath + "f/" + item + "/" + id;
+                    } else {
+                        url = proxyPath + "f/" + item;
+                    }
 
                     permpromise = $.ajax({
                         url: url,

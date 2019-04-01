@@ -5,7 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"../jade"
+	"github.com/tbellembois/gochimitheque/jade"
+
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/global"
@@ -32,7 +33,7 @@ func (env *Env) VCreateEntityHandler(w http.ResponseWriter, r *http.Request) *he
 
 	c := helpers.ContainerFromRequestContext(r)
 
-	jade.Entityindex(c, w)
+	jade.Entitycreate(c, w)
 
 	return nil
 }

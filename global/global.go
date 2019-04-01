@@ -54,7 +54,8 @@ var (
 	MailServerPort          string
 	MailServerUseTLS        bool
 	MailServerTLSSkipVerify bool
-	Bundle                  *i18n.Bundle // i18n bundle
+	Bundle                  *i18n.Bundle    // i18n bundle
+	Localizer               *i18n.Localizer // application i18n localizer
 )
 
 // Convertors for sql.Null* types so that they can be
@@ -69,6 +70,8 @@ func init() {
 	Bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
 	Bundle.MustParseMessageFileBytes(locales.LOCALES_EN, "en.toml")
 	Bundle.MustParseMessageFileBytes(locales.LOCALES_FR, "fr.toml")
+
+	Localizer = i18n.NewLocalizer(Bundle)
 }
 
 func SchemaRegisterSQLNulls(d *schema.Decoder) {

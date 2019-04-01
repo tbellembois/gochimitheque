@@ -50,7 +50,7 @@ func (env *Env) ContextMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// localization setup
 		accept := r.Header.Get("Accept-Language")
-		env.Localizer = i18n.NewLocalizer(global.Bundle, accept)
+		global.Localizer = i18n.NewLocalizer(global.Bundle, accept)
 
 		ctx := context.WithValue(r.Context(), "container", helpers.ViewContainer{ProxyPath: global.ProxyPath, PersonLanguage: accept})
 		h.ServeHTTP(w, r.WithContext(ctx))
