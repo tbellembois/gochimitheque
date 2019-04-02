@@ -13,10 +13,10 @@ block CONTENT
                 +selectmultiple("entity(ies)", "entities")
         
         span permissions
-        .d-flex.justify-content-center.form-group.row#permissionsproducts
-                .col-sm-6
+        .d-flex.form-group.row#permissionsproducts
+                .col-sm-2
                     .iconlabel.text-right products
-                .col-sm-6
+                .col-sm-4
                     .form-check.form-check-inline
                         input.perm.permn.permnproducts#permnproducts-1(name="permproducts-1" value="none" label="_" perm_name="n" item_name="products" entity_id="-1" type="radio" disabled="disabled")
                         label.form-check-label(for="permproducts-1").ml-sm-1.pr-sm-1.pl-sm-1.text-secondary.border.border-secondary.rounded
@@ -32,10 +32,10 @@ block CONTENT
                             span.mdi.mdi-creation.mdi-18px
                             span.mdi.mdi-border-color.mdi-18px
                             span.mdi.mdi-delete.mdi-18px
-        .d-flex.justify-content-center.form-group.row#permissionsrproducts
-                .col-sm-6
+        .d-flex.form-group.row#permissionsrproducts
+                .col-sm-2
                     .iconlabel.text-right restricted products
-                .col-sm-6
+                .col-sm-4
                     .form-check.form-check-inline
                         input.perm.permn.permnrproducts#permnrproducts-1(name="permrproducts-1" value="none" label="_" perm_name="n" item_name="rproducts" entity_id="-1" type="radio" checked="checked")
                         label.form-check-label(for="permrproducts-1").ml-sm-1.pr-sm-1.pl-sm-1.text-secondary.border.border-secondary.rounded
@@ -54,7 +54,8 @@ block CONTENT
         #permissions
 
         .blockquote-footer
-            span.mdi.mdi-close no permission
+            span.mdi.mdi-close.mdi-18px no permission
+            span.mdi.mdi-eye.mdi-18px view
             span.mdi.mdi-creation.mdi-18px create
             span.mdi.mdi-border-color.mdi-18px update
             span.mdi.mdi-delete.mdi-18px delete

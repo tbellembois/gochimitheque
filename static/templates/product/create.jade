@@ -16,11 +16,9 @@ block CONTENT
         input#exactMatchPhysicalstate(type="hidden")
 
         .form-row
-            .form-group.col-sm-auto
-                span.badge.badge-pill.badge-danger &nbsp;
-            .form-group.col-sm-5
-                +select(label="name" name="name")
-            .form-group.col-sm-5
+            .form-group.col-sm-6
+                +selectrequired(label="name" name="name")
+            .form-group.col-sm-6
                 +selectmultiple(label="synonym(s)" name="synonyms")
 
         .form-row
@@ -28,23 +26,19 @@ block CONTENT
                 +inputtext("specificity", "product_specificity")
 
         .form-row
-            .form-group.col-sm-auto
-                span.badge.badge-pill.badge-danger &nbsp;
-            .form-group.col-sm-5
-                +select("empirical formula", "empiricalformula")
-            .form-group.col-sm-5
-                +select("linear formula", "linearformula")
+            .form-group.col-sm-6
+                +selectrequired("empirical formula", "empiricalformula")
             .form-group.col-sm-1
                 button#fconverter.btn.btn-link(type="button" data-toggle="popover" data-content="no result" title="convert linear to empirical formula" onclick="linearToEmpirical();")
-                    span.mdi.mdi-rotate-3d.mdi-24px
+                    span.mdi.mdi-arrow-left-circle.mdi-48px
+            .form-group.col-sm-5
+                +select("linear formula", "linearformula")
 
         .form-row
-            .form-group.col-sm-auto
-                span.badge.badge-pill.badge-danger &nbsp;
             .form-group.col-sm-6
-                +select("cas number", "casnumber")
-            .form-group.col-sm-5
-                +select("ce number", "cenumber")
+                +selectrequired("CAS number", "casnumber")
+            .form-group.col-sm-6
+                +select("EC number", "cenumber")
 
         .form-row
             .form-group.col-sm-12

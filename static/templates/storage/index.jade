@@ -14,14 +14,8 @@ block CONTENT
 
         .col
             .row
-                .col-sm-12
-                    +selecticon("s_storelocation", "docker")
-            .row
                 .col-sm-6
                     +inputtextcompact(T("s_custom_name_part_of", 1), "s_custom_name_part_of")
-                .col-sm-6
-                .col-sm-6
-                    +selectcompact(T("s_name", 1), "s_name")
                 .col-sm-6
                     +selectcompact(T("s_casnumber", 1), "s_casnumber")
                 .col-sm-6
@@ -31,18 +25,23 @@ block CONTENT
             .row.collapse#advancedsearch
                 .col-sm-12
                     .form-row
-                        .form-group.col-sm-6
-                            +select(T("s_signalword", 1), "s_signalword")
-                        .form-group.col-sm-6
-                            +selectmultiple(T("s_symbols", 1), "s_symbols")
+                        .col-sm-6
+                            +selecticon("s_storelocation", "docker")
+                        .col-sm-6
+                            +selectcompact(T("s_name", 1), "s_name")
                     .form-row
                         .form-group.col-sm-6
-                            +selectmultiple(T("s_hazardstatements", 1), "s_hazardstatements")
+                            +selectcompact(T("s_signalword", 1), "s_signalword")
                         .form-group.col-sm-6
-                            +selectmultiple(T("s_precautionarystatements", 1), "s_precautionarystatements")
+                            +selectmultiplecompact(T("s_symbols", 1), "s_symbols")
                     .form-row
                         .form-group.col-sm-6
-                            +checkbox(T("s_casnumber_cmr" ,1), "s_casnumber_cmr")
+                            +selectmultiplecompact(T("s_hazardstatements", 1), "s_hazardstatements")
+                        .form-group.col-sm-6
+                            +selectmultiplecompact(T("s_precautionarystatements", 1), "s_precautionarystatements")
+                    .form-row
+                        .form-group.col-sm-6
+                            +checkbox(T("s_casnumber_cmr", 1), "s_casnumber_cmr")
             .row
                 .col.col-sm-10
                     button#clearsearch.btn.btn-link.mr-sm-2(type="button" onclick="clearsearch();")
@@ -122,30 +121,31 @@ block CONTENT
 
     #accordion
         #list-collapse.collapse.show(data-parent='#accordion')
-            header.row
-                .col-sm-12
-                    table#table(data-toggle='table', 
-                                data-striped='true', 
-                                data-search='false', 
-                                data-toolbar="#toolbar",
-                                data-side-pagination='server', 
-                                data-page-list="[5, 10, 20, 50, 100, 200, 500]",
-                                data-pagination='true', 
-                                data-ajax='getData', 
-                                data-query-params='queryParams',
-                                data-sort-name='name.name_label',
-                                data-detail-view="true",
-                                data-detail-formatter="detailFormatter",
-                                data-row-attributes="rowAttributes")
-                        thead
-                            tr
-                                //th(data-field='storage_id' data-formatter='storage_idFormatter' data-sortable='true') ID
-                                //th(data-field='storage_modificationdate' data-formatter='dateFormatter' data-sortable='true') modification date
-                                th(data-field='storage_quantity' data-formatter='storage_quantityFormatter') quantity
-                                th(data-field='storage_barecode' data-formatter='storage_barecodeFormatter' data-sortable='true') barecode
-                                th.th-width-200(data-field='product.name.name_label' data-formatter='storage_productFormatter' data-sortable='true') product
-                                th(data-field='storelocation.storelocation_fullpath' data-sortable='true' data-formatter='storelocation_fullpathFormatter') store location
-                                th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') 
+            //- header.row
+            //-     .col-sm-12
+            table#table(data-toggle='table', 
+                        data-striped='true', 
+                        data-search='false', 
+                        data-pagination-v-align='both',
+                        data-toolbar="#toolbar",
+                        data-side-pagination='server', 
+                        data-page-list="[5, 10, 20, 50, 100, 200, 500]",
+                        data-pagination='true', 
+                        data-ajax='getData', 
+                        data-query-params='queryParams',
+                        data-sort-name='name.name_label',
+                        data-detail-view="true",
+                        data-detail-formatter="detailFormatter",
+                        data-row-attributes="rowAttributes")
+                thead
+                    tr
+                        //th(data-field='storage_id' data-formatter='storage_idFormatter' data-sortable='true') ID
+                        //th(data-field='storage_modificationdate' data-formatter='dateFormatter' data-sortable='true') modification date
+                        th.th-width-200(data-field='product.name.name_label' data-formatter='storage_productFormatter' data-sortable='true') product
+                        th(data-field='storelocation.storelocation_fullpath' data-sortable='true' data-formatter='storelocation_fullpathFormatter') store location
+                        th(data-field='storage_quantity' data-formatter='storage_quantityFormatter') quantity
+                        th(data-field='storage_barecode' data-formatter='storage_barecodeFormatter' data-sortable='true') barecode
+                        th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') 
 
         #edit-collapse.collapse(data-parent='#accordion')
 
@@ -162,10 +162,8 @@ block CONTENT
                 input#exactMatchSupplier(type="hidden")
 
                 .form-group.row
-                    .form-group.col-sm-auto
-                        span.badge.badge-pill.badge-danger &nbsp;
-                    .form-group.col-sm-11
-                        +select("store location", "storelocation")
+                    .form-group.col-sm-12
+                        +selectrequired("store location", "storelocation")
                 .form-group.row
                     .col-sm-6
                         +inputnumber("quantity", "storage_quantity", "any", "1", "10000000", "")

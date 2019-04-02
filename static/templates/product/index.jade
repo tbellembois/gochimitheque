@@ -16,14 +16,8 @@ block CONTENT
 
         .col
             .row
-                .col-sm-12
-                    +selecticon("s_storelocation", "docker")
-            .row
                 .col-sm-6
                     +inputtextcompact(T("s_custom_name_part_of", 1), "s_custom_name_part_of")
-                .col-sm-6
-                .col-sm-6
-                    +selectcompact(T("s_name", 1), "s_name")
                 .col-sm-6
                     +selectcompact(T("s_casnumber", 1), "s_casnumber")
                 .col-sm-6
@@ -33,15 +27,20 @@ block CONTENT
             .row.collapse#advancedsearch
                 .col-sm-12
                     .form-row
-                        .form-group.col-sm-6
-                            +select(T("s_signalword", 1), "s_signalword")
-                        .form-group.col-sm-6
-                            +selectmultiple(T("s_symbols", 1), "s_symbols")
+                        .col-sm-6
+                            +selecticon("s_storelocation", "docker")
+                        .col-sm-6
+                            +selectcompact(T("s_name", 1), "s_name")
                     .form-row
                         .form-group.col-sm-6
-                            +selectmultiple(T("s_hazardstatements", 1), "s_hazardstatements")
+                            +selectcompact(T("s_signalword", 1), "s_signalword")
                         .form-group.col-sm-6
-                            +selectmultiple(T("s_precautionarystatements", 1), "s_precautionarystatements")
+                            +selectmultiplecompact(T("s_symbols", 1), "s_symbols")
+                    .form-row
+                        .form-group.col-sm-6
+                            +selectmultiplecompact(T("s_hazardstatements", 1), "s_hazardstatements")
+                        .form-group.col-sm-6
+                            +selectmultiplecompact(T("s_precautionarystatements", 1), "s_precautionarystatements")
                     .form-row
                         .form-group.col-sm-6
                             +checkbox(T("s_casnumber_cmr", 1), "s_casnumber_cmr")
@@ -86,30 +85,31 @@ block CONTENT
 
     #accordion
         #list-collapse.collapse.show(data-parent='#accordion')
-            header.row
-                .col-sm-12
-                    table#table(data-toggle='table', 
-                                data-striped='true', 
-                                data-search='false', 
-                                data-toolbar="#toolbar",
-                                data-side-pagination='server', 
-                                data-page-list="[5, 10, 20, 50, 100, 200, 500]",
-                                data-pagination='true', 
-                                data-ajax='getData', 
-                                data-query-params='queryParams',
-                                data-sort-name='name.name_label',
-                                data-detail-view="true",
-                                data-detail-formatter="detailFormatter",
-                                data-row-attributes="rowAttributes")
-                        thead
-                            tr
-                                // th(data-field='product_id' data-sortable='true') ID
-                                th.th-width-200(data-field='name.name_label' data-sortable='true') name
-                                th(data-field='empiricalformula.empiricalformula_label' data-sortable='true') empirical formula
-                                th(data-field='casnumber.casnumber_label' data-sortable='true') CAS
-                                th(data-field='product_specificity' data-sortable='false' data-formatter='product_specificityFormatter') specificity
-                                th(data-field='product_sl' data-formatter='product_slFormatter' data-sortable='false') 
-                                th(data-field='operate' data-formatter='operateFormatter' data-events='operateEvents') 
+            //- header.row
+            //-     .col-sm-12
+            table#table(data-toggle='table', 
+                        data-striped='true', 
+                        data-search='false', 
+                        data-pagination-v-align='both',
+                        data-toolbar="#toolbar",
+                        data-side-pagination='server', 
+                        data-page-list="[5, 10, 20, 50, 100, 200, 500]",
+                        data-pagination='true', 
+                        data-ajax='getData', 
+                        data-query-params='queryParams',
+                        data-sort-name='name.name_label',
+                        data-detail-view="true",
+                        data-detail-formatter="detailFormatter",
+                        data-row-attributes="rowAttributes")
+                thead
+                    tr
+                        // th(data-field='product_id' data-sortable='true') ID
+                        th.th-width-200(data-field='name.name_label' data-sortable='true') name
+                        th(data-field='empiricalformula.empiricalformula_label' data-sortable='true') empirical formula
+                        th(data-field='casnumber.casnumber_label' data-sortable='true') CAS
+                        th(data-field='product_specificity' data-sortable='false' data-formatter='product_specificityFormatter') specificity
+                        th(data-field='product_sl' data-formatter='product_slFormatter' data-sortable='false') 
+                        th(data-field='operate' data-formatter='operateFormatter' data-events='operateEvents') 
 
         #edit-collapse.collapse(data-parent='#accordion')
 
@@ -129,39 +129,29 @@ block CONTENT
                 input#exactMatchPhysicalstate(type="hidden")
 
                 .form-row
-                    .form-group.col-sm-auto
-                        span.badge.badge-pill.badge-danger &nbsp;
-                    .form-group.col-sm-5
-                        +select("name", "name")
-                    .form-group.col-sm-5
-                        +selectmultiple("synonym(s)", "synonyms")
+                    .form-group.col-sm-6
+                        +selectrequired(label="name" name="name")
+                    .form-group.col-sm-6
+                        +selectmultiple(label="synonym(s)" name="synonyms")
+
+                    .form-row
+                        .form-group.col-sm-12
+                            +inputtext("specificity", "product_specificity")
 
                 .form-row
-                    .form-group.col-sm-12
-                        +inputtext("specificity", "product_specificity")
-
-                .form-row
-                    .form-group.col-sm-auto
-                        span magic selector coming soon
-
-                .form-row
-                    .form-group.col-sm-auto
-                        span.badge.badge-pill.badge-danger &nbsp;
-                    .form-group.col-sm-5
-                        +select("empirical formula", "empiricalformula")
-                    .form-group.col-sm-5
-                        +select("linear formula", "linearformula")
+                    .form-group.col-sm-6
+                        +selectrequired("empirical formula", "empiricalformula")
                     .form-group.col-sm-1
                         button#fconverter.btn.btn-link(type="button" data-toggle="popover" data-content="no result" title="convert linear to empirical formula" onclick="linearToEmpirical();")
-                            i.material-icons loop
+                            span.mdi.mdi-arrow-left-circle.mdi-48px
+                    .form-group.col-sm-5
+                        +select("linear formula", "linearformula")
 
                 .form-row
-                    .form-group.col-sm-auto
-                        span.badge.badge-pill.badge-danger &nbsp;
                     .form-group.col-sm-6
-                        +select("cas number", "casnumber")
-                    .form-group.col-sm-5
-                        +select("ce number", "cenumber")
+                        +selectrequired("CAS number", "casnumber")
+                    .form-group.col-sm-6
+                        +select("EC number", "cenumber")
 
                 .form-row
                     .form-group.col-sm-12

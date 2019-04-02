@@ -54,11 +54,17 @@ mixin select(label,name)
         label(for=name)= label
         select.form-control(style='width: 100% !important;' id=name name=name)
 
+mixin selectrequired(label,name)
+    .form-group.col-sm-12
+        span.badge.badge-pill.badge-danger  &nbsp;
+        label(for=name)= label
+        select.form-control(style='width: 100% !important;' id=name name=name)
+
 mixin selecticon(name,icon)
-    .row
-        .col-sm-1
+    .form-group.row
+        label.col-sm-3.col-form-label(for=name)
             span(class="mdi-" + icon + " mdi mdi-36px")
-        .col-sm-11
+        .col-sm-9
             select(style='width: 100% !important;' id=name name=name)
 
 mixin selectcompact(label,name)
@@ -66,6 +72,12 @@ mixin selectcompact(label,name)
         label.col-sm-3.col-form-label(for=name)= label
         .col-sm-9
             select.form-control(style='width: 100% !important;' id=name name=name)
+
+mixin selectmultiplecompact(label,name)
+    .form-group.row
+        label.col-sm-3.col-form-label(for=name)= label
+        .col-sm-9
+            select.form-control(style='width: 100% !important;' id=name name=name multiple='multiple')
 
 mixin selectmultiple(label,name)
     .form-group.col-sm-12

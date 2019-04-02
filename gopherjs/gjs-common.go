@@ -263,7 +263,7 @@ func BuildPermissionWidget(entityID int, entityName string, ismanager bool) *dom
 	widgetdiv.SetID(fmt.Sprintf("perm%d", entityID))
 	widgetdiv.SetClass("col-sm-12")
 	title := document.CreateElement("div").(*dom.HTMLDivElement)
-	title.SetClass("d-flex justify-content-center")
+	title.SetClass("d-flex")
 	title.SetInnerHTML("<span class='mdi mdi-store mdi-24px'/>" + entityName)
 
 	widgetdiv.AppendChild(title)
@@ -273,7 +273,7 @@ func BuildPermissionWidget(entityID int, entityName string, ismanager bool) *dom
 		s.SetClass("mdi mdi-36px mdi-account-star")
 		s.SetAttribute("title", "manager")
 		coldiv := document.CreateElement("div").(*dom.HTMLDivElement)
-		coldiv.SetClass("col-sm-6")
+		coldiv.SetClass("col-sm-2")
 		coldiv.AppendChild(s)
 
 		widgetdiv.AppendChild(coldiv)
@@ -286,13 +286,13 @@ func BuildPermissionWidget(entityID int, entityName string, ismanager bool) *dom
 			//println(i)
 			// building main row
 			mainrowdiv := document.CreateElement("div").(*dom.HTMLDivElement)
-			mainrowdiv.SetClass("form-group row d-flex justify-content-center")
+			mainrowdiv.SetClass("form-group row d-flex")
 			// building first col for table name
 			label := document.CreateElement("div").(*dom.HTMLDivElement)
 			label.SetClass("iconlabel text-right")
 			label.SetInnerHTML(i)
 			firstcoldiv := document.CreateElement("div").(*dom.HTMLDivElement)
-			firstcoldiv.SetClass("col-sm-6")
+			firstcoldiv.SetClass("col-sm-2")
 			firstcoldiv.AppendChild(label)
 			// building second col for radios
 			noneradioattrs := map[string]string{
@@ -324,7 +324,7 @@ func BuildPermissionWidget(entityID int, entityName string, ismanager bool) *dom
 				"entity_id": fmt.Sprintf("%d", entityID),
 				"class":     fmt.Sprintf("perm permw permw%s", i)}
 			secondcoldiv := document.CreateElement("div").(*dom.HTMLDivElement)
-			secondcoldiv.SetClass("col-sm-6")
+			secondcoldiv.SetClass("col-sm-4")
 			secondcoldiv.AppendChild(BuildInlineRadioElement(noneradioattrs))
 			secondcoldiv.AppendChild(BuildInlineRadioElement(readradioattrs))
 			secondcoldiv.AppendChild(BuildInlineRadioElement(writeradioattrs))

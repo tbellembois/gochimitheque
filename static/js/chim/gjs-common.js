@@ -33493,7 +33493,7 @@ $packages["main"] = (function() {
 		widgetdiv.BasicHTMLElement.BasicElement.SetClass("col-sm-12");
 		_r$2 = document.CreateElement("div"); /* */ $s = 4; case 4: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
 		title = $assertType(_r$2, ptrType);
-		title.BasicHTMLElement.BasicElement.SetClass("d-flex justify-content-center");
+		title.BasicHTMLElement.BasicElement.SetClass("d-flex");
 		title.BasicHTMLElement.BasicElement.SetInnerHTML("<span class='mdi mdi-store mdi-24px'/>" + entityName);
 		$r = widgetdiv.BasicHTMLElement.BasicElement.BasicNode.AppendChild(title); /* */ $s = 5; case 5: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
 		/* */ if (ismanager) { $s = 6; continue; }
@@ -33505,7 +33505,7 @@ $packages["main"] = (function() {
 			s.BasicHTMLElement.BasicElement.SetAttribute("title", "manager");
 			_r$4 = document.CreateElement("div"); /* */ $s = 9; case 9: if($c) { $c = false; _r$4 = _r$4.$blk(); } if (_r$4 && _r$4.$blk !== undefined) { break s; }
 			coldiv = $assertType(_r$4, ptrType);
-			coldiv.BasicHTMLElement.BasicElement.SetClass("col-sm-6");
+			coldiv.BasicHTMLElement.BasicElement.SetClass("col-sm-2");
 			$r = coldiv.BasicHTMLElement.BasicElement.BasicNode.AppendChild(s); /* */ $s = 10; case 10: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
 			$r = widgetdiv.BasicHTMLElement.BasicElement.BasicNode.AppendChild(coldiv); /* */ $s = 11; case 11: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
 			$s = -1; return widgetdiv;
@@ -33520,14 +33520,14 @@ $packages["main"] = (function() {
 			/* if (!(i === "products") && !(i === "rproducts")) { */ case 14:
 				_r$5 = document.CreateElement("div"); /* */ $s = 16; case 16: if($c) { $c = false; _r$5 = _r$5.$blk(); } if (_r$5 && _r$5.$blk !== undefined) { break s; }
 				mainrowdiv = $assertType(_r$5, ptrType);
-				mainrowdiv.BasicHTMLElement.BasicElement.SetClass("form-group row d-flex justify-content-center");
+				mainrowdiv.BasicHTMLElement.BasicElement.SetClass("form-group row d-flex");
 				_r$6 = document.CreateElement("div"); /* */ $s = 17; case 17: if($c) { $c = false; _r$6 = _r$6.$blk(); } if (_r$6 && _r$6.$blk !== undefined) { break s; }
 				label = $assertType(_r$6, ptrType);
 				label.BasicHTMLElement.BasicElement.SetClass("iconlabel text-right");
 				label.BasicHTMLElement.BasicElement.SetInnerHTML(i);
 				_r$7 = document.CreateElement("div"); /* */ $s = 18; case 18: if($c) { $c = false; _r$7 = _r$7.$blk(); } if (_r$7 && _r$7.$blk !== undefined) { break s; }
 				firstcoldiv = $assertType(_r$7, ptrType);
-				firstcoldiv.BasicHTMLElement.BasicElement.SetClass("col-sm-6");
+				firstcoldiv.BasicHTMLElement.BasicElement.SetClass("col-sm-2");
 				$r = firstcoldiv.BasicHTMLElement.BasicElement.BasicNode.AppendChild(label); /* */ $s = 19; case 19: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
 				_r$8 = fmt.Sprintf("permn%s%d", new sliceType([new $String(i), new $Int(entityID)])); /* */ $s = 20; case 20: if($c) { $c = false; _r$8 = _r$8.$blk(); } if (_r$8 && _r$8.$blk !== undefined) { break s; }
 				_r$9 = fmt.Sprintf("perm%s%d", new sliceType([new $String(i), new $Int(entityID)])); /* */ $s = 21; case 21: if($c) { $c = false; _r$9 = _r$9.$blk(); } if (_r$9 && _r$9.$blk !== undefined) { break s; }
@@ -33552,7 +33552,7 @@ $packages["main"] = (function() {
 				writeradioattrs = $makeMap($String.keyFor, [{ k: "id", v: _r$20 }, { k: "name", v: _r$21 }, { k: "value", v: "w" }, { k: "label", v: _r$22 }, { k: "perm_name", v: "w" }, { k: "item_name", v: _r$23 }, { k: "entity_id", v: _r$24 }, { k: "class", v: _r$25 }]);
 				_r$26 = document.CreateElement("div"); /* */ $s = 38; case 38: if($c) { $c = false; _r$26 = _r$26.$blk(); } if (_r$26 && _r$26.$blk !== undefined) { break s; }
 				secondcoldiv = $assertType(_r$26, ptrType);
-				secondcoldiv.BasicHTMLElement.BasicElement.SetClass("col-sm-6");
+				secondcoldiv.BasicHTMLElement.BasicElement.SetClass("col-sm-4");
 				_r$27 = BuildInlineRadioElement(noneradioattrs); /* */ $s = 39; case 39: if($c) { $c = false; _r$27 = _r$27.$blk(); } if (_r$27 && _r$27.$blk !== undefined) { break s; }
 				$r = secondcoldiv.BasicHTMLElement.BasicElement.BasicNode.AppendChild(_r$27); /* */ $s = 40; case 40: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
 				_r$28 = BuildInlineRadioElement(readradioattrs); /* */ $s = 41; case 41: if($c) { $c = false; _r$28 = _r$28.$blk(); } if (_r$28 && _r$28.$blk !== undefined) { break s; }

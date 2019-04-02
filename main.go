@@ -97,24 +97,6 @@ func main() {
 		Templates: make(map[string]*template.Template),
 	}
 
-	// HasPermission used by template rendering to show/hide html elements
-	/*
-		// TODO move HasPermission, T ./jade/funcs.go
-		funcMap := template.FuncMap{
-			"HasPermission": func(id int, perm string, item string, itemid int) bool {
-				p, e := env.DB.HasPersonPermission(id, perm, item, itemid)
-				if e != nil {
-					log.Error(e.Error())
-				}
-				return p
-			},
-			// i18n
-			"T": func(messageID string, pluralCount int) string {
-				return global.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: messageID, PluralCount: pluralCount})
-			},
-		}
-	*/
-
 	// router definition
 	r := mux.NewRouter()
 	commonChain := alice.New(env.ContextMiddleware, env.HeadersMiddleware, env.LogingMiddleware)
