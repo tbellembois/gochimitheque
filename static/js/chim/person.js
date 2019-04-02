@@ -195,9 +195,9 @@ function operateFormatter(value, row, index) {
 
     // buttons are hidden by default
     var actions = [
-    '<button id="view' + eid + '" eid="' + eid + '" class="view btn btn-link btn-sm" style="display: none;" title="view" type="button">',
-        '<span class="mdi mdi-eye mdi-24px"></span>',
-    '</button>',
+    // '<button id="view' + eid + '" eid="' + eid + '" class="view btn btn-link btn-sm" style="display: none;" title="view" type="button">',
+    //     '<span class="mdi mdi-eye mdi-24px"></span>',
+    // '</button>',
     '<button id="edit' + eid + '" eid="' + eid + '" class="edit btn btn-link btn-sm" style="display: none;" title="edit" type="button">',
         '<span class="mdi mdi-border-color mdi-24px"></span>',
     '</button>',
@@ -212,9 +212,9 @@ function operateFormatter(value, row, index) {
 // TABLE ACTIONS DEFINITION
 //
 window.operateEvents = {
-    'click .view': function (e, value, row, index) {
-        operateEditView(e, value, row, index)
-    },
+    // 'click .view': function (e, value, row, index) {
+    //     operateEditView(e, value, row, index)
+    // },
     'click .edit': function (e, value, row, index) {
         operateEditView(e, value, row, index)
     },
@@ -340,15 +340,15 @@ function operateEditView(e, value, row, index) {
         }
 
         // disabling or enabling the widgets
-        if ($(e.target).hasClass("view")) {
-            $("#viewedit-collapse").find("input").prop("disabled", true);
-            $("#viewedit-collapse").find("select").prop("disabled", true);
-            $("#viewedit-collapse").find("button#save").hide();
-        } else {
-            $("#viewedit-collapse").find("input").prop("disabled", false);
-            $("#viewedit-collapse").find("select").prop("disabled", false);
-            $("#viewedit-collapse").find("button#save").show();
-        }
+        // if ($(e.target).hasClass("view")) {
+        //     $("#viewedit-collapse").find("input").prop("disabled", true);
+        //     $("#viewedit-collapse").find("select").prop("disabled", true);
+        //     $("#viewedit-collapse").find("button#save").hide();
+        // } else {
+        //     $("#viewedit-collapse").find("input").prop("disabled", false);
+        //     $("#viewedit-collapse").find("select").prop("disabled", false);
+        //     $("#viewedit-collapse").find("button#save").show();
+        // }
 
         // finally collapsing the view
         $('#viewedit-collapse').collapse('show');

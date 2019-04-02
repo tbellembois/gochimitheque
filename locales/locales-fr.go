@@ -87,7 +87,7 @@ var LOCALES_FR = []byte(`
 [s_custom_name_part_of]
 	one = "partie du nom"
 [s_name]
-	one = "nom"
+	one = "nom exact"
 [s_casnumber]
 	one = "CAS"
 [s_empiricalformula]
@@ -97,7 +97,7 @@ var LOCALES_FR = []byte(`
 [s_signalword]
 	one = "mention d'avertissement"
 [s_symbols]
-	one = "symbole(s)"
+	one = "pictogramme(s)"
 [s_hazardstatements]
 	one = "mention(s) de danger H-EUH"
 [s_precautionarystatements]

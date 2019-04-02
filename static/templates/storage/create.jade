@@ -20,10 +20,8 @@ block CONTENT
                 +inputnumber("nb duplicates", "storage_nbitem", "1", "1", "50", "")
         hr
         .form-group.row
-            .form-group.col-sm-auto
-                span.badge.badge-pill.badge-danger &nbsp;
-            .form-group.col-sm-11
-                +select("store location", "storelocation")
+            .form-group.col-sm-12
+                +selectrequired("store location", "storelocation")
         .form-group.row
             .col-sm-6
                 +inputnumber("quantity", "storage_quantity", "any", "1", "10000000", "")

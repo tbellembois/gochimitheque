@@ -87,7 +87,7 @@ var LOCALES_EN = []byte(`
 [s_custom_name_part_of]
 	one = "part of name"
 [s_name]
-	one = "name"
+	one = "exact name"
 [s_casnumber]
 	one = "CAS"
 [s_empiricalformula]
