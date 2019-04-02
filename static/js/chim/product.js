@@ -2,25 +2,6 @@
 // request performed at table data loading
 //
 $( document ).ready(function() {  
-    $('#table').bootstrapTable({
-        onExpandRow: function (index, row, $detail) {
-            var mol = row['product_molformula'];
-            var Info = {
-                color: "#FFFFFF",
-                height: 300,
-                width: 300,
-                use: "HTML5",
-                disableInitialConsole: true
-            };
-        
-            if (mol.Valid) {
-                Jmol.getTMApplet("myJmol", Info);
-                $("#jsmol" + row["product_id"]).html(myJmol._code);
-                myJmol.__loadModel(mol.String);
-            }
-        }
-    })
-
     //
     // update form validation
     //
@@ -1152,6 +1133,22 @@ $('#table').on('load-success.bs.table refresh.bs.table', function () {
         }) 
     });
 });
+$('#table').on('expand-row.bs.table', function (e, index, row, $detail) {
+    var mol = row['product_molformula'];
+    var Info = {
+        color: "#FFFFFF",
+        height: 300,
+        width: 300,
+        use: "HTML5",
+        disableInitialConsole: true
+    };
+
+    if (mol.Valid) {
+        Jmol.getTMApplet("myJmol", Info);
+        $("#jsmol" + row["product_id"]).html(myJmol._code);
+        myJmol.__loadModel(mol.String);
+    }
+})
 
 //
 // table row attributes
