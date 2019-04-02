@@ -62,21 +62,21 @@ mixin selectrequired(label,name)
 
 mixin selecticon(name,icon)
     .form-group.row
-        label.col-sm-3.col-form-label(for=name)
+        label.col-sm-4.col-form-label-sm(for=name)
             span(class="mdi-" + icon + " mdi mdi-36px")
-        .col-sm-9
+        .col-sm-8
             select(style='width: 100% !important;' id=name name=name)
 
 mixin selectcompact(label,name)
     .form-group.row
-        label.col-sm-3.col-form-label(for=name)= label
-        .col-sm-9
+        label.col-sm-4.col-form-label-sm(for=name)= label
+        .col-sm-8
             select.form-control(style='width: 100% !important;' id=name name=name)
 
 mixin selectmultiplecompact(label,name)
     .form-group.row
-        label.col-sm-3.col-form-label(for=name)= label
-        .col-sm-9
+        label.col-sm-4.col-form-label-sm(for=name)= label
+        .col-sm-8
             select.form-control(style='width: 100% !important;' id=name name=name multiple='multiple')
 
 mixin selectmultiple(label,name)
@@ -101,8 +101,8 @@ mixin inputpassword(label,name)
 
 mixin inputtextcompact(label,name)
     .form-group.row
-        label.col-sm-3.col-form-label(for=name)= label
-        .col-sm-9
+        label.col-sm-4.col-form-label-sm(for=name)= label
+        .col-sm-8
             input.form-control(type='text' id=name name=name title=name)
 
 mixin inputdate(label,name)
