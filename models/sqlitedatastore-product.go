@@ -928,9 +928,16 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 		snstmt                                  *sqlx.NamedStmt
 		err                                     error
 		rperm                                   bool
+		isadmin                                 bool
 	)
 	log.WithFields(log.Fields{"p": p}).Debug("GetProducts")
 
+	// is the user an admin?
+	if isadmin, err = db.IsPersonAdmin(p.GetLoggedPersonID()); err != nil {
+		return nil, 0, err
+	}
+
+	// shortcut
 	if rperm, err = db.HasPersonPermission(p.GetLoggedPersonID(), "r", "rproducts", -1); err != nil {
 		return nil, 0, err
 	}
@@ -1145,9 +1152,9 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	// cleaning product_sl
 	//
 	r := regexp.MustCompile("([a-zA-Z]{1}[0-9]+)\\.[0-9]+")
-	for i, p := range products {
+	for i, pr := range products {
 		// note: do not modify p but products[i] instead
-		m := r.FindAllStringSubmatch(p.ProductSL.String, -1)
+		m := r.FindAllStringSubmatch(pr.ProductSL.String, -1)
 		// lazily adding only the first match
 		if len(m) > 0 {
 			products[i].ProductSL.String = m[0][1]
@@ -1159,7 +1166,7 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	//
 	// getting symbols
 	//
-	for i, p := range products {
+	for i, pr := range products {
 		// note: do not modify p but products[i] instead
 		req.Reset()
 		req.WriteString("SELECT symbol_id, symbol_label, symbol_image FROM symbol")
@@ -1167,7 +1174,7 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 		req.WriteString(" JOIN product ON productsymbols.productsymbols_product_id = product.product_id")
 		req.WriteString(" WHERE product.product_id = ?")
 
-		if err = db.Select(&products[i].Symbols, req.String(), p.ProductID); err != nil {
+		if err = db.Select(&products[i].Symbols, req.String(), pr.ProductID); err != nil {
 			return nil, 0, err
 		}
 	}
@@ -1175,7 +1182,7 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	//
 	// getting synonyms
 	//
-	for i, p := range products {
+	for i, pr := range products {
 		// note: do not modify p but products[i] instead
 		req.Reset()
 		req.WriteString("SELECT name_id, name_label FROM name")
@@ -1183,7 +1190,7 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 		req.WriteString(" JOIN product ON productsynonyms.productsynonyms_product_id = product.product_id")
 		req.WriteString(" WHERE product.product_id = ?")
 
-		if err = db.Select(&products[i].Synonyms, req.String(), p.ProductID); err != nil {
+		if err = db.Select(&products[i].Synonyms, req.String(), pr.ProductID); err != nil {
 			return nil, 0, err
 		}
 	}
@@ -1191,7 +1198,7 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	//
 	// getting hazard statements
 	//
-	for i, p := range products {
+	for i, pr := range products {
 		// note: do not modify p but products[i] instead
 		req.Reset()
 		req.WriteString("SELECT hazardstatement_id, hazardstatement_label, hazardstatement_reference FROM hazardstatement")
@@ -1199,7 +1206,7 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 		req.WriteString(" JOIN product ON producthazardstatements.producthazardstatements_product_id = product.product_id")
 		req.WriteString(" WHERE product.product_id = ?")
 
-		if err = db.Select(&products[i].HazardStatements, req.String(), p.ProductID); err != nil {
+		if err = db.Select(&products[i].HazardStatements, req.String(), pr.ProductID); err != nil {
 			return nil, 0, err
 		}
 	}
@@ -1207,7 +1214,7 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	//
 	// getting precautionary statements
 	//
-	for i, p := range products {
+	for i, pr := range products {
 		// note: do not modify p but products[i] instead
 		req.Reset()
 		req.WriteString("SELECT precautionarystatement_id, precautionarystatement_label, precautionarystatement_reference FROM precautionarystatement")
@@ -1215,7 +1222,31 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 		req.WriteString(" JOIN product ON productprecautionarystatements.productprecautionarystatements_product_id = product.product_id")
 		req.WriteString(" WHERE product.product_id = ?")
 
-		if err = db.Select(&products[i].PrecautionaryStatements, req.String(), p.ProductID); err != nil {
+		if err = db.Select(&products[i].PrecautionaryStatements, req.String(), pr.ProductID); err != nil {
+			return nil, 0, err
+		}
+	}
+
+	//
+	// getting number of storages for each product
+	//
+	for i, pr := range products {
+		if isadmin {
+			// note: do not modify p but products[i] instead
+			req.Reset()
+			req.WriteString("SELECT count(DISTINCT storage_id) from storage")
+			req.WriteString(" JOIN product ON storage.product = ?")
+		} else {
+			// note: do not modify p but products[i] instead
+			req.Reset()
+			req.WriteString("SELECT count(DISTINCT storage_id) from storage")
+			req.WriteString(" JOIN product ON storage.product = ?")
+			req.WriteString(" JOIN storelocation ON storage.storelocation = storelocation.storelocation_id")
+			req.WriteString(" JOIN entity ON storelocation.entity = entity.entity_id")
+			req.WriteString(" JOIN personentities ON (entity.entity_id = personentities.personentities_entity_id) AND")
+			req.WriteString(" (personentities.personentities_person_id = ?)")
+		}
+		if err = db.Get(&products[i].ProductSC, req.String(), pr.ProductID, p.GetLoggedPersonID()); err != nil {
 			return nil, 0, err
 		}
 	}

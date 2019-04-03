@@ -33,6 +33,9 @@ block CONTENT
                 .form-group.row
                     .col-sm-6
                         +inputtext("email", "person_email")
+                        // hidden feature
+                        #hidden_person_password.collapse
+                            +inputtext("password", "person_password")
                     .col-sm-6
                         +selectmultiple("entity(ies)", "entities")
                 
@@ -83,7 +86,10 @@ block CONTENT
                     span.mdi.mdi-creation.mdi-18px create
                     span.mdi.mdi-border-color.mdi-18px update
                     span.mdi.mdi-delete.mdi-18px delete
-
+                    // hidden feature
+                    a(onclick='showHiddenFeature()' href="#")
+                        i .
+                
             button#save.btn.btn-link(type='button', onclick='savePerson()')
                 span.mdi.mdi-content-save.mdi-24px.iconlabel
                     = T("save", 1)

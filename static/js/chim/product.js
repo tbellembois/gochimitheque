@@ -1317,27 +1317,33 @@ function operateFormatter(value, row, index) {
     }
 
     // buttons are hidden by default
-    var actions = [
-    '<button id="storages' + pid + '" class="storages btn btn-link btn-sm" style="display: none;" title="storages" type="button">',
-        '<span class="mdi mdi-24px mdi-cube-unfolded"',
-    '</button>',
+    var actions = [];
+    if (row.product_sc != 0) {
+        actions.push('<button id="storages' + pid + '" class="storages btn btn-link btn-sm" style="display: none;" title="storages" type="button">',
+        '<span class="mdi mdi-24px mdi-cube-unfolded">',
+        '</button>');
+    } else {
+        actions.push('<button class="btn btn-link btn-sm"><span class="mdi mdi-24px mdi-blank"></button>');
+    }
+
+    actions.push(
     '<button id="ostorages' + pid + '" class="ostorages btn btn-link btn-sm" style="display: none;" title="global availability" type="button">',
-        '<span class="mdi mdi-24px mdi-cube-scan"',
+        '<span class="mdi mdi-24px mdi-cube-scan">',
     '</button>',
     '<button id="store' + pid + '" class="store btn btn-link btn-sm" style="display: none;" title="store" type="button">',
-        '<span class="mdi mdi-24px mdi-forklift"',
+        '<span class="mdi mdi-24px mdi-forklift">',
     '</button>',
     '<button id="edit' + pid + '" class="edit btn btn-link btn-sm" style="display: none;" title="edit" type="button">',
-        '<span class="mdi mdi-24px mdi-border-color"',
+        '<span class="mdi mdi-24px mdi-border-color">',
     '</button>',
     '<button id="delete' + pid + '" class="delete btn btn-link btn-sm" style="display: none;" title="delete" type="button">',
-        '<span class="mdi mdi-24px mdi-delete"',
+        '<span class="mdi mdi-24px mdi-delete">',
     '</button>',
     '<button id="bookmark' + pid + '" class="bookmark btn btn-link btn-sm" title="(un)bookmark" type="button">',
         '<span id="bookmark' + pid + '" class="mdi mdi-24px mdi-' + bookmarkicon + '">',
     '</button>',
     '<div class="collapse" id="ostorages-collapse-' + pid + '"></div>'
-    ];
+    );
 
     $.each(row.symbols, function( index, value ) {
         if (value.symbol_label == "SGH02") {
