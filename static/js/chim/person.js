@@ -305,6 +305,9 @@ function operateEditView(e, value, row, index) {
         // setting index hidden input
         $("input#index").val(index);
 
+        // cleaning password field - hidden feature
+        $("input#person_password").val("");
+
         // appending managed entities in hidden inputs for further use
         $("input.manageentities").remove();
         for(var i in managedentitydata) {
@@ -409,6 +412,7 @@ function savePerson() {
 
     var person_id = $("input#person_id").val(),
         person_email = $("input#person_email").val(),
+        person_password = $("input#person_password").val(),
         entities = $('select#entities').select2('data'),
         permissions = $("input[type=radio]:checked"),
         ajax_url = proxyPath + "people",
@@ -435,6 +439,12 @@ function savePerson() {
                 "person_id": person_id,
                 "person_email": person_email,
         });
+        // hidden feature
+        if (person_password != "") {
+            $.extend(data, {
+                "person_password": person_password,
+            });    
+        }
         $.ajax({
             url: ajax_url,
             method: ajax_method,
@@ -444,3 +454,7 @@ function savePerson() {
             handleHTTPError(jqXHR.statusText, jqXHR.status)
         });  
     }
+
+function showHiddenFeature() {
+    $("#hidden_person_password").fadeIn();
+}

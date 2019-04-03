@@ -345,6 +345,12 @@ func (env *Env) UpdatePersonHandler(w http.ResponseWriter, r *http.Request) *hel
 			Code:    http.StatusInternalServerError}
 	}
 
+	// hidden feature
+	if p.PersonPassword != "" {
+		log.Debug("hidden feature person password set")
+		env.DB.UpdatePersonPassword(p)
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(updatedp)
