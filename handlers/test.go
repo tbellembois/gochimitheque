@@ -6,6 +6,7 @@ import (
 	"github.com/tbellembois/gochimitheque/helpers"
 )
 
+// VTestHandler is a test handler of course
 func (env *Env) VTestHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 
 	// c := helpers.ContainerFromRequestContext(r)

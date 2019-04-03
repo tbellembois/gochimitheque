@@ -7,7 +7,6 @@ package main
 
 import (
 	"flag"
-	"html/template"
 	"net/http"
 	"os"
 
@@ -93,8 +92,8 @@ func main() {
 
 	// environment creation
 	env := handlers.Env{
-		DB:        datastore,
-		Templates: make(map[string]*template.Template),
+		DB: datastore,
+		//Templates: make(map[string]*template.Template),
 	}
 
 	// router definition

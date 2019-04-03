@@ -26,33 +26,34 @@ script.
 var r = regexp.MustCompile("\\[(\\S+)\\]\\n\\s+one = \"(.+)\"")
 
 // locales map
-var m_en map[string]string
-var m_fr map[string]string
+var mEn map[string]string
+var mFr map[string]string
 
-// template date
+// Tdata contains the "variable name" -> "translation string"
+// maps for each supported language
 type Tdata struct {
 	EN map[string]string
 	FR map[string]string
 }
 
 func main() {
-	m_en = make(map[string]string)
-	m_fr = make(map[string]string)
+	mEn = make(map[string]string)
+	mFr = make(map[string]string)
 
 	// finding matches
-	ms_en := r.FindAllStringSubmatch(string(locales.LOCALES_EN), -1)
-	for _, v := range ms_en {
+	msEn := r.FindAllStringSubmatch(string(locales.LOCALES_EN), -1)
+	for _, v := range msEn {
 		//fmt.Printf("%d. %s\n", k, v)
 		//fmt.Printf("%s -> %s\n", v[1], v[2])
 		k := fmt.Sprintf("locale_en_%s", v[1])
-		m_en[k] = v[2]
+		mEn[k] = v[2]
 	}
-	ms_fr := r.FindAllStringSubmatch(string(locales.LOCALES_FR), -1)
-	for _, v := range ms_fr {
+	msFr := r.FindAllStringSubmatch(string(locales.LOCALES_FR), -1)
+	for _, v := range msFr {
 		//fmt.Printf("%d. %s\n", k, v)
 		//fmt.Printf("%s -> %s\n", v[1], v[2])
 		k := fmt.Sprintf("locale_fr_%s", v[1])
-		m_fr[k] = v[2]
+		mFr[k] = v[2]
 	}
 
 	// opening output file
@@ -62,5 +63,5 @@ func main() {
 	}
 	defer f.Close()
 
-	packageTemplate.Execute(f, Tdata{EN: m_en, FR: m_fr})
+	packageTemplate.Execute(f, Tdata{EN: mEn, FR: mFr})
 }

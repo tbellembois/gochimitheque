@@ -21,7 +21,7 @@ import (
 	views handlers
 */
 
-// VGetproductsHandler handles the store location list page
+// VGetProductsHandler handles the store location list page
 func (env *Env) VGetProductsHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 
 	c := helpers.ContainerFromRequestContext(r)
@@ -45,7 +45,7 @@ func (env *Env) VCreateProductHandler(w http.ResponseWriter, r *http.Request) *h
 	REST handlers
 */
 
-// MagicHandler
+// MagicHandler handles the magical selector.
 func (env *Env) MagicHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	log.Debug("MagicHandler")
 
@@ -115,6 +115,8 @@ func (env *Env) MagicHandler(w http.ResponseWriter, r *http.Request) *helpers.Ap
 	return nil
 }
 
+// ToogleProductBookmarkHandler (un)bookmarks the product with id passed in the request vars
+// for the logged user.
 func (env *Env) ToogleProductBookmarkHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 
 	var (

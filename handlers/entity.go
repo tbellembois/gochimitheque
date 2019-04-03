@@ -119,8 +119,9 @@ func (env *Env) GetEntityStockHandler(w http.ResponseWriter, r *http.Request) *h
 func (env *Env) GetEntityHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	vars := mux.Vars(r)
 	var (
-		id  int
-		err error
+		id     int
+		err    error
+		entity models.Entity
 	)
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
@@ -130,8 +131,7 @@ func (env *Env) GetEntityHandler(w http.ResponseWriter, r *http.Request) *helper
 			Code:    http.StatusInternalServerError}
 	}
 
-	entity, err := env.DB.GetEntity(id)
-	if err != nil {
+	if entity, err = env.DB.GetEntity(id); err != nil {
 		return &helpers.AppError{
 			Error:   err,
 			Code:    http.StatusInternalServerError,
@@ -148,11 +148,11 @@ func (env *Env) GetEntityHandler(w http.ResponseWriter, r *http.Request) *helper
 
 // GetEntityPeopleHandler return the entity managers
 func (env *Env) GetEntityPeopleHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
-	log.Debug("GetEntityPeopleHandler")
 	vars := mux.Vars(r)
 	var (
-		id  int
-		err error
+		id     int
+		err    error
+		people []models.Person
 	)
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
@@ -162,8 +162,7 @@ func (env *Env) GetEntityPeopleHandler(w http.ResponseWriter, r *http.Request) *
 			Code:    http.StatusInternalServerError}
 	}
 
-	people, err := env.DB.GetEntityPeople(id)
-	if err != nil {
+	if people, err = env.DB.GetEntityPeople(id); err != nil {
 		return &helpers.AppError{
 			Error:   err,
 			Code:    http.StatusInternalServerError,
@@ -180,7 +179,6 @@ func (env *Env) GetEntityPeopleHandler(w http.ResponseWriter, r *http.Request) *
 
 // CreateEntityHandler creates the entity from the request form
 func (env *Env) CreateEntityHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
-	log.Debug("CreateEntityHandler")
 	var (
 		e models.Entity
 	)
@@ -216,9 +214,9 @@ func (env *Env) CreateEntityHandler(w http.ResponseWriter, r *http.Request) *hel
 func (env *Env) UpdateEntityHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	vars := mux.Vars(r)
 	var (
-		id  int
-		err error
-		e   models.Entity
+		id          int
+		err         error
+		e, updatede models.Entity
 	)
 	if err := r.ParseForm(); err != nil {
 		return &helpers.AppError{
@@ -241,13 +239,18 @@ func (env *Env) UpdateEntityHandler(w http.ResponseWriter, r *http.Request) *hel
 			Code:    http.StatusInternalServerError}
 	}
 
-	updatede, _ := env.DB.GetEntity(id)
+	if updatede, err = env.DB.GetEntity(id); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "get entity error",
+			Code:    http.StatusInternalServerError}
+	}
 	updatede.EntityName = e.EntityName
 	updatede.EntityDescription = e.EntityDescription
 	updatede.Managers = e.Managers
 	log.WithFields(log.Fields{"updatede": updatede}).Debug("UpdateEntityHandler")
 
-	if err := env.DB.UpdateEntity(updatede); err != nil {
+	if err = env.DB.UpdateEntity(updatede); err != nil {
 		return &helpers.AppError{
 			Error:   err,
 			Message: "update entity error",

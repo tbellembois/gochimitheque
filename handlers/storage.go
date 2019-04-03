@@ -44,6 +44,8 @@ func (env *Env) VCreateStorageHandler(w http.ResponseWriter, r *http.Request) *h
 	REST handlers
 */
 
+// ToogleStorageBorrowingHandler (un)borrow the storage with id passed in the request vars
+// for the logged user.
 func (env *Env) ToogleStorageBorrowingHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 
 	var (
