@@ -450,6 +450,10 @@ func basicAtomCount(f string) map[string]int {
 
 // SortEmpiricalFormula returns the sorted f empirical formula.
 func SortEmpiricalFormula(f string) (string, error) {
+	var (
+		err      error
+		newf, sp string
+	)
 	// removing spaces
 	f = strings.Replace(f, " ", "", -1)
 
@@ -459,9 +463,8 @@ func SortEmpiricalFormula(f string) (string, error) {
 		return SortSimpleFormula(f)
 	}
 
-	var newf string
 	for _, p := range splitf {
-		if sp, err := SortSimpleFormula(p); err != nil {
+		if sp, err = SortSimpleFormula(p); err != nil {
 			return "", err
 		}
 		newf += "." + sp
