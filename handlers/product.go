@@ -912,7 +912,7 @@ func (env *Env) CreateProductHandler(w http.ResponseWriter, r *http.Request) *he
 	p.PersonID = c.PersonID
 	log.WithFields(log.Fields{"p": p}).Debug("CreateProductHandler")
 
-	if err, p.ProductID = env.DB.CreateProduct(p); err != nil {
+	if p.ProductID, err = env.DB.CreateProduct(p); err != nil {
 		return &helpers.AppError{
 			Error:   err,
 			Message: "create product error",
