@@ -232,7 +232,7 @@ func (env *Env) CreatePersonHandler(w http.ResponseWriter, r *http.Request) *hel
 	// from the login page
 	p.PersonPassword = utils.RandStringBytes(64)
 
-	if err, _ := env.DB.CreatePerson(p); err != nil {
+	if _, err := env.DB.CreatePerson(p); err != nil {
 		return &helpers.AppError{
 			Error:   err,
 			Message: "create person error",

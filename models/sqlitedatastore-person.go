@@ -17,6 +17,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// ValidateCaptcha validate the text entered for the user with the given token
 func (db *SQLiteDataStore) ValidateCaptcha(token string, text string) (bool, error) {
 
 	var (
@@ -34,6 +35,8 @@ func (db *SQLiteDataStore) ValidateCaptcha(token string, text string) (bool, err
 	return i > 0, nil
 }
 
+// InsertCaptcha generate and stores a unique captcha with a token
+// to be validated by a user, and returns the token
 func (db *SQLiteDataStore) InsertCaptcha(data *captcha.Data) (string, error) {
 
 	var (
@@ -491,7 +494,7 @@ func (db *SQLiteDataStore) DeletePerson(id int) error {
 }
 
 // CreatePerson creates the given person
-func (db *SQLiteDataStore) CreatePerson(p Person) (error, int) {
+func (db *SQLiteDataStore) CreatePerson(p Person) (int, error) {
 	var (
 		sqlr   string
 		res    sql.Result
@@ -503,12 +506,12 @@ func (db *SQLiteDataStore) CreatePerson(p Person) (error, int) {
 	// FIXME: use a transaction here
 	sqlr = `INSERT INTO person(person_email, person_password) VALUES (?, ?)`
 	if res, err = db.Exec(sqlr, p.PersonEmail, p.PersonPassword); err != nil {
-		return err, 0
+		return 0, err
 	}
 
 	// getting the last inserted id
 	if lastid, err = res.LastInsertId(); err != nil {
-		return err, 0
+		return 0, err
 	}
 	p.PersonID = int(lastid)
 
@@ -517,24 +520,24 @@ func (db *SQLiteDataStore) CreatePerson(p Person) (error, int) {
 		sqlr = `INSERT INTO personentities(personentities_person_id, personentities_entity_id) 
 			VALUES (?, ?)`
 		if _, err = db.Exec(sqlr, p.PersonID, e.EntityID); err != nil {
-			return err, 0
+			return 0, err
 		}
 		sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id)  
 		VALUES (?, ?, ?, ?)`
 		if _, err = db.Exec(sqlr, p.PersonID, "r", "entities", e.EntityID); err != nil {
-			return err, 0
+			return 0, err
 		}
 	}
 
 	// inserting permissions
 	if err = db.insertPermissions(p); err != nil {
-		return err, 0
+		return 0, err
 	}
 
-	return nil, p.PersonID
+	return p.PersonID, nil
 }
 
-// UpdatePerson updates the given person password.
+// UpdatePersonPassword updates the given person password.
 func (db *SQLiteDataStore) UpdatePersonPassword(p Person) error {
 	var (
 		sqlr  string
@@ -633,7 +636,7 @@ func (db *SQLiteDataStore) IsPersonAdmin(id int) (bool, error) {
 	return res, nil
 }
 
-// IsPersonWithEmail returns true is the person with id "id" is a manager
+// IsPersonManager returns true is the person with id "id" is a manager
 func (db *SQLiteDataStore) IsPersonManager(id int) (bool, error) {
 	var (
 		res   bool

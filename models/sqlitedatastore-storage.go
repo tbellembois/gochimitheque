@@ -168,11 +168,10 @@ func (db *SQLiteDataStore) GetStoragesSuppliers(p helpers.Dbselectparam) ([]Supp
 	r := db.QueryRowx(`SELECT supplier_id, supplier_label FROM supplier WHERE supplier_label == ?`, s)
 	if err = r.StructScan(&supplier); err != nil && err != sql.ErrNoRows {
 		return nil, 0, err
-	} else {
-		for i, s := range suppliers {
-			if s.SupplierID == supplier.SupplierID {
-				suppliers[i].C = 1
-			}
+	}
+	for i, s := range suppliers {
+		if s.SupplierID == supplier.SupplierID {
+			suppliers[i].C = 1
 		}
 	}
 
@@ -180,6 +179,9 @@ func (db *SQLiteDataStore) GetStoragesSuppliers(p helpers.Dbselectparam) ([]Supp
 	return suppliers, count, nil
 }
 
+// GetStorages returns the storages matching the request parameters p
+// Only storages that the logged user can see are returned given his permissions
+// and membership
 func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storage, int, error) {
 	var (
 		storages                           []Storage
@@ -415,6 +417,8 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 	return storages, count, nil
 }
 
+// GetOtherStorages returns the entity manager(s) email of the entities
+// storing the product with the id passed in the request parameters p
 func (db *SQLiteDataStore) GetOtherStorages(p helpers.DbselectparamStorage) ([]Entity, int, error) {
 	var (
 		entities                           []Entity
@@ -544,6 +548,7 @@ func (db *SQLiteDataStore) GetStorage(id int) (Storage, error) {
 	return storage, nil
 }
 
+// DeleteStorage deletes the storages with the given id
 func (db *SQLiteDataStore) DeleteStorage(id int) error {
 
 	var (
@@ -558,6 +563,7 @@ func (db *SQLiteDataStore) DeleteStorage(id int) error {
 	return nil
 }
 
+// ArchiveStorage archives the storages with the given id
 func (db *SQLiteDataStore) ArchiveStorage(id int) error {
 
 	var (
@@ -578,6 +584,7 @@ func (db *SQLiteDataStore) ArchiveStorage(id int) error {
 	return nil
 }
 
+// RestoreStorage restores (unarchive) the storages with the given id
 func (db *SQLiteDataStore) RestoreStorage(id int) error {
 
 	var (
@@ -713,7 +720,8 @@ func (db *SQLiteDataStore) GenerateAndUpdateStorageBarecode(s *Storage) error {
 	return nil
 }
 
-func (db *SQLiteDataStore) CreateStorage(s Storage) (error, int) {
+// CreateStorage creates a new storage
+func (db *SQLiteDataStore) CreateStorage(s Storage) (int, error) {
 
 	var (
 		lastid   int64
@@ -727,7 +735,7 @@ func (db *SQLiteDataStore) CreateStorage(s Storage) (error, int) {
 
 	// beginning transaction
 	if tx, err = db.Begin(); err != nil {
-		return err, 0
+		return 0, err
 	}
 
 	// if SupplierID = -1 then it is a new supplier
@@ -735,12 +743,12 @@ func (db *SQLiteDataStore) CreateStorage(s Storage) (error, int) {
 		sqlr = `INSERT INTO supplier (supplier_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, s.Supplier.SupplierLabel); err != nil {
 			tx.Rollback()
-			return err, 0
+			return 0, err
 		}
 		// getting the last inserted id
 		if lastid, err = res.LastInsertId(); err != nil {
 			tx.Rollback()
-			return err, 0
+			return 0, err
 		}
 		// updating the storage SupplierId (SupplierLabel already set)
 		s.Supplier.SupplierID = sql.NullInt64{Valid: true, Int64: lastid}
@@ -748,7 +756,7 @@ func (db *SQLiteDataStore) CreateStorage(s Storage) (error, int) {
 	if err != nil {
 		log.Error("supplier error - " + err.Error())
 		tx.Rollback()
-		return err, 0
+		return 0, err
 	}
 
 	// finally updating the storage
@@ -824,33 +832,34 @@ func (db *SQLiteDataStore) CreateStorage(s Storage) (error, int) {
 	ibuilder = sq.Insert("storage").Columns(col...).Values(val...)
 	if sqlr, sqla, err = ibuilder.ToSql(); err != nil {
 		tx.Rollback()
-		return err, 0
+		return 0, err
 	}
 
 	if res, err = tx.Exec(sqlr, sqla...); err != nil {
 		log.Error("storage error - " + err.Error())
 		log.Error("sql:" + sqlr)
 		tx.Rollback()
-		return err, 0
+		return 0, err
 	}
 
 	// committing changes
 	if err = tx.Commit(); err != nil {
 		tx.Rollback()
-		return err, 0
+		return 0, err
 	}
 
 	// getting the last inserted id
 	if lastid, err = res.LastInsertId(); err != nil {
 		tx.Rollback()
-		return err, 0
+		return 0, err
 	}
 	s.StorageID = sql.NullInt64{Valid: true, Int64: lastid}
 	log.WithFields(log.Fields{"s": s}).Debug("CreateStorage")
 
-	return nil, int(s.StorageID.Int64)
+	return int(s.StorageID.Int64), nil
 }
 
+// UpdateStorage updates the storage s
 func (db *SQLiteDataStore) UpdateStorage(s Storage) error {
 
 	var (

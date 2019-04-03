@@ -43,7 +43,7 @@ func init() {
 		})
 }
 
-// NewDBstore returns a database connection to the given dataSourceName
+// NewSQLiteDBstore returns a database connection to the given dataSourceName
 // ie. a path to the sqlite database file
 func NewSQLiteDBstore(dataSourceName string) (*SQLiteDataStore, error) {
 	var (
@@ -455,7 +455,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	}
 	if c == 0 {
 		admin := Person{PersonEmail: "admin@chimitheque.fr", Permissions: []Permission{Permission{PermissionPermName: "all", PermissionItemName: "all", PermissionEntityID: -1}}}
-		_, admin.PersonID = db.CreatePerson(admin)
+		admin.PersonID, _ = db.CreatePerson(admin)
 		admin.PersonPassword = "chimitheque"
 		db.UpdatePersonPassword(admin)
 	}
@@ -550,7 +550,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 	// entity
 	//
 	log.Info("- importing entity")
-	rentity_name := regexp.MustCompile("user_[0-9]+|root_entity|all_entity")
+	rentityName := regexp.MustCompile("user_[0-9]+|root_entity|all_entity")
 	if csvFile, err = os.Open(path.Join(dir, "entity.csv")); err != nil {
 		return (err)
 	}
@@ -587,7 +587,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		}
 
 		// leaving web2py specific entries
-		if !rentity_name.MatchString(name) {
+		if !rentityName.MatchString(name) {
 			log.Debug("  " + name)
 			sqlr = `INSERT INTO entity(entity_name, entity_description) VALUES (?, ?)`
 			if res, err = tx.Exec(sqlr, name, description); err != nil {
@@ -633,9 +633,9 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		label := line[1]
 		entity := line[2]
 		parent := line[3]
-		can_store := false
+		canStore := false
 		if line[4] == "T" {
-			can_store = true
+			canStore = true
 		}
 		color := line[5]
 
@@ -647,7 +647,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		}
 		log.Debug("storelocation " + label + ", entity:" + newentity + ", parent:" + newparent.String)
 		sqlr = `INSERT INTO storelocation(storelocation_name, storelocation_color, storelocation_canstore, storelocation_fullpath, entity, storelocation) VALUES (?, ?, ?, ?, ?, ?)`
-		if res, err = tx.Exec(sqlr, label, color, can_store, "", newentity, newparent); err != nil {
+		if res, err = tx.Exec(sqlr, label, color, canStore, "", newentity, newparent); err != nil {
 			tx.Rollback()
 			return err
 		}
@@ -1529,20 +1529,20 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		oldid := line[0]
 		product := line[1]
 		person := line[2]
-		store_location := line[3]
+		storeLocation := line[3]
 		unit := line[4]
 		entrydate := line[6]
 		exitdate := line[7]
 		comment := line[8]
 		barecode := line[9]
 		reference := line[10]
-		batch_number := line[11]
+		batchNumber := line[11]
 		supplier := line[12]
 		archive := line[13]
 		creationdate := line[15]
-		volume_weight := line[16]
+		volumeWeight := line[16]
 		openingdate := line[17]
-		to_destroy := line[18]
+		toDestroy := line[18]
 		expirationdate := line[19]
 
 		newproduct := mONproduct[product]
@@ -1550,7 +1550,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		if newperson == "" {
 			newperson = strconv.Itoa(zeropersonid)
 		}
-		newstore_location := mONstorelocation[store_location]
+		newstoreLocation := mONstorelocation[storeLocation]
 		newunit := mONunit[unit]
 		var newentrydate *time.Time
 		if entrydate != "" {
@@ -1565,28 +1565,28 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		newcomment := comment
 		newbarecode := barecode
 		newreference := reference
-		newbatch_number := batch_number
+		newbatchNumber := batchNumber
 		newsupplier := mONsupplier[supplier]
 		newarchive := false
 		if archive == "T" {
 			newarchive = true
 		}
-		newstorage_creationdate := time.Now()
+		newstorageCreationdate := time.Now()
 		if creationdate != "" {
-			newstorage_creationdate, _ = time.Parse("2006-01-02 15:04:05", creationdate)
+			newstorageCreationdate, _ = time.Parse("2006-01-02 15:04:05", creationdate)
 		}
-		newvolume_weight := volume_weight
-		if newvolume_weight == "" {
-			newvolume_weight = "1"
+		newvolumeWeight := volumeWeight
+		if newvolumeWeight == "" {
+			newvolumeWeight = "1"
 		}
 		var newopeningdate *time.Time
 		if openingdate != "" {
 			newopeningdate = &time.Time{}
 			*newopeningdate, _ = time.Parse("2006-01-02 15:04:05", openingdate)
 		}
-		newto_destroy := false
-		if to_destroy == "T" {
-			newto_destroy = true
+		newtoDestroy := false
+		if toDestroy == "T" {
+			newtoDestroy = true
 		}
 		var newexpirationdate *time.Time
 		if expirationdate != "" {
@@ -1599,17 +1599,17 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		if !newarchive {
 			reqValues := "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
 			reqArgs := []interface{}{
-				newstorage_creationdate,
-				newstorage_creationdate,
+				newstorageCreationdate,
+				newstorageCreationdate,
 				newcomment,
 				newreference,
-				newbatch_number,
-				newvolume_weight,
+				newbatchNumber,
+				newvolumeWeight,
 				newbarecode,
-				newto_destroy,
+				newtoDestroy,
 				newperson,
 				newproduct,
-				newstore_location,
+				newstoreLocation,
 			}
 			sqlr = `INSERT INTO storage (storage_creationdate, 
                 storage_modificationdate, 

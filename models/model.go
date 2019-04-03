@@ -322,6 +322,8 @@ func (s Storage) storageToStringSlice() []string {
 	return ret
 }
 
+// ProductsToCSV returns a file name of the products prs
+// exported into CSV
 func ProductsToCSV(prs []Product) string {
 
 	header := []string{"product_id",
@@ -362,6 +364,8 @@ func ProductsToCSV(prs []Product) string {
 	return strings.Split(tmpFile.Name(), "chimitheque-")[1]
 }
 
+// StoragesToCSV returns a file name of the products prs
+// exported into CSV
 func StoragesToCSV(sts []Storage) string {
 
 	header := []string{"storage_id",
@@ -408,22 +412,22 @@ func (p Product) String() string {
 }
 
 func (s Storage) String() string {
-	return fmt.Sprintf(`StorageID:%d | 
+	return fmt.Sprintf(`StorageID:%v | 
 	StorageCreationDate:%s | 
-	StorageModificationDate:%+v | 
-	StorageEntryDate:%+v | 
-	StorageExitDate:%s | 
-	StorageOpeningDate:%s | 
-	StorageExpirationDate:%s | 
-	StorageComment:%+v | 
-	StorageReference:%+v |
-	StorageBatchNumber:%+v |
-	StorageQuantity:%+v |
-	StorageNbItem:%+v |
-	StorageBarecode:%+v |
-	StorageToDestroy:%+v |
-	Product:%+v |
-	StoreLocation:%+v |
+	StorageModificationDate:%v | 
+	StorageEntryDate:%v | 
+	StorageExitDate:%v | 
+	StorageOpeningDate:%v | 
+	StorageExpirationDate:%v | 
+	StorageComment:%v | 
+	StorageReference:%v |
+	StorageBatchNumber:%v |
+	StorageQuantity:%v |
+	StorageNbItem:%v |
+	StorageBarecode:%v |
+	StorageToDestroy:%v |
+	Product:%v |
+	StoreLocation:%v |
 	Unit:%+v |
 	Supplier:%+v |
 	`, s.StorageID,
@@ -451,7 +455,7 @@ func (p Person) String() string {
 }
 
 func (b Borrowing) String() string {
-	return fmt.Sprintf(`StorageID:%d |
+	return fmt.Sprintf(`StorageID:%v |
 	Borrower.PersonID:%d |
 	`, b.StorageID, b.Borrower.PersonID)
 }

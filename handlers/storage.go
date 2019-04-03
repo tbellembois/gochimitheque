@@ -459,7 +459,7 @@ func (env *Env) CreateStorageHandler(w http.ResponseWriter, r *http.Request) *he
 	log.WithFields(log.Fields{"s": s}).Debug("CreateStorageHandler")
 
 	for i := 1; i <= s.StorageNbItem; i++ {
-		if err, id = env.DB.CreateStorage(s); err != nil {
+		if id, err = env.DB.CreateStorage(s); err != nil {
 			return &helpers.AppError{
 				Error:   err,
 				Message: "create storage error",
