@@ -6,6 +6,7 @@ import (
 	"github.com/tbellembois/gochimitheque/helpers"
 )
 
+// T returns the translated messageID string
 func T(messageID string, pluralCount int) string {
 	return global.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: messageID, PluralCount: pluralCount})
 }

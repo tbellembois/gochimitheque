@@ -3,6 +3,8 @@ package helpers
 import (
 	"net/http"
 	"net/url"
+
+	"github.com/tbellembois/gochimitheque/global"
 )
 
 // ViewContainer is a struct passed to the view
@@ -22,7 +24,7 @@ func ContainerFromRequestContext(r *http.Request) ViewContainer {
 		container ViewContainer
 	)
 	ctx := r.Context()
-	ctxcontainer := ctx.Value("container")
+	ctxcontainer := ctx.Value(global.ChimithequeContextKey("container"))
 	if ctxcontainer != nil {
 		container = ctxcontainer.(ViewContainer)
 	}

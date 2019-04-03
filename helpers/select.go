@@ -7,7 +7,7 @@ import (
 	"github.com/tbellembois/gochimitheque/constants"
 )
 
-// dbselectparam contains the common parameters
+// Dbselectparam contains the common parameters
 // of the db select requests
 // such as in GetStoreLocations, GetEntities...
 type Dbselectparam interface {
@@ -87,7 +87,7 @@ type dbselectparamProduct struct {
 	CasNumberCmr            bool
 }
 
-// dbselectparamStorage contains the parameters of the GetStorages function
+// DbselectparamStorage contains the parameters of the GetStorages function
 type DbselectparamStorage interface {
 	Dbselectparam
 	SetEntity(int)
@@ -147,7 +147,7 @@ type dbselectparamStorage struct {
 	CasNumberCmr            bool
 }
 
-// dbselectparamPerson contains the parameters of the GetPeople function
+// DbselectparamPerson contains the parameters of the GetPeople function
 type DbselectparamPerson interface {
 	Dbselectparam
 	SetEntity(int)
@@ -159,7 +159,7 @@ type dbselectparamPerson struct {
 	Entity int
 }
 
-// dbselectparamEntities contains the parameters of the GetEntities function
+// DbselectparamEntity contains the parameters of the GetEntities function
 type DbselectparamEntity interface {
 	Dbselectparam
 }
@@ -167,7 +167,7 @@ type dbselectparamEntity struct {
 	dbselectparam
 }
 
-// dbselectparamStoreLocation contains the parameters of the GetStoreLocations function
+// DbselectparamStoreLocation contains the parameters of the GetStoreLocations function
 type DbselectparamStoreLocation interface {
 	Dbselectparam
 	SetEntity(int)

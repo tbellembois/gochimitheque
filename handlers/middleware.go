@@ -52,7 +52,7 @@ func (env *Env) ContextMiddleware(h http.Handler) http.Handler {
 		accept := r.Header.Get("Accept-Language")
 		global.Localizer = i18n.NewLocalizer(global.Bundle, accept)
 
-		ctx := context.WithValue(r.Context(), "container", helpers.ViewContainer{ProxyPath: global.ProxyPath, PersonLanguage: accept})
+		ctx := context.WithValue(r.Context(), global.ChimithequeContextKey("container"), helpers.ViewContainer{ProxyPath: global.ProxyPath, PersonLanguage: accept})
 		h.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -61,9 +61,8 @@ func (env *Env) ContextMiddleware(h http.Handler) http.Handler {
 func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var (
-			email  string
-			person models.Person
-			//permissions []models.Permission
+			email       string
+			person      models.Person
 			err         error
 			reqToken    *http.Cookie
 			reqTokenStr string
@@ -125,12 +124,12 @@ func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 
 		// getting the request context
 		ctx := r.Context()
-		ctxcontainer := ctx.Value("container")
+		ctxcontainer := ctx.Value(global.ChimithequeContextKey("container"))
 		container := ctxcontainer.(helpers.ViewContainer)
 		// setting up auth person informations
 		container.PersonEmail = person.PersonEmail
 		container.PersonID = person.PersonID
-		ctx = context.WithValue(r.Context(), "container", helpers.ViewContainer{PersonEmail: container.PersonEmail, PersonID: container.PersonID, ProxyPath: container.ProxyPath, PersonLanguage: container.PersonLanguage})
+		ctx = context.WithValue(r.Context(), global.ChimithequeContextKey("container"), helpers.ViewContainer{PersonEmail: container.PersonEmail, PersonID: container.PersonID, ProxyPath: container.ProxyPath, PersonLanguage: container.PersonLanguage})
 
 		h.ServeHTTP(w, r.WithContext(ctx))
 	})
@@ -150,7 +149,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 
 		// extracting the logged user email from context
 		ctx := r.Context()
-		ctxcontainer := ctx.Value("container")
+		ctxcontainer := ctx.Value(global.ChimithequeContextKey("container"))
 		container := ctxcontainer.(helpers.ViewContainer)
 		personid = container.PersonID
 		personemail = container.PersonEmail

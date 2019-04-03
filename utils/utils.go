@@ -1,4 +1,4 @@
-// package utils provides useful chemistry related utilities
+// Package utils provides useful chemistry related utilities
 package utils
 
 import (
@@ -338,7 +338,7 @@ func LinearToEmpiricalFormula(f string) string {
 	hasC := false    // C atom present
 	hasH := false    // H atom present
 
-	for k, _ := range bAc {
+	for k := range bAc {
 		switch k {
 		case "C":
 			hasC = true
@@ -448,6 +448,7 @@ func basicAtomCount(f string) map[string]int {
 	return c
 }
 
+// SortEmpiricalFormula returns the sorted f empirical formula.
 func SortEmpiricalFormula(f string) (string, error) {
 	// removing spaces
 	f = strings.Replace(f, " ", "", -1)
@@ -462,14 +463,14 @@ func SortEmpiricalFormula(f string) (string, error) {
 	for _, p := range splitf {
 		if sp, err := SortSimpleFormula(p); err != nil {
 			return "", err
-		} else {
-			newf += "." + sp
 		}
+		newf += "." + sp
 	}
 
 	return newf, nil
 }
 
+// SortSimpleFormula returns the sorted f formula.
 func SortSimpleFormula(f string) (string, error) {
 	var (
 		// 	hasCatom, hasHatom, hasOtherAtom, hasUpperLowerAtom bool

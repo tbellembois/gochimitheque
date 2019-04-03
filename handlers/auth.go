@@ -127,7 +127,7 @@ func sendMail(to string, subject string, body string) error {
 	return nil
 }
 
-// GetCaptcha returns a captcha image with an uuid
+// CaptchaHandler returns a captcha image with an uuid
 func (env *Env) CaptchaHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 
 	var (

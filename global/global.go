@@ -45,18 +45,37 @@ func (nt *NullTime) UnmarshalText(text []byte) (err error) {
 
 var (
 	// TokenSignKey is the JWT token signing key
-	TokenSignKey            []byte
-	Decoder                 *schema.Decoder
-	ProxyPath               string // application proxy path if behind a proxy
-	ProxyURL                string // application url if behind a proxy
-	MailServerAddress       string
-	MailServerSender        string
-	MailServerPort          string
-	MailServerUseTLS        bool
+	TokenSignKey []byte
+	// Decoder is the form<>struct gorilla decoder
+	Decoder *schema.Decoder
+	// ProxyPath is the application proxy path if behind a proxy
+	// "/"" by default
+	ProxyPath string
+	// ProxyURL is application base url
+	// "http://localhost:8081" by default
+	ProxyURL string
+	// MailServerAddress is the SMTP server address
+	// such as smtp.univ.fr
+	MailServerAddress string
+	// MailServerSender is the username used
+	// to send mails
+	MailServerSender string
+	// MailServerPort is the SMTP server port
+	MailServerPort string
+	// MailServerUseTLS specify if a TLS SMTP connection
+	// should be used
+	MailServerUseTLS bool
+	// MailServerTLSSkipVerify bypass the SMTP TLS verification
 	MailServerTLSSkipVerify bool
-	Bundle                  *i18n.Bundle    // i18n bundle
-	Localizer               *i18n.Localizer // application i18n localizer
+	// Bundle is the i18n configuration bundle
+	Bundle *i18n.Bundle
+	// Localizer is the i18n translator
+	Localizer *i18n.Localizer
 )
+
+// ChimithequeContextKey is the Go request context
+// used in each request
+type ChimithequeContextKey string
 
 // Convertors for sql.Null* types so that they can be
 // used with gorilla/schema
@@ -74,26 +93,17 @@ func init() {
 	Localizer = i18n.NewLocalizer(Bundle)
 }
 
+// SchemaRegisterSQLNulls registers the custom null type to the application
 func SchemaRegisterSQLNulls(d *schema.Decoder) {
-	//nullString, nullBool, nullInt64, nullFloat64, nullTime := sql.NullString{}, sql.NullBool{}, sql.NullInt64{}, sql.NullFloat64{}, NullTime{}
 	nullString, nullBool, nullInt64, nullFloat64 := sql.NullString{}, sql.NullBool{}, sql.NullInt64{}, sql.NullFloat64{}
 
 	d.RegisterConverter(nullString, ConvertSQLNullString)
 	d.RegisterConverter(nullBool, ConvertSQLNullBool)
 	d.RegisterConverter(nullInt64, ConvertSQLNullInt64)
 	d.RegisterConverter(nullFloat64, ConvertSQLNullFloat64)
-	//d.RegisterConverter(nullTime, ConvertSQLNullTime)
 }
 
-// func ConvertSQLNullTime(value string) reflect.Value {
-// 	v := NullTime{}
-// 	if err := v.Scan(value); err != nil {
-// 		return reflect.Value{}
-// 	}
-
-// 	return reflect.ValueOf(v)
-// }
-
+// ConvertSQLNullString converts a string into a NullString
 func ConvertSQLNullString(value string) reflect.Value {
 	v := sql.NullString{}
 	if err := v.Scan(value); err != nil {
@@ -103,6 +113,7 @@ func ConvertSQLNullString(value string) reflect.Value {
 	return reflect.ValueOf(v)
 }
 
+// ConvertSQLNullBool converts a string into a NullBool
 func ConvertSQLNullBool(value string) reflect.Value {
 	v := sql.NullBool{}
 	if err := v.Scan(value); err != nil {
@@ -112,6 +123,7 @@ func ConvertSQLNullBool(value string) reflect.Value {
 	return reflect.ValueOf(v)
 }
 
+// ConvertSQLNullInt64 converts a string into a NullInt64
 func ConvertSQLNullInt64(value string) reflect.Value {
 	v := sql.NullInt64{}
 	if err := v.Scan(value); err != nil {
@@ -121,6 +133,7 @@ func ConvertSQLNullInt64(value string) reflect.Value {
 	return reflect.ValueOf(v)
 }
 
+// ConvertSQLNullFloat64 converts a string into a NullFloat64
 func ConvertSQLNullFloat64(value string) reflect.Value {
 	v := sql.NullFloat64{}
 	if err := v.Scan(value); err != nil {

@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"html/template"
 	"net/http"
 
 	"github.com/tbellembois/gochimitheque/helpers"
@@ -11,8 +10,9 @@ import (
 
 // Env is a structure used to pass objects throughout the application.
 type Env struct {
-	DB        models.Datastore              // application DB connection
-	Templates map[string]*template.Template // application templates
+	// DB is the database connection
+	DB models.Datastore
+	//Templates map[string]*template.Template // application templates
 }
 
 // FakeHandler returns true
