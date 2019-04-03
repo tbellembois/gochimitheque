@@ -14,6 +14,7 @@ import (
 	"github.com/tbellembois/gochimitheque/helpers"
 )
 
+// ComputeStockStorelocation returns the quantity of product p in the store location s for the unit u
 func (db *SQLiteDataStore) ComputeStockStorelocation(p Product, s *StoreLocation, u Unit) float64 {
 
 	var (
@@ -80,6 +81,8 @@ func (db *SQLiteDataStore) ComputeStockStorelocation(p Product, s *StoreLocation
 	return c
 }
 
+// ComputeStockEntity returns the root store locations of the entity(ies) of the loggued user.
+// Each store location has a Stocks []Stock field containing the stocks of the product p for each unit
 func (db *SQLiteDataStore) ComputeStockEntity(p Product, r *http.Request) []StoreLocation {
 
 	var (
@@ -126,100 +129,6 @@ func (db *SQLiteDataStore) ComputeStockEntity(p Product, r *http.Request) []Stor
 
 	return storelocations
 }
-
-// type stockMapKey struct {
-// 	sid int64 // store location id
-// 	uid int64 // init id
-// }
-
-// type stockMapValue struct {
-// 	t float64 // total
-// 	c float64 // current
-// }
-
-// type StockMap map[stockMapKey]stockMapValue
-
-// func (db *SQLiteDataStore) ComputeStockStorelocation(p Product, s StoreLocation, u Unit, m *StockMap) float64 {
-
-// 	var (
-// 		c     float64 // current s stock for p
-// 		nullc sql.NullFloat64
-// 		t     float64 // total s stock for p
-// 		err   error
-// 		sc    []StoreLocation // s children
-// 	)
-
-// 	sqlr := `SELECT SUM(storage.storage_quantity * unit_multiplier) FROM storage
-// 	JOIN unit on storage.unit = unit.unit_id
-// 	WHERE storage.storelocation = ? AND
-// 	storage.storage_quantity IS NOT NULL AND
-// 	storage.product = ? AND
-// 	(storage.unit = ? OR storage.unit IN (select unit_id FROM unit WHERE unit.unit = ?))`
-
-// 	// getting current s stock
-// 	if err = db.Get(&nullc, sqlr, s.StoreLocationID.Int64, p.ProductID, u.UnitID.Int64, u.UnitID.Int64); err != nil {
-// 		log.WithFields(log.Fields{"err": err.Error()}).Error("ComputeStockStorelocation")
-// 		return 0
-// 	}
-// 	if nullc.Valid {
-// 		c = nullc.Float64
-// 	}
-
-// 	// getting s children
-// 	if sc, err = db.GetStoreLocationChildren(int(s.StoreLocationID.Int64)); err != nil {
-// 		log.WithFields(log.Fields{"err": err.Error()}).Error("ComputeStockStorelocation")
-// 		return 0
-// 	}
-
-// 	// parsing the children
-// 	for _, sci := range sc {
-// 		t += db.ComputeStockStorelocation(p, sci, u, m)
-// 	}
-
-// 	k := stockMapKey{sid: s.StoreLocationID.Int64, uid: u.UnitID.Int64}
-// 	v := stockMapValue{t: t, c: c}
-// 	(*m)[k] = v
-
-// 	return c
-// }
-
-// func (db *SQLiteDataStore) ComputeStockEntity(p Product, e Entity) StockMap {
-
-// 	var (
-// 		m              StockMap
-// 		units          []Unit          // reference units
-// 		storelocations []StoreLocation // e root storelocations
-// 		err            error
-// 	)
-
-// 	m = make(StockMap)
-
-// 	// getting the reference units
-// 	sqlr := `SELECT unit.unit_id FROM unit
-// 	WHERE unit.unit = 1`
-// 	if err = db.Select(&units, sqlr); err != nil {
-// 		log.WithFields(log.Fields{"err": err.Error()}).Error("ComputeStockEntity")
-// 		return StockMap{}
-// 	}
-
-// 	// getting e root store locations
-// 	sqlr = `SELECT storelocation.storelocation_id
-// 	FROM storelocation
-// 	WHERE storelocation.storelocation IS NULL AND storelocation.entity = ?`
-// 	if err = db.Select(&storelocations, sqlr, e.EntityID); err != nil {
-// 		log.WithFields(log.Fields{"err": err.Error()}).Error("ComputeStockEntity")
-// 		return StockMap{}
-// 	}
-
-// 	// computing stocks
-// 	for _, sl := range storelocations {
-// 		for _, u := range units {
-// 			db.ComputeStockStorelocation(p, sl, u, &m)
-// 		}
-// 	}
-
-// 	return m
-// }
 
 // GetEntities returns the entities matching the search criteria
 // order, offset and limit are passed to the sql request
@@ -354,7 +263,7 @@ func (db *SQLiteDataStore) DeleteEntity(id int) error {
 }
 
 // CreateEntity creates the given entity
-func (db *SQLiteDataStore) CreateEntity(e Entity) (error, int) {
+func (db *SQLiteDataStore) CreateEntity(e Entity) (int, error) {
 	var (
 		sqlr   string
 		res    sql.Result
@@ -364,12 +273,12 @@ func (db *SQLiteDataStore) CreateEntity(e Entity) (error, int) {
 	// FIXME: use a transaction here
 	sqlr = `INSERT INTO entity(entity_name, entity_description) VALUES (?, ?)`
 	if res, err = db.Exec(sqlr, e.EntityName, e.EntityDescription); err != nil {
-		return err, 0
+		return 0, err
 	}
 
 	// getting the last inserted id
 	if lastid, err = res.LastInsertId(); err != nil {
-		return err, 0
+		return 0, err
 	}
 	e.EntityID = int(lastid)
 
@@ -377,14 +286,14 @@ func (db *SQLiteDataStore) CreateEntity(e Entity) (error, int) {
 	for _, m := range e.Managers {
 		sqlr = `INSERT INTO entitypeople (entitypeople_entity_id, entitypeople_person_id) values (?, ?)`
 		if _, err = db.Exec(sqlr, e.EntityID, m.PersonID); err != nil {
-			return err, 0
+			return 0, err
 		}
 
 		// setting the manager in the entity
 		sqlr = `INSERT OR IGNORE INTO personentities(personentities_person_id, personentities_entity_id) 
 			VALUES (?, ?)`
 		if _, err = db.Exec(sqlr, m.PersonID, e.EntityID); err != nil {
-			return err, 0
+			return 0, err
 		}
 
 		// setting the manager permissions in the entity
@@ -392,17 +301,17 @@ func (db *SQLiteDataStore) CreateEntity(e Entity) (error, int) {
 		sqlr = `DELETE FROM permission 
 			WHERE person = ? and permission_entity_id = ?`
 		if _, err = db.Exec(sqlr, m.PersonID, e.EntityID); err != nil {
-			return err, 0
+			return 0, err
 		}
 		// 2. inserting manager permissions
 		sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id) 
 			VALUES (?, ?, ?, ?)`
 		if _, err = db.Exec(sqlr, m.PersonID, "all", "all", e.EntityID); err != nil {
-			return err, 0
+			return 0, err
 		}
 	}
 
-	return nil, e.EntityID
+	return e.EntityID, nil
 }
 
 // UpdateEntity updates the given entity

@@ -216,7 +216,7 @@ func (db *SQLiteDataStore) DeleteStoreLocation(id int) error {
 }
 
 // CreateStoreLocation creates the given store location
-func (db *SQLiteDataStore) CreateStoreLocation(s StoreLocation) (error, int) {
+func (db *SQLiteDataStore) CreateStoreLocation(s StoreLocation) (int, error) {
 	var (
 		sqlr     string
 		res      sql.Result
@@ -229,7 +229,7 @@ func (db *SQLiteDataStore) CreateStoreLocation(s StoreLocation) (error, int) {
 
 	// beginning transaction
 	if tx, err = db.Beginx(); err != nil {
-		return nil, 0
+		return 0, nil
 	}
 
 	// building full path
@@ -271,26 +271,26 @@ func (db *SQLiteDataStore) CreateStoreLocation(s StoreLocation) (error, int) {
 	ibuilder = sq.Insert("storelocation").Columns(col...).Values(val...)
 	if sqlr, sqla, err = ibuilder.ToSql(); err != nil {
 		tx.Rollback()
-		return err, 0
+		return 0, nil
 	}
 
 	if res, err = tx.Exec(sqlr, sqla...); err != nil {
 		tx.Rollback()
-		return err, 0
+		return 0, nil
 	}
 
 	// committing changes
 	if err = tx.Commit(); err != nil {
 		tx.Rollback()
-		return err, 0
+		return 0, nil
 	}
 
 	// getting the last inserted id
 	if lastid, err = res.LastInsertId(); err != nil {
-		return err, 0
+		return 0, nil
 	}
 
-	return nil, int(lastid)
+	return int(lastid), nil
 }
 
 // UpdateStoreLocation updates the given store location

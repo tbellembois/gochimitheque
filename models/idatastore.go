@@ -38,7 +38,7 @@ type Datastore interface {
 	GetProduct(id int) (Product, error)
 	CountProductStorages(id int) (int, error)
 	DeleteProduct(id int) error
-	CreateProduct(p Product) (error, int)
+	CreateProduct(p Product) (int, error)
 	UpdateProduct(p Product) error
 	CreateProductBookmark(pr Product, pe Person) error
 	DeleteProductBookmark(pr Product, pe Person) error
@@ -53,7 +53,7 @@ type Datastore interface {
 	DeleteStorage(id int) error
 	ArchiveStorage(id int) error
 	RestoreStorage(id int) error
-	CreateStorage(s Storage) (error, int)
+	CreateStorage(s Storage) (int, error)
 	UpdateStorage(s Storage) error
 	GenerateAndUpdateStorageBarecode(s *Storage) error
 	IsStorageBorrowing(b Borrowing) (bool, error)
@@ -66,7 +66,7 @@ type Datastore interface {
 	GetStoreLocationChildren(id int) ([]StoreLocation, error)
 	GetStoreLocationEntity(id int) (Entity, error)
 	DeleteStoreLocation(id int) error
-	CreateStoreLocation(s StoreLocation) (error, int)
+	CreateStoreLocation(s StoreLocation) (int, error)
 	UpdateStoreLocation(s StoreLocation) error
 
 	// entities
@@ -76,7 +76,7 @@ type Datastore interface {
 	GetEntity(id int) (Entity, error)
 	GetEntityPeople(id int) ([]Person, error)
 	DeleteEntity(id int) error
-	CreateEntity(e Entity) (error, int)
+	CreateEntity(e Entity) (int, error)
 	UpdateEntity(e Entity) error
 	IsEntityEmpty(id int) (bool, error)
 
@@ -89,7 +89,7 @@ type Datastore interface {
 	GetPersonManageEntities(id int) ([]Entity, error)
 	DoesPersonBelongsTo(id int, entities []Entity) (bool, error)
 	HasPersonPermission(id int, perm string, item string, itemid int) (bool, error)
-	CreatePerson(p Person) (error, int)
+	CreatePerson(p Person) (int, error)
 	UpdatePerson(p Person) error
 	UpdatePersonPassword(p Person) error
 	DeletePerson(id int) error

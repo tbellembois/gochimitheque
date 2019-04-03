@@ -1,5 +1,6 @@
 package models
 
+// PRECAUTIONARYSTATEMENT is the list of chemical products precautionary statements
 const PRECAUTIONARYSTATEMENT = `
 .Absorb spillage to prevent material damage.	P390
 .Avoid breathing dust/fume/gas/mist/vapours/spray.	P261
@@ -140,6 +141,7 @@ const PRECAUTIONARYSTATEMENT = `
 .Wear respiratory protection.	P284
 `
 
+// HAZARDSTATEMENT is the list of chemical products hazard statements
 const HAZARDSTATEMENT = `
 .Can become flammable in use.	EUH209A
 .Can become highly flammable in use or can become flammable in use.	EUH209
@@ -240,6 +242,8 @@ const HAZARDSTATEMENT = `
 .Warning! Contains lead.	EUH201A
 .Warning! Do not use together with other products. May release dangerous gases (chlorine).	EUH206
 `
+
+// CMR is a list of product CAS numbers that are CMRs
 const CMR = `
 100-00-5,C2 M2
 100-40-3,C2
