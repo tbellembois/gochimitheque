@@ -24,7 +24,7 @@ dist/
 locales/
 
 # generated gopherjs
-static/js/gjs-common*
+static/js/chim/gjs-common*
 
 # generated rice
 rice-box.go

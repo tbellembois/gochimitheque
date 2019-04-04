@@ -228,7 +228,9 @@ type Product struct {
 
 	Bookmark *Bookmark `db:"bookmark" json:"bookmark" schema:"bookmark"` // not in db but sqlx requires the "db" entry
 
-	// storage count
+	// total storage count
+	ProductTSC int `db:"product_tsc" json:"product_tsc" schema:"product_tsc"` // not in db but sqlx requires the "db" entry
+	// storage count in the logged user entity(ies)
 	ProductSC int `db:"product_sc" json:"product_sc" schema:"product_sc"` // not in db but sqlx requires the "db" entry
 	// storage barecode concatenation
 	ProductSL sql.NullString `db:"product_sl" json:"product_sl" schema:"product_sl"` // not in db but sqlx requires the "db" entry

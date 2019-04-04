@@ -921,14 +921,14 @@ func (db *SQLiteDataStore) GetProductsSignalWords(p helpers.Dbselectparam) ([]Si
 // GetProducts return the products matching the search criteria
 func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Product, int, error) {
 	var (
-		products                                []Product
-		count                                   int
-		req, precreq, presreq, comreq, postsreq strings.Builder
-		cnstmt                                  *sqlx.NamedStmt
-		snstmt                                  *sqlx.NamedStmt
-		err                                     error
-		rperm                                   bool
-		isadmin                                 bool
+		products                                               []Product
+		count                                                  int
+		reqsc, reqtsc, req, precreq, presreq, comreq, postsreq strings.Builder
+		cnstmt                                                 *sqlx.NamedStmt
+		snstmt                                                 *sqlx.NamedStmt
+		err                                                    error
+		rperm                                                  bool
+		isadmin                                                bool
 	)
 	log.WithFields(log.Fields{"p": p}).Debug("GetProducts")
 
@@ -1231,22 +1231,29 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	// getting number of storages for each product
 	//
 	for i, pr := range products {
+		// note: do not modify p but products[i] instead
+		reqtsc.Reset()
+		reqtsc.WriteString("SELECT count(DISTINCT storage_id) from storage")
+		reqtsc.WriteString(" JOIN product ON storage.product = ?")
 		if isadmin {
 			// note: do not modify p but products[i] instead
-			req.Reset()
-			req.WriteString("SELECT count(DISTINCT storage_id) from storage")
-			req.WriteString(" JOIN product ON storage.product = ?")
+			reqsc.Reset()
+			reqsc.WriteString("SELECT count(DISTINCT storage_id) from storage")
+			reqsc.WriteString(" JOIN product ON storage.product = ?")
 		} else {
 			// note: do not modify p but products[i] instead
-			req.Reset()
-			req.WriteString("SELECT count(DISTINCT storage_id) from storage")
-			req.WriteString(" JOIN product ON storage.product = ?")
-			req.WriteString(" JOIN storelocation ON storage.storelocation = storelocation.storelocation_id")
-			req.WriteString(" JOIN entity ON storelocation.entity = entity.entity_id")
-			req.WriteString(" JOIN personentities ON (entity.entity_id = personentities.personentities_entity_id) AND")
-			req.WriteString(" (personentities.personentities_person_id = ?)")
+			reqsc.Reset()
+			reqsc.WriteString("SELECT count(DISTINCT storage_id) from storage")
+			reqsc.WriteString(" JOIN product ON storage.product = ?")
+			reqsc.WriteString(" JOIN storelocation ON storage.storelocation = storelocation.storelocation_id")
+			reqsc.WriteString(" JOIN entity ON storelocation.entity = entity.entity_id")
+			reqsc.WriteString(" JOIN personentities ON (entity.entity_id = personentities.personentities_entity_id) AND")
+			reqsc.WriteString(" (personentities.personentities_person_id = ?)")
 		}
-		if err = db.Get(&products[i].ProductSC, req.String(), pr.ProductID, p.GetLoggedPersonID()); err != nil {
+		if err = db.Get(&products[i].ProductSC, reqsc.String(), pr.ProductID, p.GetLoggedPersonID()); err != nil {
+			return nil, 0, err
+		}
+		if err = db.Get(&products[i].ProductTSC, reqtsc.String(), pr.ProductID, p.GetLoggedPersonID()); err != nil {
 			return nil, 0, err
 		}
 	}
