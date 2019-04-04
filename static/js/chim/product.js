@@ -1335,10 +1335,15 @@ function operateFormatter(value, row, index) {
         actions.push('<button class="btn btn-link btn-sm"><span class="mdi mdi-24px mdi-blank">&nbsp;</span></button>');
     }
 
-    actions.push(
-    '<button id="ostorages' + pid + '" class="ostorages btn btn-link btn-sm" style="display: none;" title="global availability" type="button">',
+    if (row.product_tsc != 0) {
+        actions.push('<button id="ostorages' + pid + '" class="ostorages btn btn-link btn-sm" style="display: none;" title="global availability" type="button">',
         '<span class="mdi mdi-24px mdi-cube-scan">',
-    '</button>',
+        '</button>');
+    } else {
+        actions.push('<button class="btn btn-link btn-sm"><span class="mdi mdi-24px mdi-blank">&nbsp;</span></button>');
+    }
+
+    actions.push(
     '<button id="store' + pid + '" class="store btn btn-link btn-sm" style="display: none;" title="store" type="button">',
         '<span class="mdi mdi-24px mdi-forklift">',
     '</button>',
