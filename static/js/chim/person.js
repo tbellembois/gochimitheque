@@ -32,6 +32,11 @@ $( document ).ready(function() {
                 },
             },
         },
+        messages: {
+            person_email: {
+                required: global.t("required_input", container.PersonLanguage)
+            }
+        }, 
     });
     $( "#personp" ).validate({
         errorClass: "alert alert-danger",

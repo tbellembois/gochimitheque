@@ -364,3 +364,25 @@ func (db *SQLiteDataStore) UpdateStoreLocation(s StoreLocation) error {
 
 	return nil
 }
+
+// IsStoreLocationEmpty returns true is the store location is empty
+func (db *SQLiteDataStore) IsStoreLocationEmpty(id int) (bool, error) {
+	var (
+		res   bool
+		count int
+		sqlr  string
+		err   error
+	)
+
+	sqlr = "SELECT count(*) from storages WHERE  storelocation = ?"
+	if err = db.Get(&count, sqlr, id); err != nil {
+		return false, err
+	}
+	log.WithFields(log.Fields{"id": id, "count": count}).Debug("IsStoreLocationEmpty")
+	if count == 0 {
+		res = true
+	} else {
+		res = false
+	}
+	return res, nil
+}

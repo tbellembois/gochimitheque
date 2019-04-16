@@ -218,4 +218,12 @@ var LOCALES_FR = []byte(`
 	
 [entity_nameexist_validate]
 	one = "une entité avec ce nom existe déjà"
+[person_emailexist_validate]
+	one = "une personne avec cet email existe déjà"
+[empiricalformula_validate]
+	one = "formule brute invalide"
+[casnumber_validate]
+	one = "numéro CAS invalide"
+[cenumber_validate]
+	one = "numéro CE invalide"
 `)

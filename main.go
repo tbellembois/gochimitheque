@@ -73,7 +73,7 @@ func main() {
 	log.Info("- application endpoint: " + global.ProxyURL + global.ProxyPath)
 
 	// database initialization
-	log.Info("- opening database connection")
+	log.Info("- opening database connection to " + dbname)
 	if datastore, err = models.NewSQLiteDBstore(dbname); err != nil {
 		log.Panic(err)
 	}

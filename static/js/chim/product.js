@@ -73,6 +73,17 @@ $( document ).ready(function() {
                 },
             },
         },
+        messages: {
+            name: {
+                required: global.t("required_input", container.PersonLanguage)
+            },
+            empiricalformula: {
+                required: global.t("required_input", container.PersonLanguage)
+            },
+            casnumber: {
+                required: global.t("required_input", container.PersonLanguage)
+            }
+        }, 
     });
 
     //
@@ -1188,7 +1199,7 @@ function detailFormatter(index, row) {
             }
         html.push("</div>")
         if (row["cenumber"]["cenumber_id"]["Valid"]) {
-            html.push("<div class='col-sm-6'><span class='iconlabel'>" + global.t("cenumber_label_title", container.PersonLanguage) + "</span> " + row["cenumber"]["cenumber_id"]["String"] + "</div>")
+            html.push("<div class='col-sm-6'><span class='iconlabel'>" + global.t("cenumber_label_title", container.PersonLanguage) + "</span> " + row["cenumber"]["cenumber_label"]["String"] + "</div>")
         }
     html.push("</div>")
 

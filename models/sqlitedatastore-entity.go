@@ -266,18 +266,26 @@ func (db *SQLiteDataStore) DeleteEntity(id int) error {
 func (db *SQLiteDataStore) CreateEntity(e Entity) (int, error) {
 	var (
 		sqlr   string
+		tx     *sql.Tx
 		res    sql.Result
 		lastid int64
 		err    error
 	)
-	// FIXME: use a transaction here
+
+	// beginning transaction
+	if tx, err = db.Begin(); err != nil {
+		return 0, err
+	}
+
 	sqlr = `INSERT INTO entity(entity_name, entity_description) VALUES (?, ?)`
-	if res, err = db.Exec(sqlr, e.EntityName, e.EntityDescription); err != nil {
+	if res, err = tx.Exec(sqlr, e.EntityName, e.EntityDescription); err != nil {
+		tx.Rollback()
 		return 0, err
 	}
 
 	// getting the last inserted id
 	if lastid, err = res.LastInsertId(); err != nil {
+		tx.Rollback()
 		return 0, err
 	}
 	e.EntityID = int(lastid)
@@ -285,14 +293,16 @@ func (db *SQLiteDataStore) CreateEntity(e Entity) (int, error) {
 	// adding the new managers
 	for _, m := range e.Managers {
 		sqlr = `INSERT INTO entitypeople (entitypeople_entity_id, entitypeople_person_id) values (?, ?)`
-		if _, err = db.Exec(sqlr, e.EntityID, m.PersonID); err != nil {
+		if _, err = tx.Exec(sqlr, e.EntityID, m.PersonID); err != nil {
+			tx.Rollback()
 			return 0, err
 		}
 
 		// setting the manager in the entity
 		sqlr = `INSERT OR IGNORE INTO personentities(personentities_person_id, personentities_entity_id) 
 			VALUES (?, ?)`
-		if _, err = db.Exec(sqlr, m.PersonID, e.EntityID); err != nil {
+		if _, err = tx.Exec(sqlr, m.PersonID, e.EntityID); err != nil {
+			tx.Rollback()
 			return 0, err
 		}
 
@@ -300,15 +310,23 @@ func (db *SQLiteDataStore) CreateEntity(e Entity) (int, error) {
 		// 1. lazily deleting former permissions
 		sqlr = `DELETE FROM permission 
 			WHERE person = ? and permission_entity_id = ?`
-		if _, err = db.Exec(sqlr, m.PersonID, e.EntityID); err != nil {
+		if _, err = tx.Exec(sqlr, m.PersonID, e.EntityID); err != nil {
+			tx.Rollback()
 			return 0, err
 		}
 		// 2. inserting manager permissions
 		sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id) 
 			VALUES (?, ?, ?, ?)`
-		if _, err = db.Exec(sqlr, m.PersonID, "all", "all", e.EntityID); err != nil {
+		if _, err = tx.Exec(sqlr, m.PersonID, "all", "all", e.EntityID); err != nil {
+			tx.Rollback()
 			return 0, err
 		}
+	}
+
+	// committing changes
+	if err = tx.Commit(); err != nil {
+		tx.Rollback()
+		return 0, err
 	}
 
 	return e.EntityID, nil
@@ -320,15 +338,21 @@ func (db *SQLiteDataStore) UpdateEntity(e Entity) error {
 		sqlr     string
 		sqla     []interface{}
 		sbuilder sq.DeleteBuilder
+		tx       *sql.Tx
 		err      error
 	)
 	log.WithFields(log.Fields{"e": e}).Debug("UpdateEntity")
 
+	// beginning transaction
+	if tx, err = db.Begin(); err != nil {
+		return err
+	}
+
 	// updating the entity
-	// FIXME: use a transaction here
 	sqlr = `UPDATE entity SET entity_name = ?, entity_description = ?
 	WHERE entity_id = ?`
-	if _, err = db.Exec(sqlr, e.EntityName, e.EntityDescription, e.EntityID); err != nil {
+	if _, err = tx.Exec(sqlr, e.EntityName, e.EntityDescription, e.EntityID); err != nil {
+		tx.Rollback()
 		return err
 	}
 
@@ -356,13 +380,21 @@ func (db *SQLiteDataStore) UpdateEntity(e Entity) error {
 		return err
 	}
 
-	// TODO: removing former managers permissions
+	// removing former managers permissions
+	for _, m := range e.Managers {
+		sqlr = `DELETE FROM permission WHERE person = ?`
+		if _, err = tx.Exec(sqlr, m.PersonID); err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
 
 	// adding the new ones
 	for _, m := range e.Managers {
 		// adding the manager
 		sqlr = `INSERT OR IGNORE INTO entitypeople (entitypeople_entity_id, entitypeople_person_id) VALUES (?, ?)`
-		if _, err = db.Exec(sqlr, e.EntityID, m.PersonID); err != nil {
+		if _, err = tx.Exec(sqlr, e.EntityID, m.PersonID); err != nil {
+			tx.Rollback()
 			return err
 		}
 
@@ -370,7 +402,8 @@ func (db *SQLiteDataStore) UpdateEntity(e Entity) error {
 			// setting the manager in the entity
 			sqlr = `INSERT OR IGNORE INTO personentities(personentities_person_id, personentities_entity_id) 
 			VALUES (?, ?)`
-			if _, err = db.Exec(sqlr, man.PersonID, e.EntityID); err != nil {
+			if _, err = tx.Exec(sqlr, man.PersonID, e.EntityID); err != nil {
+				tx.Rollback()
 				return err
 			}
 
@@ -378,17 +411,25 @@ func (db *SQLiteDataStore) UpdateEntity(e Entity) error {
 			// 1. lazily deleting former permissions
 			sqlr = `DELETE FROM permission 
 			WHERE person = ? and permission_entity_id = ?`
-			if _, err = db.Exec(sqlr, man.PersonID, e.EntityID); err != nil {
+			if _, err = tx.Exec(sqlr, man.PersonID, e.EntityID); err != nil {
+				tx.Rollback()
 				return err
 			}
 			// 2. inserting manager permissions
 			sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id) 
 			VALUES (?, ?, ?, ?)`
-			if _, err = db.Exec(sqlr, man.PersonID, "all", "all", e.EntityID); err != nil {
+			if _, err = tx.Exec(sqlr, man.PersonID, "all", "all", e.EntityID); err != nil {
+				tx.Rollback()
 				return err
 			}
 
 		}
+	}
+
+	// committing changes
+	if err = tx.Commit(); err != nil {
+		tx.Rollback()
+		return err
 	}
 
 	return nil

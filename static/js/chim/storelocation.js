@@ -25,6 +25,14 @@ $( document ).ready(function() {
                 required: true,
             },
         },
+        messages: {
+            storelocation_name: {
+                required: global.t("required_input", container.PersonLanguage)
+            },
+            entity: {
+                required: global.t("required_input", container.PersonLanguage)
+            },
+        }, 
     });
 
     //

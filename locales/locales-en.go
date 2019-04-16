@@ -178,7 +178,7 @@ var LOCALES_EN = []byte(`
 [empiricalformula_label_title]
 	one = "empirical formula"
 [cenumber_label_title]
-	one = "CE"
+	one = "EC"
 [casnumber_label_title]
 	one = "CAS"
 [casnumber_cmr_title]
@@ -225,4 +225,12 @@ var LOCALES_EN = []byte(`
 	
 [entity_nameexist_validate]
 	one = "entity with this name already present" 
+[person_emailexist_validate]
+	one = "person with this email already present" 
+[empiricalformula_validate]
+	one = "invalid empirical formula"
+[casnumber_validate]
+	one = "invalid CAS number"
+[cenumber_validate]
+	one = "invalid EC number"
 `)

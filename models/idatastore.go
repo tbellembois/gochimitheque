@@ -68,6 +68,7 @@ type Datastore interface {
 	DeleteStoreLocation(id int) error
 	CreateStoreLocation(s StoreLocation) (int, error)
 	UpdateStoreLocation(s StoreLocation) error
+	IsStoreLocationEmpty(id int) (bool, error)
 
 	// entities
 	ComputeStockEntity(p Product, r *http.Request) []StoreLocation
