@@ -498,19 +498,26 @@ func (db *SQLiteDataStore) CreatePerson(p Person) (int, error) {
 	var (
 		sqlr   string
 		res    sql.Result
+		tx     *sql.Tx
 		lastid int64
 		err    error
 	)
 
+	// beginning transaction
+	if tx, err = db.Begin(); err != nil {
+		return 0, err
+	}
+
 	// inserting person
-	// FIXME: use a transaction here
 	sqlr = `INSERT INTO person(person_email, person_password) VALUES (?, ?)`
-	if res, err = db.Exec(sqlr, p.PersonEmail, p.PersonPassword); err != nil {
+	if res, err = tx.Exec(sqlr, p.PersonEmail, p.PersonPassword); err != nil {
+		tx.Rollback()
 		return 0, err
 	}
 
 	// getting the last inserted id
 	if lastid, err = res.LastInsertId(); err != nil {
+		tx.Rollback()
 		return 0, err
 	}
 	p.PersonID = int(lastid)
@@ -519,18 +526,27 @@ func (db *SQLiteDataStore) CreatePerson(p Person) (int, error) {
 	for _, e := range p.Entities {
 		sqlr = `INSERT INTO personentities(personentities_person_id, personentities_entity_id) 
 			VALUES (?, ?)`
-		if _, err = db.Exec(sqlr, p.PersonID, e.EntityID); err != nil {
+		if _, err = tx.Exec(sqlr, p.PersonID, e.EntityID); err != nil {
+			tx.Rollback()
 			return 0, err
 		}
 		sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id)  
 		VALUES (?, ?, ?, ?)`
-		if _, err = db.Exec(sqlr, p.PersonID, "r", "entities", e.EntityID); err != nil {
+		if _, err = tx.Exec(sqlr, p.PersonID, "r", "entities", e.EntityID); err != nil {
+			tx.Rollback()
 			return 0, err
 		}
 	}
 
 	// inserting permissions
-	if err = db.insertPermissions(p); err != nil {
+	if err = db.insertPermissions(p, tx); err != nil {
+		tx.Rollback()
+		return 0, err
+	}
+
+	// committing changes
+	if err = tx.Commit(); err != nil {
+		tx.Rollback()
 		return 0, err
 	}
 
@@ -563,29 +579,37 @@ func (db *SQLiteDataStore) UpdatePersonPassword(p Person) error {
 // The password is not updated.
 func (db *SQLiteDataStore) UpdatePerson(p Person) error {
 	var (
+		tx   *sql.Tx
 		sqlr string
 		err  error
 	)
 
+	// beginning transaction
+	if tx, err = db.Begin(); err != nil {
+		return err
+	}
+
 	// updating person
-	// FIXME: use a transaction here
 	sqlr = `UPDATE person SET person_email = ?
 	WHERE person_id = ?`
-	if _, err = db.Exec(sqlr, p.PersonEmail, p.PersonID); err != nil {
+	if _, err = tx.Exec(sqlr, p.PersonEmail, p.PersonID); err != nil {
+		tx.Rollback()
 		return err
 	}
 
 	// lazily deleting former entities
 	sqlr = `DELETE FROM personentities 
 	WHERE personentities_person_id = ?`
-	if _, err = db.Exec(sqlr, p.PersonID); err != nil {
+	if _, err = tx.Exec(sqlr, p.PersonID); err != nil {
+		tx.Rollback()
 		return err
 	}
 
 	// lazily deleting former permissions
 	sqlr = `DELETE FROM permission 
 		WHERE person = ?`
-	if _, err = db.Exec(sqlr, p.PersonID); err != nil {
+	if _, err = tx.Exec(sqlr, p.PersonID); err != nil {
+		tx.Rollback()
 		return err
 	}
 
@@ -593,18 +617,21 @@ func (db *SQLiteDataStore) UpdatePerson(p Person) error {
 	for _, e := range p.Entities {
 		sqlr = `INSERT INTO personentities(personentities_person_id, personentities_entity_id) 
 		VALUES (?, ?)`
-		if _, err = db.Exec(sqlr, p.PersonID, e.EntityID); err != nil {
+		if _, err = tx.Exec(sqlr, p.PersonID, e.EntityID); err != nil {
+			tx.Rollback()
 			return err
 		}
 		sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id)  
 		VALUES (?, ?, ?, ?)`
-		if _, err = db.Exec(sqlr, p.PersonID, "r", "entities", e.EntityID); err != nil {
+		if _, err = tx.Exec(sqlr, p.PersonID, "r", "entities", e.EntityID); err != nil {
+			tx.Rollback()
 			return err
 		}
 	}
 
 	// inserting permissions
-	if err = db.insertPermissions(p); err != nil {
+	if err = db.insertPermissions(p, tx); err != nil {
+		tx.Rollback()
 		return err
 	}
 
@@ -657,7 +684,7 @@ func (db *SQLiteDataStore) IsPersonManager(id int) (bool, error) {
 	return res, nil
 }
 
-func (db *SQLiteDataStore) insertPermissions(p Person) error {
+func (db *SQLiteDataStore) insertPermissions(p Person, tx *sql.Tx) error {
 	var (
 		sqlr string
 		err  error
@@ -666,12 +693,14 @@ func (db *SQLiteDataStore) insertPermissions(p Person) error {
 	for _, perm := range p.Permissions {
 		sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id) 
 		VALUES (?, ?, ?, ?)`
-		if _, err = db.Exec(sqlr, p.PersonID, perm.PermissionPermName, perm.PermissionItemName, perm.PermissionEntityID); err != nil {
+		if _, err = tx.Exec(sqlr, p.PersonID, perm.PermissionPermName, perm.PermissionItemName, perm.PermissionEntityID); err != nil {
+			tx.Rollback()
 			return err
 		}
 		// adding r permission for w permissions
 		if perm.PermissionPermName == "w" {
-			if _, err = db.Exec(sqlr, p.PersonID, "r", perm.PermissionItemName, perm.PermissionEntityID); err != nil {
+			if _, err = tx.Exec(sqlr, p.PersonID, "r", perm.PermissionItemName, perm.PermissionEntityID); err != nil {
+				tx.Rollback()
 				return err
 			}
 		}
@@ -681,7 +710,8 @@ func (db *SQLiteDataStore) insertPermissions(p Person) error {
 		if perm.PermissionItemName == "storelocations" && (perm.PermissionPermName == "w" || perm.PermissionPermName == "r") {
 			sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id) 
 			VALUES (?, ?, ?, ?)`
-			if _, err = db.Exec(sqlr, p.PersonID, "r", "entities", perm.PermissionEntityID); err != nil {
+			if _, err = tx.Exec(sqlr, p.PersonID, "r", "entities", perm.PermissionEntityID); err != nil {
+				tx.Rollback()
 				return err
 			}
 		}

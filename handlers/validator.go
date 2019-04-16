@@ -83,7 +83,7 @@ func (env *Env) ValidatePersonEmailHandler(w http.ResponseWriter, r *http.Reques
 
 	log.WithFields(log.Fields{"vars": vars, "res": res}).Debug("ValidatePersonEmailHandler")
 	if res {
-		resp = "person with this email already present"
+		resp = global.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "person_emailexist_validate", PluralCount: 1})
 	} else {
 		resp = "true"
 	}
@@ -201,7 +201,7 @@ func (env *Env) ValidateProductEmpiricalFormulaHandler(w http.ResponseWriter, r 
 	_, err = utils.SortEmpiricalFormula(r.Form.Get("empiricalformula"))
 
 	if err != nil {
-		resp = "invalid empirical formula:" + err.Error()
+		resp = global.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "empiricalformula_validate", PluralCount: 1})
 	} else {
 		resp = "true"
 	}
@@ -262,7 +262,7 @@ func (env *Env) ValidateProductCasNumberHandler(w http.ResponseWriter, r *http.R
 	if v {
 		resp = "true"
 	} else {
-		resp = "invalid cas number"
+		resp = global.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "casnumber_validate", PluralCount: 1})
 	}
 
 	// TODO: check pair cas/specificity
@@ -294,7 +294,7 @@ func (env *Env) ValidateProductCeNumberHandler(w http.ResponseWriter, r *http.Re
 	if v {
 		resp = "true"
 	} else {
-		resp = "invalid ce number"
+		resp = global.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "cenumber_validate", PluralCount: 1})
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")

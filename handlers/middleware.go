@@ -233,10 +233,6 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			perm = "w"
 		case "DELETE":
 			// REST delete method
-			// TODO: we need to perform more permission check here
-			// to ensure that values in the request body
-			// are allowed for the auth user
-			// ex: can the auth user set foo@bar.com in entity 3?
 			switch item {
 			case "people":
 				// a user can not edit/delete himself
@@ -255,7 +251,16 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 					return
 				}
 			case "storelocations":
-				// TODO: we can not delete a non empty store location
+				// we can not delete a non empty store location
+				m, e := env.DB.IsStoreLocationEmpty(itemid)
+				if e != nil {
+					http.Error(w, e.Error(), http.StatusInternalServerError)
+					return
+				}
+				if !m {
+					http.Error(w, "can not delete a non empty store location", http.StatusBadRequest)
+					return
+				}
 			case "products":
 				c, e := env.DB.CountProductStorages(itemid)
 				if e != nil {
@@ -275,7 +280,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 						return
 					}
 					if !m {
-						http.Error(w, "can not delete a non empty entity", http.StatusForbidden)
+						http.Error(w, "can not delete a non empty entity", http.StatusBadRequest)
 						return
 					}
 				}

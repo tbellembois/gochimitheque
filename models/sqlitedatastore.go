@@ -343,7 +343,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	("m", 1, NULL), ("dm", 0.1, 3), ("cm", 0.01, 3)`
 
 	// tables creation
-	log.Debug("creating sqlite tables")
+	log.Info("  creating sqlite tables")
 	if _, err = db.Exec(schema); err != nil {
 		return err
 	}
@@ -353,6 +353,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		return err
 	}
 	if c == 0 {
+		log.Info("  inserting symbols")
 		if _, err = db.Exec(inssymbol); err != nil {
 			return err
 		}
@@ -363,6 +364,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		return err
 	}
 	if c == 0 {
+		log.Info("  inserting signal words")
 		if _, err = db.Exec(inssignalword); err != nil {
 			return err
 		}
@@ -373,6 +375,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		return err
 	}
 	if c == 0 {
+		log.Info("  inserting units")
 		if _, err = db.Exec(insunit); err != nil {
 			return err
 		}
@@ -383,6 +386,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		return err
 	}
 	if c == 0 {
+		log.Info("  inserting zero cas number")
 		if _, err = db.Exec(`INSERT INTO casnumber (casnumber_label) VALUES ("0000")`); err != nil {
 			return err
 		}
@@ -393,6 +397,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		return err
 	}
 	if c == 1 {
+		log.Info("  inserting CMRs")
 		r = csv.NewReader(strings.NewReader(CMR))
 		r.Comma = ','
 		if records, err = r.ReadAll(); err != nil {
@@ -410,6 +415,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		return err
 	}
 	if c == 0 {
+		log.Info("  inserting hazard statements")
 		r = csv.NewReader(strings.NewReader(HAZARDSTATEMENT))
 		r.Comma = '\t'
 		if records, err = r.ReadAll(); err != nil {
@@ -427,6 +433,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		return err
 	}
 	if c == 0 {
+		log.Info("  inserting precautionary statements")
 		r = csv.NewReader(strings.NewReader(PRECAUTIONARYSTATEMENT))
 		r.Comma = '\t'
 		if records, err = r.ReadAll(); err != nil {
@@ -444,6 +451,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		return err
 	}
 	if c == 0 {
+		log.Info("  inserting zero empirical formula")
 		if _, err = db.Exec(`INSERT INTO empiricalformula (empiricalformula_label) VALUES ("XXXX")`); err != nil {
 			return err
 		}
@@ -454,6 +462,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		return err
 	}
 	if c == 0 {
+		log.Info("  inserting admin user")
 		admin := Person{PersonEmail: "admin@chimitheque.fr", Permissions: []Permission{Permission{PermissionPermName: "all", PermissionItemName: "all", PermissionEntityID: -1}}}
 		admin.PersonID, _ = db.CreatePerson(admin)
 		admin.PersonPassword = "chimitheque"
@@ -461,7 +470,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	}
 
 	// tables creation
-	log.Debug("vacuuming database")
+	log.Info("  vacuuming database")
 	if _, err = db.Exec("VACUUM;"); err != nil {
 		return err
 	}
@@ -497,6 +506,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		mONstorelocation map[string]string   // oldid <> newid map for storelocation table
 		mOOentitypeople  map[string][]string // managers, oldentityid <> oldpersonid
 		mRNNcasnumber    map[string]string   // newlabel <> newid
+		mRNNcenumber     map[string]string   // newlabel <> newid
 
 		mONproduct                map[string]string // oldid <> newid map for product table
 		mONclassofcompound        map[string]string // oldid <> newid map for classofcompound table
@@ -520,6 +530,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 	mONstorelocation = make(map[string]string)
 	mOOentitypeople = make(map[string][]string)
 	mRNNcasnumber = make(map[string]string)
+	mRNNcenumber = make(map[string]string)
 	mONclassofcompound = make(map[string]string)
 	mONempiricalformula = make(map[string]string)
 	mONlinearformula = make(map[string]string)
@@ -1055,6 +1066,49 @@ func (db *SQLiteDataStore) Import(dir string) error {
 	}
 
 	//
+	// ce numbers
+	//
+	log.Info("- extracting and importing ce numbers from products")
+	if csvFile, err = os.Open(path.Join(dir, "product.csv")); err != nil {
+		return (err)
+	}
+	csvReader = csv.NewReader(bufio.NewReader(csvFile))
+	i = 0
+	for {
+		line, error := csvReader.Read()
+
+		// skip header
+		if i == 0 {
+			i++
+			continue
+		}
+
+		if error == io.EOF {
+			break
+		} else if error != nil {
+			tx.Rollback()
+			return err
+		}
+		cenumber := line[1]
+		if cenumber != "" {
+			if _, ok := mRNNcenumber[cenumber]; !ok {
+				sqlr = `INSERT INTO cenumber(cenumber_label) VALUES (?)`
+				if res, err = tx.Exec(sqlr, cenumber); err != nil {
+					tx.Rollback()
+					return err
+				}
+				// getting the last inserted id
+				if lastid, err = res.LastInsertId(); err != nil {
+					tx.Rollback()
+					return err
+				}
+				// populating the map
+				mRNNcenumber[cenumber] = strconv.FormatInt(lastid, 10)
+			}
+		}
+	}
+
+	//
 	// supplier
 	//
 	log.Info("- importing storage suppliers")
@@ -1276,7 +1330,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 			return err
 		}
 		id := line[0]
-		//TODO: cenumber := line[1]
+		cenumber := line[1]
 		person := line[2]
 		name := line[3]
 		synonym := line[4]
@@ -1287,7 +1341,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		linearformula := line[9]
 		msds := line[10]
 		physicalstate := line[11]
-		//TODO: coc := line[12]
+		//TODO coc := line[12]
 		symbol := line[14]
 		signalword := line[15]
 		hazardstatement := line[18]
@@ -1354,6 +1408,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		if newcasnumber == "" {
 			newcasnumber = strconv.Itoa(zerocasnumberid)
 		}
+		newcenumber := mRNNcenumber[cenumber]
 		newisradio := false
 		if isradio == "T" {
 			newisradio = true
@@ -1361,22 +1416,8 @@ func (db *SQLiteDataStore) Import(dir string) error {
 
 		// do not import archived cards
 		if !newarchive {
-			sqlr = `INSERT INTO product (product_specificity, 
-                product_msds, 
-                product_restricted, 
-                product_radioactive, 
-                product_threedformula, 
-                product_disposalcomment, 
-                product_remark,
-                empiricalformula,
-                linearformula,
-                physicalstate,
-                signalword,
-                person,
-                casnumber,
-                name) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-			if res, err = tx.Exec(sqlr,
+			reqValues := "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
+			reqArgs := []interface{}{
 				newspecificity,
 				newmsds,
 				newrestricted,
@@ -1390,7 +1431,30 @@ func (db *SQLiteDataStore) Import(dir string) error {
 				newsignalword,
 				newperson,
 				newcasnumber,
-				newname); err != nil {
+				newname,
+			}
+			sqlr = `INSERT INTO product (product_specificity, 
+                product_msds, 
+                product_restricted, 
+                product_radioactive, 
+                product_threedformula, 
+                product_disposalcomment, 
+                product_remark,
+                empiricalformula,
+                linearformula,
+                physicalstate,
+                signalword,
+                person,
+				casnumber,
+				name`
+			if newcenumber != "" {
+				sqlr += ",cenumber"
+				reqValues += ",?"
+				reqArgs = append(reqArgs, newcenumber)
+			}
+			sqlr += `) VALUES (` + reqValues + `)`
+
+			if res, err = tx.Exec(sqlr, reqArgs...); err != nil {
 				tx.Rollback()
 				return err
 			}
@@ -1403,6 +1467,15 @@ func (db *SQLiteDataStore) Import(dir string) error {
 			// populating the map
 			mONproduct[id] = strconv.FormatInt(lastid, 10)
 
+			// coc
+			// cocs := rnumber.FindAllString(coc, -1)
+			// for _, c  := range cocs {
+			// 	sqlr = `INSERT INTO productsynonyms (productsynonyms_product_id, productsynonyms_name_id) VALUES (?,?)`
+			// 	if res, err = tx.Exec(sqlr, lastid, mONname[s]); err != nil {
+			// 		// not leaving on errors
+			// 		log.Debug("non fatal error importing product synonym with id " + s + ": " + err.Error())
+			// 	}
+			// }
 			// synonym
 			syns := rnumber.FindAllString(synonym, -1)
 			for _, s := range syns {
@@ -1667,7 +1740,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		return err
 	}
 
-	log.Info("- updating storages qr codes")
+	log.Info("- updating storages qr codes (long task)")
 	var sts []Storage
 	var png []byte
 	if err = db.Select(&sts, ` SELECT storage_id
@@ -1737,37 +1810,6 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		tx.Rollback()
 		return err
 	}
-
-	// // beginning new transaction
-	// if tx, err = db.Beginx(); err != nil {
-	// 	return err
-	// }
-
-	// //TODO: remove before prod
-	// log.Info("- cleaning storages for demo")
-	// sqlr = `DELETE FROM storage WHERE storage.storelocation NOT in (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-	// if res, err = tx.Exec(sqlr,
-	// 	mONstorelocation["221941"],
-	// 	mONstorelocation["221947"],
-	// 	mONstorelocation["221950"],
-	// 	mONstorelocation["221949"],
-	// 	mONstorelocation["221951"],
-	// 	mONstorelocation["221959"],
-	// 	mONstorelocation["221953"],
-	// 	mONstorelocation["221940"],
-	// 	mONstorelocation["221666"],
-	// 	mONstorelocation["221667"],
-	// 	mONstorelocation["221668"],
-	// 	mONstorelocation["13"],
-	// 	mONstorelocation["15"]); err != nil {
-	// 	log.Error(err)
-	// }
-
-	// // committing changes
-	// if err = tx.Commit(); err != nil {
-	// 	tx.Rollback()
-	// 	return err
-	// }
 
 	return nil
 }
