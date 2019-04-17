@@ -3,15 +3,15 @@ block CONTENT
     :go:func
         Entitycreate(c ViewContainer)
 
-    +titleicon("store", "creation", "create entity")
+    +titleicon("store", "creation", "entity_create_title")
 
     form#entity
         .form-group.row
-            +inputtext("name", "entity_name")
+            +inputtext("entity_name_table_header", "entity_name")
         .form-group.row
-            +inputtext("description", "entity_description")
+            +inputtext("entity_description_table_header", "entity_description")
         .form-group.row
-            +selectmultiple("manager(s)", "managers")
+            +selectmultiple("entity_manager_table_header", "managers")
 
     button#save.btn.btn-link(type='button', onclick='saveEntity()')
         span.mdi.mdi-content-save.mdi-24px.iconlabel

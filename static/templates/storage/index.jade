@@ -15,13 +15,13 @@ block CONTENT
         .col
             .row
                 .col-sm-6
-                    +inputtextcompact(T("s_custom_name_part_of", 1), "s_custom_name_part_of")
+                    +inputtextcompact("s_custom_name_part_of", "s_custom_name_part_of")
                 .col-sm-6
-                    +selectcompact(T("s_casnumber", 1), "s_casnumber")
+                    +selectcompact("s_casnumber", "s_casnumber")
                 .col-sm-6
-                    +selectcompact(T("s_empiricalformula", 1), "s_empiricalformula")
+                    +selectcompact("s_empiricalformula", "s_empiricalformula")
                 .col-sm-6
-                    +inputtextcompact(T("s_storage_barecode", 1), "s_storage_barecode")
+                    +inputtextcompact("s_storage_barecode", "s_storage_barecode")
             .row.collapse#advancedsearch
                 .col-sm-12
                     hr
@@ -29,20 +29,20 @@ block CONTENT
                         .col-sm-6
                             +selecticon("s_storelocation", "docker")
                         .col-sm-6
-                            +selectcompact(T("s_name", 1), "s_name")
+                            +selectcompact("s_name", "s_name")
                     .form-row
                         .form-group.col-sm-6
-                            +selectcompact(T("s_signalword", 1), "s_signalword")
+                            +selectcompact("s_signalword", "s_signalword")
                         .form-group.col-sm-6
-                            +selectmultiplecompact(T("s_symbols", 1), "s_symbols")
+                            +selectmultiplecompact("s_symbols", "s_symbols")
                     .form-row
                         .form-group.col-sm-6
-                            +selectmultiplecompact(T("s_hazardstatements", 1), "s_hazardstatements")
+                            +selectmultiplecompact("s_hazardstatements", "s_hazardstatements")
                         .form-group.col-sm-6
-                            +selectmultiplecompact(T("s_precautionarystatements", 1), "s_precautionarystatements")
+                            +selectmultiplecompact("s_precautionarystatements", "s_precautionarystatements")
                     .form-row
                         .form-group.col-sm-6
-                            +checkbox(T("s_casnumber_cmr", 1), "s_casnumber_cmr")
+                            +checkbox("s_casnumber_cmr", "s_casnumber_cmr")
             .row
                 .col.col-sm-10
                     button#clearsearch.btn.btn-link.mr-sm-2(type="button" onclick="clearsearch();")
@@ -108,10 +108,10 @@ block CONTENT
                             .form-group.col-sm-auto
                                 span.badge.badge-pill.badge-danger &nbsp;
                             .form-group.col-sm-11
-                                +select("borrower", "borrower")
+                                +select("storage_borrower_title", "borrower")
                         .form-group.row
                             .col-sm-12
-                                +inputtextarea("comment", "borrowing_comment")
+                                +inputtextarea("storage_comment_title", "borrowing_comment")
                 .modal-footer
                     button.btn.btn-link(type="button" onclick='saveBorrowing()')
                         span.mdi.mdi-content-save.mdi-24px.iconlabel
@@ -142,15 +142,19 @@ block CONTENT
                     tr
                         //th(data-field='storage_id' data-formatter='storage_idFormatter' data-sortable='true') ID
                         //th(data-field='storage_modificationdate' data-formatter='dateFormatter' data-sortable='true') modification date
-                        th.th-width-200(data-field='product.name.name_label' data-formatter='storage_productFormatter' data-sortable='true') product
-                        th(data-field='storelocation.storelocation_fullpath' data-sortable='true' data-formatter='storelocation_fullpathFormatter') store location
-                        th(data-field='storage_quantity' data-formatter='storage_quantityFormatter') quantity
-                        th(data-field='storage_barecode' data-formatter='storage_barecodeFormatter' data-sortable='true') barecode
+                        th.th-width-200(data-field='product.name.name_label' data-formatter='storage_productFormatter' data-sortable='true')
+                            = T("storage_product_table_header", 1)
+                        th(data-field='storelocation.storelocation_fullpath' data-sortable='true' data-formatter='storelocation_fullpathFormatter')
+                            = T("storage_storelocation_table_header", 1)
+                        th(data-field='storage_quantity' data-formatter='storage_quantityFormatter')
+                            = T("storage_quantity_table_header", 1)
+                        th(data-field='storage_barecode' data-formatter='storage_barecodeFormatter' data-sortable='true')
+                            = T("storage_barecode_table_header", 1)
                         th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') 
 
         #edit-collapse.collapse(data-parent='#accordion')
 
-            +titleicon(iconaction="border-color" iconitem="forklift" label="update storage")
+            +titleicon(iconaction="border-color" iconitem="forklift" label="storage_update_title")
 
             .row
                 .d-flex.justify-content-center
@@ -164,38 +168,38 @@ block CONTENT
 
                 .form-group.row
                     .form-group.col-sm-12
-                        +selectrequired("store location", "storelocation")
+                        +selectrequired("storage_storelocation_title", "storelocation")
                 .form-group.row
                     .col-sm-6
-                        +inputnumber("quantity", "storage_quantity", "any", "1", "10000000", "")
+                        +inputnumber("storage_quantity_title", "storage_quantity", "any", "1", "10000000", "")
                     .col-sm-6
-                        +select("unit", "unit") 
+                        +select("unit_label_title", "unit") 
                 .form-group.row
                     .col-sm-12
-                        +select("supplier", "supplier")
+                        +select("supplier_label_title", "supplier")
                 .form-group.row
                     .col-sm-3
-                        +inputdate("entry date", "storage_entrydate")
+                        +inputdate("storage_entrydate_title", "storage_entrydate")
                     .col-sm-3
-                        +inputdate("exit date", "storage_exitdate")
+                        +inputdate("storage_exitdate_title", "storage_exitdate")
                     .col-sm-3
-                        +inputdate("opening date", "storage_openingdate")
+                        +inputdate("storage_openingdate_title", "storage_openingdate")
                     .col-sm-3
-                        +inputdate("expiration date", "storage_expirationdate")
+                        +inputdate("storage_expirationdate_title", "storage_expirationdate")
                 .form-group.row
                     .col-sm-6
-                        +inputtext("reference", "storage_reference")
+                        +inputtext("storage_reference_title", "storage_reference")
                     .col-sm-6
-                        +inputtext("batch number", "storage_batchnumber")
+                        +inputtext("storage_batchnumber_title", "storage_batchnumber")
                 .form-group.row
                     .col-sm-12
-                        +inputtext("barecode", "storage_barecode")
+                        +inputtext("storage_barecode_title", "storage_barecode")
                 .form-group.row
                     .col-sm-12
-                        +inputtext("comment", "storage_comment")  
+                        +inputtext("storage_comment_title", "storage_comment")  
                 .form-group.row
                     .col-sm-12
-                        +checkbox("to destroy", "storage_todestroy")
+                        +checkbox("storage_todestroy_title", "storage_todestroy")
 
             button#save.btn.btn-link(type='button', onclick='saveStorage()')
                 span.mdi.mdi-content-save.mdi-24px.iconlabel

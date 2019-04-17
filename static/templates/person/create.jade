@@ -3,14 +3,14 @@ block CONTENT
     :go:func
         Personcreate(c ViewContainer)
         
-    +titleicon(iconaction="creation" iconitem="account-group" label="create user")
+    +titleicon(iconaction="creation" iconitem="account-group" label="person_create_title")
 
     form#person
         .row
             .col-sm-6
-                +inputtext("email", "person_email")
+                +inputtext("person_email_title", "person_email")
             .col-sm-6
-                +selectmultiple("entity(ies)", "entities")
+                +selectmultiple("person_entity_title", "entities")
         
         span permissions
         .d-flex.form-group.row#permissionsproducts

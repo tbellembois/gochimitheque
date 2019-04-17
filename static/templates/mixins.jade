@@ -1,10 +1,8 @@
 mixin title(label)
     .card.bg-dark.text-center.w-25.mx-auto.mt-md-5.mb-md-5
         .card-body
-            h5.card-title.text-light= label
-
-mixin inputhidden(name, value)
-    input(id='hidden_'+ name type='hidden' name=name value=value)
+            h5.card-title.text-light
+                = T(label, 1)
 
 mixin titleicon(iconitem, iconaction, label)
     .mt-sm-2.mb-sm-2
@@ -14,50 +12,32 @@ mixin titleicon(iconitem, iconaction, label)
         .row
             .col.d-flex.justify-content-center
                 span(class='mdi-'+ iconaction +' mdi mdi-18px')
-                span.iconlabel= label
-
-mixin inlineradio(id,value,label,classz,name )
-    .custom-control.custom-radio.custom-control-inline
-        input(class='custom-control-input ' + classz id=id type='radio' name=name value=value)
-        label.custom-control-label(for=id)= label
-
-mixin inlinecheckbox(id,value,label,classz)
-    .form-check.form-check-inline
-        input(class='form-check-input ' + classz id=id type='checkbox' value=value title=id)
-        label.form-check-label(for=id)= label
-
-mixin inlineimgcheckbox(id,title,value,classz)
-    .form-check.form-check-inline
-        input(class='form-check-input ' + classz id=id type='checkbox' value=value title=id)
-        label.form-check-label(for=id)
-            img(src='data:' + img alt=title title=title)
+                span.iconlabel
+                    = T(label, 1)
 
 mixin checkbox(label,name)
     .form-check
         input.form-check-input(type='checkbox' id=name)
-        label.form-check-label(for=name)= label
-
-mixin checkboxicon(name,icon)
-    .form-check
-        input.form-check-input(type='checkbox' id=name title=title)
         label.form-check-label(for=name)
-            i.material-icons.md-24= icon
+            = T(label, 1)
 
-mixin checkboxicon2(title,name,icon)
+mixin checkboxicon(title,name,icon)
     .form-check
-        input.form-check-input(type='checkbox' id=name title=title)
+        input.form-check-input(type='checkbox' id=name title=T(title, 1))
         label.form-check-label(for=name)
-            span(class='mdi mdi-36px ' + icon title=title)
+            span(class='mdi mdi-36px ' + icon title=T(title, 1))
 
 mixin select(label,name)
     .form-group.col-sm-12
-        label(for=name)= label
+        label(for=name)
+            = T(label, 1)
         select.form-control(style='width: 100% !important;' id=name name=name)
 
 mixin selectrequired(label,name)
     .form-group.col-sm-12
         span.badge.badge-pill.badge-danger  &nbsp;
-        label(for=name)= label
+        label(for=name)
+            = T(label, 1)
         select.form-control(style='width: 100% !important;' id=name name=name)
 
 mixin selecticon(name,icon)
@@ -69,67 +49,66 @@ mixin selecticon(name,icon)
 
 mixin selectcompact(label,name)
     .form-group.row
-        label.col-sm-4.col-form-label-sm(for=name)= label
+        label.col-sm-4.col-form-label-sm(for=name)
+            = T(label, 1)
         .col-sm-8
             select.form-control(style='width: 100% !important;' id=name name=name)
 
 mixin selectmultiplecompact(label,name)
     .form-group.row
-        label.col-sm-4.col-form-label-sm(for=name)= label
+        label.col-sm-4.col-form-label-sm(for=name)
+            = T(label, 1)
         .col-sm-8
             select.form-control(style='width: 100% !important;' id=name name=name multiple='multiple')
 
 mixin selectmultiple(label,name)
     .form-group.col-sm-12
-        label(for=name)= label
+        label(for=name)
+            = T(label, 1)
         select.form-control(style='width: 100% !important;' id=name name=name multiple='multiple')
         
 mixin inputtext(label,name)
     .form-group.col-sm-12
-        label(for=name)= label
+        label(for=name)
+            = T(label, 1)
         input.form-control(type='text' id=name name=name title=name)
 
 mixin inputfile(label,name)
     .form-group.col-sm-12
-        label(for=name)= label
+        label(for=name)
+            = T(label, 1)
         input.form-control(type='file' id=name name=name title=name)
 
 mixin inputpassword(label,name)
     .form-group.col-sm-12
-        label(for=name)= label
+        label(for=name)
+            = T(label, 1)
         input.form-control(type='password' id=name name=name title=name)
 
 mixin inputtextcompact(label,name)
     .form-group.row
-        label.col-sm-4.col-form-label-sm(for=name)= label
+        label.col-sm-4.col-form-label-sm(for=name)
+            = T(label, 1)
         .col-sm-8
             input.form-control(type='text' id=name name=name title=name)
 
 mixin inputdate(label,name)
     .form-group.col-sm-12
-        label(for=name)= label
+        label(for=name)
+            = T(label, 1)
         input.form-control(type='date' id=name name=name title=name)
 
 mixin inputnumber(label,name,step,min,max,value)
     .form-group.col-sm-12
-        label(for=name)= label
+        label(for=name)
+            = T(label, 1)
         input.form-control(type='number' id=name name=name title=name step=step min=min max=max value=value)
+
+mixin inputhidden(name, value)
+    input(id='hidden_'+ name type='hidden' name=name value=value)
 
 mixin inputtextarea(label,name)
     .form-group.col-sm-12
-        label(for=name)= label
+        label(for=name)
+            = T(label, 1)
         textarea.form-control(type='text' id=name name=name title=name)
-
-mixin permissions
-    .col-sm-6
-        .alert.alert-primary product
-    .col-sm-6 
-        +inlineradio("permproduct", "_", "_", "perm", "product") 
-        +inlineradio("permproductr", "r", "r") 
-        +inlineradio("permproductrw", "w", "rw")
-    .col-sm-6
-        .alert.alert-primary storage
-    .col-sm-6 
-        +inlineradio("permstorage", "_", "_", "perm", "storage") 
-        +inlineradio("permstorager", "r", "r") 
-        +inlineradio("permstoragerw", "w", "rw")

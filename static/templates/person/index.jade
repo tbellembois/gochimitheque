@@ -18,13 +18,14 @@ block CONTENT
                                 data-row-attributes="rowAttributes")
                         thead
                             tr
-                                th(data-field='person_id' data-sortable='true') ID
-                                th(data-field='person_email' data-sortable='true') email
-                                th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') actions
+                                //th(data-field='person_id' data-sortable='true') ID
+                                th(data-field='person_email' data-sortable='true')
+                                    = T("person_email_table_header", 1)
+                                th(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents')
 
         #viewedit-collapse.collapse(data-parent='#accordion')
 
-            +titleicon(iconaction="border-color" iconitem="account-group" label="update user")
+            +titleicon(iconaction="border-color" iconitem="account-group" label="person_update_title")
 
             form#person
                 input#index(type='hidden', name='index', value='')
@@ -32,12 +33,12 @@ block CONTENT
 
                 .form-group.row
                     .col-sm-6
-                        +inputtext("email", "person_email")
+                        +inputtext("person_email_title", "person_email")
                         // hidden feature
                         #hidden_person_password.collapse
-                            +inputtext("password", "person_password")
+                            +inputtext("person_password_title", "person_password")
                     .col-sm-6
-                        +selectmultiple("entity(ies)", "entities")
+                        +selectmultiple("person_entity_title", "entities")
                 
                 span permissions
                 .d-flex.form-group.row#permissionsproducts
