@@ -3,7 +3,7 @@ block CONTENT
     :go:func
         Productcreate(c ViewContainer)
 
-    +titleicon(iconaction="creation" iconitem="tag" label="create product")
+    +titleicon(iconaction="creation" iconitem="tag" label="product_create_title")
 
     form#product
         input#exactMatchEmpiricalFormula(type="hidden")
@@ -17,78 +17,78 @@ block CONTENT
 
         .form-row
             .form-group.col-sm-6
-                +selectrequired(label="name" name="name")
+                +selectrequired(label="name_label_title" name="name")
             .form-group.col-sm-6
-                +selectmultiple(label="synonym(s)" name="synonyms")
+                +selectmultiple(label="synonym_label_title" name="synonyms")
 
         .form-row
             .form-group.col-sm-12
-                +inputtext("specificity", "product_specificity")
+                +inputtext("product_specificity_title", "product_specificity")
 
         .form-row
             .form-group.col-sm-6
-                +selectrequired("empirical formula", "empiricalformula")
+                +selectrequired("empiricalformula_label_title", "empiricalformula")
             .form-group.col-sm-1
                 button#fconverter.btn.btn-link(type="button" data-toggle="popover" data-content="no result" title="convert linear to empirical formula" onclick="linearToEmpirical();")
                     span.mdi.mdi-arrow-left-circle.mdi-48px
             .form-group.col-sm-5
-                +select("linear formula", "linearformula")
+                +select("linearformula_label_title", "linearformula")
 
         .form-row
             .form-group.col-sm-6
-                +selectrequired("CAS number", "casnumber")
+                +selectrequired("casnumber_label_title", "casnumber")
             .form-group.col-sm-6
-                +select("EC number", "cenumber")
+                +select("cenumber_label_title", "cenumber")
 
         .form-row
             .form-group.col-sm-12
-                +inputtext("MSDS link", "product_msds")
+                +inputtext("product_msds_title", "product_msds")
 
         .form-row
             .form-group.col-sm-6
-                +inputtext("3D formula link", "product_threedformula")
+                +inputtext("product_threedformula_title", "product_threedformula")
             .form-group.col-sm-6
-                +inputfile("3D formula mol file", "product_molformula")
+                +inputfile("product_threedformula_mol_title", "product_molformula")
                 +inputhidden("product_molformula_content", "")
 
         .form-row
             .form-group.col-sm-6
-                +select("physical state", "physicalstate")
+                +select("physicalstate_label_title", "physicalstate")
             .form-group.col-sm-6
-                +select("class of compound", "classofcompound")  
+                +select("classofcompound_label_title", "classofcompound")  
 
         .form-row
             .form-group.col-sm-5.d-flex.align-items-end
-                +inputtextarea("magical selector", "magical")
+                +inputtextarea("magical_selector", "magical")
             .form-group.col-sm-1.d-flex.align-items-end
                 button#magical-button(onclick="magic();")
                     span.mdi.mdi-24px.mdi-auto-fix
 
         .form-row
             .form-group.col-sm-6
-                +select("signal word", "signalword")
+                +select("signalword_label_title", "signalword")
             .form-group.col-sm-6
-                +selectmultiple("symbol(s)", "symbols")
+                +selectmultiple("symbol_label_title", "symbols")
 
         .form-row
             .form-group.col-sm-6
-                +selectmultiple("hazard statement(s)", "hazardstatements")
+                +selectmultiple("hazardstatement_label_title", "hazardstatements")
             .form-group.col-sm-6
-                +selectmultiple("precautionary statement(s)", "precautionarystatements")
+                +selectmultiple("precautionarystatement_label_title", "precautionarystatements")
 
         .form-row
             .form-group.col-sm-12
-                +checkboxicon2("restricted access", "product_restricted", "mdi-hand")
+                +checkboxicon("product_restricted_title", "product_restricted", "mdi-hand")
         .form-row
             .form-group.col-sm-12
-                +checkboxicon2("radioactive", "product_radioactive", "mdi-radioactive")
+                +checkboxicon("product_radioactive_title", "product_radioactive", "mdi-radioactive")
 
         .form-row
             .form-group.col-sm-12
-                +inputtextarea("disposal comment", "product_disposalcomment")
+                +inputtextarea("product_disposalcomment_title", "product_disposalcomment")
         .form-row
             .form-group.col-sm-12
-                +inputtextarea("remark", "product_remark")
+                +inputtextarea("product_remark_title", "product_remark")
 
         button#save.btn.btn-link(type='button', onclick='saveProduct()')
             span.mdi.mdi-content-save.mdi-24px.iconlabel

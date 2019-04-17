@@ -26,10 +26,21 @@ var LOCALES_FR = []byte(`
 [required_input]
 	one = "champs requis"
 
+[password]
+	one = "mot de passe"
+[confirm_password]
+	one = "confirmer le mot de passe"
+
 [members]
 	one = "membres"
 [storelocations]
 	one = "entrepôts"
+
+[magical_selector]
+	one = "selecteur magique"
+
+[nb_duplicate]
+	one = "nombre de duplications"
 
 [email_placeholder]
 	one = "entrez votre email"
@@ -102,6 +113,8 @@ var LOCALES_FR = []byte(`
 	one = "mention(s) de danger H-EUH"
 [s_precautionarystatements]
 	one = "conseil(s) de prudence P"
+[s_casnumber_cmr]
+	one = "CMR"
 
 [menu_home]
 	one = "accueil"
@@ -138,25 +151,15 @@ var LOCALES_FR = []byte(`
 [hidedeleted_text]
 	one = "cacher supprimés"
 
-[storage_quantity_title]
-	one = "quantité"
-[storage_barecode_title]
-	one = "code barre"
-[storage_batchnumber_title]
-	one = "numéro de lot"
+[unit_label_title]
+	one = "unité"
 [supplier_label_title]
 	one = "fournisseur"
-[storage_entrydate_title]
-	one = "date d'entrée"
-[storage_exitdate_title]
-	one = "date de sortie"
-[storage_openingdate_title]
-	one = "date d'ouverture"
-[storage_expirationdate_title]
-	one = "date d'expiration"
-[storage_comment_title]
-	one = "commentaire"
 
+[storage_create_title]
+	one = "créer stockage"
+[storage_update_title]
+	one = "mise à jour stockage"
 [storage_clone]
 	one = "cloner"
 [storage_borrow]
@@ -168,6 +171,42 @@ var LOCALES_FR = []byte(`
 [storage_showhistory]
 	one = "voir historique"
 
+[storage_storelocation_title]
+	one = "entrepôt"
+[storage_quantity_title]
+	one = "quantité"
+[storage_barecode_title]
+	one = "code barre"
+[storage_batchnumber_title]
+	one = "numéro de lot"
+[storage_entrydate_title]
+	one = "date d'entrée"
+[storage_exitdate_title]
+	one = "date de sortie"
+[storage_openingdate_title]
+	one = "date d'ouverture"
+[storage_expirationdate_title]
+	one = "date d'expiration"
+[storage_comment_title]
+	one = "commentaire"
+[storage_reference_title]
+	one = "référence"
+[storage_todestroy_title]
+	one = "à détruire"
+[storage_product_table_header]
+	one = "produit"
+[storage_storelocation_table_header]
+	one = "entrepôt"
+[storage_quantity_table_header]
+	one = "quantité"
+[storage_barecode_table_header]
+	one = "code barre"
+
+[stock_storelocation_title]
+	one = "dans cet entrepôt"
+[stock_storelocation_sub_title]
+	one = "en incluant les sous entrepôts"
+
 [empiricalformula_label_title]
 	one = "formule brute"
 [cenumber_label_title]
@@ -178,6 +217,8 @@ var LOCALES_FR = []byte(`
 	one = "CMR"
 [signalword_label_title]
 	one = "mention d'avertissement"
+[symbol_label_title]
+	one = "symbole(s)"
 [linearformula_label_title]
 	one = "formule linéaire"
 [hazardstatement_label_title]
@@ -188,21 +229,82 @@ var LOCALES_FR = []byte(`
 	one = "famille chimique"
 [physicalstate_label_title]
 	one = "état physique"
+[name_label_title]
+	one = "nom"
+[synonym_label_title]
+	one = "synonyme(s)"
+
+[product_create_title]
+	one = "créer produit"
+[product_update_title]
+	one = "mettre à jour produit"
 [product_threedformula_title]
 	one = "formule 3D"
+[product_threedformula_mol_title]
+	one = "fichier MOL formule 3D"
 [product_msds_title]
 	one = "FDS"
 [product_disposalcomment_title]
 	one = "commentaire de destruction"
 [product_remark_title]
 	one = "remarque"
+[product_specificity_title]
+	one = "spécificité"
 [product_radioactive_title]
 	one = "radioactif"
 [product_restricted_title]
 	one = "accès restreint"
+[product_name_table_header]
+	one = "nom"
+[product_empiricalformula_table_header]
+	one = "formule brute"
+[product_cas_table_header]
+	one = "CAS"
+[product_specificity_table_header]
+	one = "spécificité"
+
+[person_create_title]
+	one = "créer personne"
+[person_update_title]
+	one = "mettre à jour personne"
+[person_email_title]
+	one = "mail"
+[person_password_title]
+	one = "mot de passe"
+[person_entity_title]
+	one = "entité(s)"
+[person_email_table_header]
+	one = "mail"
+
+[storelocation_create_title]
+	one = "créer entrepôt"
+[storelocation_update_title]
+	one = "mettre à jour entrepôt"
+[storelocation_parent_title]
+	one = "parent"
+[storelocation_entity_title]
+	one = "entité"
+[storelocation_canstore_title]
+	one = "peut stocker"
+[storelocation_color_title]
+	one = "couleur"
+[storelocation_name_title]
+	one = "nom"
+[storelocation_name_table_header]
+	one = "nom"
+[storelocation_entity_table_header]
+	one = "entité"
+[storelocation_color_table_header]
+	one = "couleur"
+[storelocation_canstore_table_header]
+	one = "peut stocker"
+[storelocation_parent_table_header]
+	one = "parent"
 
 [entity_create_title]
 	one = "créer une entité"
+[entity_update_title]
+	one = "mettre à jour entité"
 [entity_deleted_message]
 	one = "entité supprimée"
 [entity_created_message]

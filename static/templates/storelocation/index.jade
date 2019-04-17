@@ -17,17 +17,22 @@ block CONTENT
                                 data-sort-name='storelocation_fullpath')
                         thead
                             tr
-                                th(data-field='storelocation_id' data-sortable='true' data-formatter='storelocation_idFormatter') ID
-                                th(data-field='storelocation_fullpath' data-sortable='true') name
-                                th(data-field='entity.entity_name' data-sortable='true') entity
-                                th(data-field='storelocation_color' data-sortable='false' data-formatter='storelocation_colorFormatter') color
-                                th(data-field='storelocation_canstore' data-sortable='false' data-formatter='storelocation_canstoreFormatter') can store
-                                th(data-field='storelocation' data-sortable='true' data-formatter='storelocationFormatter') parent
-                                th(data-field='operate' data-formatter='operateFormatter' data-events='operateEvents') actions
+                                //th(data-field='storelocation_id' data-sortable='true' data-formatter='storelocation_idFormatter') ID
+                                th(data-field='storelocation_fullpath' data-sortable='true')
+                                    = T("storelocation_name_table_header", 1)
+                                th(data-field='entity.entity_name' data-sortable='true')
+                                    = T("storelocation_entity_table_header", 1)
+                                th(data-field='storelocation_color' data-sortable='false' data-formatter='storelocation_colorFormatter')
+                                    = T("storelocation_color_table_header", 1)
+                                th(data-field='storelocation_canstore' data-sortable='false' data-formatter='storelocation_canstoreFormatter')
+                                    = T("storelocation_canstore_table_header", 1)
+                                th(data-field='storelocation' data-sortable='true' data-formatter='storelocationFormatter')
+                                    = T("storelocation_parent_table_header", 1)
+                                th(data-field='operate' data-formatter='operateFormatter' data-events='operateEvents')
 
         #edit-collapse.collapse(data-parent='#accordion')
 
-            +titleicon(iconaction="border-color" iconitem="docker" label="update store location")
+            +titleicon(iconaction="border-color" iconitem="docker" label="storelocation_update_title")
 
             form#storelocation
                 input#index(type='hidden', name='index', value='')
@@ -35,19 +40,19 @@ block CONTENT
 
                 .form-group.row
                     .form-group.col-sm-12
-                        +inputtext("name", "storelocation_name")
+                        +inputtext("storelocation_name_title", "storelocation_name")
                 .form-group.row
                     .form-group.col-sm-12
-                        +select("entity", "entity")
+                        +select("entity_name_table_header", "entity")
                 .form-group.row
                     .form-group.col-sm-12
-                        +select("parent", "storelocation") 
+                        +select("storelocation_parent_title", "storelocation") 
                 .form-group.row
                     .form-group.col-sm-12
-                        +checkbox("can store?", "storelocation_canstore")
+                        +checkbox("storelocation_canstore_title", "storelocation_canstore")
                 .form-group.row
                     .form-group.col-sm-12
-                        +inputtext("color", "storelocation_color")
+                        +inputtext("storelocation_color_title", "storelocation_color")
                     
             button#save.btn.btn-link(type='button', onclick='saveStoreLocation()')
                 span.mdi.mdi-content-save.mdi-24px.iconlabel

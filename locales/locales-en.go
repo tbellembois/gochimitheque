@@ -26,10 +26,21 @@ var LOCALES_EN = []byte(`
 [required_input]
 	one = "required input"
 
+[password]
+	one = "password"
+[confirm_password]
+	one = "confirm password"
+
 [members]
 	one = "members"
 [storelocations]
 	one = "storelocations"
+
+[magical_selector]
+	one = "magical selector"
+
+[nb_duplicate]
+	one = "nb of duplicates"
 
 [email_placeholder]
 	one = "enter your email"
@@ -140,25 +151,15 @@ var LOCALES_EN = []byte(`
 [hidedeleted_text]
 	one = "hide deleted"
 
-[storage_quantity_title]
-	one = "quantity"
-[storage_barecode_title]
-	one = "barecode"
-[storage_batchnumber_title]
-	one = "batch number"
+[unit_label_title]
+	one = "unit"
 [supplier_label_title]
 	one = "supplier"
-[storage_entrydate_title]
-	one = "entry date"
-[storage_exitdate_title]
-	one = "exit date"
-[storage_openingdate_title]
-	one = "opening date"
-[storage_expirationdate_title]
-	one = "expiration date"
-[storage_comment_title]
-	one = "comment"
 
+[storage_create_title]
+	one = "create storage"
+[storage_update_title]
+	one = "update storage"
 [storage_clone]
 	one = "clone"
 [storage_borrow]
@@ -169,6 +170,39 @@ var LOCALES_EN = []byte(`
 	one = "restore"
 [storage_showhistory]
 	one = "show history"
+
+[storage_storelocation_title]
+	one = "store location"
+[storage_quantity_title]
+	one = "quantity"
+[storage_barecode_title]
+	one = "barecode"
+[storage_batchnumber_title]
+	one = "batch number"
+[storage_entrydate_title]
+	one = "entry date"
+[storage_exitdate_title]
+	one = "exit date"
+[storage_openingdate_title]
+	one = "opening date"
+[storage_expirationdate_title]
+	one = "expiration date"
+[storage_borrower_title]
+	one = "borrower"
+[storage_comment_title]
+	one = "comment"
+[storage_reference_title]
+	one = "reference"
+[storage_todestroy_title]
+	one = "to destroy"
+[storage_product_table_header]
+	one = "product"
+[storage_storelocation_table_header]
+	one = "store location"
+[storage_quantity_table_header]
+	one = "quantity"
+[storage_barecode_table_header]
+	one = "barecode"
 
 [stock_storelocation_title]
 	one = "in this store location"
@@ -185,8 +219,10 @@ var LOCALES_EN = []byte(`
 	one = "CMR"
 [signalword_label_title]
 	one = "signal word"
+[symbol_label_title]
+	one = "symbol(s)"
 [linearformula_label_title]
-	one = "liner formula"
+	one = "linear formula"
 [hazardstatement_label_title]
 	one = "hazard statement(s)"
 [precautionarystatement_label_title]
@@ -195,21 +231,82 @@ var LOCALES_EN = []byte(`
 	one = "class of compounds"
 [physicalstate_label_title]
 	one = "physical state"
+[name_label_title]
+	one = "name"
+[synonym_label_title]
+	one = "synonym(s)"
+
+[product_create_title]
+	one = "create product"
+[product_update_title]
+	one = "update product"
 [product_threedformula_title]
 	one = "3D formula"
+[product_threedformula_mol_title]
+	one = "3D formula MOL file"
 [product_msds_title]
 	one = "MSDS"
 [product_disposalcomment_title]
 	one = "disposal comment"
 [product_remark_title]
 	one = "remark"
+[product_specificity_title]
+	one = "specificity"
 [product_radioactive_title]
 	one = "radioactive"
 [product_restricted_title]
 	one = "restricted access"
+[product_name_table_header]
+	one = "name"
+[product_empiricalformula_table_header]
+	one = "empirical formula"
+[product_cas_table_header]
+	one = "CAS"
+[product_specificity_table_header]
+	one = "specificity"
+
+[person_create_title]
+	one = "create person"
+[person_update_title]
+	one = "update person"
+[person_email_title]
+	one = "email"
+[person_password_title]
+	one = "password"
+[person_entity_title]
+	one = "entity(ies)"
+[person_email_table_header]
+	one = "email"
+
+[storelocation_create_title]
+	one = "create store location"
+[storelocation_update_title]
+	one = "update store location"
+[storelocation_parent_title]
+	one = "parent"
+[storelocation_entity_title]
+	one = "entity"
+[storelocation_canstore_title]
+	one = "can store"
+[storelocation_color_title]
+	one = "color"
+[storelocation_name_title]
+	one = "name"
+[storelocation_name_table_header]
+	one = "name"
+[storelocation_entity_table_header]
+	one = "entity"
+[storelocation_color_table_header]
+	one = "color"
+[storelocation_canstore_table_header]
+	one = "can store"
+[storelocation_parent_table_header]
+	one = "parent"
 
 [entity_create_title]
 	one = "create entity"
+[entity_update_title]
+	one = "update entity"
 [entity_deleted_message]
 	one = "entity deleted"
 [entity_created_message]
@@ -222,7 +319,7 @@ var LOCALES_EN = []byte(`
 	one = "description"
 [entity_manager_table_header]
 	one = "manager(s)"
-	
+
 [entity_nameexist_validate]
 	one = "entity with this name already present" 
 [person_emailexist_validate]
