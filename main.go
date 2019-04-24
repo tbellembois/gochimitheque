@@ -8,6 +8,8 @@ package main
 import (
 	"flag"
 	"net/http"
+	"net/http/pprof"
+	_ "net/http/pprof"
 	"os"
 
 	rice "github.com/GeertJohan/go.rice"
@@ -98,6 +100,19 @@ func main() {
 
 	// router definition
 	r := mux.NewRouter()
+
+	// add the pprof routes
+	r.HandleFunc("/debug/pprof/", pprof.Index)
+	r.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+	r.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	r.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	r.HandleFunc("/debug/pprof/trace", pprof.Trace)
+
+	r.Handle("/debug/pprof/block", pprof.Handler("block"))
+	r.Handle("/debug/pprof/goroutine", pprof.Handler("goroutine"))
+	r.Handle("/debug/pprof/heap", pprof.Handler("heap"))
+	r.Handle("/debug/pprof/threadcreate", pprof.Handler("threadcreate"))
+
 	commonChain := alice.New(env.ContextMiddleware, env.HeadersMiddleware, env.LogingMiddleware)
 	securechain := alice.New(env.ContextMiddleware, env.HeadersMiddleware, env.LogingMiddleware, env.AuthenticateMiddleware, env.AuthorizeMiddleware)
 
