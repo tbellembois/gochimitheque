@@ -6,11 +6,13 @@ package main
 //go:generate jade -writer -basedir static/templates -d ./jade home/index.jade login/index.jade entity/index.jade entity/create.jade product/index.jade product/create.jade storage/index.jade storage/create.jade storelocation/index.jade storelocation/create.jade person/index.jade person/create.jade person/pupdate.jade test.jade
 
 import (
+	"database/sql"
 	"flag"
 	"net/http"
 	"net/http/pprof"
 	_ "net/http/pprof"
 	"os"
+	"strings"
 
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/gorilla/mux"
@@ -43,6 +45,7 @@ func main() {
 	mailServerSender := flag.String("mailserversender", "", "the mail server sender")
 	mailServerUseTLS := flag.Bool("mailserverusetls", false, "use TLS? (optional)")
 	mailServerTLSSkipVerify := flag.Bool("mailservertlsskipverify", false, "skip TLS verification? (optional)")
+	admins := flag.String("admins", "", "the additional admins (comma separated email adresses)")
 	logfile := flag.String("logfile", "", "log to the given file")
 	debug := flag.Bool("debug", false, "debug (verbose log), default is error")
 	importfrom := flag.String("importfrom", "", "full path of the directory containing the CSV to import")
@@ -58,7 +61,7 @@ func main() {
 	// logging to file if logfile parameter specified
 	if *logfile != "" {
 		if logf, err = os.OpenFile(*logfile, os.O_WRONLY|os.O_CREATE, 0755); err != nil {
-			log.Panic(err)
+			log.Fatal(err)
 		} else {
 			log.SetOutput(logf)
 		}
@@ -77,11 +80,11 @@ func main() {
 	// database initialization
 	log.Info("- opening database connection to " + dbname)
 	if datastore, err = models.NewSQLiteDBstore(dbname); err != nil {
-		log.Panic(err)
+		log.Fatal(err)
 	}
 	log.Info("- creating database if needed")
 	if err = datastore.CreateDatabase(); err != nil {
-		log.Panic(err)
+		log.Fatal(err)
 	}
 	if *importfrom != "" {
 		log.Info("- import from csv into database")
@@ -90,6 +93,51 @@ func main() {
 			log.Error("an error occured: " + err.Error())
 		}
 		os.Exit(0)
+	}
+
+	// adding additional admins
+	var (
+		p             models.Person
+		formerAdmins  []models.Person
+		currentAdmins []string
+		isStillAdmin  bool
+	)
+	if *admins != "" {
+		currentAdmins = strings.Split(*admins, ",")
+	}
+	if formerAdmins, err = datastore.GetAdmins(); err != nil {
+		log.Fatal(err)
+	}
+	// cleaning former admins
+	for _, fa := range formerAdmins {
+		isStillAdmin = false
+		log.Info("former admin: " + fa.PersonEmail)
+		for _, ca := range currentAdmins {
+			if ca == fa.PersonEmail {
+				isStillAdmin = true
+			}
+		}
+		if !isStillAdmin {
+			log.Info(fa.PersonEmail + " is not an admin anymore, removing permissions")
+			if err = datastore.UnsetPersonAdmin(fa.PersonID); err != nil {
+				log.Fatal(err)
+			}
+		}
+	}
+	// setting up new ones
+	if len(currentAdmins) > 0 {
+		for _, ca := range currentAdmins {
+			log.Info("additional admin: " + ca)
+			if p, err = datastore.GetPersonByEmail(ca); err != nil {
+				if err == sql.ErrNoRows {
+					log.Fatal("user " + ca + " not found in database")
+				} else {
+					log.Fatal(err)
+				}
+			}
+
+			datastore.SetPersonAdmin(p.PersonID)
+		}
 	}
 
 	// environment creation

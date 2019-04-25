@@ -94,7 +94,10 @@ type Datastore interface {
 	UpdatePerson(p Person) error
 	UpdatePersonPassword(p Person) error
 	DeletePerson(id int) error
+	GetAdmins() ([]Person, error)
 	IsPersonAdmin(id int) (bool, error)
+	UnsetPersonAdmin(id int) error
+	SetPersonAdmin(id int) error
 	IsPersonManager(id int) (bool, error)
 
 	// captcha
