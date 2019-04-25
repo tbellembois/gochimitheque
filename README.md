@@ -18,7 +18,7 @@ Main goals:
 
 ![screenshot](screenshot.png)
 
-# Quick start
+# Quick start (to test the application)
 
 You need a Linux AMD64 machine. No dependencies are required.
 
@@ -32,6 +32,13 @@ Et voilà !
 Now login with the email `admin@chimitheque.com` and password `chimitheque`, and change the password immediatly.
 
 # Production installation
+
+## Requirements
+
+- linux (Chimithèque can be cross compiled to run on Windows but binaries are not provided and this documentation does not cover this situation)
+- an SMTP server (for password recovery)
+
+## Installation
 
 It is strongly recommended to run Chimithèque behind an HTTP proxy server with SSL.
 
@@ -51,13 +58,39 @@ It is strongly recommended to run Chimithèque behind an HTTP proxy server with 
     chown -R  chimitheque:chimitheque /usr/local/chimitheque
 ```
 
-- install the systemd script `doc/chimitheque.service` in `/etc/systemd/system` and enable/start it with `systemctl enable chimitheque.service; systemctl start chimitheque.service`
+- configure (look at the following section) and install the systemd script `doc/chimitheque.service` in `/etc/systemd/system` and enable/start it with `systemctl enable chimitheque.service; systemctl start chimitheque.service`
 
 - install and adapt the apache2 configuration `doc/apache2-chimitheque.conf` in `/etc/apache2/site-available` and enable it with `a2esite apache2-chimitheque.conf`
 
+# Binary command line parameters
+
+You need configure the systemd script with the following parameters:
+
+- `-port`: application listening port - default = `8081`
+- `-proxyurl`: application base URL with no trailing slash - default = `http://localhost:8081`
+- `-proxypath`: application path - default = `/`
+- `-mailserveraddress`: SMTP server address - *REQUIRED*
+- `-mailserverport`: SMTP server port - *REQUIRED*
+- `-mailserversender`: SMTP server sender email - *REQUIRED*
+- `-mailserverusetls`: use an SMTP TLS connection - default = `false`
+- `-mailservertlsskipverify`: skip SSL verification - default = `false`
+- `-admins`: comma separated list of administrators emails
+- `-logfile`: output log file - by default logs are sent to stdout
+- `-debug`: debug mode, do not enable in production
+
+# Application administrators
+
+A static administrator `admin@chimitheque.fr` is created during the installation. His password must be changed after the first connection.
+
+You can add add additional administrators with the `admins` command line parameters.
+
 # Database backup
 
-Chimithèque uses a local sqlite database. You are encouraged to schedule regular plain text dump in a separate machine in case of disk failure.
+Chimithèque uses a local sqlite database. You are strongly encouraged to schedule regular plain text dump in a separate machine in case of disk failure.
+
+# Chimithèque v1 database migration
+
+// TODO
 
 # v1/v2 version
 

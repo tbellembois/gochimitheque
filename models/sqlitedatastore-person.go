@@ -641,6 +641,26 @@ func (db *SQLiteDataStore) UpdatePerson(p Person) error {
 	return nil
 }
 
+// GetAdmins returns the administrators
+func (db *SQLiteDataStore) GetAdmins() ([]Person, error) {
+	var (
+		people []Person
+		sqlr   string
+		err    error
+	)
+	sqlr = `SELECT person_id, person_email from person 
+	JOIN permission ON 
+	permission.person = person_id AND
+	permission.permission_perm_name = "all" AND
+	permission.permission_item_name = "all" AND
+	permission_entity_id = -1 WHERE NOT
+	person_email = "admin@chimitheque.fr"`
+	if err = db.Select(&people, sqlr); err != nil {
+		return nil, err
+	}
+	return people, nil
+}
+
 // IsPersonAdmin returns true is the person with id "id" is an admin
 func (db *SQLiteDataStore) IsPersonAdmin(id int) (bool, error) {
 	var (
@@ -664,6 +684,43 @@ func (db *SQLiteDataStore) IsPersonAdmin(id int) (bool, error) {
 		res = true
 	}
 	return res, nil
+}
+
+// UnsetPersonAdmin unset the person with id "id" the admin permissions
+func (db *SQLiteDataStore) UnsetPersonAdmin(id int) error {
+	var (
+		sqlr string
+		err  error
+	)
+
+	sqlr = `DELETE FROM permission WHERE person = ? AND permission_perm_name = ? AND permission_item_name = ? AND permission_entity_id = ?`
+	if _, err = db.Exec(sqlr, id, "all", "all", "-1"); err != nil {
+		return err
+	}
+	return nil
+}
+
+// SetPersonAdmin set the person with id "id" an admin
+func (db *SQLiteDataStore) SetPersonAdmin(id int) error {
+	var (
+		isAdmin bool
+		sqlr    string
+		err     error
+	)
+
+	if isAdmin, err = db.IsPersonAdmin(id); err != nil {
+		return err
+	}
+	if isAdmin {
+		return nil
+	}
+
+	sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id) 
+	VALUES (?, ?, ?, ?)`
+	if _, err = db.Exec(sqlr, id, "all", "all", "-1"); err != nil {
+		return err
+	}
+	return nil
 }
 
 // IsPersonManager returns true is the person with id "id" is a manager
