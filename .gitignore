@@ -12,7 +12,7 @@
 *.out
 
 # Databases
-*.db
+*.db*
 
 # vscode
 .vscode

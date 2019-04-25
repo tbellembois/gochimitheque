@@ -55,6 +55,7 @@ func NewSQLiteDBstore(dataSourceName string) (*SQLiteDataStore, error) {
 	if db, err = sqlx.Connect("sqlite3_with_go_func", dataSourceName+"?_journal=wal&_fk=1"); err != nil {
 		return &SQLiteDataStore{}, err
 	}
+
 	return &SQLiteDataStore{db}, nil
 }
 
@@ -73,18 +74,19 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	PRAGMA encoding = "UTF-8"; 
 	PRAGMA temp_store = 2;
 	PRAGMA journal_mode = WAL;
+	PRAGMA temp_store = MEMORY;
 
 	CREATE TABLE IF NOT EXISTS person(
 		person_id integer PRIMARY KEY,
 		person_email string NOT NULL,
 		person_password string NOT NULL);
-		CREATE UNIQUE INDEX IF NOT EXISTS idx_person ON person(person_id, person_email);
+		CREATE UNIQUE INDEX IF NOT EXISTS idx_person ON person(person_email);
 
 	CREATE TABLE IF NOT EXISTS entity (
 		entity_id integer PRIMARY KEY,
-		entity_name string NOT NULL,
+		entity_name string UNIQUE NOT NULL,
 		entity_description string);
-	CREATE UNIQUE INDEX IF NOT EXISTS idx_entity ON entity(entity_id, entity_name);
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_entity ON entity(entity_name);
 
 	CREATE TABLE IF NOT EXISTS storelocation (
 		storelocation_id integer PRIMARY KEY,
@@ -96,8 +98,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		storelocation integer,
 		FOREIGN KEY(storelocation) references storelocation(storelocation_id),
 		FOREIGN KEY(entity) references entity(entity_id));
-	CREATE UNIQUE INDEX IF NOT EXISTS idx_storelocation ON storelocation(storelocation_id, storelocation_name);
-
+	
 	CREATE TABLE IF NOT EXISTS supplier (
 		supplier_id integer PRIMARY KEY,
 		supplier_label string NOT NULL);
@@ -602,6 +603,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 			log.Debug("  " + name)
 			sqlr = `INSERT INTO entity(entity_name, entity_description) VALUES (?, ?)`
 			if res, err = tx.Exec(sqlr, name, description); err != nil {
+				log.Error("error importing entity " + name)
 				tx.Rollback()
 				return err
 			}
@@ -659,6 +661,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		log.Debug("storelocation " + label + ", entity:" + newentity + ", parent:" + newparent.String)
 		sqlr = `INSERT INTO storelocation(storelocation_name, storelocation_color, storelocation_canstore, storelocation_fullpath, entity, storelocation) VALUES (?, ?, ?, ?, ?, ?)`
 		if res, err = tx.Exec(sqlr, label, color, canStore, "", newentity, newparent); err != nil {
+			log.Error("error importing storelocation " + label)
 			tx.Rollback()
 			return err
 		}
