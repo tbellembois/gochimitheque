@@ -17,6 +17,7 @@ type Datastore interface {
 	GetProducts(helpers.DbselectparamProduct) ([]Product, int, error)
 	GetProductsCasNumbers(helpers.Dbselectparam) ([]CasNumber, int, error)
 	GetProductsCasNumber(id int) (CasNumber, error)
+	GetProductsCasNumberByLabel(label string) (CasNumber, error)
 	GetProductsCeNumbers(helpers.Dbselectparam) ([]CeNumber, int, error)
 	GetProductsNames(helpers.Dbselectparam) ([]Name, int, error)
 	GetProductsName(id int) (Name, error)
@@ -69,6 +70,7 @@ type Datastore interface {
 	CreateStoreLocation(s StoreLocation) (int, error)
 	UpdateStoreLocation(s StoreLocation) error
 	IsStoreLocationEmpty(id int) (bool, error)
+	ComputeStockStorelocation(p Product, s *StoreLocation, u Unit) float64
 
 	// entities
 	ComputeStockEntity(p Product, r *http.Request) []StoreLocation

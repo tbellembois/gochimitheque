@@ -326,8 +326,10 @@ var LOCALES_EN = []byte(`
 	one = "person with this email already present" 
 [empiricalformula_validate]
 	one = "invalid empirical formula"
-[casnumber_validate]
+[casnumber_validate_wrongcas]
 	one = "invalid CAS number"
+[casnumber_validate_casspecificity]
+	one = "CAS number/specificity pair already exist"
 [cenumber_validate]
 	one = "invalid EC number"
 `)

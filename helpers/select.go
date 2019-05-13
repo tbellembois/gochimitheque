@@ -40,6 +40,7 @@ type DbselectparamProduct interface {
 	SetProduct(int)
 	SetStorelocation(int)
 	SetBookmark(bool)
+	SetProductSpecificity(string)
 
 	SetCustomNamePartOf(string)
 	SetName(int)
@@ -56,6 +57,7 @@ type DbselectparamProduct interface {
 	GetProduct() int
 	GetStorelocation() int
 	GetBookmark() bool
+	GetProductSpecificity() string
 
 	GetCustomNamePartOf() string
 	GetName() int
@@ -85,6 +87,7 @@ type dbselectparamProduct struct {
 	PrecautionaryStatements []int //ids
 	SignalWord              int   // id
 	CasNumberCmr            bool
+	ProductSpecificity string
 }
 
 // DbselectparamStorage contains the parameters of the GetStorages function
@@ -370,6 +373,14 @@ func (d dbselectparamProduct) GetCasNumberCmr() bool {
 	return d.CasNumberCmr
 }
 
+func (d *dbselectparamProduct) SetProductSpecificity(s string) {
+	d.ProductSpecificity = s
+}
+
+func (d *dbselectparamProduct) GetProductSpecificity() string {
+	return d.ProductSpecificity
+}
+
 //
 // dbselectparamStorage functions
 //
@@ -593,6 +604,7 @@ func NewdbselectparamProduct(r *http.Request, f func(string) (string, error)) (*
 	dspp.CustomNamePartOf = ""
 	dspp.SignalWord = -1
 	dspp.CasNumberCmr = false
+	dspp.ProductSpecificity = ""
 	if dsp, aerr = Newdbselectparam(r, f); aerr != nil {
 		return nil, aerr
 	}
@@ -720,6 +732,9 @@ func NewdbselectparamProduct(r *http.Request, f func(string) (string, error)) (*
 		}
 		if custom_name_part_of, ok := r.URL.Query()["custom_name_part_of"]; ok {
 			dspp.CustomNamePartOf = "%" + custom_name_part_of[0] + "%"
+		}
+		if product_specificity, ok := r.URL.Query()["product_specificity"]; ok {
+			dspp.ProductSpecificity = product_specificity[0]
 		}
 		if casnumber_cmr, ok := r.URL.Query()["casnumber_cmr"]; ok {
 			if dspp.CasNumberCmr, err = strconv.ParseBool(casnumber_cmr[0]); err != nil {

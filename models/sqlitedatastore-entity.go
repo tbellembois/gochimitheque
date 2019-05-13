@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"net/http"
 	"strings"
-
+	
 	"github.com/jmoiron/sqlx"
 
 	sq "github.com/Masterminds/squirrel"
@@ -24,6 +24,7 @@ func (db *SQLiteDataStore) ComputeStockStorelocation(p Product, s *StoreLocation
 		t           float64 // total s stock for p
 		err         error
 	)
+	log.WithFields(log.Fields{"p": p, "s": s, "u": u})
 
 	sqlr := `SELECT SUM(storage.storage_quantity * unit_multiplier) FROM storage
 	JOIN unit on storage.unit = unit.unit_id
