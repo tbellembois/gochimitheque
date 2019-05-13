@@ -324,8 +324,10 @@ var LOCALES_FR = []byte(`
 	one = "une personne avec cet email existe déjà"
 [empiricalformula_validate]
 	one = "formule brute invalide"
-[casnumber_validate]
+[casnumber_validate_wrongcas]
 	one = "numéro CAS invalide"
+[casnumber_validate_casspecificity]
+	one = "le couple numéro CAS/spécificité existe déjà"
 [cenumber_validate]
 	one = "numéro CE invalide"
 `)

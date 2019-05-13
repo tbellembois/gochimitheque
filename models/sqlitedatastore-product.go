@@ -436,7 +436,7 @@ func (db *SQLiteDataStore) GetProductsEmpiricalFormula(id int) (EmpiricalFormula
 	return ef, nil
 }
 
-// GetProductsCasNumber return the name matching the given id
+// GetProductsCasNumber return the cas numbers matching the given id
 func (db *SQLiteDataStore) GetProductsCasNumber(id int) (CasNumber, error) {
 
 	var (
@@ -453,6 +453,26 @@ func (db *SQLiteDataStore) GetProductsCasNumber(id int) (CasNumber, error) {
 		return CasNumber{}, err
 	}
 	log.WithFields(log.Fields{"ID": id, "cas": cas}).Debug("GetProductsCasNumber")
+	return cas, nil
+}
+
+// GetProductsCasNumberByLabel return the cas numbers matching the given cas number
+func (db *SQLiteDataStore) GetProductsCasNumberByLabel(label string) (CasNumber, error) {
+
+	var (
+		cas  CasNumber
+		sqlr string
+		err  error
+	)
+	log.WithFields(log.Fields{"label": label}).Debug("GetProductsCasNumberByLabel")
+
+	sqlr = `SELECT casnumber.casnumber_id, casnumber.casnumber_label
+	FROM casnumber
+	WHERE casnumber_label = ?`
+	if err = db.Get(&cas, sqlr, label); err != nil {
+		return CasNumber{}, err
+	}
+	log.WithFields(log.Fields{"label": label, "cas": cas}).Debug("GetProductsCasNumberByLabel")
 	return cas, nil
 }
 
@@ -1051,6 +1071,9 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	if p.GetStorelocation() != -1 {
 		comreq.WriteString(" AND storelocation.storelocation_id = :storelocation")
 	}
+	if p.GetProductSpecificity() != "" {
+		comreq.WriteString(" AND p.product_specificity = :product_specificity")
+	}
 
 	// search form parameters
 	if p.GetName() != -1 {
@@ -1134,6 +1157,7 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 		"name":                p.GetName(),
 		"casnumber":           p.GetCasNumber(),
 		"empiricalformula":    p.GetEmpiricalFormula(),
+		"product_specificity": p.GetProductSpecificity(),
 		"storage_barecode":    p.GetStorageBarecode(),
 		"custom_name_part_of": "%" + p.GetCustomNamePartOf() + "%",
 		"signalword":          p.GetSignalWord(),
