@@ -226,7 +226,7 @@ var LOCALES_FR = []byte(`
 [precautionarystatement_label_title]
 	one = "conseil(s) de prudence P"
 [classofcompound_label_title]
-	one = "famille chimique"
+	one = "famille(s) chimique(s)"
 [physicalstate_label_title]
 	one = "état physique"
 [name_label_title]

@@ -1,7 +1,17 @@
-.th-width-200 {
+.th-width-332 {
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 200px;
+    min-width: 332px;
+}
+.th-width-212 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 212px;
+}
+.th-width-96 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 96px;
 }
 .iconlabel {
     font-family: economicaregular;

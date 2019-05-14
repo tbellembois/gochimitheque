@@ -105,7 +105,7 @@ block CONTENT
                 thead
                     tr
                         // th(data-field='product_id' data-sortable='true') ID
-                        th.th-width-200(data-field='name.name_label' data-sortable='true')
+                        th(data-field='name.name_label' data-sortable='true')
                             = T("product_name_table_header", 1)
                         th(data-field='empiricalformula.empiricalformula_label' data-sortable='true')
                             = T("product_empiricalformula_table_header", 1)
@@ -114,7 +114,7 @@ block CONTENT
                         th(data-field='product_specificity' data-sortable='false' data-formatter='product_specificityFormatter')
                             = T("product_specificity_table_header", 1)
                         th(data-field='product_sl' data-formatter='product_slFormatter' data-sortable='false') 
-                        th(data-field='operate' data-formatter='operateFormatter' data-events='operateEvents') 
+                        th.th-width-332(data-field='operate' data-formatter='operateFormatter' data-events='operateEvents') 
 
         #edit-collapse.collapse(data-parent='#accordion')
 
@@ -173,7 +173,7 @@ block CONTENT
                     .form-group.col-sm-6
                         +select("physicalstate_label_title", "physicalstate")
                     .form-group.col-sm-6
-                        +select("classofcompound_label_title", "classofcompound")  
+                        +selectmultiple("classofcompound_label_title", "classofcompound")  
                         
                 .form-row
                     .form-group.col-sm-6
@@ -205,7 +205,7 @@ block CONTENT
                     span.mdi.mdi-content-save.mdi-24px.iconlabel
                         = T("save", 1)
                 button.btn.btn-link(type='button', onclick='closeEdit();')
-                    span.mdi.mdi-content-save.mdi-24px.iconlabel
+                    span.mdi.mdi-close-box.mdi-24px.iconlabel
                         = T("close", 1)
 
 block CONTENTJS

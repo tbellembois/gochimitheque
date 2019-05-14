@@ -695,8 +695,8 @@ $( document ).ready(function() {
 
                 // replacing name by text expected by select2
                 var newdata = $.map(data.rows, function (obj) {
-                    obj.text = obj.text || obj.classofcompound_label.String;
-                    obj.id = obj.id || obj.classofcompound_id.Int64;
+                    obj.text = obj.text || obj.classofcompound_label;
+                    obj.id = obj.id || obj.classofcompound_id;
                     return obj;
                 });
                 // getting the number of loaded select elements
@@ -1178,66 +1178,81 @@ function detailFormatter(index, row) {
     html.push("</div>")
 
     html.push("<div class='row mt-sm-3'>")
-        html.push("<div class='col-sm-6'>")
-            html.push("<span class='iconlabel'>id</span> " + row["product_id"])
-        html.push("</div>")
-    html.push("</div>")
 
-    html.push("<div class='row mt-sm-3'>")
-        html.push("<div class='col-sm-12'>")
+        html.push("<div class='col-sm-10'>")
             $.each(row["synonyms"], function (key, value) {
                 html.push("<span>" + value["name_label"] + "</span> ");
             });
         html.push("</div>")
+
+        html.push("<div class='col-sm-2'>")
+            html.push("<span class='iconlabel'>id</span> " + row["product_id"])
+        html.push("</div>")
+
     html.push("</div>")
 
+
     html.push("<div class='row mt-sm-3'>")
-        html.push("<div class='col-sm-6'>")
+
+        html.push("<div class='col-sm-4'>")
             html.push("<span class='iconlabel'>" + global.t("casnumber_label_title", container.PersonLanguage) + "</span> " + row["casnumber"]["casnumber_label"])
             if (row["casnumber"]["casnumber_cmr"]["Valid"]) {
                 html.push("<span class='iconlabel'>" + global.t("casnumber_cmr_title", container.PersonLanguage) + "</span> " + row["casnumber"]["casnumber_cmr"]["String"])
             }
         html.push("</div>")
+
         if (row["cenumber"]["cenumber_id"]["Valid"]) {
-            html.push("<div class='col-sm-6'><span class='iconlabel'>" + global.t("cenumber_label_title", container.PersonLanguage) + "</span> " + row["cenumber"]["cenumber_label"]["String"] + "</div>")
+            html.push("<div class='col-sm-4'><span class='iconlabel'>" + global.t("cenumber_label_title", container.PersonLanguage) + "</span> " + row["cenumber"]["cenumber_label"]["String"] + "</div>")
         }
+
+        if (row["product_msds"]["Valid"]) {
+            html.push("<div class='col-sm-4'><span class='iconlabel'>" + global.t("product_msds_title", container.PersonLanguage) + "</span> <a href='" + row["product_msds"]["String"] + "'><span class='mdi mdi-link-variant mdi-24px'></span></a></div>")
+        }
+
     html.push("</div>")
+
 
     html.push("<div class='row mt-sm-3'>")
-    
-        html.push("<div class='col-sm-6'><span class='iconlabel'>" + global.t("empiricalformula_label_title", container.PersonLanguage) + "</span> " + row["empiricalformula"]["empiricalformula_label"] + "</div>")
+
+        html.push("<div class='col-sm-4'><span class='iconlabel'>" + global.t("empiricalformula_label_title", container.PersonLanguage) + "</span> " + row["empiricalformula"]["empiricalformula_label"] + "</div>")
+        
         if (row["linearformula"]["linearformula_id"]["Valid"]) {
-            html.push("<div class='col-sm-6'><span class='iconlabel'>" + global.t("linearformula_label_title", container.PersonLanguage) + "</span> " + row["linearformula"]["linearformula_label"]["String"] + "</div>")
+            html.push("<div class='col-sm-4'><span class='iconlabel'>" + global.t("linearformula_label_title", container.PersonLanguage) + "</span> " + row["linearformula"]["linearformula_label"]["String"] + "</div>")
         }
+        
         if (row["product_threedformula"]["Valid"] && row["product_threedformula"]["String"] != "") {
-            html.push("<div class='col-sm-6'><span class='iconlabel'>" + global.t("product_threedformula_title", container.PersonLanguage) + "</span> <a href='" + row["product_threedformula"]["String"] + "'><span class='mdi mdi-link-variant mdi-24px'></span></a></div>")
+            html.push("<div class='col-sm-4'><span class='iconlabel'>" + global.t("product_threedformula_title", container.PersonLanguage) + "</span> <a href='" + row["product_threedformula"]["String"] + "'><span class='mdi mdi-link-variant mdi-24px'></span></a></div>")
         }
+
     html.push("</div>")
 
-    html.push("<div class='row mt-sm-4'>")
-        if (row["product_msds"]["Valid"]) {
-            html.push("<div class='col-sm-12'><span class='iconlabel'>" + global.t("product_msds_title", container.PersonLanguage) + "</span> <a href='" + row["product_msds"]["String"] + "'><span class='mdi mdi-link-variant mdi-24px'></span></a></div>")
-        }
-    html.push("</div>")
 
-    html.push("<div class='row mt-md-3'>")
-        html.push("<div class='col-sm-6'>")
+    html.push("<div class='row mt-sm-3'>")
+
+        html.push("<div class='col-sm-4'>")
         $.each(row["symbols"], function (key, value) {
             html.push("<img src='data:" + value["symbol_image"] + "' alt='" + value["symbol_label"] + "' title='" + value["symbol_label"] + "'/>");
         });
         html.push("</div>")
 
-        html.push("<div class='col-sm-6'>")
+        html.push("<div class='col-sm-4'>")
         if (row["signalword"]["signalword_label"]["Valid"]) {
-            html.push("<div class='col-sm-12'><span class='iconlabel'>" + global.t("signalword_label_title", container.PersonLanguage) + "</span> " + row["signalword"]["signalword_label"]["String"] + "</div>")
+            html.push("<span class='iconlabel'>" + global.t("signalword_label_title", container.PersonLanguage) + "</span> " + row["signalword"]["signalword_label"]["String"])
         }
         html.push("</div>")
+
+        if (row["physicalstate"]["physicalstate_id"]["Valid"]) {
+            html.push("<div class='col-sm-4'><span class='iconlabel'>" + global.t("physicalstate_label_title", container.PersonLanguage) + "</span> " + row["physicalstate"]["physicalstate_label"]["String"] + "</div>")
+        }
+
     html.push("</div>")
 
-    html.push("<div class='row mt-md-3'>")
-        html.push("<div class='col-sm-6'>")
+
+    html.push("<div class='row mt-sm-3'>")
+
+        html.push("<div class='col-sm-4'>")
         if (row["hazardstatements"] != null && row["hazardstatements"].length != 0) {
-            html.push("<div class='col-sm-12'><span class='iconlabel'>" + global.t("hazardstatement_label_title", container.PersonLanguage) + "</span></div>")
+            html.push("<div><span class='iconlabel'>" + global.t("hazardstatement_label_title", container.PersonLanguage) + "</span></div>")
             html.push("<ul>")
             $.each(row["hazardstatements"], function (key, value) {
                 html.push("<li>" + value["hazardstatement_reference"] + ": <i>" + value["hazardstatement_label"] + "</i></li>");
@@ -1246,9 +1261,9 @@ function detailFormatter(index, row) {
         }
         html.push("</div>")
 
-        html.push("<div class='col-sm-6'>")
+        html.push("<div class='col-sm-4'>")
         if (row["precautionarystatements"] != null && row["precautionarystatements"].length != 0) {
-            html.push("<div class='col-sm-12'><span class='iconlabel'>" + global.t("precautionarystatement_label_title", container.PersonLanguage) + "</span></div>")
+            html.push("<div><span class='iconlabel'>" + global.t("precautionarystatement_label_title", container.PersonLanguage) + "</span></div>")
             html.push("<ul>")
             $.each(row["precautionarystatements"], function (key, value) {
                 html.push("<li>" + value["precautionarystatement_reference"] + ": <i>" + value["precautionarystatement_label"] + "</i></li>");
@@ -1256,39 +1271,56 @@ function detailFormatter(index, row) {
         html.push("</ul>")
         }
         html.push("</div>")
+
+        html.push("<div class='col-sm-4'>")
+        if (row["classofcompound"] != null && row["classofcompound"].length != 0) {
+            html.push("<div><span class='iconlabel'>" + global.t("classofcompound_label_title", container.PersonLanguage) + "</span></div>")
+            html.push("<ul>")
+            $.each(row["classofcompound"], function (key, value) {
+                html.push("<li>" + value["classofcompound_label"] + "</li>");
+            });
+            html.push("</ul>")
+        }
+        html.push("</div>")
+
     html.push("</div>")
 
-    html.push("<div class='row mt-md-3'>")
-        if (row["classofcompound"]["classofcompound_id"]["Valid"]) {
-            html.push("<div class='col-sm-6'><span class='iconlabel'>" + global.t("classofcompound_label_title", container.PersonLanguage) + "</span> " + row["classofcompound"]["classofcompound_label"]["String"] + "</div>")
-        }
-        if (row["physicalstate"]["physicalstate_id"]["Valid"]) {
-            html.push("<div class='col-sm-6'><span class='iconlabel'>" + global.t("physicalstate_label_title", container.PersonLanguage) + "</span> " + row["physicalstate"]["physicalstate_label"]["String"] + "</div>")
-        }
-    html.push("</div>")
 
-    html.push("<div class='row mt-md-3'>")
+    html.push("<div class='row mt-sm-3'>")
+
         if (row["product_disposalcomment"]["Valid"] && row["product_disposalcomment"]["String"] != "") {
-            html.push("<div class='col-sm-6'><span class='iconlabel'>" + global.t("product_disposalcomment_title", container.PersonLanguage) + "</span> " + row["product_disposalcomment"]["String"] + "</div>")
+            html.push("<div class='col-sm-12'><span class='iconlabel'>" + global.t("product_disposalcomment_title", container.PersonLanguage) + "</span> " + row["product_disposalcomment"]["String"] + "</div>")
         }
-        if (row["product_remark"]["Valid"] && row["product_remark"]["String"] != "") {
-            html.push("<div class='col-sm-6'><span class='iconlabel'>" + global.t("product_remark_title", container.PersonLanguage) + "</span> " + row["product_remark"]["String"] + "</div>")
-        }
+
     html.push("</div>")
 
     html.push("<div class='row mt-sm-3'>")
-    html.push("<div class='col-sm-12'>")
-    if (row["product_radioactive"]["Bool"]) {
-        html.push("<span title='" + global.t("product_radioactive_title", container.PersonLanguage) + "' class='mdi mdi-36px mdi-radioactive'></span>")
-    }
-    if (row["product_restricted"]["Bool"]) {
-        html.push("<span title='" + global.t("product_restricted_title", container.PersonLanguage) + "' class='mdi mdi-36px mdi-hand'></span>")
-    }
-    html.push("</div>")
+
+        if (row["product_remark"]["Valid"] && row["product_remark"]["String"] != "") {
+            html.push("<div class='col-sm-12'><span class='iconlabel'>" + global.t("product_remark_title", container.PersonLanguage) + "</span> " + row["product_remark"]["String"] + "</div>")
+        }
+
     html.push("</div>")
 
+
+    html.push("<div class='row mt-sm-3'>")
+
+        html.push("<div class='col-sm-12'>")
+
+        if (row["product_radioactive"]["Bool"]) {
+            html.push("<span title='" + global.t("product_radioactive_title", container.PersonLanguage) + "' class='mdi mdi-36px mdi-radioactive'></span>")
+        }
+        if (row["product_restricted"]["Bool"]) {
+            html.push("<span title='" + global.t("product_restricted_title", container.PersonLanguage) + "' class='mdi mdi-36px mdi-hand'></span>")
+        }
+
+        html.push("</div>")
+
+    html.push("</div>")
+
+
     html.push("<div class='row mt-sm-4'>")
-    html.push("<div class='col-sm-12'><p class='blockquote-footer'>" + row["person"]["person_email"] + "</p></div>")
+        html.push("<div class='col-sm-12'><p class='blockquote-footer'>" + row["person"]["person_email"] + "</p></div>")
     html.push("</div>") 
     
     return html.join('');
@@ -1536,11 +1568,6 @@ function operateEdit(e, value, row, index) {
             $('select#physicalstate').append(newOption).trigger('change');
         }
 
-        if (data.classofcompound.classofcompound_id.Valid) {
-            var newOption = new Option(data.classofcompound.classofcompound_label.String, data.classofcompound.classofcompound_id.Int64, true, true);
-            $('select#classofcompound').append(newOption).trigger('change');
-        }
-
         if (data.signalword.signalword_id.Valid) {
             var newOption = new Option(data.signalword.signalword_label.String, data.signalword.signalword_id.Int64, true, true);
             $('select#signalword').append(newOption).trigger('change');
@@ -1551,6 +1578,11 @@ function operateEdit(e, value, row, index) {
            $('select#symbols').append(newOption).trigger('change');
         }
         
+        for(var i in data.classofcompound) {
+            var newOption = new Option(data.classofcompound[i].classofcompound_label, data.classofcompound[i].classofcompound_id, true, true);
+            $('select#classofcompound').append(newOption).trigger('change');
+         }
+
         for(var i in data.synonyms) {
            var newOption = new Option(data.synonyms[i].name_label, data.synonyms[i].name_id, true, true);
            $('select#synonyms').append(newOption).trigger('change');
@@ -1697,7 +1729,7 @@ function operateEdit(e, value, row, index) {
             name_ = $('select#name').select2('data')[0],
             physicalstate = $('select#physicalstate').select2('data')[0],
             signalword = $('select#signalword').select2('data')[0],
-            classofcompound = $('select#classofcompound').select2('data')[0],
+            classofcompound = $('select#classofcompound').select2('data'),
             synonyms = $('select#synonyms').select2('data'),
             symbols = $('select#symbols').select2('data'),
             hazardstatements = $('select#hazardstatements').select2('data'),
@@ -1720,6 +1752,10 @@ function operateEdit(e, value, row, index) {
             $.each(synonyms, function( index, s ) {
                 data["synonyms." + index +".name_id"] = s.id == s.text ? -1 : s.id;
                 data["synonyms." + index +".name_label"] = s.text;
+            });            
+            $.each(classofcompound, function( index, s ) {
+                data["classofcompound." + index +".classofcompound_id"] = s.id == s.text ? -1 : s.id;
+                data["classofcompound." + index +".classofcompound_label"] = s.text;
             });
             $.each(hazardstatements, function( index, s ) {
                 data["hazardstatements." + index +".hazardstatement_id"] = s.id;
@@ -1778,12 +1814,6 @@ function operateEdit(e, value, row, index) {
                 $.extend(data, {
                     "signalword.signalword_id": signalword.id == signalword.text ? -1 : signalword.id,
                     "signalword.signalword_label": signalword.text,
-                });                    
-            }
-            if (classofcompound !== undefined) {
-                $.extend(data, {
-                    "classofcompound.classofcompound_id": classofcompound.id == classofcompound.text ? -1 : classofcompound.id,
-                    "classofcompound.classofcompound_label": classofcompound.text,
                 });                    
             }
             if (linearformula !== undefined) {

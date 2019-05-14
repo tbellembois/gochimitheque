@@ -85,7 +85,7 @@ func init() {
 	SchemaRegisterSQLNulls(Decoder)
 
 	// load translations
-	Bundle = &i18n.Bundle{DefaultLanguage: language.English}
+	Bundle = i18n.NewBundle(language.English)
 	Bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
 	Bundle.MustParseMessageFileBytes(locales.LOCALES_EN, "en.toml")
 	Bundle.MustParseMessageFileBytes(locales.LOCALES_FR, "fr.toml")

@@ -52,7 +52,14 @@ func (env *Env) ContextMiddleware(h http.Handler) http.Handler {
 		accept := r.Header.Get("Accept-Language")
 		global.Localizer = i18n.NewLocalizer(global.Bundle, accept)
 
-		ctx := context.WithValue(r.Context(), global.ChimithequeContextKey("container"), helpers.ViewContainer{ProxyPath: global.ProxyPath, PersonLanguage: accept})
+		ctx := context.WithValue(
+			r.Context(), 
+			global.ChimithequeContextKey("container"), 
+			helpers.ViewContainer{
+				ProxyPath: global.ProxyPath, 
+				PersonLanguage: accept,
+			},
+		)
 		h.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -129,7 +136,16 @@ func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 		// setting up auth person informations
 		container.PersonEmail = person.PersonEmail
 		container.PersonID = person.PersonID
-		ctx = context.WithValue(r.Context(), global.ChimithequeContextKey("container"), helpers.ViewContainer{PersonEmail: container.PersonEmail, PersonID: container.PersonID, ProxyPath: container.ProxyPath, PersonLanguage: container.PersonLanguage})
+		ctx = context.WithValue(
+			r.Context(), 
+			global.ChimithequeContextKey("container"), 
+			// helpers.ViewContainer{
+			// 	PersonEmail: container.PersonEmail, 
+			// 	PersonID: container.PersonID, 
+			// 	ProxyPath: container.ProxyPath, 
+			// 	PersonLanguage: container.PersonLanguage},
+			container,
+		)
 
 		h.ServeHTTP(w, r.WithContext(ctx))
 	})
@@ -272,7 +288,6 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 					return
 				}
 			case "entities":
-				// TODO: can not delete an entity the connected user is a manager
 				if r.Method == "DELETE" {
 					m, e := env.DB.IsEntityEmpty(itemid)
 					if e != nil {

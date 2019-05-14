@@ -982,8 +982,6 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	physicalstate.physicalstate_label AS "physicalstate.physicalstate_label",
 	signalword.signalword_id AS "signalword.signalword_id",
 	signalword.signalword_label AS "signalword.signalword_label",
-	classofcompound.classofcompound_id AS "classofcompound.classofcompound_id",
-	classofcompound.classofcompound_label AS "classofcompound.classofcompound_label",
 	person.person_id AS "person.person_id",
 	person.person_email AS "person.person_email",
 	name.name_id AS "name.name_id",
@@ -1015,8 +1013,6 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	comreq.WriteString(" LEFT JOIN physicalstate ON p.physicalstate = physicalstate.physicalstate_id")
 	// get signal word
 	comreq.WriteString(" LEFT JOIN signalword ON p.signalword = signalword.signalword_id")
-	// get class of compound
-	comreq.WriteString(" LEFT JOIN classofcompound ON p.classofcompound = classofcompound.classofcompound_id")
 	// get empirical formula
 	comreq.WriteString(" JOIN empiricalformula ON p.empiricalformula = empiricalformula.empiricalformula_id")
 	// get linear formula
@@ -1207,6 +1203,22 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	}
 
 	//
+	// getting classes of compounds
+	//
+	for i, pr := range products {
+		// note: do not modify p but products[i] instead
+		req.Reset()
+		req.WriteString("SELECT classofcompound_id, classofcompound_label FROM classofcompound")
+		req.WriteString(" JOIN productclassofcompound ON productclassofcompound.productclassofcompound_classofcompound_id = classofcompound.classofcompound_id")
+		req.WriteString(" JOIN product ON productclassofcompound.productclassofcompound_product_id = product.product_id")
+		req.WriteString(" WHERE product.product_id = ?")
+
+		if err = db.Select(&products[i].ClassOfCompound, req.String(), pr.ProductID); err != nil {
+			return nil, 0, err
+		}
+	}
+
+	//
 	// getting synonyms
 	//
 	for i, pr := range products {
@@ -1330,8 +1342,6 @@ func (db *SQLiteDataStore) GetProduct(id int) (Product, error) {
 	physicalstate.physicalstate_label AS "physicalstate.physicalstate_label",
 	signalword.signalword_id AS "signalword.signalword_id",
 	signalword.signalword_label AS "signalword.signalword_label",
-	classofcompound.classofcompound_id AS "classofcompound.classofcompound_id",
-	classofcompound.classofcompound_label AS "classofcompound.classofcompound_label",
 	person.person_id AS "person.person_id",
 	person.person_email AS "person.person_email",
 	name.name_id AS "name.name_id",
@@ -1350,7 +1360,6 @@ func (db *SQLiteDataStore) GetProduct(id int) (Product, error) {
 	LEFT JOIN linearformula ON product.linearformula = linearformula.linearformula_id
 	LEFT JOIN physicalstate ON product.physicalstate = physicalstate.physicalstate_id
 	LEFT JOIN signalword ON product.signalword = signalword.signalword_id
-	LEFT JOIN classofcompound ON product.classofcompound = classofcompound.classofcompound_id
 	WHERE product_id = ?`
 	if err = db.Get(&product, sqlr, id); err != nil {
 		return Product{}, err
@@ -1375,6 +1384,17 @@ func (db *SQLiteDataStore) GetProduct(id int) (Product, error) {
 	JOIN product ON productsynonyms.productsynonyms_product_id = product.product_id
 	WHERE product.product_id = ?`
 	if err = db.Select(&product.Synonyms, sqlr, product.ProductID); err != nil {
+		return product, err
+	}
+
+	//
+	// getting classes of compounds
+	//
+	sqlr = `SELECT classofcompound_id, classofcompound_label FROM classofcompound
+	JOIN productclassofcompound ON productclassofcompound.productclassofcompound_classofcompound_id = classofcompound.classofcompound_id
+	JOIN product ON productclassofcompound.productclassofcompound_product_id = product.product_id
+	WHERE product.product_id = ?`
+	if err = db.Select(&product.ClassOfCompound, sqlr, product.ProductID); err != nil {
 		return product, err
 	}
 
@@ -1419,6 +1439,12 @@ func (db *SQLiteDataStore) DeleteProduct(id int) error {
 
 	// deleting synonyms
 	sqlr = `DELETE FROM productsynonyms WHERE productsynonyms.productsynonyms_product_id = (?)`
+	if _, err = db.Exec(sqlr, id); err != nil {
+		return err
+	}
+
+	// deleting classes of compounds
+	sqlr = `DELETE FROM productclassofcompound WHERE productclassofcompound.productclassofcompound_product_id = (?)`
 	if _, err = db.Exec(sqlr, id); err != nil {
 		return err
 	}
@@ -1525,6 +1551,22 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 			p.Synonyms[i].NameID = int(lastid)
 		}
 	}
+	// if ClassOfCompoundID = -1 then it is a new class of compounds
+	for i, coc := range p.ClassOfCompound {
+		if coc.ClassOfCompoundID == -1 {
+			sqlr = `INSERT INTO classofcompound (classofcompound_label) VALUES (?)`
+			if res, err = tx.Exec(sqlr, strings.ToUpper(coc.ClassOfCompoundLabel)); err != nil {
+				tx.Rollback()
+				return 0, err
+			}
+			// getting the last inserted id
+			if lastid, err = res.LastInsertId(); err != nil {
+				tx.Rollback()
+				return 0, err
+			}
+			p.ClassOfCompound[i].ClassOfCompoundID = int(lastid)
+		}
+	}
 	// if EmpiricalFormulaID = -1 then it is a new empirical formula
 	if p.EmpiricalFormula.EmpiricalFormulaID == -1 {
 		sqlr = `INSERT INTO empiricalformula (empiricalformula_label) VALUES (?)`
@@ -1569,21 +1611,6 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 		}
 		// updating the product PhysicalStateID (PhysicalStateLabel already set)
 		p.PhysicalState.PhysicalStateID = sql.NullInt64{Valid: true, Int64: lastid}
-	}
-	// if ClassOfCompoundID = -1 then it is a new class of compound
-	if v, err := p.ClassOfCompound.ClassOfCompoundID.Value(); p.ClassOfCompound.ClassOfCompoundID.Valid && err == nil && v.(int64) == -1 {
-		sqlr = `INSERT INTO classofcompound (classofcompound_label) VALUES (?)`
-		if res, err = tx.Exec(sqlr, p.ClassOfCompoundLabel); err != nil {
-			tx.Rollback()
-			return 0, err
-		}
-		// getting the last inserted id
-		if lastid, err = res.LastInsertId(); err != nil {
-			tx.Rollback()
-			return 0, err
-		}
-		// updating the product ClassOfCompoundID (ClassOfCompoundLabel already set)
-		p.ClassOfCompound.ClassOfCompoundID = sql.NullInt64{Valid: true, Int64: lastid}
 	}
 	// if PhysicalStateID = -1 then it is a new physical state
 	if v, err := p.PhysicalState.PhysicalStateID.Value(); p.PhysicalState.PhysicalStateID.Valid && err == nil && v.(int64) == -1 {
@@ -1638,9 +1665,6 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	}
 	if p.SignalWordID.Valid {
 		s["signalword"] = int(p.SignalWordID.Int64)
-	}
-	if p.ClassOfCompoundID.Valid {
-		s["classofcompound"] = int(p.ClassOfCompoundID.Int64)
 	}
 	if p.CeNumberID.Valid {
 		s["cenumber"] = int(p.CeNumberID.Int64)
@@ -1700,6 +1724,15 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 		sqlr = `INSERT INTO productsymbols (productsymbols_product_id, productsymbols_symbol_id) VALUES (?,?)`
 		if res, err = tx.Exec(sqlr, p.ProductID, sym.SymbolID); err != nil {
 			log.Error("productsymbols error - " + err.Error())
+			tx.Rollback()
+			return 0, err
+		}
+	}
+	// adding classes of compounds
+	for _, coc := range p.ClassOfCompound {
+		sqlr = `INSERT INTO productclassofcompound (productclassofcompound_product_id, productclassofcompound_classofcompound_id) VALUES (?,?)`
+		if res, err = tx.Exec(sqlr, p.ProductID, coc.ClassOfCompoundID); err != nil {
+			log.Error("productclassofcompound error - " + err.Error())
 			tx.Rollback()
 			return 0, err
 		}
@@ -1822,6 +1855,22 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 			p.Synonyms[i].NameID = int(lastid)
 		}
 	}
+		// if ClassOfCompoundID = -1 then it is a new class of compounds
+		for i, coc := range p.ClassOfCompound {
+			if coc.ClassOfCompoundID == -1 {
+				sqlr = `INSERT INTO classofcompound (classofcompound_label) VALUES (?)`
+				if res, err = tx.Exec(sqlr, strings.ToUpper(coc.ClassOfCompoundLabel)); err != nil {
+					tx.Rollback()
+					return err
+				}
+				// getting the last inserted id
+				if lastid, err = res.LastInsertId(); err != nil {
+					tx.Rollback()
+					return err
+				}
+				p.ClassOfCompound[i].ClassOfCompoundID = int(lastid)
+			}
+		}
 	// if EmpiricalFormulaID = -1 then it is a new empirical formula
 	if p.EmpiricalFormula.EmpiricalFormulaID == -1 {
 		sqlr = `INSERT INTO empiricalformula (empiricalformula_label) VALUES (?)`
@@ -1867,21 +1916,6 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 		// updating the product ClassOfCompoundID (ClassOfCompoundLabel already set)
 		p.PhysicalState.PhysicalStateID = sql.NullInt64{Valid: true, Int64: lastid}
 	}
-	// if ClassOfCompoundID = -1 then it is a new class of compound
-	if v, err := p.ClassOfCompound.ClassOfCompoundID.Value(); p.ClassOfCompound.ClassOfCompoundID.Valid && err == nil && v.(int64) == -1 {
-		sqlr = `INSERT INTO classofcompound (classofcompound_label) VALUES (?)`
-		if res, err = tx.Exec(sqlr, p.ClassOfCompoundLabel); err != nil {
-			tx.Rollback()
-			return err
-		}
-		// getting the last inserted id
-		if lastid, err = res.LastInsertId(); err != nil {
-			tx.Rollback()
-			return err
-		}
-		// updating the product ClassOfCompoundID (ClassOfCompoundLabel already set)
-		p.ClassOfCompound.ClassOfCompoundID = sql.NullInt64{Valid: true, Int64: lastid}
-	}
 	if err != nil {
 		log.Error("classofcompound error - " + err.Error())
 		tx.Rollback()
@@ -1919,9 +1953,6 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	}
 	if p.SignalWordID.Valid {
 		s["signalword"] = int(p.SignalWordID.Int64)
-	}
-	if p.ClassOfCompoundID.Valid {
-		s["classofcompound"] = int(p.ClassOfCompoundID.Int64)
 	}
 	if p.CeNumberID.Valid {
 		s["cenumber"] = int(p.CeNumberID.Int64)
@@ -1973,6 +2004,22 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	for _, syn := range p.Synonyms {
 		sqlr = `INSERT INTO productsynonyms (productsynonyms_product_id, productsynonyms_name_id) VALUES (?,?)`
 		if res, err = tx.Exec(sqlr, p.ProductID, syn.NameID); err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	// deleting classes of compounds
+	sqlr = `DELETE FROM productclassofcompound WHERE productclassofcompound.productclassofcompound_product_id = (?)`
+	if res, err = tx.Exec(sqlr, p.ProductID); err != nil {
+		tx.Rollback()
+		return err
+	}
+	// adding new ones
+	for _, coc := range p.ClassOfCompound {
+		sqlr = `INSERT INTO productclassofcompound (productclassofcompound_product_id, productclassofcompound_classofcompound_id) VALUES (?,?)`
+		if res, err = tx.Exec(sqlr, p.ProductID, coc.ClassOfCompoundID); err != nil {
+			log.Error("productclassofcompound error - " + err.Error())
 			tx.Rollback()
 			return err
 		}
