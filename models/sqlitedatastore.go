@@ -265,7 +265,6 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		linearformula integer,
 		physicalstate integer,
 		signalword integer,
-		classofcompound integer,
 		name integer NOT NULL,
 		FOREIGN KEY(casnumber) references casnumber(casnumber_id),
 		FOREIGN KEY(cenumber) references cenumber(cenumber_id),
@@ -274,12 +273,19 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		FOREIGN KEY(linearformula) references linearformula(linearformula_id),
 		FOREIGN KEY(physicalstate) references physicalstate(physicalstate_id),
 		FOREIGN KEY(signalword) references signalword(signalword_id),
-		FOREIGN KEY(classofcompound) references classofcompound(classofcompound_id),
 		FOREIGN KEY(name) references name(name_id));
 	CREATE UNIQUE INDEX IF NOT EXISTS idx_product_casnumber ON product(product_id, casnumber);
 	CREATE UNIQUE INDEX IF NOT EXISTS idx_product_cenumber ON product(product_id, cenumber);
 	CREATE UNIQUE INDEX IF NOT EXISTS idx_product_empiricalformula ON product(product_id, empiricalformula);
 	CREATE UNIQUE INDEX IF NOT EXISTS idx_product_name ON product(product_id, name);
+
+	CREATE TABLE IF NOT EXISTS productclassofcompound (
+		productclassofcompound_product_id integer NOT NULL,
+		productclassofcompound_classofcompound_id integer NOT NULL,
+		PRIMARY KEY(productclassofcompound_product_id, productclassofcompound_classofcompound_id),
+		FOREIGN KEY(productclassofcompound_product_id) references product(product_id),
+		FOREIGN KEY(productclassofcompound_classofcompound_id) references classofcompound(classofcompound_id));
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_productclassofcompound ON productclassofcompound(productclassofcompound_product_id, productclassofcompound_classofcompound_id);
 
 	CREATE TABLE IF NOT EXISTS productsymbols (
 		productsymbols_product_id integer NOT NULL,
@@ -1344,7 +1350,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		linearformula := line[9]
 		msds := line[10]
 		physicalstate := line[11]
-		//TODO coc := line[12]
+		coc := line[12]
 		symbol := line[14]
 		signalword := line[15]
 		hazardstatement := line[18]
@@ -1471,14 +1477,14 @@ func (db *SQLiteDataStore) Import(dir string) error {
 			mONproduct[id] = strconv.FormatInt(lastid, 10)
 
 			// coc
-			// cocs := rnumber.FindAllString(coc, -1)
-			// for _, c  := range cocs {
-			// 	sqlr = `INSERT INTO productsynonyms (productsynonyms_product_id, productsynonyms_name_id) VALUES (?,?)`
-			// 	if res, err = tx.Exec(sqlr, lastid, mONname[s]); err != nil {
-			// 		// not leaving on errors
-			// 		log.Debug("non fatal error importing product synonym with id " + s + ": " + err.Error())
-			// 	}
-			// }
+			cocs := rnumber.FindAllString(coc, -1)
+			for _, c  := range cocs {
+				sqlr = `INSERT INTO productclassofcompound (productclassofcompound_product_id, productclassofcompound_classofcompound_id) VALUES (?,?)`
+				if res, err = tx.Exec(sqlr, lastid, mONclassofcompound[c]); err != nil {
+					// not leaving on errors
+					log.Debug("non fatal error importing product class of compounds with id " + c + ": " + err.Error())
+				}
+			}
 			// synonym
 			syns := rnumber.FindAllString(synonym, -1)
 			for _, s := range syns {

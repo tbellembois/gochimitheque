@@ -400,7 +400,6 @@ func T(s string, accept string) string {
 
 	// lazily assuming that the entries are
 	// ordered by the preferred language
-	// TODO: improve this
 	for _, m := range ms {
 		for _, i := range m {
 			js_locale_varname := fmt.Sprintf("locale_%s_%s", i, s)

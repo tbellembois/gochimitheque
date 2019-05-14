@@ -244,6 +244,7 @@ func (env *Env) FormatProductEmpiricalFormulaHandler(w http.ResponseWriter, r *h
 // - the cas number is valid
 // - a product with the cas number and specificity does not already exist
 func (env *Env) ValidateProductCasNumberHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	vars := mux.Vars(r)
 	var (
 		err  error
 		resp string
@@ -251,6 +252,7 @@ func (env *Env) ValidateProductCasNumberHandler(w http.ResponseWriter, r *http.R
 		nbProducts int
 		aerr     *helpers.AppError
 		dspp     helpers.DbselectparamProduct
+		product_id int
 	)
 
 	// getting the cas number
@@ -269,32 +271,42 @@ func (env *Env) ValidateProductCasNumberHandler(w http.ResponseWriter, r *http.R
 		resp = global.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "casnumber_validate_wrongcas", PluralCount: 1})
 	}
 
-	// check pair cas/specificity
-	// get cas number id
-	if cas, err = env.DB.GetProductsCasNumberByLabel(r.Form.Get("casnumber")); err != nil {
+	// converting the id
+	if product_id, err = strconv.Atoi(vars["id"]); err != nil {
 		return &helpers.AppError{
 			Error:   err,
-			Message: "get cas number",
-			Code:    http.StatusInternalServerError}
-	}
-	// init db request parameters
-	if dspp, aerr = helpers.NewdbselectparamProduct(r, nil); err != nil {
-	 	return aerr
-	}
- 	dspp.SetCasNumber(cas.CasNumberID)
-	dspp.SetProductSpecificity(r.Form.Get("product_specificity"))
-	// getting the products matching the cas and specificity
-	if _, nbProducts, err = env.DB.GetProducts(dspp); err != nil {
-		return &helpers.AppError{
-			Error:   err,
-			Message: "get products",
+			Message: "id atoi conversion",
 			Code:    http.StatusInternalServerError}
 	}
 
-	if nbProducts != 0 {
-		resp = global.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "casnumber_validate_casspecificity", PluralCount: 1})
-	}
+	// check pair cas/specificity only on create
+	if product_id == -1 {
+		// get cas number id
+		if cas, err = env.DB.GetProductsCasNumberByLabel(r.Form.Get("casnumber")); err != nil {
+			return &helpers.AppError{
+				Error:   err,
+				Message: "get cas number",
+				Code:    http.StatusInternalServerError}
+		}
+		// init db request parameters
+		if dspp, aerr = helpers.NewdbselectparamProduct(r, nil); err != nil {
+			return aerr
+		}
+		dspp.SetCasNumber(cas.CasNumberID)
+		dspp.SetProductSpecificity(r.Form.Get("product_specificity"))
+		// getting the products matching the cas and specificity
+		if _, nbProducts, err = env.DB.GetProducts(dspp); err != nil {
+			return &helpers.AppError{
+				Error:   err,
+				Message: "get products",
+				Code:    http.StatusInternalServerError}
+		}
 
+		if nbProducts != 0 {
+			resp = global.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "casnumber_validate_casspecificity", PluralCount: 1})
+		}
+	}
+	
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp)

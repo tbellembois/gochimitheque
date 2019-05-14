@@ -228,7 +228,7 @@ var LOCALES_EN = []byte(`
 [precautionarystatement_label_title]
 	one = "precautionary statement(s)"
 [classofcompound_label_title]
-	one = "class of compounds"
+	one = "class(es) of compounds"
 [physicalstate_label_title]
 	one = "physical state"
 [name_label_title]

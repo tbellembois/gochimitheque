@@ -175,8 +175,8 @@ type PhysicalState struct {
 type ClassOfCompound struct {
 	// nullable values to handle optional Product foreign key (gorilla shema nil values)
 	C                    int            `db:"c" json:"c"` // not stored in db but db:"c" set for sqlx
-	ClassOfCompoundID    sql.NullInt64  `db:"classofcompound_id" json:"classofcompound_id" schema:"classofcompound_id"`
-	ClassOfCompoundLabel sql.NullString `db:"classofcompound_label" json:"classofcompound_label" schema:"classofcompound_label"`
+	ClassOfCompoundID    int  `db:"classofcompound_id" json:"classofcompound_id" schema:"classofcompound_id"`
+	ClassOfCompoundLabel string `db:"classofcompound_label" json:"classofcompound_label" schema:"classofcompound_label"`
 }
 
 // SignalWord is a product signal word
@@ -216,11 +216,11 @@ type Product struct {
 	LinearFormula           `db:"linearformula" json:"linearformula" schema:"linearformula"`
 	PhysicalState           `db:"physicalstate" json:"physicalstate" schema:"physicalstate"`
 	SignalWord              `db:"signalword" json:"signalword" schema:"signalword"`
-	ClassOfCompound         `db:"classofcompound" json:"classofcompound" schema:"classofcompound"`
 	Person                  `db:"person" json:"person" schema:"person"`
 	CasNumber               `db:"casnumber" json:"casnumber" schema:"casnumber"`
 	CeNumber                `db:"cenumber" json:"cenumber" schema:"cenumber"`
 	Name                    `db:"name" json:"name" schema:"name"`
+	ClassOfCompound         []ClassOfCompound `db:"-" schema:"classofcompound" json:"classofcompound"`
 	Synonyms                []Name                   `db:"-" schema:"synonyms" json:"synonyms"`
 	Symbols                 []Symbol                 `db:"-" schema:"symbols" json:"symbols"`
 	HazardStatements        []HazardStatement        `db:"-" schema:"hazardstatements" json:"hazardstatements"`
@@ -265,11 +265,15 @@ func (p Product) productToStringSlice() []string {
 
 	ret = append(ret, p.ProductMSDS.String)
 
-	ret = append(ret, p.ClassOfCompoundLabel.String)
 	ret = append(ret, p.PhysicalStateLabel.String)
 
 	ret = append(ret, p.SignalWordLabel.String)
 
+	coc := ""
+	for _, c := range p.ClassOfCompound {
+		coc += "|" + c.ClassOfCompoundLabel
+	}
+	ret = append(ret, coc)
 	sym := ""
 	for _, s := range p.Symbols {
 		sym += "|" + s.SymbolLabel
