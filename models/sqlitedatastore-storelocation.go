@@ -74,6 +74,8 @@ func (db *SQLiteDataStore) GetStoreLocations(p helpers.DbselectparamStoreLocatio
 	comreq.WriteString(" FROM storelocation AS s")
 	comreq.WriteString(" JOIN entity ON s.entity = entity.entity_id")
 	comreq.WriteString(" LEFT JOIN storelocation on s.storelocation = storelocation.storelocation_id")
+
+	// filter by permissions
 	// comreq.WriteString(` JOIN permission AS perm ON
 	// (perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = entity.entity_id) OR
 	// (perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
@@ -84,7 +86,7 @@ func (db *SQLiteDataStore) GetStoreLocations(p helpers.DbselectparamStoreLocatio
 	// (perm.person = :personid and perm.permission_item_name = "storages" and perm.permission_perm_name = "r" and perm.permission_entity_id = entity.entity_id)
 	// `)
 	comreq.WriteString(` JOIN permission AS perm ON
-	perm.person = 1 and (perm.permission_item_name in ("all", "storages")) and (perm.permission_perm_name in ("all", "r")) and (perm.permission_entity_id in (-1, entity.entity_id))
+	perm.person = :personid and (perm.permission_item_name in ("all", "storages")) and (perm.permission_perm_name in ("all", "r")) and (perm.permission_entity_id in (-1, entity.entity_id))
 	`)
 	comreq.WriteString(" WHERE s.storelocation_name LIKE :search")
 	if p.GetEntity() != -1 {

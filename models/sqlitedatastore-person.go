@@ -638,6 +638,12 @@ func (db *SQLiteDataStore) UpdatePerson(p Person) error {
 		return err
 	}
 
+	// committing changes
+	if err = tx.Commit(); err != nil {
+		tx.Rollback()
+		return err
+	}
+
 	return nil
 }
 
