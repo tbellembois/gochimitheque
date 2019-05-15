@@ -195,8 +195,6 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			// to access a stock, one need permission on storage
 			item = "storages"
 			id = "-2"
-		case "storelocations":
-			item = "storages"
 		case "storages":
 			// storages access are global per entity
 			id = "-2"

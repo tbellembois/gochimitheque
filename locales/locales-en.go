@@ -150,6 +150,10 @@ var LOCALES_EN = []byte(`
 	one = "show deleted"
 [hidedeleted_text]
 	one = "hide deleted"
+[storeagain_text]
+	one = "store this product"
+[totalstock_text]
+	one = "show total stock"
 
 [unit_label_title]
 	one = "unit"

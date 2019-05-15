@@ -85,18 +85,18 @@ $('#table').on('load-success.bs.table refresh.bs.table', function () {
         // we should put "POST" here but this lead to a 405 error
         hasPermission("storages", "-2", "PUT").done(function(){
             // adding a create storage button for the product
-            b = $("<button>").addClass("store btn btn-link btn-sm").attr("title", "store this product").attr("type", "button");
+            b = $("<button>").addClass("store btn btn-link").attr("type", "button");
             b.attr("onclick", "window.location.href = '" + proxyPath + "vc/storages?product=" + p + "'");
-            i = $("<span>").addClass("mdi mdi-24px mdi-forklift");
+            i = $("<span>").addClass("mdi mdi-24px mdi-forklift iconlabel").html(global.t("storeagain_text", container.PersonLanguage));
             b.append(i);
             $("#button-store").html(b);
         })
         
         hasPermission("storages", "-2", "GET").done(function(){
             // adding a show stock button for the product
-            b = $("<button>").addClass("store btn btn-link btn-sm").attr("title", "show stock of this product").attr("type", "button").attr("data-toggle", "modal").attr("data-target", "#stock");
+            b = $("<button>").addClass("store btn btn-link").attr("type", "button").attr("data-toggle", "modal").attr("data-target", "#stock");
             b.attr("onclick", "showStock(" + p + ")");
-            i = $("<span>").addClass("mdi mdi-24px mdi-sigma");
+            i = $("<span>").addClass("mdi mdi-24px mdi-sigma iconlabel").html(global.t("totalstock_text", container.PersonLanguage));;
             b.append(i);
             $("#button-stock").html(b);
            
