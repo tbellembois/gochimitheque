@@ -190,18 +190,18 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			"r.Method":    r.Method}).Debug("AuthorizeMiddleware")
 
 		// id and item translations
-		if item == "stocks" {
+		switch item {
+		case "stocks":
 			// to access a stock, one need permission on storage
 			item = "storages"
 			id = "-2"
-		}
-		if item == "storelocations" {
+		case "storelocations":
 			item = "storages"
-		}
-		if item == "storages" {
+		case "storages":
 			// storages access are global per entity
 			id = "-2"
 		}
+
 		if id == "" {
 			itemid = -2
 		} else {
