@@ -770,13 +770,25 @@ func (db *SQLiteDataStore) insertPermissions(p Person, tx *sql.Tx) error {
 				return err
 			}
 		}
-		// for a r or w permission on a store location
-		// adding r permission on the store location entity
-		// to allow store locations modifications (entity selection)
-		if perm.PermissionItemName == "storelocations" && (perm.PermissionPermName == "w" || perm.PermissionPermName == "r") {
+		// // for a r or w permission on a store location
+		// // adding r permission on the store location entity
+		// // to allow store locations modifications (entity selection)
+		// if perm.PermissionItemName == "storelocations" && (perm.PermissionPermName == "w" || perm.PermissionPermName == "r") {
+		// 	sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id) 
+		// 	VALUES (?, ?, ?, ?)`
+		// 	if _, err = tx.Exec(sqlr, p.PersonID, "r", "entities", perm.PermissionEntityID); err != nil {
+		// 		tx.Rollback()
+		// 		return err
+		// 	}
+		// }
+
+		// for a r or w permission on a storage
+		// adding r permission on the storelocation
+		// to allow storage modifications (storelocation selection)
+		if perm.PermissionItemName == "storages" && (perm.PermissionPermName == "w" || perm.PermissionPermName == "r") {
 			sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id) 
 			VALUES (?, ?, ?, ?)`
-			if _, err = tx.Exec(sqlr, p.PersonID, "r", "entities", perm.PermissionEntityID); err != nil {
+			if _, err = tx.Exec(sqlr, p.PersonID, "r", "storelocations", perm.PermissionEntityID); err != nil {
 				tx.Rollback()
 				return err
 			}

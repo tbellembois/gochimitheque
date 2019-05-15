@@ -58,12 +58,8 @@ block CONTENT
                             = T("advancedsearch_text", 1) 
 
     .row
-        .col-sm-8
+        .col-sm-12
             #filter-item
-        .col-sm-2.d-flex.justify-content-end
-            #button-store
-        .col-sm-2.d-flex.justify-content-end
-            #button-stock
 
     #toolbar.row
         .col.toggleable
@@ -78,6 +74,10 @@ block CONTENT
             button#s_storage_archive_button.btn.btn-link(type="button" data-toggle="button" aria-pressed="true" autocomplete="off")
                 span.mdi.mdi-delete.mdi-24px.iconlabel
                     = T("showdeleted_text", 1) 
+        .col
+            #button-store
+        .col
+            #button-stock
 
     #stock.modal.fade(role="dialog" tabindex="-1" aria-labelledby="stockLabel" aria-hidden="true")
         .modal-dialog.modal-lg(role="document")
