@@ -166,8 +166,7 @@ func (db *SQLiteDataStore) GetStoreLocationChildren(id int) ([]StoreLocation, er
 		sqlr           string
 		err            error
 	)
-	log.WithFields(log.Fields{"id": id}).Debug("GetStoreLocationChildren")
-
+	
 	sqlr = `SELECT s.storelocation_id, s.storelocation_name, s.storelocation_canstore, s.storelocation_color, s.storelocation_fullpath,
 	storelocation.storelocation_id AS "storelocation.storelocation_id",
 	storelocation.storelocation_name AS "storelocation.storelocation_name",
@@ -181,7 +180,7 @@ func (db *SQLiteDataStore) GetStoreLocationChildren(id int) ([]StoreLocation, er
 		return []StoreLocation{}, err
 	}
 
-	log.WithFields(log.Fields{"ID": id, "storelocations": storelocations}).Debug("GetStoreLocationChildren")
+	log.WithFields(log.Fields{"id": id, "storelocations": storelocations}).Debug("GetStoreLocationChildren")
 	return storelocations, nil
 }
 

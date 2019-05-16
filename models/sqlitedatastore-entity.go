@@ -24,8 +24,7 @@ func (db *SQLiteDataStore) ComputeStockStorelocation(p Product, s *StoreLocation
 		t           float64 // total s stock for p
 		err         error
 	)
-	log.WithFields(log.Fields{"p": p, "s": s, "u": u})
-
+	
 	sqlr := `SELECT SUM(storage.storage_quantity * unit_multiplier) FROM storage
 	JOIN unit on storage.unit = unit.unit_id
 	WHERE storage.storelocation = ? AND
@@ -42,6 +41,7 @@ func (db *SQLiteDataStore) ComputeStockStorelocation(p Product, s *StoreLocation
 		c = nullc.Float64
 		t = nullc.Float64
 	}
+	log.WithFields(log.Fields{"p": p, "s": s, "u": u, "c": c}).Debug("ComputeStockStorelocation")
 
 	// getting s children
 	if sdbchildren, err = db.GetStoreLocationChildren(int(s.StoreLocationID.Int64)); err != nil {

@@ -279,6 +279,10 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 	if len(p.GetPrecautionaryStatements()) != 0 {
 		comreq.WriteString(" JOIN productprecautionarystatements AS pps ON pps.productprecautionarystatements_product_id = product.product_id")
 	}
+	// get bookmarks
+	if p.GetBookmark() {
+		comreq.WriteString(" JOIN bookmark AS b ON b.product = product.product_id AND b.person = :personid")
+	}
 
 	// filter by entities
 	if !isadmin {

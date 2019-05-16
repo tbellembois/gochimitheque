@@ -60,10 +60,8 @@ block CONTENT
                             = T("advancedsearch_text", 1) 
 
     .row
-        .col-sm-10
+        .col-sm-12
             #filter-item
-        .col-sm-2.d-flex.justify-content-end
-            #button-store
 
     #toolbar.row
         .col.toggleable
@@ -74,6 +72,8 @@ block CONTENT
             button.btn.btn-link#export(type="button" onclick="exportAll()")
                 span.mdi.mdi-content-save.mdi-24px.iconlabel
                     = T("export_text", 1) 
+        .col
+            #button-store
 
     #exportlink.modal.fade(role="dialog" tabindex="-1" aria-labelledby="exportlinkLabel" aria-hidden="true")
         .modal-dialog.modal-sm(role="document")

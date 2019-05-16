@@ -119,10 +119,10 @@ $('#table').on('load-success.bs.table refresh.bs.table', function () {
             $("#filter-item").html("");
         }
         if (bookmarkData !== undefined) {
-            $("#filter-item").append(global.createTitle("my bookmarked products", "bookmark"));
+            $("#filter-item").append(global.createTitle(global.t("menu_bookmark", container.PersonLanguage), "bookmark"));
         };
         if (historyData !== undefined) {
-            $("#filter-item").append(global.createTitle("history", "history"));
+            $("#filter-item").append(global.createTitle(global.t("menu_borrow", container.PersonLanguage), "history"));
         };
         if (entityData !== undefined) {
             $("#filter-item").append(global.createTitle(entityData.entity_name, "entity"));

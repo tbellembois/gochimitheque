@@ -120,6 +120,8 @@ var LOCALES_EN = []byte(`
 	one = "home"
 [menu_bookmark]
 	one = "my bookmarks"
+[menu_borrow]
+	one = "my borrowed products"
 [menu_create_productcard]
 	one = "create product card"
 [menu_entity]
