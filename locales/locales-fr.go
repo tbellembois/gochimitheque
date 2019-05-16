@@ -120,6 +120,8 @@ var LOCALES_FR = []byte(`
 	one = "accueil"
 [menu_bookmark]
 	one = "mes favoris"
+[menu_borrow]
+	one = "mes produits empruntés"
 [menu_create_productcard]
 	one = "créer fiche produit"
 [menu_entity]
@@ -191,6 +193,8 @@ var LOCALES_FR = []byte(`
 	one = "date d'ouverture"
 [storage_expirationdate_title]
 	one = "date d'expiration"
+[storage_borrower_title]
+	one = "emprunteur"
 [storage_comment_title]
 	one = "commentaire"
 [storage_reference_title]

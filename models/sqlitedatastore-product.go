@@ -1273,12 +1273,12 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 		// note: do not modify p but products[i] instead
 		reqtsc.Reset()
 		reqtsc.WriteString("SELECT count(DISTINCT storage_id) from storage")
-		reqtsc.WriteString(" JOIN product ON storage.product = ?")
+		reqtsc.WriteString(" JOIN product ON storage.product = ? AND storage.storage IS NULL")
 		if isadmin {
 			// note: do not modify p but products[i] instead
 			reqsc.Reset()
 			reqsc.WriteString("SELECT count(DISTINCT storage_id) from storage")
-			reqsc.WriteString(" JOIN product ON storage.product = ?")
+			reqsc.WriteString(" JOIN product ON storage.product = ? AND storage.storage IS NULL")
 		} else {
 			// note: do not modify p but products[i] instead
 			reqsc.Reset()

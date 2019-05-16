@@ -432,10 +432,15 @@ func (env *Env) GetTokenHandler(w http.ResponseWriter, r *http.Request) *helpers
 	}
 	cemail := http.Cookie{
 		Name:  "email",
-		Value: person.PersonEmail,
+		Value: p.PersonEmail,
+	}
+	cid := http.Cookie{
+		Name:  "id",
+		Value: strconv.Itoa(p.PersonID),
 	}
 	http.SetCookie(w, &ctoken)
 	http.SetCookie(w, &cemail)
+	http.SetCookie(w, &cid)
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(tokenString))

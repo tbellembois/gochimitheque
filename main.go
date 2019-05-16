@@ -316,7 +316,7 @@ func main() {
 	r.Handle("/format/product/{id}/empiricalformula/", securechain.Then(env.AppMiddleware(env.FormatProductEmpiricalFormulaHandler))).Methods("POST")
 
 	// export download
-	r.Handle("/download/{id}", securechain.Then(env.AppMiddleware(env.DownloadExportHandler))).Methods("GET")
+	r.Handle("/{item:download}/{id}", securechain.Then(env.AppMiddleware(env.DownloadExportHandler))).Methods("GET")
 
 	// rice boxes
 	webfontsBox := rice.MustFindBox("static/webfonts")

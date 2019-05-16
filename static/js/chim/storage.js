@@ -12,12 +12,22 @@ $( document ).ready(function() {
                 required: true,
             },
         },
+        messages: {
+            storelocation: {
+                required: global.t("required_input", container.PersonLanguage)
+            },
+        },
     });
     $( "#borrowing" ).validate({
         errorClass: "alert alert-danger",
         rules: {
             borrower: {
                 required: true,
+            },
+        },
+        messages: {
+            borrower: {
+                required: global.t("required_input", container.PersonLanguage)
             },
         },
     });
@@ -495,21 +505,29 @@ $( document ).ready(function() {
     // borrowers select2
     //
     $('select#borrower').select2({
-    ajax: {
-        url: proxyPath + 'people',
-        dataType: 'json',
-        processResults: function (data) {
-        // replacing email by text expected by select2
-        var newdata = $.map(data.rows, function (obj) {
-            obj.text = obj.text || obj.person_email;
-            obj.id = obj.id || obj.person_id;
-            return obj;
-        });
-        return {
-            results: newdata
-        };
+        placeholder: "select a borrower",
+        ajax: {
+            url: proxyPath + 'people',
+            dataType: 'json',
+            data: function (params) {
+                var query = {
+                order: "asc",
+                sort: "person_email",
+                }
+                return query;
+            },
+            processResults: function (data) {
+            // replacing email by text expected by select2
+            var newdata = $.map(data.rows, function (obj) {
+                obj.text = obj.text || obj.person_email;
+                obj.id = obj.id || obj.person_id;
+                return obj;
+            });
+            return {
+                results: newdata
+            };
+            }
         }
-    }
     });
 });
 
@@ -959,6 +977,12 @@ function operateBorrow(e, value, row, index) {
         $("#borrow").modal("show");
         var $table = $('#table');
         $table.bootstrapTable('refresh');
+
+        // pre selecting the connected user
+        var email = readCookie("email")
+        var id = readCookie("id")
+        var newOption = new Option(email, id, true, true);
+        $('select#borrower').append(newOption).trigger('change');
     }   
 
 }

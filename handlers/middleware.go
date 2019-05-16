@@ -211,10 +211,12 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 
 		// bypass
 		switch item {
-		case "peoplepass", "peoplep", "bookmarks", "delete-token":
+		case "peoplepass", "peoplep", "bookmarks", "delete-token", "borrowings", "download":
 			// everybody can change his password
 			// everybody can bookmark a product
+			// everybody can borrow a storage
 			// everybody can logout
+			// everybody can download an export
 			h.ServeHTTP(w, r)
 			return
 		}

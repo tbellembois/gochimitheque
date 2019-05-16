@@ -104,7 +104,7 @@ func (db *SQLiteDataStore) GetPeople(p helpers.DbselectparamPerson) ([]Person, i
 		// (perm.person = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
 		// `)
 		comreq.WriteString(` JOIN permission AS perm ON
-		perm.person = 1 and (perm.permission_item_name in ("all", "entities")) and (perm.permission_perm_name in ("all", "r")) and (perm.permission_entity_id in (-1, e.entity_id))
+		perm.person = :personid and (perm.permission_item_name in ("all", "people")) and (perm.permission_perm_name in ("all", "r")) and (perm.permission_entity_id in (-1, e.entity_id))
 		`)
 	}
 	comreq.WriteString(" WHERE p.person_email LIKE :search")
@@ -783,12 +783,20 @@ func (db *SQLiteDataStore) insertPermissions(p Person, tx *sql.Tx) error {
 		// }
 
 		// for a r or w permission on a storage
-		// adding r permission on the storelocation
+		// - adding r permission on the storelocation
 		// to allow storage modifications (storelocation selection)
+		// - adding r permission on the people
+		// to allow storage borrowing (people selection)
 		if perm.PermissionItemName == "storages" && (perm.PermissionPermName == "w" || perm.PermissionPermName == "r") {
 			sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id) 
 			VALUES (?, ?, ?, ?)`
 			if _, err = tx.Exec(sqlr, p.PersonID, "r", "storelocations", perm.PermissionEntityID); err != nil {
+				tx.Rollback()
+				return err
+			}
+			sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id) 
+			VALUES (?, ?, ?, ?)`
+			if _, err = tx.Exec(sqlr, p.PersonID, "r", "people", perm.PermissionEntityID); err != nil {
 				tx.Rollback()
 				return err
 			}
