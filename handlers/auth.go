@@ -381,6 +381,7 @@ func (env *Env) GetTokenHandler(w http.ResponseWriter, r *http.Request) *helpers
 			Message: "error decoding form",
 		}
 	}
+	log.WithFields(log.Fields{"form person": person}).Debug("GetTokenHandler")
 
 	// authenticating the person
 	if p, e = env.DB.GetPersonByEmail(person.PersonEmail); e != nil {
@@ -397,7 +398,6 @@ func (env *Env) GetTokenHandler(w http.ResponseWriter, r *http.Request) *helpers
 			Message: "error getting user",
 		}
 	}
-	log.WithFields(log.Fields{"form person": person}).Debug("GetTokenHandler")
 	log.WithFields(log.Fields{"db p": p}).Debug("GetTokenHandler")
 
 	if e = bcrypt.CompareHashAndPassword([]byte(p.PersonPassword), []byte(person.PersonPassword)); e != nil {
