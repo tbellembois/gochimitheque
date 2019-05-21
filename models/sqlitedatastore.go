@@ -43,6 +43,54 @@ func init() {
 		})
 }
 
+// GetWelcomeAnnounce returns the welcome announce
+func (db *SQLiteDataStore) GetWelcomeAnnounce() (WelcomeAnnounce, error) {
+	var (
+		wa WelcomeAnnounce
+		sqlr          string
+		err           error
+	)
+	
+	sqlr = `SELECT welcomeannounce.welcomeannounce_id, welcomeannounce.welcomeannounce_text
+	FROM welcomeannounce LIMIT 1`
+	if err = db.Get(&wa, sqlr); err != nil {
+		return WelcomeAnnounce{}, err
+	}
+
+	log.WithFields(log.Fields{"wa": wa}).Debug("GetWelcomeAnnounce")
+	return wa, nil
+}
+
+// UpdateWelcomeAnnounce updates the main page announce
+func (db *SQLiteDataStore) UpdateWelcomeAnnounce(w WelcomeAnnounce) error {
+	var (
+		sqlr     string
+		tx       *sqlx.Tx
+		err      error
+	)
+
+	// beginning new transaction
+	if tx, err = db.Beginx(); err != nil {
+		return err
+	}
+
+	// updating person
+	sqlr = `UPDATE welcomeannounce SET welcomeannounce_text = ?
+	WHERE welcomeannounce_id = (SELECT welcomeannounce_id FROM welcomeannounce LIMIT 1)`
+	if _, err = tx.Exec(sqlr, w.WelcomeAnnounceText); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// committing changes
+	if err = tx.Commit(); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return nil
+}
+
 // NewSQLiteDBstore returns a database connection to the given dataSourceName
 // ie. a path to the sqlite database file
 func NewSQLiteDBstore(dataSourceName string) (*SQLiteDataStore, error) {
@@ -75,6 +123,10 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	PRAGMA temp_store = 2;
 	PRAGMA journal_mode = WAL;
 	PRAGMA temp_store = MEMORY;
+
+	CREATE TABLE IF NOT EXISTS welcomeannounce(
+		welcomeannounce_id integer PRIMARY KEY,
+		welcomeannounce_text string);
 
 	CREATE TABLE IF NOT EXISTS person(
 		person_id integer PRIMARY KEY,
@@ -348,11 +400,23 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	("L", 1, NULL), ("mL", 0.001, 1), ("µL", 0.00001, 1),
 	("kg", 1000, 2), ("g", 1, NULL), ("mg", 0.001, 2), ("µg", 0.00001, 2),
 	("m", 1, NULL), ("dm", 0.1, 3), ("cm", 0.01, 3)`
+	inswelcomeannounce := `INSERT INTO welcomeannounce (welcomeannounce_text) VALUES ("")`
 
 	// tables creation
 	log.Info("  creating sqlite tables")
 	if _, err = db.Exec(schema); err != nil {
 		return err
+	}
+
+	// welcome announce
+	if err = db.Get(&c, `SELECT count(*) FROM welcomeannounce`); err != nil {
+		return err
+	}
+	if c == 0 {
+		log.Info("  inserting welcome announce")
+		if _, err = db.Exec(inswelcomeannounce); err != nil {
+			return err
+		}
 	}
 
 	// symbols

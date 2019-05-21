@@ -26,6 +26,12 @@ type Stock struct {
 	Unit    Unit    `json:"unit"`
 }
 
+// WelcomeAnnounce is the custom welcome page message
+type WelcomeAnnounce struct {
+	WelcomeAnnounceID int      `db:"welcomeannounce_id" json:"welcomeannounce_id" schema:"welcomeannounce_id"`
+	WelcomeAnnounceText string `db:"welcomeannounce_text" json:"welcomeannounce_text" schema:"welcomeannounce_text"`
+}
+
 // StoreLocation is where products are stored in entities
 type StoreLocation struct {
 	// nullable values to handle optional StoreLocation foreign key (gorilla shema nil values)

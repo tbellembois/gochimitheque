@@ -23,7 +23,7 @@ script.
 `))
 
 // locales regexp
-var r = regexp.MustCompile("\\[(\\S+)\\]\\n\\s+one = \"(.+)\"")
+var r = regexp.MustCompile("\\[(\\S+)\\]\\n\\s+one = \"(.*)\"")
 
 // locales map
 var mEn map[string]string

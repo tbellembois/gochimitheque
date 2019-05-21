@@ -5,6 +5,9 @@ var LOCALES_EN = []byte(`
 	one = "One test"
 	other = "Several tests"
 
+[nil]
+	one = " "
+
 [created]
 	one = "created"
 [modified]
@@ -94,6 +97,11 @@ var LOCALES_EN = []byte(`
 	one = "Chimithèque logo designed by "
 [logo_information2]
 	one = "Do not use or copy without her permission."
+
+[welcomeannounce_text_title]
+	one = "Main page additional text"
+[welcomeannounce_text_modificationsuccess]
+	one = "announce modified"
 
 [s_custom_name_part_of]
 	one = "part of name"

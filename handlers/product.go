@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/tbellembois/gochimitheque/utils"
-
 	"github.com/tbellembois/gochimitheque/jade"
 
 	"github.com/gorilla/mux"
