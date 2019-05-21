@@ -15,7 +15,7 @@ html
         link(href=c.ProxyPath + "css/trumbowyg.min.css",  rel="stylesheet" )
         link(href=c.ProxyPath + "css/trumbowyg.colors.min.css",  rel="stylesheet" )
         
-        script(src=c.ProxyPath + "js/jquery-3.3.1.min.js")
+        script(src=c.ProxyPath + "js/jquery-3.4.1.min.js")
     body
         div#message
         div.container
@@ -85,6 +85,11 @@ html
                                     = T("list", 1)
                                     a#menu_create_person.collapse(href=c.ProxyPath + "vc/people", title="create").dropdown-item
                                         = T("create", 1)
+
+                        li.nav-item#menu_update_welcomeannounce.collapse
+                            a(href=c.ProxyPath + "v/welcomeannounce").nav-link
+                                span.mdi.mdi-information-outline.mdi-36px.iconlabel
+                                    = T("menu_welcomeannounce", 1) 
 
                         li.nav-item
                             a.nav-link(title= "change password" href=c.ProxyPath + "vu/peoplepass")
@@ -161,6 +166,7 @@ html
                 hasPermission("entities", "", "POST").done(function(){
                     $("#menu_entities").show();
                     $("#menu_create_entity").show();
+                    $("#menu_update_welcomeannounce").show();
                     localStorage.setItem("entities::POST", true);
                 }).fail(function(){
                     localStorage.setItem("entities::POST", false);
@@ -231,6 +237,7 @@ html
         script(src=c.ProxyPath + "js/jquery.validate.additional-methods.min.js" )
         script(src=c.ProxyPath + "js/select2.full.min.js" )
         script(src=c.ProxyPath + "js/popper.min.js" )
+        script(src=c.ProxyPath + "js/popper-utils.min.js" )
         script(src=c.ProxyPath + "js/bootstrap.min.js" )
         script(src=c.ProxyPath + "js/bootstrap-table.min.js" )
         script(src=c.ProxyPath + "js/bootstrap-confirmation.min.js" )

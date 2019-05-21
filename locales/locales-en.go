@@ -138,6 +138,8 @@ var LOCALES_EN = []byte(`
 	one = "store locations"
 [menu_people]
 	one = "people"
+[menu_welcomeannounce]
+	one = "change the login message"
 [menu_password]
 	one = "change my password"
 [menu_logout]

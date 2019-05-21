@@ -217,11 +217,11 @@ window.operateEvents = {
     },
     'click .delete': function (e, value, row, index) {
         // hiding possible previous confirmation button
-        $(this).confirmation("show").off( "confirmed.bs.confirmation");
-        $(this).confirmation("show").off( "canceled.bs.confirmation");
+        $("button#delete" + row.entity_id).confirmation("show").off( "confirmed.bs.confirmation");
+        $("button#delete" + row.entity_id).confirmation("show").off( "canceled.bs.confirmation");
         
         // ask for confirmation and then delete
-        $(this).confirmation("show").on( "confirmed.bs.confirmation", function() {
+        $("button#delete" + row.entity_id).confirmation("show").on( "confirmed.bs.confirmation", function() {
             $.ajax({
                 url: proxyPath + "entities/" + row['entity_id'],
                 method: "DELETE",
