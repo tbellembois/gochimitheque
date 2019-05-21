@@ -538,9 +538,11 @@ func (db *SQLiteDataStore) GetStorage(id int) (Storage, error) {
 	storelocation.storelocation_id AS "storelocation.storelocation_id",
 	storelocation.storelocation_name AS "storelocation.storelocation_name",
 	storelocation.storelocation_color AS "storelocation.storelocation_color",
-	storelocation.storelocation_fullpath AS "storelocation.storelocation_fullpath"
+	storelocation.storelocation_fullpath AS "storelocation.storelocation_fullpath",
+	entity.entity_id AS "storelocation.entity.entity_id"
 	FROM storage
 	JOIN storelocation ON storage.storelocation = storelocation.storelocation_id
+	JOIN entity ON storelocation.entity = entity.entity_id
 	LEFT JOIN unit ON storage.unit = unit.unit_id
 	LEFT JOIN supplier ON storage.supplier = supplier.supplier_id
 	JOIN person ON storage.person = person.person_id

@@ -196,12 +196,23 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			item = "entities"
 			id = "-1"
 		case "stocks":
-			// to access a stock, one need permission on storage
+			// to access stocks, one need permission on storage
 			item = "storages"
 			id = "-2"
 		case "storages":
-			// storages access are global per entity
-			id = "-2"
+			if id != "-1" && id != "-2" && id != "" {
+				// storages access are per entity
+				if itemid, err = strconv.Atoi(id); err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+				s, e := env.DB.GetStorage(itemid)
+				if e != nil {
+					http.Error(w, e.Error(), http.StatusInternalServerError)
+					return
+				}
+				id = strconv.Itoa(s.EntityID)
+			}
 		}
 
 		if id == "" {
