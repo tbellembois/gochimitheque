@@ -902,11 +902,11 @@ window.operateEvents = {
     },
     'click .restore': function (e, value, row, index) {
         // hiding possible previous confirmation button
-        $(this).confirmation("show").off( "confirmed.bs.confirmation");
-        $(this).confirmation("show").off( "canceled.bs.confirmation");
+        $("button#restore" + row.storage_id.Int64).confirmation("show").off( "confirmed.bs.confirmation");
+        $("button#restore" + row.storage_id.Int64).confirmation("show").off( "canceled.bs.confirmation");
         
         // ask for confirmation and then restore
-        $(this).confirmation("show").on( "confirmed.bs.confirmation", function() {
+        $("button#restore" + row.storage_id.Int64).confirmation("show").on( "confirmed.bs.confirmation", function() {
             $.ajax({
                 url: proxyPath + "storages/" + row['storage_id'].Int64 + "/r",
                 method: "PUT",
@@ -922,11 +922,11 @@ window.operateEvents = {
     },
     'click .archive': function (e, value, row, index) {
         // hiding possible previous confirmation button
-        $(this).confirmation("show").off( "confirmed.bs.confirmation");
-        $(this).confirmation("show").off( "canceled.bs.confirmation");
+        $("button#archive" + row.storage_id.Int64).confirmation("show").off( "confirmed.bs.confirmation");
+        $("button#archive" + row.storage_id.Int64).confirmation("show").off( "canceled.bs.confirmation");
         
         // ask for confirmation and then delete
-        $(this).confirmation("show").on( "confirmed.bs.confirmation", function() {
+        $("button#archive" + row.storage_id.Int64).confirmation("show").on( "confirmed.bs.confirmation", function() {
             $.ajax({
                 url: proxyPath + "storages/" + row['storage_id'].Int64 + "/a",
                 method: "DELETE",
@@ -942,11 +942,11 @@ window.operateEvents = {
     },
     'click .delete': function (e, value, row, index) {
         // hiding possible previous confirmation button
-        $(this).confirmation("show").off( "confirmed.bs.confirmation");
-        $(this).confirmation("show").off( "canceled.bs.confirmation");
+        $("button#delete" + row.storage_id.Int64).confirmation("show").off( "confirmed.bs.confirmation");
+        $("button#delete" + row.storage_id.Int64).confirmation("show").off( "canceled.bs.confirmation");
         
         // ask for confirmation and then delete
-        $(this).confirmation("show").on( "confirmed.bs.confirmation", function() {
+        $("button#delete" + row.storage_id.Int64).confirmation("show").on( "confirmed.bs.confirmation", function() {
             $.ajax({
                 url: proxyPath + "storages/" + row['storage_id'].Int64,
                 method: "DELETE",

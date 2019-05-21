@@ -138,6 +138,8 @@ var LOCALES_FR = []byte(`
 	one = "entrepôts"
 [menu_people]
 	one = "utilisateurs"
+[menu_welcomeannounce]
+	one = "changer le message de page d'accueil"
 [menu_password]
 	one = "changer mon mot de passe"
 [menu_logout]
