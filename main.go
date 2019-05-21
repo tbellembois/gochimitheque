@@ -3,7 +3,7 @@ package main
 //go:generate go run gogenerate/localejs.go
 //go:generate gopherjs build gopherjs/gjs-common.go -o static/js/chim/gjs-common.js
 //go:generate rice embed-go
-//go:generate jade -writer -basedir static/templates -d ./jade home/index.jade login/index.jade entity/index.jade entity/create.jade product/index.jade product/create.jade storage/index.jade storage/create.jade storelocation/index.jade storelocation/create.jade person/index.jade person/create.jade person/pupdate.jade test.jade
+//go:generate jade -writer -basedir static/templates -d ./jade welcomeannounce/index.jade home/index.jade login/index.jade entity/index.jade entity/create.jade product/index.jade product/create.jade storage/index.jade storage/create.jade storelocation/index.jade storelocation/create.jade person/index.jade person/create.jade person/pupdate.jade test.jade
 
 import (
 	"database/sql"
@@ -174,6 +174,10 @@ func main() {
 	r.Handle("/v/test", securechain.Then(env.AppMiddleware(env.VTestHandler))).Methods("GET")
 	// home page
 	r.Handle("/", securechain.Then(env.AppMiddleware(env.HomeHandler))).Methods("GET")
+	// welcome announce
+	r.Handle("/{view:v}/{item:welcomeannounce}", securechain.Then(env.AppMiddleware(env.VWelcomeAnnounceHandler))).Methods("GET")
+	r.Handle("/{item:welcomeannounce}", securechain.Then(env.AppMiddleware(env.UpdateWelcomeAnnounceHandler))).Methods("PUT")
+	r.Handle("/{item:welcomeannounce}", commonChain.Then(env.AppMiddleware(env.GetWelcomeAnnounceHandler))).Methods("GET")
 	// entities
 	r.Handle("/{view:v}/{item:entities}", securechain.Then(env.AppMiddleware(env.VGetEntitiesHandler))).Methods("GET")
 	r.Handle("/{view:vc}/{item:entities}", securechain.Then(env.AppMiddleware(env.VCreateEntityHandler))).Methods("GET")

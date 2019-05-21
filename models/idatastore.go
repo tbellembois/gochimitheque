@@ -13,6 +13,10 @@ type Datastore interface {
 	CreateDatabase() error
 	Import(dir string) error
 
+	// welcome announce
+	GetWelcomeAnnounce() (WelcomeAnnounce, error)
+	UpdateWelcomeAnnounce(w WelcomeAnnounce) error
+
 	// products
 	GetProducts(helpers.DbselectparamProduct) ([]Product, int, error)
 	GetProductsCasNumbers(helpers.Dbselectparam) ([]CasNumber, int, error)

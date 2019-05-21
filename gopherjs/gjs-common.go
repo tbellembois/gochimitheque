@@ -389,6 +389,10 @@ func NormalizeSqlNull(obj map[string]interface{}) *map[string]interface{} {
 }
 
 func T(s string, accept string) string {
+	if s == "" {
+		return ""
+	}
+
 	// accept is an accept language http header
 	// like fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3
 	r := regexp.MustCompile("([a-zA-Z\\-]+){0,1},{0,1}([a-zA-Z\\-]+){0,1};q=([0-9\\.]+)")

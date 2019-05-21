@@ -1,0 +1,25 @@
+extends ../base.jade
+block CONTENT
+    :go:func
+        Welcomeannounceindex(c ViewContainer)
+
+    #edit-collapse(data-parent='#accordion')
+
+        +titleicon(iconaction="border-color" iconitem="information-outline" label="welcomeannounce_text_title")
+
+        form#welcomeannounce
+          
+            .form-group.row
+                .form-group.col-sm-12
+                    //+inputtextarea("nil", "welcomeannounce_text")
+                    div#welcomeannounce_text
+
+        button#save.btn.btn-link(type='button', onclick='saveWelcomeAnnounce()')
+            span.mdi.mdi-content-save.mdi-24px.iconlabel
+                = T("save", 1)
+        button.btn.btn-link(type='button', onclick='closeEdit();')
+            span.mdi.mdi-close-box.mdi-24px.iconlabel
+                = T("close", 1)
+                    
+block CONTENTJS
+    script(src="../js/chim/welcomeannounce.js")

@@ -191,6 +191,10 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 
 		// id and item translations
 		switch item {
+		case "welcomeannounce":
+			// welcome announcements are editable by admins only
+			item = "entities"
+			id = "-1"
 		case "stocks":
 			// to access a stock, one need permission on storage
 			item = "storages"

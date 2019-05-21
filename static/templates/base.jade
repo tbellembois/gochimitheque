@@ -3,15 +3,17 @@ html
     head
         include head
 
-        link(href=c.ProxyPath + "css/bootstrap.min.css",  rel="stylesheet" )
-        link(href=c.ProxyPath + "css/bootstrap-table.min.css",  rel="stylesheet" )
-        link(href=c.ProxyPath + "css/select2.min.css",  rel="stylesheet" )
-        link(href=c.ProxyPath + "css/bootstrap-colorpicker.min.css",  rel="stylesheet" )
-        link(href=c.ProxyPath + "css/fontawesome.all.min.css",  rel="stylesheet" )
-        link(href=c.ProxyPath + "css/chimitheque.css",  rel="stylesheet" )
-        link(href=c.ProxyPath + "css/materialdesignicons.min.css",  rel="stylesheet" )
-        link(href=c.ProxyPath + "css/bootstrap-toggle.min.css",  rel="stylesheet" )
         link(href=c.ProxyPath + "css/animate.min.css",  rel="stylesheet" )
+        link(href=c.ProxyPath + "css/bootstrap-colorpicker.min.css",  rel="stylesheet" )
+        link(href=c.ProxyPath + "css/bootstrap-table.min.css",  rel="stylesheet" )
+        link(href=c.ProxyPath + "css/bootstrap-toggle.min.css",  rel="stylesheet" )
+        link(href=c.ProxyPath + "css/bootstrap.min.css",  rel="stylesheet" )
+        link(href=c.ProxyPath + "css/chimitheque.css",  rel="stylesheet" )
+        link(href=c.ProxyPath + "css/fontawesome.all.min.css",  rel="stylesheet" )
+        link(href=c.ProxyPath + "css/materialdesignicons.min.css",  rel="stylesheet" )
+        link(href=c.ProxyPath + "css/select2.min.css",  rel="stylesheet" )
+        link(href=c.ProxyPath + "css/trumbowyg.min.css",  rel="stylesheet" )
+        link(href=c.ProxyPath + "css/trumbowyg.colors.min.css",  rel="stylesheet" )
         
         script(src=c.ProxyPath + "js/jquery-3.3.1.min.js")
     body
@@ -235,8 +237,14 @@ html
         script(src=c.ProxyPath + "js/bootstrap-colorpicker.min.js" )
         script(src=c.ProxyPath + "js/bootstrap-toggle.min.js" )
         script(src=c.ProxyPath + "js/JSmol.lite.nojq.js" )
+        script(src=c.ProxyPath + "js/trumbowyg.min.js" )
+        script(src=c.ProxyPath + "js/trumbowyg.colors.min.js" )
         script(src=c.ProxyPath + "js/chim/gjs-common.js" )
         script(src=c.ProxyPath + "js/chim/chimcommon.js" )
         script(src=c.ProxyPath + "js/chim/login.js" )
         
+        script.
+            // change trumbowyg icons path
+            $.trumbowyg.svgPath = '/img/trumbowyg_icons.svg';
+
         block CONTENTJS

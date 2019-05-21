@@ -1,3 +1,15 @@
+// getting welcome announce
+$( document ).ready(function() {
+    $.ajax({
+        url: proxyPath + "welcomeannounce",
+        method: "GET",
+    }).done(function(data, textStatus, jqXHR) {
+        $("#wannounce").html(data.welcomeannounce_text);
+    }).fail(function(jqXHR, textStatus, errorThrown) {
+        handleHTTPError(jqXHR.statusText, jqXHR.status)
+    });  
+})
+
 // send a password initialization link
 function resetPassword() {
     var email = $("#person_email").val(),
