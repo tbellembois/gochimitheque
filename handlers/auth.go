@@ -404,7 +404,7 @@ func (env *Env) GetTokenHandler(w http.ResponseWriter, r *http.Request) *helpers
 		return &helpers.AppError{
 			Code:    http.StatusUnauthorized,
 			Error:   e,
-			Message: "invalid password",
+			Message: global.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "invalid_password", PluralCount: 1}),
 		}
 	}
 
