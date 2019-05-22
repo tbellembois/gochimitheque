@@ -73,7 +73,7 @@ var (
 	Bundle *i18n.Bundle
 	// Localizer is the i18n translator
 	Localizer *i18n.Localizer
-	
+
 	err error
 )
 

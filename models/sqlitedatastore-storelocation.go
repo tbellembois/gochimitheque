@@ -86,7 +86,7 @@ func (db *SQLiteDataStore) GetStoreLocations(p helpers.DbselectparamStoreLocatio
 	// (perm.person = :personid and perm.permission_item_name = "storages" and perm.permission_perm_name = "r" and perm.permission_entity_id = entity.entity_id)
 	// `)
 	comreq.WriteString(` JOIN permission AS perm ON
-	perm.person = :personid and (perm.permission_item_name in ("all", "storages")) and (perm.permission_perm_name in ("all", "r")) and (perm.permission_entity_id in (-1, entity.entity_id))
+	perm.person = :personid and (perm.permission_item_name in ("all", "storages")) and (perm.permission_perm_name in ("all", :permission)) and (perm.permission_entity_id in (-1, entity.entity_id))
 	`)
 	comreq.WriteString(" WHERE s.storelocation_name LIKE :search")
 	if p.GetEntity() != -1 {
@@ -120,6 +120,7 @@ func (db *SQLiteDataStore) GetStoreLocations(p helpers.DbselectparamStoreLocatio
 		"limit":                  p.GetLimit(),
 		"offset":                 p.GetOffset(),
 		"entity":                 p.GetEntity(),
+		"permission": 			  p.GetPermission(),
 	}
 
 	// select
