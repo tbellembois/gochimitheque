@@ -91,7 +91,7 @@ $( document ).ready(function() {
     //
     $('select#s_storelocation').select2({
         templateResult: formatStorelocation,
-        placeholder: "store location",
+        //placeholder: "store location",
         ajax: {
             url: proxyPath + 'storelocations',
             delay: 400,
@@ -128,7 +128,7 @@ $( document ).ready(function() {
     $('select#s_casnumber').select2({
         tags: false,
         allowClear: true,
-        placeholder: "select a cas number",
+        //placeholder: "select a cas number",
         ajax: {
             url: proxyPath + 'products/casnumbers/',
             delay: 400,
@@ -165,7 +165,7 @@ $( document ).ready(function() {
     $('select#s_name').select2({
         tags: false,
         allowClear: true,
-        placeholder: "select a name",
+       //placeholder: "select a name",
         ajax: {
             url: proxyPath + 'products/names/',
             delay: 400,
@@ -203,7 +203,7 @@ $( document ).ready(function() {
     $('select#s_empiricalformula').select2({
         tags: false,
         allowClear: true,
-        placeholder: "select a formula",
+        //placeholder: "select a formula",
         ajax: {
             url: proxyPath + 'products/empiricalformulas/',
             delay: 400,
@@ -241,7 +241,7 @@ $( document ).ready(function() {
     $('select#s_signalword').select2({
         templateResult: formatSignalWord,
         allowClear: true,
-        placeholder: "select signal word",
+        //placeholder: "select signal word",
         ajax: {
             url: proxyPath + 'products/signalwords/',
             delay: 400,
@@ -412,6 +412,7 @@ $( document ).ready(function() {
     //
     $('select#casnumber').select2({
         tags: true,
+        placeholder: global.t("product_cas_placeholder", container.PersonLanguage),
         createTag: function (params) {
             if ($("input#exactMatchCasNumber").val() == "true") {
                 return null
@@ -478,6 +479,7 @@ $( document ).ready(function() {
     //
     $('select#cenumber').select2({
         tags: true,
+        placeholder: global.t("product_ce_placeholder", container.PersonLanguage),
         allowClear: true,
         createTag: function (params) {
             if ($("input#exactMatchCeNumber").val() == "true") {
@@ -488,7 +490,6 @@ $( document ).ready(function() {
                 text: params.term,
             }
         },
-        placeholder: "select or enter a CE number",
         ajax: {
             url: proxyPath + 'products/cenumbers/',
             delay: 400,
@@ -546,6 +547,7 @@ $( document ).ready(function() {
     $('select#physicalstate').select2({
         allowClear: true,
         tags: true,
+        placeholder: global.t("product_physicalstate_placeholder", container.PersonLanguage),
         createTag: function (params) {
             if ($("input#exactMatchPhysicalstate").val() == "true") {
                 return null
@@ -555,7 +557,6 @@ $( document ).ready(function() {
                 text: params.term,
             }
         },
-        placeholder: "select physical state",
         ajax: {
             url: proxyPath + 'products/physicalstates/',
             delay: 400,
@@ -613,7 +614,7 @@ $( document ).ready(function() {
     $('select#signalword').select2({
         templateResult: formatSignalWord,
         allowClear: true,
-        placeholder: "select signal word",
+        placeholder: global.t("product_signalword_placeholder", container.PersonLanguage),
         ajax: {
             url: proxyPath + 'products/signalwords/',
             delay: 400,
@@ -651,6 +652,7 @@ $( document ).ready(function() {
     $('select#classofcompound').select2({
         allowClear: true,
         tags: true,
+        placeholder: global.t("product_classofcompound_placeholder", container.PersonLanguage),
         createTag: function (params) {
             if ($("input#exactMatchClassofcompounds").val() == "true") {
                 return null
@@ -660,7 +662,6 @@ $( document ).ready(function() {
                 text: params.term,
             }
         },
-        placeholder: "select class of compound",
         ajax: {
             url: proxyPath + 'products/classofcompounds/',
             delay: 400,
@@ -717,6 +718,7 @@ $( document ).ready(function() {
     //
     $('select#name').select2({
         tags: true,
+        placeholder: global.t("product_name_placeholder", container.PersonLanguage),
         createTag: function (params) {
             if ($("input#exactMatchName").val() == "true") {
                 return null
@@ -783,6 +785,7 @@ $( document ).ready(function() {
     //
     $('select#empiricalformula').select2({
         tags: true,
+        placeholder: global.t("product_empiricalformula_placeholder", container.PersonLanguage),
         createTag: function (params) {
             if ($("input#exactMatchEmpiricalFormula").val() == "true") {
                 return null
@@ -850,6 +853,7 @@ $( document ).ready(function() {
     $('select#linearformula').select2({
         tags: true,
         allowClear: true,
+        placeholder: global.t("product_linearformula_placeholder", container.PersonLanguage),
         createTag: function (params) {
             if ($("input#exactMatchLinearFormula").val() == "true") {
                 return null
@@ -859,7 +863,6 @@ $( document ).ready(function() {
                 text: params.term,
             }
         },
-        placeholder: "select or enter a linear formula",
         ajax: {
             url: proxyPath + 'products/linearformulas/',
             delay: 400,
@@ -917,6 +920,7 @@ $( document ).ready(function() {
     //
     $('select#synonyms').select2({
         tags: true,
+        placeholder: global.t("product_synonyms_placeholder", container.PersonLanguage),
         createTag: function (params) {
             if ($("input#exactMatchSynonyms").val() == "true") {
                 return null
@@ -982,6 +986,7 @@ $( document ).ready(function() {
     $('select#symbols').select2({
         templateResult: formatSymbol,
         closeOnSelect: false,
+        placeholder: global.t("product_symbols_placeholder", container.PersonLanguage),
         ajax: {
             url: proxyPath + 'products/symbols/',
             delay: 400,
@@ -1006,6 +1011,7 @@ $( document ).ready(function() {
     $('select#hazardstatements').select2({
         templateResult: formatHazardStatement,
         closeOnSelect: false,
+        placeholder: global.t("product_hazardstatements_placeholder", container.PersonLanguage),
         ajax: {
             url: proxyPath + 'products/hazardstatements/',
             delay: 400,
@@ -1045,6 +1051,7 @@ $( document ).ready(function() {
     $('select#precautionarystatements').select2({
         templateResult: formatPrecautionaryStatement,
         closeOnSelect: false,
+        placeholder: global.t("product_precautionarystatements_placeholder", container.PersonLanguage),
         ajax: {
             url: proxyPath + 'products/precautionarystatements/',
             delay: 400,

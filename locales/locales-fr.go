@@ -33,6 +33,8 @@ var LOCALES_FR = []byte(`
 	one = "mot de passe"
 [confirm_password]
 	one = "confirmer le mot de passe"
+[invalid_password]
+	one = "mauvais mot de passe"
 
 [members]
 	one = "membres"
@@ -280,6 +282,30 @@ var LOCALES_FR = []byte(`
 	one = "CAS"
 [product_specificity_table_header]
 	one = "spécificité"
+[product_cas_placeholder]
+	one = "sélectionnez ou entrez un numéro CAS"
+[product_ce_placeholder]
+	one = "sélectionnez ou entrez un numéro CE"
+[product_physicalstate_placeholder]
+	one = "sélectionnez un état physique"
+[product_signalword_placeholder]
+	one = "sélectionnez une mention"
+[product_classofcompound_placeholder]
+	one = "sélectionnez une ou plusieurs famille(s)"
+[product_name_placeholder]
+	one = "sélectionnez ou entrez un nom"
+[product_synonyms_placeholder]
+	one = "sélectionnez ou entrez un ou plusieurs nom(s)"
+[product_empiricalformula_placeholder]
+	one = "sélectionnez ou entrez une formule"
+[product_linearformula_placeholder]
+	one = "sélectionnez ou entrez une formule"
+[product_symbols_placeholder]
+	one = "sélectionnez un ou plusieurs symbole(s)"
+[product_hazardstatements_placeholder]
+	one = "sélectionnez une ou plusieurs mention(s)"
+[product_precautionarystatements_placeholder]
+	one = "sélectionnez un ou plusieurs conseil(s)"
 
 [person_create_title]
 	one = "créer personne"
