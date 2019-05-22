@@ -176,10 +176,12 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			return
 		}
 
-		// extraction request variables
+		//
+		// extracting request variables
+		//
 		vars := mux.Vars(r)
-		item := vars["item"]
 		view := vars["view"]
+		item := vars["item"]
 		id := vars["id"]
 		log.WithFields(log.Fields{
 			"id":          id,
@@ -189,19 +191,31 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			"personid":    personid,
 			"r.Method":    r.Method}).Debug("AuthorizeMiddleware")
 
-		// id and item translations
+
+		//
+		// id and item translations and setup for the HasPersonPermission method, and some bypasses
+		//
 		switch item {
+		case "peoplepass", "peoplep", "bookmarks", "delete-token", "borrowings", "download":
+			// everybody can change his password
+			// everybody can bookmark a product
+			// everybody can borrow a storage
+			// everybody can logout
+			// everybody can download an export
+			h.ServeHTTP(w, r)
+			return
 		case "welcomeannounce":
 			// welcome announcements are editable by admins only
 			item = "entities"
 			id = "-1"
 		case "stocks":
-			// to access stocks, one need permission on storage
+			// to access stocks, one needs permission on at least one storage
 			item = "storages"
 			id = "-2"
 		case "storages":
 			if id != "-1" && id != "-2" && id != "" {
 				// storages access are per entity
+				// extracting entity id from storage
 				if itemid, err = strconv.Atoi(id); err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
@@ -224,21 +238,9 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			}
 		}
 
-		// bypass
-		switch item {
-		case "peoplepass", "peoplep", "bookmarks", "delete-token", "borrowings", "download":
-			// everybody can change his password
-			// everybody can bookmark a product
-			// everybody can borrow a storage
-			// everybody can logout
-			// everybody can download an export
-			h.ServeHTTP(w, r)
-			return
-		}
-
-		// depending on the request
-		// preparing the HasPersonPermission parameters
-		// to allow/deny access
+		//
+		// perm variable setup for the HasPersonPermission method
+		//
 		switch r.Method {
 		case "GET":
 			switch view {
@@ -250,11 +252,11 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			case "vu", "vc":
 				perm = "w"
 			}
-		case "POST", "PUT":
+		case "PUT":
 			// REST update,create methods
 			switch item {
 			case "people":
-				// a user can not edit/delete himself
+				// a user can not edit himself
 				if itemid == personid {
 					http.Error(w, "can not edit/delete yourself", http.StatusForbidden)
 					return
@@ -262,11 +264,33 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			}
 
 			perm = "w"
+		case "POST":
+			switch item {
+			case "storages":
+				// checking that the connected person
+				// can "w" "storages" in the entity of the storage's
+				// store location
+				var (
+					s models.Storage
+					e error
+				)
+				if e = r.ParseForm(); err != nil {
+					http.Error(w, e.Error(), http.StatusInternalServerError)
+				}
+				if e = global.Decoder.Decode(&s, r.PostForm); err != nil {
+					http.Error(w, e.Error(), http.StatusInternalServerError)
+				}
+				if s.StoreLocation, e = env.DB.GetStoreLocation(int(s.StoreLocationID.Int64)); err != nil {
+					http.Error(w, e.Error(), http.StatusInternalServerError)
+				}
+				itemid = s.StoreLocation.EntityID
+			}
+			perm = "w"
 		case "DELETE":
 			// REST delete method
 			switch item {
 			case "people":
-				// a user can not edit/delete himself
+				// a user can not delete himself
 				if itemid == personid {
 					http.Error(w, "can not edit/delete yourself", http.StatusForbidden)
 					return

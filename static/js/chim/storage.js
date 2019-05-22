@@ -313,44 +313,44 @@ $( document ).ready(function() {
     //
     // store locations selector select2
     //
-    $('select#storelocationselector').select2({
-        templateResult: formatStorelocation,
-        //placeholder: "direct store location access",
-        ajax: {
-            url: proxyPath + 'storelocations',
-            data: function (params) {
-                var query = {
-                    search: params.term,
-                    page: params.page || 1,
-                    offset: (params.page-1)*10 || 0,
-                    limit: 10
-                }
+    // $('select#storelocationselector').select2({
+    //     templateResult: formatStorelocation,
+    //     //placeholder: "direct store location access",
+    //     ajax: {
+    //         url: proxyPath + 'storelocations',
+    //         data: function (params) {
+    //             var query = {
+    //                 search: params.term,
+    //                 page: params.page || 1,
+    //                 offset: (params.page-1)*10 || 0,
+    //                 limit: 10
+    //             }
 
-                // Query parameters will be ?search=[term]&page=[page]
-                return query;
-            },
-            dataType: 'json',
-            processResults: function (data) {
-                // replacing name by text expected by select2
-                var newdata = $.map(data.rows, function (obj) {
-                    obj.text = obj.text || obj.storelocation_fullpath;
-                    obj.id = obj.id || obj.storelocation_id.Int64;
-                    return obj;
-                });
-                // getting the number of loaded select elements
-                selectnbitems = $("ul#select2-storelocationselector-results li").length + 10;
+    //             // Query parameters will be ?search=[term]&page=[page]
+    //             return query;
+    //         },
+    //         dataType: 'json',
+    //         processResults: function (data) {
+    //             // replacing name by text expected by select2
+    //             var newdata = $.map(data.rows, function (obj) {
+    //                 obj.text = obj.text || obj.storelocation_fullpath;
+    //                 obj.id = obj.id || obj.storelocation_id.Int64;
+    //                 return obj;
+    //             });
+    //             // getting the number of loaded select elements
+    //             selectnbitems = $("ul#select2-storelocationselector-results li").length + 10;
                 
-                return {
-                    results: newdata,
-                    pagination: {more: selectnbitems<data.total}
-                };
-            }
-        }
-    }).on("select2:select", function (e) {
-        var data = e.params.data;
-        var slid = data.storelocation_id.Int64;
-        window.location.href = proxyPath + "v/products?storelocation=" + slid;
-    });
+    //             return {
+    //                 results: newdata,
+    //                 pagination: {more: selectnbitems<data.total}
+    //             };
+    //         }
+    //     }
+    // }).on("select2:select", function (e) {
+    //     var data = e.params.data;
+    //     var slid = data.storelocation_id.Int64;
+    //     window.location.href = proxyPath + "v/products?storelocation=" + slid;
+    // });
 
     //
     // store location select2
@@ -363,6 +363,7 @@ $( document ).ready(function() {
             data: function (params) {
                 var query = {
                     storelocation_canstore: true,
+                    permission: "w",
                     search: params.term,
                     page: params.page || 1,
                     offset: (params.page-1)*10 || 0,

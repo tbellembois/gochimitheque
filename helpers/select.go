@@ -179,13 +179,19 @@ type DbselectparamStoreLocation interface {
 	SetEntity(int)
 	SetStoreLocationCanStore(bool)
 
+	SetPermission(string)
+
 	GetEntity() int
 	GetStoreLocationCanStore() bool
+
+	GetPermission() string
 }
 type dbselectparamStoreLocation struct {
 	dbselectparam
 	Entity                int
 	StoreLocationCanStore bool
+
+	Permission string
 }
 
 //
@@ -259,6 +265,14 @@ func (d *dbselectparamStoreLocation) GetStoreLocationCanStore() bool {
 
 func (d *dbselectparamStoreLocation) SetStoreLocationCanStore(b bool) {
 	d.StoreLocationCanStore = b
+}
+
+func (d *dbselectparamStoreLocation) GetPermission() string {
+	return d.Permission
+}
+
+func (d *dbselectparamStoreLocation) SetPermission(p string) {
+	d.Permission = p
 }
 
 //
@@ -974,6 +988,7 @@ func NewdbselectparamStoreLocation(r *http.Request, f func(string) (string, erro
 
 	// init defaults
 	dspsl.Entity = -1
+	dspsl.Permission = "r"
 	if dsp, aerr = Newdbselectparam(r, f); aerr != nil {
 		return nil, aerr
 	}
@@ -1002,6 +1017,9 @@ func NewdbselectparamStoreLocation(r *http.Request, f func(string) (string, erro
 					Message: "storelocation_canstore bool conversion",
 				}
 			}
+		}
+		if p, ok := r.URL.Query()["permission"]; ok {
+			dspsl.Permission = p[0]
 		}
 	}
 	return &dspsl, nil
