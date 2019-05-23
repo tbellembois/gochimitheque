@@ -302,15 +302,16 @@ func (env *Env) UpdatePersonHandler(w http.ResponseWriter, r *http.Request) *hel
 	var (
 		id  int
 		err error
-		p   models.Person
+		p, updatedp   models.Person
+		es []models.Entity
 	)
-	if err := r.ParseForm(); err != nil {
+	if err = r.ParseForm(); err != nil {
 		return &helpers.AppError{
 			Error:   err,
 			Message: "form parsing error",
 			Code:    http.StatusBadRequest}
 	}
-	if err := global.Decoder.Decode(&p, r.PostForm); err != nil {
+	if err = global.Decoder.Decode(&p, r.PostForm); err != nil {
 		return &helpers.AppError{
 			Error:   err,
 			Message: "form decoding error",
@@ -325,10 +326,37 @@ func (env *Env) UpdatePersonHandler(w http.ResponseWriter, r *http.Request) *hel
 			Code:    http.StatusInternalServerError}
 	}
 
-	updatedp, _ := env.DB.GetPerson(id)
+	if updatedp, err = env.DB.GetPerson(id); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "error getting the person",
+			Code:    http.StatusInternalServerError}
+	}
 	updatedp.PersonEmail = p.PersonEmail
 	updatedp.Entities = p.Entities
-	updatedp.Permissions = p.Permissions
+
+	// checking if the person is a manager
+	if es, err = env.DB.GetPersonManageEntities(id); err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Message: "error getting entities managers",
+			Code:    http.StatusInternalServerError}
+	}
+	log.WithFields(log.Fields{"es": es}).Debug("UpdatePersonHandler")
+
+	// for the managed entities setting up the permissions
+	if len(es) != 0 {
+		for _, e := range es {
+			updatedp.Permissions = append(updatedp.Permissions, models.Permission{
+				PermissionPermName: "all",
+				PermissionItemName: "all",
+				PermissionEntityID: e.EntityID,
+				Person: updatedp,
+			})
+		}
+	} else {
+		updatedp.Permissions = p.Permissions
+	}
 
 	// product permissions are not for a given entity
 	for i, p := range updatedp.Permissions {
@@ -337,8 +365,9 @@ func (env *Env) UpdatePersonHandler(w http.ResponseWriter, r *http.Request) *hel
 		}
 	}
 	log.WithFields(log.Fields{"updatedp": updatedp}).Debug("UpdatePersonHandler")
+	log.WithFields(log.Fields{"updatedp.Permissions": updatedp.Permissions}).Debug("UpdatePersonHandler")
 
-	if err := env.DB.UpdatePerson(updatedp); err != nil {
+	if err = env.DB.UpdatePerson(updatedp); err != nil {
 		return &helpers.AppError{
 			Error:   err,
 			Message: "update person error",
