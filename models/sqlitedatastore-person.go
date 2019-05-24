@@ -255,6 +255,8 @@ func (db *SQLiteDataStore) GetPersonEntities(LoggedPersonID int, id int) ([]Enti
 	// building argument map
 	m := map[string]interface{}{
 		"personid": id}
+	log.Debug(sqlr)
+	log.Debug(m)
 
 	if err = sstmt.Select(&entities, m); err != nil {
 		return nil, err
@@ -408,16 +410,19 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 		// ?   | ?   | -1 => (ex: r permission on all entities)
 		// ?   | ?   | ?  => (ex: r permission on entity 3)
 		if sqlr, sqlargs, err = sqlx.In(`SELECT count(*) FROM permission WHERE 
-		person = ? AND permission_item_name = "all" AND permission_perm_name = "all" OR 
+		person = ? AND permission_item_name = "all" AND permission_perm_name = "all" AND permission_entity_id IN (?) OR
 		person = ? AND permission_item_name = "all" AND permission_perm_name = ? AND permission_entity_id = -1 OR
 		person = ? AND permission_item_name = "all" AND permission_perm_name = ? AND permission_entity_id IN (?) OR
 		person = ? AND permission_item_name = ? AND permission_perm_name = "all" AND permission_entity_id IN (?) OR
 		person = ? AND permission_item_name = ? AND permission_perm_name = "all" AND permission_entity_id = -1 OR 
 		person = ? AND permission_item_name = ? AND permission_perm_name = ? AND permission_entity_id = -1 OR
 		person = ? AND permission_item_name = ? AND permission_perm_name = ? AND permission_entity_id IN (?)
-		`, id, id, perm, id, perm, eids, id, item, eids, id, item, id, item, perm, id, item, perm, eids); err != nil {
+		`, id, eids, id, perm, id, perm, eids, id, item, eids, id, item, id, item, perm, id, item, perm, eids); err != nil {
 			return false, err
 		}
+
+		//log.Debug(sqlr)
+		//log.Debug(fmt.Sprintf("id:%d item:%s perm:%s eids:%s", id, item, perm, eids))
 
 		if err = db.Get(&count, sqlr, sqlargs...); err != nil {
 			switch {

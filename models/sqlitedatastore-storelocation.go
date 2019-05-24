@@ -120,8 +120,10 @@ func (db *SQLiteDataStore) GetStoreLocations(p helpers.DbselectparamStoreLocatio
 		"limit":                  p.GetLimit(),
 		"offset":                 p.GetOffset(),
 		"entity":                 p.GetEntity(),
-		"permission": 			  p.GetPermission(),
+		"permission":             p.GetPermission(),
 	}
+	//log.Debug(presreq.String() + comreq.String() + postsreq.String())
+	//log.Debug(m)
 
 	// select
 	if err = snstmt.Select(&storelocations, m); err != nil {
@@ -167,7 +169,7 @@ func (db *SQLiteDataStore) GetStoreLocationChildren(id int) ([]StoreLocation, er
 		sqlr           string
 		err            error
 	)
-	
+
 	sqlr = `SELECT s.storelocation_id, s.storelocation_name, s.storelocation_canstore, s.storelocation_color, s.storelocation_fullpath,
 	storelocation.storelocation_id AS "storelocation.storelocation_id",
 	storelocation.storelocation_name AS "storelocation.storelocation_name",

@@ -47,6 +47,17 @@ var LOCALES_FR = []byte(`
 [nb_duplicate]
 	one = "nombre de duplications"
 
+[bt_loadingMessage]
+	one = "chargement..."
+[bt_recordsPerPage]
+	one = "enegistrements par page"
+[bt_showingRowsTotal]
+	one = "enregistrements total"
+[bt_search]
+	one = "rechercher"
+[bt_noMatches]
+	one = "pas de résultat"
+
 [email_placeholder]
 	one = "entrez votre email"
 [submitlogin_text]
@@ -277,11 +288,11 @@ var LOCALES_FR = []byte(`
 [product_name_table_header]
 	one = "nom"
 [product_empiricalformula_table_header]
-	one = "formule brute"
+	one = "formule br."
 [product_cas_table_header]
 	one = "CAS"
 [product_specificity_table_header]
-	one = "spécificité"
+	one = "spéc."
 [product_cas_placeholder]
 	one = "sélectionnez ou entrez un numéro CAS"
 [product_ce_placeholder]
