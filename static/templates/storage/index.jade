@@ -143,9 +143,9 @@ block CONTENT
                             = T("storage_storelocation_table_header", 1)
                         th(data-field='storage_quantity' data-formatter='storage_quantityFormatter')
                             = T("storage_quantity_table_header", 1)
-                        th(data-field='storage_barecode' data-formatter='storage_barecodeFormatter' data-sortable='true')
+                        th.th-storage-barecode(data-field='storage_barecode' data-formatter='storage_barecodeFormatter' data-sortable='true')
                             = T("storage_barecode_table_header", 1)
-                        th.th-width-212(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') 
+                        th.th-storage-operate(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') 
 
         #edit-collapse.collapse(data-parent='#accordion')
 

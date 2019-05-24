@@ -48,20 +48,19 @@ block CONTENT
         img(style="position: absolute; top: 0; right: 0; border: 0;" src=c.ProxyPath + "img/forkme_right_darkblue_121621.png" alt="Fork me on GitHub")
 
     .fixed-bottom.row
-        .col.col-sm-3
-            img.mx-auto.d-block(src=c.ProxyPath + "img/logo_ens.png", alt="ens_logo" title="Ecole Normale Supérieure de Lyon")
-        .col.col-sm-3
-            img.mx-auto.d-block(src=c.ProxyPath + "img/logo_uca.jpg", alt="uca_logo" title="Université Clermont Auvergne")
-        .col.col-sm-3
-            img.mx-auto.d-block(src=c.ProxyPath + "img/logo_go.png", alt="go_logo" title="Golang language")
-        .col.col-sm-3
-                i 
-                    = T("logo_information1", 1) 
-                a(title="mon-aloevera [at] hotmail [dot] com")
-                    b Katia Varet.
-            p.blockquote-footer
-                i
-                    = T("logo_information2", 1) 
+        .col.col-sm-12.d-flex.justify-content-center
+            img(src=c.ProxyPath + "img/logo_ens.png", alt="ens_logo" title="Ecole Normale Supérieure de Lyon")
+            img(src=c.ProxyPath + "img/logo_uca.jpg", alt="uca_logo" title="Université Clermont Auvergne")
+            img(src=c.ProxyPath + "img/logo_go.png", alt="go_logo" title="Golang language")
+    .fixed-bottom.flex-row-reverse
+        p.blockquote-footer.text-right
+            i 
+                = T("logo_information1", 1) 
+            a(title="mon-aloevera [at] hotmail [dot] com")
+            b Katia Varet.
+        //p.blockquote-footer.text-right
+        //    i
+        //        = T("logo_information2", 1) 
 
 block CONTENTJS
     
