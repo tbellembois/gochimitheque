@@ -102,7 +102,7 @@ block CONTENT
                 thead
                     tr
                         // th(data-field='product_id' data-sortable='true') ID
-                        th.th-maxwidth-226(data-field='name.name_label' data-sortable='true')
+                        th.th-product-name(data-field='name.name_label' data-sortable='true')
                             = T("product_name_table_header", 1)
                         th(data-field='empiricalformula.empiricalformula_label' data-sortable='true')
                             = T("product_empiricalformula_table_header", 1)
@@ -111,7 +111,7 @@ block CONTENT
                         th(data-field='product_specificity' data-sortable='false' data-formatter='product_specificityFormatter')
                             = T("product_specificity_table_header", 1)
                         th(data-field='product_sl' data-formatter='product_slFormatter' data-sortable='false') 
-                        th.th-width-332(data-field='operate' data-formatter='operateFormatter' data-events='operateEvents') 
+                        th.th-product-operate(data-field='operate' data-formatter='operateFormatter' data-events='operateEvents') 
 
         #edit-collapse.collapse(data-parent='#accordion')
 

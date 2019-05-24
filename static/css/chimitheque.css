@@ -1,19 +1,24 @@
-.th-maxwidth-226 {
+.th-product-name {
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 226px;
 }
-.th-width-332 {
+.th-.th-product-operate {
     overflow: hidden;
     text-overflow: ellipsis;
     min-width: 332px;
 }
-.th-width-212 {
+.th-storage-operate {
     overflow: hidden;
     text-overflow: ellipsis;
-    min-width: 212px;
+    min-width: 215px;
 }
-.th-width-96 {
+.th-storage-barecode {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 210px;
+}
+.th-storelocation-operate {
     overflow: hidden;
     text-overflow: ellipsis;
     min-width: 96px;
