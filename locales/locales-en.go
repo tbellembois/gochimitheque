@@ -47,6 +47,17 @@ var LOCALES_EN = []byte(`
 [nb_duplicate]
 	one = "nb of duplicates"
 
+[bt_loadingMessage]
+	one = "loading..."
+[bt_recordsPerPage]
+	one = "records per page"
+[bt_showingRowsTotal]
+	one = "total records"
+[bt_search]
+	one = "search"
+[bt_noMatches]
+	one = "no matches"
+
 [email_placeholder]
 	one = "enter your email"
 [submitlogin_text]
@@ -277,11 +288,11 @@ var LOCALES_EN = []byte(`
 [product_name_table_header]
 	one = "name"
 [product_empiricalformula_table_header]
-	one = "empirical formula"
+	one = "emp. formula"
 [product_cas_table_header]
 	one = "CAS"
 [product_specificity_table_header]
-	one = "specificity"
+	one = "spec."
 [product_cas_placeholder]
 	one = "select or enter a CAS number"
 [product_ce_placeholder]

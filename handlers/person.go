@@ -300,10 +300,10 @@ func (env *Env) UpdatePersonpHandler(w http.ResponseWriter, r *http.Request) *he
 func (env *Env) UpdatePersonHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	vars := mux.Vars(r)
 	var (
-		id  int
-		err error
-		p, updatedp   models.Person
-		es []models.Entity
+		id          int
+		err         error
+		p, updatedp models.Person
+		es          []models.Entity
 	)
 	if err = r.ParseForm(); err != nil {
 		return &helpers.AppError{
@@ -334,6 +334,7 @@ func (env *Env) UpdatePersonHandler(w http.ResponseWriter, r *http.Request) *hel
 	}
 	updatedp.PersonEmail = p.PersonEmail
 	updatedp.Entities = p.Entities
+	updatedp.Permissions = p.Permissions
 
 	// checking if the person is a manager
 	if es, err = env.DB.GetPersonManageEntities(id); err != nil {
@@ -351,11 +352,9 @@ func (env *Env) UpdatePersonHandler(w http.ResponseWriter, r *http.Request) *hel
 				PermissionPermName: "all",
 				PermissionItemName: "all",
 				PermissionEntityID: e.EntityID,
-				Person: updatedp,
+				Person:             updatedp,
 			})
 		}
-	} else {
-		updatedp.Permissions = p.Permissions
 	}
 
 	// product permissions are not for a given entity

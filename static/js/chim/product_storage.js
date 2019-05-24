@@ -212,6 +212,7 @@ function queryParams(params) {
     }
     // search form parameters
     if (storelocation != null) {
+        $("#advancedsearch").collapse('show');
         $.ajax({
             url: proxyPath + "storelocations/" + storelocation,
             method: "GET",
@@ -223,6 +224,7 @@ function queryParams(params) {
         })
     }
     if (name != null) {
+        $("#advancedsearch").collapse('show');
         $.ajax({
             url: proxyPath + "products/names/" + name,
             method: "GET",

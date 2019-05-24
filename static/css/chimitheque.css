@@ -1,3 +1,8 @@
+.th-maxwidth-226 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 226px;
+}
 .th-width-332 {
     overflow: hidden;
     text-overflow: ellipsis;
