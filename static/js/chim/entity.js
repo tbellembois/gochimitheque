@@ -261,6 +261,7 @@ var updateCallBack = function updateCallback(data, textStatus, jqXHR) {
             "entity_description": data.entity_description,
         }
     });
+    $table.bootstrapTable('refresh');
     global.displayMessage(global.t("entity_updated_message") + ": " + data.entity_name, "success");
 }
 function saveEntity() {
