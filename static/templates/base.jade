@@ -169,6 +169,11 @@ html
                 hasPermission("entities", "", "POST").done(function(){
                     $("#menu_entities").show();
                     $("#menu_create_entity").show();
+                    localStorage.setItem("entities::POST", true);
+                }).fail(function(){
+                    localStorage.setItem("entities::POST", false);
+                })
+                hasPermission("entities", "-1", "POST").done(function(){
                     $("#menu_update_welcomeannounce").show();
                     localStorage.setItem("entities::POST", true);
                 }).fail(function(){

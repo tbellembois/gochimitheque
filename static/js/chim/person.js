@@ -387,6 +387,7 @@ var updateCallBack = function updateCallback(data, textStatus, jqXHR) {
             "person_email": data.person_email,
         }
     });
+    $table.bootstrapTable('refresh');
     global.displayMessage("person " + data.person_email + " updated", "success");
 }
 function savePersonp() {

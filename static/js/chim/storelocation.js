@@ -316,6 +316,7 @@ var updateCallBack = function updateCallback(data, textStatus, jqXHR) {
             "entity.entity_name": data.entity.entity_name,
         }
     });
+    $table.bootstrapTable('refresh');
     global.displayMessage("store location " + data.storelocation_name.String + " updated", "success");
 }
 function saveStoreLocation() {

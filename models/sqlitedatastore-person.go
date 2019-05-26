@@ -334,6 +334,11 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 			for _, i := range rpe {
 				eids = append(eids, i.EntityID)
 			}
+			// if the person is in not entity
+			// only admin can modify them
+			if len(eids) == 0 {
+				return false, nil
+			}
 		case "entities":
 			eids = append(eids, itemid)
 		case "storages":
@@ -382,7 +387,7 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 		// all | all | -1 => means super admin
 		// ?   | ?   | -1 => (ex: r permission on all entities)
 		if sqlr, sqlargs, err = sqlx.In(`SELECT count(*) FROM permission WHERE 
-		person = ? AND permission_item_name = "all" AND permission_perm_name = "all" OR 
+		person = ? AND permission_item_name = "all" AND permission_perm_name = "all" AND permission_entity_id = -1 OR 
 		person = ? AND permission_item_name = "all" AND permission_perm_name = ? AND permission_entity_id = -1 OR
 		person = ? AND permission_item_name = ? AND permission_perm_name = "all" AND permission_entity_id = -1 OR 
 		person = ? AND permission_item_name = ? AND permission_perm_name = ? AND permission_entity_id = -1
