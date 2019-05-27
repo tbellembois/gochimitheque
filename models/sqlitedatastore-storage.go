@@ -186,7 +186,7 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 	var (
 		storages                           []Storage
 		count                              int
-		precreq, presreq, comreq, postsreq strings.Builder
+		precreq, presreq, comreq, postsreq, reqhc strings.Builder
 		cnstmt                             *sqlx.NamedStmt
 		snstmt                             *sqlx.NamedStmt
 		err                                error
@@ -419,6 +419,19 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 	// count
 	if err = cnstmt.Get(&count, m); err != nil {
 		return nil, 0, err
+	}
+
+	//
+	// getting number of history for each storage
+	//
+	for i, st := range storages {
+		// getting the total storage count
+		log.Debug(st)
+		reqhc.Reset()
+		reqhc.WriteString("SELECT count(DISTINCT storage_id) from storage WHERE storage.storage = ?")
+		if err = db.Get(&storages[i].StorageHC, reqhc.String(), st.StorageID); err != nil {
+			return nil, 0, err
+		}
 	}
 
 	return storages, count, nil

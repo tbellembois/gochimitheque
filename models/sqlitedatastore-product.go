@@ -1270,20 +1270,19 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	// getting number of storages for each product
 	//
 	for i, pr := range products {
-		// note: do not modify p but products[i] instead
+		// getting the total storage count
 		reqtsc.Reset()
 		reqtsc.WriteString("SELECT count(DISTINCT storage_id) from storage")
-		reqtsc.WriteString(" JOIN product ON storage.product = ? AND storage.storage IS NULL")
+		reqtsc.WriteString(" JOIN product ON storage.product = ? AND storage.storage IS NULL AND storage.storage_archive == false")
 		if isadmin {
-			// note: do not modify p but products[i] instead
 			reqsc.Reset()
 			reqsc.WriteString("SELECT count(DISTINCT storage_id) from storage")
-			reqsc.WriteString(" JOIN product ON storage.product = ? AND storage.storage IS NULL")
+			reqsc.WriteString(" JOIN product ON storage.product = ? AND storage.storage IS NULL AND storage.storage_archive == false")
 		} else {
-			// note: do not modify p but products[i] instead
+			// getting the storage count of the logged user entities
 			reqsc.Reset()
 			reqsc.WriteString("SELECT count(DISTINCT storage_id) from storage")
-			reqsc.WriteString(" JOIN product ON storage.product = ?")
+			reqsc.WriteString(" JOIN product ON storage.product = ? AND storage.storage IS NULL AND storage.storage_archive == false")
 			reqsc.WriteString(" JOIN storelocation ON storage.storelocation = storelocation.storelocation_id")
 			reqsc.WriteString(" JOIN entity ON storelocation.entity = entity.entity_id")
 			reqsc.WriteString(" JOIN personentities ON (entity.entity_id = personentities.personentities_entity_id) AND")

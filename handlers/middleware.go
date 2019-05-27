@@ -268,6 +268,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 		case "POST":
 			switch item {
 			case "storages":
+				if id != "-1" && id != "-2" && id != "" {
 				// checking that the connected person
 				// can "w" "storages" in the entity of the storage's
 				// store location
@@ -285,6 +286,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 					http.Error(w, e.Error(), http.StatusInternalServerError)
 				}
 				itemid = s.StoreLocation.EntityID
+				}
 			}
 			perm = "w"
 		case "DELETE":

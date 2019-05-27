@@ -106,6 +106,9 @@ type Storage struct {
 	Supplier                `db:"supplier" json:"supplier" schema:"supplier"`
 	Storage                 *Storage   `db:"storage" json:"storage" schema:"storage"`       // history reference storage
 	Borrowing               *Borrowing `db:"borrowing" json:"borrowing" schema:"borrowing"` // not un db but sqlx requires the "db" entry
+
+	// storage history count
+	StorageHC int `db:"storage_hc" json:"storage_hc" schema:"storage_hc"` // not in db but sqlx requires the "db" entry
 }
 
 // Borrowing represent a storage borrowing

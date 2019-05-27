@@ -112,3 +112,7 @@ mixin inputtextarea(label,name)
         label(for=name)
             = T(label, 1)
         textarea.form-control(type='text' id=name name=name title=name)
+
+mixin inputcomment(label)
+    span.blockquote-footer.mdi.mdi-subdirectory-arrow-right.pl-sm-3
+        = T(label, 1)

@@ -199,6 +199,8 @@ var LOCALES_EN = []byte(`
 	one = "restore"
 [storage_showhistory]
 	one = "show history"
+[storage_history]
+	one = "history"
 
 [storage_storelocation_title]
 	one = "store location"
@@ -206,6 +208,8 @@ var LOCALES_EN = []byte(`
 	one = "quantity"
 [storage_barecode_title]
 	one = "barecode"
+[storage_create_barecode_comment]
+	one = "if you leave this field empty a barecode will be auto-generated"
 [storage_batchnumber_title]
 	one = "batch number"
 [storage_entrydate_title]

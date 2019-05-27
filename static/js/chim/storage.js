@@ -875,7 +875,8 @@ function operateFormatter(value, row, index) {
         actions.push('<span class="mdi mdi-24px mdi-delete"></span>');
     }
     
-    if (row.storage_creationdate != row.storage_modificationdate && !row.storage.storage_id.Valid && !(row.storage_archive.Valid && row.storage_archive.Bool)) {
+    //if ((row.storage_creationdate != row.storage_modificationdate) && !row.storage.storage_id.Valid && !(row.storage_archive.Valid && row.storage_archive.Bool)) {
+    if (row.storage_hc != 0) {
         actions.push('<button id="history' + sid + '" class="history btn btn-link btn-sm" title="' + global.t("storage_showhistory", container.PersonLanguage) + '" type="button">');
         actions.push('<span class="mdi mdi-24px mdi-history"></span>');
         actions.push('</button>');

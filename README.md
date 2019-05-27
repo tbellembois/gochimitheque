@@ -2,8 +2,8 @@
 
 ---
 
-This is a work in progress !
-Release planned before summer 2019.
+The Beta version is currently been tested at the ENS-Lyon. 
+Stable release planned in September 2019.
 
 ---
 
@@ -87,6 +87,11 @@ You can add add additional administrators with the `admins` command line paramet
 # Database backup
 
 Chimithèque uses a local sqlite database. You are strongly encouraged to schedule regular plain text dump in a separate machine in case of disk failure.
+
+You can backup the database with:
+```bash
+    sqlite3 /path/to/chimitheque/storage.db ".backup '/path/to/backup/storage.sq3'"
+```
 
 # Chimithèque v1 database migration
 

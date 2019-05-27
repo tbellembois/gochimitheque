@@ -199,6 +199,8 @@ var LOCALES_FR = []byte(`
 	one = "restaurer"
 [storage_showhistory]
 	one = "voir historique"
+[storage_history]
+	one = "historique"
 
 [storage_storelocation_title]
 	one = "entrepôt"
@@ -206,6 +208,8 @@ var LOCALES_FR = []byte(`
 	one = "quantité"
 [storage_barecode_title]
 	one = "code barre"
+[storage_create_barecode_comment]
+	one = "si vous laissez ce champs vide, un code barre sera autogénéré"
 [storage_batchnumber_title]
 	one = "numéro de lot"
 [storage_entrydate_title]
