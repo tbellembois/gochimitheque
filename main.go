@@ -27,7 +27,6 @@ func main() {
 
 	// CPU profiling by default
 	//defer profile.Start().Stop()
-
 	var (
 		err       error
 		logf      *os.File
