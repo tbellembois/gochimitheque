@@ -87,7 +87,8 @@ func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 		// extracting the token string from cookie
 		if reqToken, err = r.Cookie("token"); err != nil {
 			log.Debug("token not found in cookies")
-			http.Error(w, "token not found in cookies, please log in", http.StatusUnauthorized)
+			//http.Error(w, "token not found in cookies, please log in", http.StatusUnauthorized)
+			http.Redirect(w, r, global.ProxyURL+global.ProxyPath+"login", 307)
 			return
 		}
 		if !tre.MatchString(reqToken.String()) {
@@ -355,7 +356,13 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 		}
 		if !permok {
 			log.WithFields(log.Fields{"unauthorized": "!permok"}).Debug("AuthorizeMiddleware")
-			http.Error(w, "forbidden", http.StatusForbidden)
+			if (r.RequestURI == global.ProxyPath || r.RequestURI == "") {
+				// redirect on login page for the root of the application
+				http.Redirect(w, r, global.ProxyURL+global.ProxyPath+"login", 307)
+			} else {
+				// else sending a 403
+				http.Error(w, "forbidden", http.StatusForbidden)
+			}
 			return
 		}
 

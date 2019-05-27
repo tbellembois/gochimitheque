@@ -173,7 +173,7 @@ html
                 }).fail(function(){
                     localStorage.setItem("entities::POST", false);
                 })
-                hasPermission("entities", "-1", "POST").done(function(){
+                hasPermission("entities", "-1", "PUT").done(function(){
                     $("#menu_update_welcomeannounce").show();
                     localStorage.setItem("entities::POST", true);
                 }).fail(function(){
