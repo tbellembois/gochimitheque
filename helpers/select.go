@@ -565,7 +565,14 @@ func Newdbselectparam(r *http.Request, f func(string) (string, error)) (*dbselec
 	// populating with request values
 	if s, ok := r.URL.Query()["search"]; ok {
 		if f != nil {
-			fs, _ := f(s[0])
+			fs, err := f(s[0])
+			if err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "error calling f",
+				}
+			}
 			dsp.Search = "%" + fs + "%"
 		} else {
 			dsp.Search = "%" + s[0] + "%"
