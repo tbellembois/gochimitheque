@@ -33,6 +33,8 @@ var LOCALES_EN = []byte(`
 	one = "no empirical formula"
 [no_cas_number]
 	one = "no CAS number"
+[howto_magicalselector]
+	one = "how to use the magical selector"
 
 [password]
 	one = "password"

@@ -7,18 +7,20 @@ Stable release planned in September 2019.
 
 ---
 
-Chimithèque is an open source chemical product management application initially initiated by the ENS-Lyon (France) and co-developped with the Université Clermont-Auvergne (France).
+Chimithèque is an open source chemical product management application started by the ENS-Lyon (France) and co-developped with the Université Clermont-Auvergne (France).
+
+*projet leader*: Delphine Pitrat (delphine[dot]pitrat[at]ens-lyon[dot]fr)
 
 The project has started in 2015 and has moved to Github in 2017.
 
 Main goals:
-
-- improve the security with a precise global listing of the chemicals products stored in the entire school
-- reduce waste by encouraging chemical products managers to search in Chimithèque if a product can be borrowed from another department before ordering a new one
+- simplicity: do one think (stores products) but do it well
+- security: provide a global listing of the chemicals products storages
+- cost/ecology: borrow a product before ordering a new one
 
 ![screenshot](screenshot.png)
 
-# Quick start (to test the application)
+# Quick start (to have a quick view of the application)
 
 You need a Linux AMD64 machine. No dependencies are required.
 
@@ -30,6 +32,8 @@ You need a Linux AMD64 machine. No dependencies are required.
 Et voilà !
 
 Now login with the email `admin@chimitheque.com` and password `chimitheque`, and change the password immediatly.
+
+Do not use this mode in production.
 
 # Production installation
 
@@ -62,7 +66,7 @@ It is strongly recommended to run Chimithèque behind an HTTP proxy server with 
 
 - install and adapt the apache2 configuration `doc/apache2-chimitheque.conf` in `/etc/apache2/site-available` and enable it with `a2esite apache2-chimitheque.conf`
 
-# Binary command line parameters
+### Binary command line parameters
 
 You need configure the systemd script with the following parameters:
 
@@ -78,11 +82,19 @@ You need configure the systemd script with the following parameters:
 - `-logfile`: output log file - by default logs are sent to stdout
 - `-debug`: debug mode, do not enable in production
 
-# Application administrators
+> example:
+>
+> `gochimitheque -proxyurl https://appserver.foo.fr -proxypath=/chimitheque -admins=john.bar@foo.fr,jean.dupont@foo.fr --mailserveraddress smtp.foo.fr --mailserverport 25 --mailserversender noreply@foo.fr"`
+>
+> will run the appplication behind a proxy at the URL `https://appserver.foo.fr/chimitheque` with 2 additionnal administrators `john.bar@foo.fr` and `jean.dupont@foo.fr`
+
+## Setting up application administrators
 
 A static administrator `admin@chimitheque.fr` is created during the installation. His password must be changed after the first connection.
 
 You can add add additional administrators with the `admins` command line parameters.
+
+> example: `-admins=john.bar@foo.com,jean.dupont@foo.com`
 
 # Database backup
 
@@ -93,11 +105,33 @@ You can backup the database with:
     sqlite3 /path/to/chimitheque/storage.db ".backup '/path/to/backup/storage.sq3'"
 ```
 
-# Chimithèque v1 database migration
+# Chimithèque V1 database migration
 
-// TODO
+## export
 
-# v1/v2 version
+Databases of the V1 version must be exported into `CSV` to be imported in the V2 version.
+
+### PostgreSQL
+
+In PostgreSQL this can be done with the command:
+
+```bash
+    SCHEMA="public"; DB="{chimitheque-db-name}"; psql -U {chimitheque-user} -h {chimitheque-host} -p {chimitheque-port} -Atc "select tablename from pg_tables where schemaname='$SCHEMA'" $DB | while read TBL; do psql -U {chimitheque-db-name} -h {chimitheque-host} -p {chimitheque-port} -c "COPY $SCHEMA.$TBL TO STDOUT WITH CSV HEADER" $DB > $TBL.csv; done;
+```
+
+This will generate one CSV file per table.
+
+## import
+
+You can then import to the V2 version with:
+
+```bash
+    /path/to/gochimitheque -proxyurl=https://appserver.foo.fr -importfrom=/path/to/csv
+```
+
+This is important to specify the correct `-proxyurl` parameter as it will be used to generate the storages qr codes.
+
+# V1/V2 version
 
 The v2 version has been rewritten in Golang.
 

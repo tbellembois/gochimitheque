@@ -33,6 +33,8 @@ var LOCALES_FR = []byte(`
 	one = "pas de formule brute"
 [no_cas_number]
 	one = "pas de numéro CAS"
+[howto_magicalselector]
+	one = "comment utiliser le sélecteur magique"
 
 [password]
 	one = "mot de passe"
