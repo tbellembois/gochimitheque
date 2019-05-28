@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
+	"database/sql"
+	"fmt"
 
 	"github.com/tbellembois/gochimitheque/utils"
 	"github.com/tbellembois/gochimitheque/jade"
@@ -86,24 +88,28 @@ func (env *Env) MagicHandler(w http.ResponseWriter, r *http.Request) *helpers.Ap
 	sps := rps.FindAllStringSubmatch(m.MSDS, -1)
 
 	for _, h := range shs {
-		if hs, err = env.DB.GetProductsHazardStatementByReference(h[1]); err != nil {
+		if hs, err = env.DB.GetProductsHazardStatementByReference(h[1]); err != nil && err != sql.ErrNoRows {
 			return &helpers.AppError{
 				Error:   err,
 				Code:    http.StatusInternalServerError,
 				Message: "error getting hazard statement",
 			}
 		}
-		resp.HS = append(resp.HS, hs)
+		if err != sql.ErrNoRows {
+			resp.HS = append(resp.HS, hs)
+		}
 	}
 	for _, p := range sps {
-		if ps, err = env.DB.GetProductsPrecautionaryStatementByReference(p[1]); err != nil {
+		if ps, err = env.DB.GetProductsPrecautionaryStatementByReference(p[1]); err != nil && err != sql.ErrNoRows{
 			return &helpers.AppError{
 				Error:   err,
 				Code:    http.StatusInternalServerError,
 				Message: "error getting precautionary statement",
 			}
 		}
-		resp.PS = append(resp.PS, ps)
+		if err != sql.ErrNoRows {
+			resp.PS = append(resp.PS, ps)
+		}
 	}
 
 	log.WithFields(log.Fields{"m.msds": m.MSDS, "shs": shs, "sps": sps}).Debug("MagicHandler")
@@ -179,6 +185,25 @@ func (env *Env) GetProductsCasNumbersHandler(w http.ResponseWriter, r *http.Requ
 	// init db request parameters
 	if dsp, aerr = helpers.Newdbselectparam(r, nil); err != nil {
 		return aerr
+	}
+
+	// copy/paste CAS can send wrong separators (ie "-")
+	// we must then rebuild the correct CAS
+	cas := dsp.GetSearch()
+	rcas := regexp.MustCompile("(?P<groupone>[0-9]{1,7}).{1}(?P<grouptwo>[0-9]{2}).{1}(?P<groupthree>[0-9]{1})")
+	// finding group names
+	n := rcas.SubexpNames()
+	// finding matches
+	ms := rcas.FindAllStringSubmatch(cas, -1)
+	log.Debug(cas)
+	if len(ms) > 0 {
+		m := ms[0]
+		// then building a map of matches
+		md := map[string]string{}
+		for i, j := range m {
+			md[n[i]] = j
+		}
+		dsp.SetSearch(fmt.Sprintf("%s-%s-%s", md["groupone"], md["grouptwo"], md["groupthree"]))
 	}
 
 	casnumbers, count, err := env.DB.GetProductsCasNumbers(dsp)

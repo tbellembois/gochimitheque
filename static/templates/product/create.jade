@@ -70,6 +70,12 @@ block CONTENT
                 +selectmultiple("classofcompound_label_title", "classofcompound")  
 
         .form-row
+            .form-group.col-sm-12
+                button.btn.btn-light(type="button" onclick="howToMagicalSelector()")
+                    span.mdi.mdi-24px.mdi-cursor-default-click-outline &nbsp;
+                    = T("howto_magicalselector", 1 )
+
+        .form-row
             .form-group.col-sm-5.d-flex.align-items-end
                 +inputtextarea("magical_selector", "magical")
             .form-group.col-sm-1.d-flex.align-items-end

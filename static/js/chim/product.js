@@ -1934,3 +1934,10 @@ function operateEdit(e, value, row, index) {
             handleHTTPError(jqXHR.statusText, jqXHR.status)
         });
     }
+
+    //
+    // magical selector how to
+    //
+    function howToMagicalSelector() {
+        window.open(proxyPath + "img/magicalselector.webm", '_blank');
+    }
