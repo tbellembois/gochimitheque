@@ -141,6 +141,12 @@ block CONTENT
                             +inputtext("product_specificity_title", "product_specificity")
 
                 .form-row
+                    .form-group.col-sm-12
+                        button.btn.btn-light(type="button" onclick="noEmpiricalFormula()")
+                            span.mdi.mdi-24px.mdi-cursor-default-click-outline &nbsp;
+                            = T("no_empirical_formula", 1 )
+
+                .form-row
                     .form-group.col-sm-6
                         +selectrequired("empiricalformula_label_title", "empiricalformula")
                     .form-group.col-sm-1
@@ -148,6 +154,12 @@ block CONTENT
                             span.mdi.mdi-arrow-left-circle.mdi-48px
                     .form-group.col-sm-5
                         +select("linearformula_label_title", "linearformula")
+
+                .form-row
+                    .form-group.col-sm-12
+                        button.btn.btn-light(type="button" onclick="noCASNumber()")
+                            span.mdi.mdi-24px.mdi-cursor-default-click-outline &nbsp;
+                            = T("no_cas_number", 1 )
 
                 .form-row
                     .form-group.col-sm-6

@@ -665,7 +665,7 @@ func (db *SQLiteDataStore) GenerateAndUpdateStorageBarecode(s *Storage) error {
 			md[n[i]] = j
 		}
 	}
-	if len(m) > 0 {
+	if len(md) > 0 {
 		prefix = md["groupone"]
 	}
 
@@ -699,7 +699,7 @@ func (db *SQLiteDataStore) GenerateAndUpdateStorageBarecode(s *Storage) error {
 			md[n[i]] = j
 		}
 	}
-	if len(m) > 0 {
+	if len(md) > 0 {
 		major = md["groupone"]
 		minor = md["grouptwo"]
 	} else {

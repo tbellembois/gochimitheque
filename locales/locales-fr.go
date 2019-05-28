@@ -29,6 +29,11 @@ var LOCALES_FR = []byte(`
 [required_input]
 	one = "champs requis"
 
+[no_empirical_formula]
+	one = "pas de formule brute"
+[no_cas_number]
+	one = "pas de numéro CAS"
+
 [password]
 	one = "mot de passe"
 [confirm_password]

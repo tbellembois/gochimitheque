@@ -454,6 +454,12 @@ func SortEmpiricalFormula(f string) (string, error) {
 		err      error
 		newf, sp string
 	)
+
+	// zero empirical formula
+	if (f == "XXXX") {
+		return f, nil
+	}
+
 	// removing spaces
 	f = strings.Replace(f, " ", "", -1)
 

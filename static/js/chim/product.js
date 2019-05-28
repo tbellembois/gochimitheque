@@ -1632,7 +1632,7 @@ function operateEdit(e, value, row, index) {
 			fr.readAsText(file);
 		} else {
 			// Handle errors here
-			alert( "File not selected or browser incompatible." )
+			alert( "file not selected or browser incompatible." )
 		}
     });
 
@@ -1889,4 +1889,48 @@ function operateEdit(e, value, row, index) {
                 handleHTTPError(jqXHR.statusText, jqXHR.status)
             });
         }
+    }
+
+    //
+    // zero empirical formula selector
+    //
+    function noEmpiricalFormula() {
+        $.ajax({
+            url: proxyPath + 'products/empiricalformulas/',
+            type: "GET",
+            data: {
+                search: "XXXX",
+                page: 1,
+                offset: 0,
+                limit: 1,
+            },
+        }).done(function(data, textStatus, jqXHR) {
+            console.log(data)
+            var newOption = new Option(data.rows[0].empiricalformula_label, data.rows[0].empiricalformula_id, true, true);
+            $('select#empiricalformula').append(newOption).trigger('change');
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            handleHTTPError(jqXHR.statusText, jqXHR.status)
+        });
+    }
+
+    //
+    // zero CAS number selector
+    //
+    function noCASNumber() {
+        $.ajax({
+            url: proxyPath + 'products/casnumbers/',
+            type: "GET",
+            data: {
+                search: "0000-00-0",
+                page: 1,
+                offset: 0,
+                limit: 1,
+            },
+        }).done(function(data, textStatus, jqXHR) {
+            console.log(data)
+            var newOption = new Option(data.rows[0].casnumber_label, data.rows[0].casnumber_id, true, true);
+            $('select#casnumber').append(newOption).trigger('change');
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            handleHTTPError(jqXHR.statusText, jqXHR.status)
+        });
     }
