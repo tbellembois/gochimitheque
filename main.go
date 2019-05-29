@@ -9,7 +9,7 @@ import (
 	"database/sql"
 	"flag"
 	"net/http"
-	//"net/http/pprof"
+	"net/http/pprof"
 	"os"
 	"strings"
 
@@ -20,13 +20,11 @@ import (
 	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/handlers"
 	"github.com/tbellembois/gochimitheque/models"
-	//"github.com/pkg/profile"
 )
 
 func main() {
 
-	// CPU profiling by default
-	//defer profile.Start().Stop()
+
 	var (
 		err       error
 		logf      *os.File
@@ -147,16 +145,16 @@ func main() {
 	r := mux.NewRouter()
 
 	// add the pprof routes
-	// r.HandleFunc("/debug/pprof/", pprof.Index)
-	// r.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
-	// r.HandleFunc("/debug/pprof/profile", pprof.Profile)
-	// r.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
-	// r.HandleFunc("/debug/pprof/trace", pprof.Trace)
+	r.HandleFunc("/debug/pprof/", pprof.Index)
+	r.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+	r.HandleFunc("/debug/pprof/profile", pprof.Profile)
+	r.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	r.HandleFunc("/debug/pprof/trace", pprof.Trace)
 
-	// r.Handle("/debug/pprof/block", pprof.Handler("block"))
-	// r.Handle("/debug/pprof/goroutine", pprof.Handler("goroutine"))
-	// r.Handle("/debug/pprof/heap", pprof.Handler("heap"))
-	// r.Handle("/debug/pprof/threadcreate", pprof.Handler("threadcreate"))
+	r.Handle("/debug/pprof/block", pprof.Handler("block"))
+	r.Handle("/debug/pprof/goroutine", pprof.Handler("goroutine"))
+	r.Handle("/debug/pprof/heap", pprof.Handler("heap"))
+	r.Handle("/debug/pprof/threadcreate", pprof.Handler("threadcreate"))
 
 	commonChain := alice.New(env.ContextMiddleware, env.HeadersMiddleware, env.LogingMiddleware)
 	securechain := alice.New(env.ContextMiddleware, env.HeadersMiddleware, env.LogingMiddleware, env.AuthenticateMiddleware, env.AuthorizeMiddleware)
