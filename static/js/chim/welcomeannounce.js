@@ -1,5 +1,6 @@
 $( document ).ready(function() { 
 
+    $.trumbowyg.svgPath = proxyPath + 'img/trumbowyg_icons.svg';
     $.ajax({
         url: proxyPath + "welcomeannounce",
         method: "GET",
