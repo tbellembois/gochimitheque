@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"net/http"
 	"strings"
-	
+
 	"github.com/jmoiron/sqlx"
 
 	sq "github.com/Masterminds/squirrel"
@@ -24,7 +24,7 @@ func (db *SQLiteDataStore) ComputeStockStorelocation(p Product, s *StoreLocation
 		t           float64 // total s stock for p
 		err         error
 	)
-	
+
 	sqlr := `SELECT SUM(storage.storage_quantity * unit_multiplier) FROM storage
 	JOIN unit on storage.unit = unit.unit_id
 	WHERE storage.storelocation = ? AND
@@ -380,7 +380,7 @@ func (db *SQLiteDataStore) UpdateEntity(e Entity) error {
 	if err != nil {
 		return err
 	}
-	if _, err = db.Exec(sqlr, sqla...); err != nil {
+	if _, err = tx.Exec(sqlr, sqla...); err != nil {
 		return err
 	}
 
