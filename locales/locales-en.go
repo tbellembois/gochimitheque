@@ -346,6 +346,12 @@ var LOCALES_EN = []byte(`
 	one = "create store location"
 [storelocation_update_title]
 	one = "update store location"
+[storelocation_deleted_message]
+	one = "store location deleted"
+[storelocation_created_message]
+	one = "store location created"
+[storelocation_updated_message]
+	one = "store location updated"
 [storelocation_parent_title]
 	one = "parent"
 [storelocation_entity_title]

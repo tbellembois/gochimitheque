@@ -346,6 +346,12 @@ var LOCALES_FR = []byte(`
 	one = "créer entrepôt"
 [storelocation_update_title]
 	one = "mettre à jour entrepôt"
+[storelocation_deleted_message]
+	one = "entrepôt supprimé"
+[storelocation_created_message]
+	one = "entrepôt créé"
+[storelocation_updated_message]
+	one = "entrepôt mis à jour"
 [storelocation_parent_title]
 	one = "parent"
 [storelocation_entity_title]

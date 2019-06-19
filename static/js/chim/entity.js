@@ -246,7 +246,7 @@ function closeViewEdit() { $("#list-collapse").collapse("show"); $("#edit-collap
 // save entity callback
 //
 var createCallBack = function createCallback(data, textStatus, jqXHR) {
-    global.displayMessage(global.t("entity_created_message") + ": " + data.entity_name, "success");
+    global.displayMessage(global.t("entity_created_message", container.PersonLanguage) + ": " + data.entity_name, "success");
     setTimeout(function(){ window.location = proxyPath + "v/entities"; }, 1000);
 }
 var updateCallBack = function updateCallback(data, textStatus, jqXHR) {
@@ -262,7 +262,7 @@ var updateCallBack = function updateCallback(data, textStatus, jqXHR) {
         }
     });
     $table.bootstrapTable('refresh');
-    global.displayMessage(global.t("entity_updated_message") + ": " + data.entity_name, "success");
+    global.displayMessage(global.t("entity_updated_message", container.PersonLanguage) + ": " + data.entity_name, "success");
 }
 function saveEntity() {
     var form = $("#entity");
