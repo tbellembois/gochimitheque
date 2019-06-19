@@ -299,7 +299,7 @@ function closeEdit() { $("#list-collapse").collapse("show"); $("#edit-collapse")
 // save store location callback
 //
 var createCallBack = function createCallback(data, textStatus, jqXHR) {
-    global.displayMessage("store location " + data.storelocation_name.String + " created", "success");
+    global.displayMessage(global.t("storelocation_created_message", container.PersonLanguage) + ": " + data.storelocation_name.String, "success");
     setTimeout(function(){ window.location = proxyPath + "v/storelocations"; }, 1000);
 }
 var updateCallBack = function updateCallback(data, textStatus, jqXHR) {
@@ -317,7 +317,7 @@ var updateCallBack = function updateCallback(data, textStatus, jqXHR) {
         }
     });
     $table.bootstrapTable('refresh');
-    global.displayMessage("store location " + data.storelocation_name.String + " updated", "success");
+    global.displayMessage(global.t("storelocation_updated_message", container.PersonLanguage) + ": " + data.storelocation_name.String, "success");
 }
 function saveStoreLocation() {
     var form = $("#storelocation");

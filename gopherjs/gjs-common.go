@@ -5,6 +5,7 @@ import (
 	"regexp"
 
 	"github.com/gopherjs/gopherjs/js"
+	"golang.org/x/text/language"
 	"honnef.co/go/js/dom"
 )
 
@@ -393,24 +394,19 @@ func T(s string, accept string) string {
 		return ""
 	}
 
-	// accept is an accept language http header
-	// like fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3
-	r := regexp.MustCompile("([a-zA-Z\\-]+){0,1},{0,1}([a-zA-Z\\-]+){0,1};q=([0-9\\.]+)")
-
-	ms := r.FindAllStringSubmatch(accept, -1)
-	if len(ms) == 0 {
-		return "translation error"
+	ts, _, e := language.ParseAcceptLanguage(accept)
+	if e != nil {
+		// falling back on english if error
+		ts = []language.Tag{language.English}
 	}
 
-	// lazily assuming that the entries are
+	// the t entries are
 	// ordered by the preferred language
-	for _, m := range ms {
-		for _, i := range m {
-			js_locale_varname := fmt.Sprintf("locale_%s_%s", i, s)
-			translated := js.Global.Get(js_locale_varname)
-			if translated != js.Undefined {
-				return translated.String()
-			}
+	for _, t := range ts {
+		js_locale_varname := fmt.Sprintf("locale_%s_%s", t, s)
+		translated := js.Global.Get(js_locale_varname)
+		if translated != js.Undefined {
+			return translated.String()
 		}
 	}
 	return "translation error"
