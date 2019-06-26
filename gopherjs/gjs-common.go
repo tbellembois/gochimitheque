@@ -31,7 +31,7 @@ func CreateTitle(msgText string, msgType string) *dom.HTMLDivElement {
 	t := document.CreateElement("div").(*dom.HTMLDivElement)
 	s := document.CreateElement("span").(*dom.HTMLSpanElement)
 	sp := document.CreateElement("span").(*dom.HTMLSpanElement)
-	t.Class().SetString("mt-md-3 mb-md-3 row")
+	t.Class().SetString("mt-md-3 mb-md-3 row text-right")
 	s.Class().SetString("col-sm-11 align-bottom")
 	s.SetTextContent(msgText)
 
@@ -58,8 +58,8 @@ func CreateTitle(msgText string, msgType string) *dom.HTMLDivElement {
 		sp.Class().SetString("mdi mdi-24px mdi-menu-right-outline")
 	}
 
-	t.AppendChild(sp)
 	t.AppendChild(s)
+	t.AppendChild(sp)
 
 	return t
 }
