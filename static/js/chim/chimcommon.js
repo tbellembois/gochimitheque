@@ -102,6 +102,13 @@ function cleanQueryParams() {
 
     // window.history.replaceState("", "", root + "?" + urlParams.toString());
     window.history.replaceState("", "", root);
+    $("#hidden_s_entity").val("");
+    $("#hidden_s_history").val("");
+    $("#hidden_s_storage").val("");
+    $("#hidden_s_storage_archive").val("")
+    $("#hidden_s_product").val("");
+    $("#hidden_s_bookmark").val("");
+    $("#filter-item").html("");
 }
 
 function exportAll() {
@@ -176,6 +183,7 @@ function search() {
             $.extend(query, {
                 "storelocation": i.id
             });
+            $('#s_storelocation').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank-circle'></span>");
         }
     }
     if ($('select#s_name').hasClass("select2-hidden-accessible")) {
@@ -187,7 +195,8 @@ function search() {
             $.extend(query, {
                 "name": i.id
             });
-        }
+            $('#s_name').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank-circle'></span>");
+        }   
     }
     if ($('select#s_empiricalformula').hasClass("select2-hidden-accessible")) {
         // Select2 has been initialized
@@ -198,6 +207,7 @@ function search() {
             $.extend(query, {
                 "empiricalformula": i.id
             });
+            $('#s_empiricalformula').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank-circle'></span>");
         }
     }
     if ($('select#s_casnumber').hasClass("select2-hidden-accessible")) {
@@ -209,6 +219,7 @@ function search() {
             $.extend(query, {
                 "casnumber": i.id
             });
+            $('#s_casnumber').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank-circle'></span>");
         }
     }
     if ($('select#s_signalword').hasClass("select2-hidden-accessible")) {
@@ -220,6 +231,7 @@ function search() {
             $.extend(query, {
                 "signalword": i.id
             });
+            $('#s_signalword').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank-circle'></span>");
         }
     }
     if ($('select#s_symbols').hasClass("select2-hidden-accessible")) {
@@ -234,6 +246,7 @@ function search() {
             $.extend(query, {
                 "symbols": s_symbols
             });
+            $('#s_symbols').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank-circle'></span>");
         }
     }
     if ($('select#s_hazardstatements').hasClass("select2-hidden-accessible")) {
@@ -248,6 +261,7 @@ function search() {
             $.extend(query, {
                 "hazardstatements": s_hazardstatements
             });
+            $('#s_hazardstatements').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank-circle'></span>");
         }
     }
     if ($('select#s_precautionarystatements').hasClass("select2-hidden-accessible")) {
@@ -262,6 +276,7 @@ function search() {
             $.extend(query, {
                 "precautionarystatements": s_precautionarystatements
             });
+            $('#s_precautionarystatements').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank-circle'></span>");
         }
     }
     if ($('#s_casnumber_cmr:checked').length > 0) {
@@ -269,6 +284,7 @@ function search() {
         $.extend(query, {
             "casnumber_cmr": true
         });
+        $('#s_casnumber_cmr').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank-circle'></span>");
     }
 
     s_storage_barecode = $('#s_storage_barecode').val() ;
@@ -277,6 +293,7 @@ function search() {
         $.extend(query, {
             "storage_barecode": s_storage_barecode
         });
+        $('#s_storage_barecode').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank-circle'></span>");
     }
     s_custom_name_part_of = $('#s_custom_name_part_of').val() ;
     if (s_custom_name_part_of != "") {
@@ -284,9 +301,9 @@ function search() {
         $.extend(query, {
             "custom_name_part_of": s_custom_name_part_of
         });
+        $('#s_custom_name_part_of').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank-circle'></span>");
     }
 
-
     var $table = $('#table');
-    $table.bootstrapTable('refresh', {query: query}); 
+    $table.bootstrapTable('refresh', {query: query});
 }
