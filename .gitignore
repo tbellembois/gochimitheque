@@ -19,6 +19,7 @@
 
 # dist
 dist/
+gochimitheque
 
 # generated locales
 locales/
