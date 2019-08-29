@@ -1,12 +1,5 @@
 # Chimithèque
 
----
-
-The Beta version is currently been tested at the ENS-Lyon. 
-Stable release planned in September 2019.
-
----
-
 Chimithèque is an open source chemical product management application started by the ENS-Lyon (France) and co-developped with the Université Clermont-Auvergne (France).
 
 *projet leader*: Delphine Pitrat (delphine[dot]pitrat[at]ens-lyon[dot]fr)
