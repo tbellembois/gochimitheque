@@ -57,7 +57,7 @@ It is strongly recommended to run Chimithèque behind an HTTP proxy server with 
 
 - configure (look at the following section) and install the systemd script `doc/chimitheque.service` in `/etc/systemd/system` and enable/start it with `systemctl enable chimitheque.service; systemctl start chimitheque.service`
 
-- install and adapt the apache2 configuration `doc/apache2-chimitheque.conf` in `/etc/apache2/site-available` and enable it with `a2esite apache2-chimitheque.conf`
+- install and adapt the apache2 configuration `doc/apache2-chimitheque.conf` in `/etc/apache2/sites-available` and enable it with `a2esite apache2-chimitheque.conf`
 
 ### Binary command line parameters
 
