@@ -219,7 +219,7 @@ function queryParams(params) {
         }).done(function(data, textStatus, jqXHR) {
             var newOption = new Option(data.storelocation_name.String, data.storelocation_id.Int64, true, true);
             $('#s_storelocation').append(newOption).trigger('change');
-            $('#s_storelocation').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank-circle'></span>");
+            $('#s_storelocation').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank blink'></span>");
         }).fail(function(jqXHR, textStatus, errorThrown) {
             handleHTTPError(jqXHR.statusText, jqXHR.status);
         })
@@ -232,7 +232,7 @@ function queryParams(params) {
         }).done(function(data, textStatus, jqXHR) {
             var newOption = new Option(data.name_label, data.name_id, true, true);
             $('#s_name').append(newOption).trigger('change');
-            $('#s_name').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank-circle'></span>");
+            $('#s_name').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank blink'></span>");
         }).fail(function(jqXHR, textStatus, errorThrown) {
             handleHTTPError(jqXHR.statusText, jqXHR.status);
         })
@@ -244,7 +244,7 @@ function queryParams(params) {
         }).done(function(data, textStatus, jqXHR) {
             var newOption = new Option(data.casnumber_label, data.casnumber_id, true, true);
             $('#s_casnumber').append(newOption).trigger('change');
-            $('#s_casnumber').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank-circle'></span>");
+            $('#s_casnumber').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank blink'></span>");
         }).fail(function(jqXHR, textStatus, errorThrown) {
             handleHTTPError(jqXHR.statusText, jqXHR.status);
         })
@@ -256,18 +256,18 @@ function queryParams(params) {
         }).done(function(data, textStatus, jqXHR) {
             var newOption = new Option(data.empiricalformula_label, data.empiricalformula_id, true, true);
             $('#s_empiricalformula').append(newOption).trigger('change');
-            $('#s_empiricalformula').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank-circle'></span>");
+            $('#s_empiricalformula').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank blink'></span>");
         }).fail(function(jqXHR, textStatus, errorThrown) {
             handleHTTPError(jqXHR.statusText, jqXHR.status);
         })
     }           
     if (storage_barecode != null) {
         $("input#storage_barecode").val(storage_barecode)
-        $('input#storage_barecode').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank-circle'></span>");
+        $('input#storage_barecode').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank blink'></span>");
     }
     if (custom_name_part_of != null) {
         $("input#custom_name_part_of").val(custom_name_part_of)
-        $('input#custom_name_part_of').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank-circle'></span>");
+        $('input#custom_name_part_of').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank blink'></span>");
     }
     if (signalword != null) {
         $("#advancedsearch").collapse('show');
@@ -277,7 +277,7 @@ function queryParams(params) {
         }).done(function(data, textStatus, jqXHR) {
             var newOption = new Option(data.signalword_label.String, data.signalword_id.Int, true, true);
             $('#s_signalword').append(newOption).trigger('change');
-            $('#s_signalword').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank-circle'></span>");
+            $('#s_signalword').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank blink'></span>");
         }).fail(function(jqXHR, textStatus, errorThrown) {
             handleHTTPError(jqXHR.statusText, jqXHR.status);
         })
@@ -291,7 +291,7 @@ function queryParams(params) {
             }).done(function(data, textStatus, jqXHR) {
                 var newOption = new Option(data.symbol_label, data.symbol_id, true, true);
                 $('#s_symbols').append(newOption).trigger('change');
-                $('#s_symbols').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank-circle'></span>");
+                $('#s_symbols').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank blink'></span>");
             }).fail(function(jqXHR, textStatus, errorThrown) {
                 handleHTTPError(jqXHR.statusText, jqXHR.status);
             }) 
@@ -306,7 +306,7 @@ function queryParams(params) {
             }).done(function(data, textStatus, jqXHR) {
                 var newOption = new Option(data.hazardstatement_reference, data.hazardstatement_id, true, true);
                 $('#s_hazardstatements').append(newOption).trigger('change');
-                $('#s_hazardstatements').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank-circle'></span>");
+                $('#s_hazardstatements').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank blink'></span>");
             }).fail(function(jqXHR, textStatus, errorThrown) {
                 handleHTTPError(jqXHR.statusText, jqXHR.status);
             }) 
@@ -321,7 +321,7 @@ function queryParams(params) {
             }).done(function(data, textStatus, jqXHR) {
                 var newOption = new Option(data.precautionarystatement_reference, data.precautionarystatement_id, true, true);
                 $('#s_precautionarystatements').append(newOption).trigger('change');
-                $('#s_precautionarystatements').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank-circle'></span>");
+                $('#s_precautionarystatements').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank blink'></span>");
             }).fail(function(jqXHR, textStatus, errorThrown) {
                 handleHTTPError(jqXHR.statusText, jqXHR.status);
             }) 
@@ -330,7 +330,7 @@ function queryParams(params) {
     if (casnumber_cmr == "true") {
         $("#advancedsearch").collapse('show');
         $('#s_casnumber_cmr').prop('checked', true);
-        $('#s_casnumber_cmr').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank-circle'></span>");
+        $('#s_casnumber_cmr').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank blink'></span>");
     }
     // storage view specific
     // if (storage_archive != null && storage_archive == "true") {
