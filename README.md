@@ -15,7 +15,7 @@ Main goals:
 
 # Quick start (to have a quick view of the application)
 
-You need a Linux AMD64 machine. No dependencies are required.
+You need a Linux AMD64 machine with `Glibc2.28` minimum. No dependencies are required.
 
 1. download the latest release from <https://github.com/tbellembois/gochimitheque/releases>
 2. uncompress is in a directory
@@ -24,7 +24,7 @@ You need a Linux AMD64 machine. No dependencies are required.
 
 Et voilà !
 
-Now login with the email `admin@chimitheque.com` and password `chimitheque`, and change the password immediatly.
+Now login with the email `admin@chimitheque.fr` and password `chimitheque`, and change the password immediatly.
 
 Do not use this mode in production.
 
@@ -57,7 +57,7 @@ It is strongly recommended to run Chimithèque behind an HTTP proxy server with 
 
 - configure (look at the following section) and install the systemd script `doc/chimitheque.service` in `/etc/systemd/system` and enable/start it with `systemctl enable chimitheque.service; systemctl start chimitheque.service`
 
-- install and adapt the apache2 configuration `doc/apache2-chimitheque.conf` in `/etc/apache2/site-available` and enable it with `a2esite apache2-chimitheque.conf`
+- install and adapt the Nginx configuration `doc/nginx-chimitheque.conf` in `/etc/nginx/server-available/nginx.conf` and link it with `ln -s /etc/nginx/server-available/nginx.conf /etc/nginx/server-enable/nginx.conf`
 
 ### Binary command line parameters
 
@@ -71,13 +71,13 @@ You need configure the systemd script with the following parameters:
 - `-mailserversender`: SMTP server sender email - *REQUIRED*
 - `-mailserverusetls`: use an SMTP TLS connection - default = `false`
 - `-mailservertlsskipverify`: skip SSL verification - default = `false`
-- `-admins`: comma separated list of administrators emails
+- `-admins`: comma separated list of administrators emails that must be present in the database
 - `-logfile`: output log file - by default logs are sent to stdout
 - `-debug`: debug mode, do not enable in production
 
 > example:
 >
-> `gochimitheque -proxyurl https://appserver.foo.fr -proxypath=/chimitheque -admins=john.bar@foo.fr,jean.dupont@foo.fr --mailserveraddress smtp.foo.fr --mailserverport 25 --mailserversender noreply@foo.fr"`
+> `gochimitheque -proxyurl https://appserver.foo.fr -proxypath=/chimitheque/ -admins=john.bar@foo.fr,jean.dupont@foo.fr --mailserveraddress smtp.foo.fr --mailserverport 25 --mailserversender noreply@foo.fr"`
 >
 > will run the appplication behind a proxy at the URL `https://appserver.foo.fr/chimitheque` with 2 additionnal administrators `john.bar@foo.fr` and `jean.dupont@foo.fr`
 
@@ -85,7 +85,7 @@ You need configure the systemd script with the following parameters:
 
 A static administrator `admin@chimitheque.fr` is created during the installation. His password must be changed after the first connection.
 
-You can add add additional administrators with the `admins` command line parameters.
+You can add add additional administrators with the `admins` command line parameters. Note that those admins must already be present in the database.
 
 > example: `-admins=john.bar@foo.com,jean.dupont@foo.com`
 
