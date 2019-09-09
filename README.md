@@ -124,6 +124,13 @@ You can then import to the V2 version with:
 
 This is important to specify the correct `-proxyurl` parameter as it will be used to generate the storages qr codes.
 
+# Support
+
+Please do not contact the members of the Chimithèque development team directly.
+
+Subscribe to the mailing list: <https://groupes.renater.fr/sympa/subscribe/chimitheque?previous_action=info> or open a Github issue.
+
+
 # V1/V2 version
 
 The v2 version has been rewritten in Golang.
