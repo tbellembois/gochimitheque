@@ -1,15 +1,15 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"regexp"
 	"strconv"
-	"database/sql"
-	"fmt"
 
-	"github.com/tbellembois/gochimitheque/utils"
 	"github.com/tbellembois/gochimitheque/jade"
+	"github.com/tbellembois/gochimitheque/utils"
 
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
@@ -88,25 +88,15 @@ func (env *Env) MagicHandler(w http.ResponseWriter, r *http.Request) *helpers.Ap
 	sps := rps.FindAllStringSubmatch(m.MSDS, -1)
 
 	for _, h := range shs {
-		if hs, err = env.DB.GetProductsHazardStatementByReference(h[1]); err != nil && err != sql.ErrNoRows {
-			return &helpers.AppError{
-				Error:   err,
-				Code:    http.StatusInternalServerError,
-				Message: "error getting hazard statement",
-			}
-		}
+		// silent db errors
+		hs, err = env.DB.GetProductsHazardStatementByReference(h[1])
 		if err != sql.ErrNoRows {
 			resp.HS = append(resp.HS, hs)
 		}
 	}
 	for _, p := range sps {
-		if ps, err = env.DB.GetProductsPrecautionaryStatementByReference(p[1]); err != nil && err != sql.ErrNoRows{
-			return &helpers.AppError{
-				Error:   err,
-				Code:    http.StatusInternalServerError,
-				Message: "error getting precautionary statement",
-			}
-		}
+		// silent db errors
+		ps, err = env.DB.GetProductsPrecautionaryStatementByReference(p[1])
 		if err != sql.ErrNoRows {
 			resp.PS = append(resp.PS, ps)
 		}
@@ -116,7 +106,7 @@ func (env *Env) MagicHandler(w http.ResponseWriter, r *http.Request) *helpers.Ap
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	json.NewEncoder(w).Encode(resp)
-	w.WriteHeader(http.StatusOK)
+
 	return nil
 }
 
