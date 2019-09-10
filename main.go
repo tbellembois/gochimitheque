@@ -5,6 +5,9 @@ package main
 //go:generate rice embed-go
 //go:generate jade -writer -basedir static/templates -d ./jade welcomeannounce/index.jade home/index.jade login/index.jade entity/index.jade entity/create.jade product/index.jade product/create.jade storage/index.jade storage/create.jade storelocation/index.jade storelocation/create.jade person/index.jade person/create.jade person/pupdate.jade test.jade
 
+// build with
+//go build -ldflags "-X main.BuildID=$(git tag | head -1)" -o gochimitheque
+
 import (
 	"database/sql"
 	"flag"
@@ -20,6 +23,10 @@ import (
 	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/handlers"
 	"github.com/tbellembois/gochimitheque/models"
+)
+
+var (
+	BuildID string // BuildID is compile-time variable
 )
 
 func main() {
@@ -63,6 +70,7 @@ func main() {
 	}
 
 	// global variables init
+	global.BuildID = BuildID
 	global.ProxyPath = *proxypath
 	global.ProxyURL = *proxyurl
 	global.MailServerAddress = *mailServerAddress
@@ -70,6 +78,7 @@ func main() {
 	global.MailServerPort = *mailServerPort
 	global.MailServerUseTLS = *mailServerUseTLS
 	global.MailServerTLSSkipVerify = *mailServerTLSSkipVerify
+	log.Info("- application version: " + global.BuildID)
 	log.Info("- application endpoint: " + global.ProxyURL + global.ProxyPath)
 
 	// database initialization

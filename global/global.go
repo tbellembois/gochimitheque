@@ -3,9 +3,9 @@ package global
 import (
 	"database/sql"
 	"database/sql/driver"
+	"errors"
 	"math/rand"
 	"reflect"
-	"errors"
 	"time"
 
 	"github.com/BurntSushi/toml"
@@ -73,6 +73,8 @@ var (
 	Bundle *i18n.Bundle
 	// Localizer is the i18n translator
 	Localizer *i18n.Localizer
+	// BuildID is a compile time variable
+	BuildID string
 
 	err error
 )
@@ -88,7 +90,7 @@ func init() {
 	if TokenSignKey, err = GenSymmetricKey(64); err != nil {
 		panic(err)
 	}
-	
+
 	Decoder = schema.NewDecoder()
 	SchemaRegisterSQLNulls(Decoder)
 
@@ -153,15 +155,15 @@ func ConvertSQLNullFloat64(value string) reflect.Value {
 
 // https://github.com/northbright/Notes/blob/master/jwt/generate_hmac_secret_key_for_jwt.md
 func GenSymmetricKey(bits int) (k []byte, err error) {
-    if bits <= 0 || bits%8 != 0 {
-	    return nil, errors.New("key size error")
-    }
+	if bits <= 0 || bits%8 != 0 {
+		return nil, errors.New("key size error")
+	}
 
-    size := bits / 8
-    k = make([]byte, size)
-    if _, err = rand.Read(k); err != nil {
-	    return nil, err
-    }
+	size := bits / 8
+	k = make([]byte, size)
+	if _, err = rand.Read(k); err != nil {
+		return nil, err
+	}
 
-    return k, nil
+	return k, nil
 }

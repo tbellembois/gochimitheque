@@ -53,11 +53,12 @@ func (env *Env) ContextMiddleware(h http.Handler) http.Handler {
 		global.Localizer = i18n.NewLocalizer(global.Bundle, accept)
 
 		ctx := context.WithValue(
-			r.Context(), 
-			global.ChimithequeContextKey("container"), 
+			r.Context(),
+			global.ChimithequeContextKey("container"),
 			helpers.ViewContainer{
-				ProxyPath: global.ProxyPath, 
+				ProxyPath:      global.ProxyPath,
 				PersonLanguage: accept,
+				BuildID:        global.BuildID,
 			},
 		)
 		h.ServeHTTP(w, r.WithContext(ctx))
@@ -138,13 +139,8 @@ func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 		container.PersonEmail = person.PersonEmail
 		container.PersonID = person.PersonID
 		ctx = context.WithValue(
-			r.Context(), 
-			global.ChimithequeContextKey("container"), 
-			// helpers.ViewContainer{
-			// 	PersonEmail: container.PersonEmail, 
-			// 	PersonID: container.PersonID, 
-			// 	ProxyPath: container.ProxyPath, 
-			// 	PersonLanguage: container.PersonLanguage},
+			r.Context(),
+			global.ChimithequeContextKey("container"),
 			container,
 		)
 
@@ -191,7 +187,6 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			"personemail": personemail,
 			"personid":    personid,
 			"r.Method":    r.Method}).Debug("AuthorizeMiddleware")
-
 
 		//
 		// id and item translations and setup for the HasPersonPermission method, and some bypasses
@@ -269,23 +264,23 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			switch item {
 			case "storages":
 				if id != "-1" && id != "-2" && id != "" {
-				// checking that the connected person
-				// can "w" "storages" in the entity of the storage's
-				// store location
-				var (
-					s models.Storage
-					e error
-				)
-				if e = r.ParseForm(); err != nil {
-					http.Error(w, e.Error(), http.StatusInternalServerError)
-				}
-				if e = global.Decoder.Decode(&s, r.PostForm); err != nil {
-					http.Error(w, e.Error(), http.StatusInternalServerError)
-				}
-				if s.StoreLocation, e = env.DB.GetStoreLocation(int(s.StoreLocationID.Int64)); err != nil {
-					http.Error(w, e.Error(), http.StatusInternalServerError)
-				}
-				itemid = s.StoreLocation.EntityID
+					// checking that the connected person
+					// can "w" "storages" in the entity of the storage's
+					// store location
+					var (
+						s models.Storage
+						e error
+					)
+					if e = r.ParseForm(); err != nil {
+						http.Error(w, e.Error(), http.StatusInternalServerError)
+					}
+					if e = global.Decoder.Decode(&s, r.PostForm); err != nil {
+						http.Error(w, e.Error(), http.StatusInternalServerError)
+					}
+					if s.StoreLocation, e = env.DB.GetStoreLocation(int(s.StoreLocationID.Int64)); err != nil {
+						http.Error(w, e.Error(), http.StatusInternalServerError)
+					}
+					itemid = s.StoreLocation.EntityID
 				}
 			}
 			perm = "w"
@@ -358,7 +353,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 		}
 		if !permok {
 			log.WithFields(log.Fields{"unauthorized": "!permok"}).Debug("AuthorizeMiddleware")
-			if (r.RequestURI == global.ProxyPath || r.RequestURI == "") {
+			if r.RequestURI == global.ProxyPath || r.RequestURI == "" {
 				// redirect on login page for the root of the application
 				http.Redirect(w, r, global.ProxyURL+global.ProxyPath+"login", 307)
 			} else {

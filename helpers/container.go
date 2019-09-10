@@ -14,6 +14,7 @@ type ViewContainer struct {
 	PersonID       int
 	URLValues      url.Values
 	ProxyPath      string
+	BuildID        string
 }
 
 // helpers.ContainerFromRequestContext returns a ViewContainer from the request context

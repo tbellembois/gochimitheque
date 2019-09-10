@@ -137,14 +137,14 @@ html
 
             // initializing query parameters map
             !{out}
-
-            // setting up logged user
+           
             window.onload = function() {
                 // cookie set by the GetTokenHandler() function after login
                 var email = readCookie("email")
                 var urlParams = new URLSearchParams(window.location.search);
                 var message = urlParams.get("message");
                 
+                // displaying logged user
                 if (email != null) {
                     document.getElementById("logged").innerHTML = email;
                 }
