@@ -28,7 +28,11 @@ import (
 )
 
 var (
-	BuildID string // BuildID is compile-time variable
+	// BuildID is compile-time variable
+	BuildID string
+	// starting flags
+	listenport, proxyurl, proxypath, mailServerAddress, mailServerPort, mailServerSender, admins, logfile, importfrom *string
+	mailServerUseTLS, mailServerTLSSkipVerify, disableAutoUpgrade, debug                                              *bool
 )
 
 func preupgrade(tempBinaryPath string) error {
@@ -38,13 +42,34 @@ func preupgrade(tempBinaryPath string) error {
 func main() {
 	overseer.Run(overseer.Config{
 		Program: prog,
-		//Address: ":" + *listenport,
-		Address:    ":8081",
-		//Fetcher:    &fetcher.File{Path: "gochimitheque"},
-		Fetcher: &fetcher.Github{User:"tbellembois", Repo:"gochimitheque"}
+		Address: ":" + *listenport,
+		Fetcher: &fetcher.Github{
+			User: "tbellembois",
+			Repo: "gochimitheque",
+			Asset: func(string) bool {
+				return !*disableAutoUpgrade
+			}},
 		PreUpgrade: preupgrade,
-		Debug:      true, //display log of overseer actions
+		Debug:      *debug, //display log of overseer actions
 	})
+}
+
+func init() {
+	// getting the program parameters
+	listenport = flag.String("port", "8081", "the port to listen")
+	proxyurl = flag.String("proxyurl", "http://localhost:"+*listenport, "the application url (without the path) if behind a proxy, with NO trailing /")
+	proxypath = flag.String("proxypath", "/", "the application path if behind a proxy, with the heading and trailing /")
+	mailServerAddress = flag.String("mailserveraddress", "", "the mail server address")
+	mailServerPort = flag.String("mailserverport", "", "the mail server address")
+	mailServerSender = flag.String("mailserversender", "", "the mail server sender")
+	mailServerUseTLS = flag.Bool("mailserverusetls", false, "use TLS? (optional)")
+	mailServerTLSSkipVerify = flag.Bool("mailservertlsskipverify", false, "skip TLS verification? (optional)")
+	disableAutoUpgrade = flag.Bool("disableautoupgrade", false, "disable application auto upgrade - not recommended (optional)")
+	admins = flag.String("admins", "", "the additional admins (comma separated email adresses)")
+	logfile = flag.String("logfile", "", "log to the given file")
+	debug = flag.Bool("debug", false, "debug (verbose log), default is error")
+	importfrom = flag.String("importfrom", "", "full path of the directory containing the CSV to import")
+	flag.Parse()
 }
 
 func prog(state overseer.State) {
@@ -55,21 +80,6 @@ func prog(state overseer.State) {
 		dbname    = "./storage.db"
 		datastore models.Datastore
 	)
-
-	// getting the program parameters
-	listenport := flag.String("port", "8081", "the port to listen")
-	proxyurl := flag.String("proxyurl", "http://localhost:"+*listenport, "the application url (without the path) if behind a proxy, with NO trailing /")
-	proxypath := flag.String("proxypath", "/", "the application path if behind a proxy, with the heading and trailing /")
-	mailServerAddress := flag.String("mailserveraddress", "", "the mail server address")
-	mailServerPort := flag.String("mailserverport", "", "the mail server address")
-	mailServerSender := flag.String("mailserversender", "", "the mail server sender")
-	mailServerUseTLS := flag.Bool("mailserverusetls", false, "use TLS? (optional)")
-	mailServerTLSSkipVerify := flag.Bool("mailservertlsskipverify", false, "skip TLS verification? (optional)")
-	admins := flag.String("admins", "", "the additional admins (comma separated email adresses)")
-	logfile := flag.String("logfile", "", "log to the given file")
-	debug := flag.Bool("debug", false, "debug (verbose log), default is error")
-	importfrom := flag.String("importfrom", "", "full path of the directory containing the CSV to import")
-	flag.Parse()
 
 	// setting the log level
 	if *debug {
