@@ -18,6 +18,8 @@ import (
 
 	rice "github.com/GeertJohan/go.rice"
 	"github.com/gorilla/mux"
+	"github.com/jpillora/overseer"
+	"github.com/jpillora/overseer/fetcher"
 	"github.com/justinas/alice"
 	log "github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/global"
@@ -29,7 +31,23 @@ var (
 	BuildID string // BuildID is compile-time variable
 )
 
+func preupgrade(tempBinaryPath string) error {
+	return nil
+}
+
 func main() {
+	overseer.Run(overseer.Config{
+		Program: prog,
+		//Address: ":" + *listenport,
+		Address:    ":8081",
+		//Fetcher:    &fetcher.File{Path: "gochimitheque"},
+		Fetcher: &fetcher.Github{User:"tbellembois", Repo:"gochimitheque"}
+		PreUpgrade: preupgrade,
+		Debug:      true, //display log of overseer actions
+	})
+}
+
+func prog(state overseer.State) {
 
 	var (
 		err       error
@@ -351,7 +369,7 @@ func main() {
 	http.Handle("/", r)
 
 	log.Info("- application running")
-	if err = http.ListenAndServe(":"+*listenport, nil); err != nil {
-		panic(err)
+	if err = http.Serve(state.Listener, nil); err != nil {
+		log.Error("error running the server, do not worry probably a graceful restart " + err.Error())
 	}
 }
