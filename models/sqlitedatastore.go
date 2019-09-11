@@ -18,6 +18,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	qrcode "github.com/skip2/go-qrcode"
 	"github.com/tbellembois/gochimitheque/global"
+	"github.com/tbellembois/gochimitheque/helpers"
 	"github.com/tbellembois/gochimitheque/utils"
 )
 
@@ -46,11 +47,11 @@ func init() {
 // GetWelcomeAnnounce returns the welcome announce
 func (db *SQLiteDataStore) GetWelcomeAnnounce() (WelcomeAnnounce, error) {
 	var (
-		wa WelcomeAnnounce
-		sqlr          string
-		err           error
+		wa   WelcomeAnnounce
+		sqlr string
+		err  error
 	)
-	
+
 	sqlr = `SELECT welcomeannounce.welcomeannounce_id, welcomeannounce.welcomeannounce_text
 	FROM welcomeannounce LIMIT 1`
 	if err = db.Get(&wa, sqlr); err != nil {
@@ -64,9 +65,9 @@ func (db *SQLiteDataStore) GetWelcomeAnnounce() (WelcomeAnnounce, error) {
 // UpdateWelcomeAnnounce updates the main page announce
 func (db *SQLiteDataStore) UpdateWelcomeAnnounce(w WelcomeAnnounce) error {
 	var (
-		sqlr     string
-		tx       *sqlx.Tx
-		err      error
+		sqlr string
+		tx   *sqlx.Tx
+		err  error
 	)
 
 	// beginning new transaction
@@ -555,6 +556,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 	var (
 		csvFile   *os.File
 		csvReader *csv.Reader
+		csvMap    []map[string]string
 		err       error
 		res       sql.Result
 		lastid    int64
@@ -1229,6 +1231,11 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		return err
 	}
 
+	// beginning new transaction
+	if tx, err = db.Beginx(); err != nil {
+		return err
+	}
+
 	//
 	// products
 	//
@@ -1277,8 +1284,21 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		// finding new id
 		var nid int
 		if err = db.Get(&nid, `SELECT hazardstatement_id FROM hazardstatement WHERE hazardstatement_reference = ?`, reference); err != nil {
-			log.Error("error gathering hazardstatement id for " + reference)
-			return err
+			log.Info("no hazardstatement id for " + reference + " inserting a new one")
+			var (
+				res   sql.Result
+				nid64 int64
+			)
+			if res, err = tx.Exec(`INSERT INTO hazardstatement (hazardstatement_label, hazardstatement_reference) VALUES (?, ?)`, line[0], line[1]); err != nil {
+				tx.Rollback()
+				return err
+			}
+			// getting the last inserted id
+			if nid64, err = res.LastInsertId(); err != nil {
+				tx.Rollback()
+				return err
+			}
+			nid = int(nid64)
 		}
 		mONhazardstatement[id] = strconv.Itoa(nid)
 	}
@@ -1311,8 +1331,21 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		// finding new id
 		var nid int
 		if err = db.Get(&nid, `SELECT precautionarystatement_id FROM precautionarystatement WHERE precautionarystatement_reference = ?`, reference); err != nil {
-			log.Error("error gathering precautionarystatement id for " + reference)
-			return err
+			log.Info("no precautionarystatement id for " + reference + " inserting a new one")
+			var (
+				res   sql.Result
+				nid64 int64
+			)
+			if res, err = tx.Exec(`INSERT INTO precautionarystatement (precautionarystatement_label, precautionarystatement_reference) VALUES (?, ?)`, line[0], line[1]); err != nil {
+				tx.Rollback()
+				return err
+			}
+			// getting the last inserted id
+			if nid64, err = res.LastInsertId(); err != nil {
+				tx.Rollback()
+				return err
+			}
+			nid = int(nid64)
 		}
 		mONprecautionarystatement[id] = strconv.Itoa(nid)
 	}
@@ -1377,53 +1410,36 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		mONsignalword[id] = strconv.Itoa(nid)
 	}
 
-	// beginning new transaction
-	if tx, err = db.Beginx(); err != nil {
-		return err
-	}
-
 	if csvFile, err = os.Open(path.Join(dir, "product.csv")); err != nil {
 		return (err)
 	}
-	csvReader = csv.NewReader(bufio.NewReader(csvFile))
+	log.Debug("1")
+	csvMap = helpers.CSVToMap(bufio.NewReader(csvFile))
 	i = 0
-	for {
-		line, error := csvReader.Read()
-
-		// skip header
-		if i == 0 {
-			i++
-			continue
-		}
-
-		if error == io.EOF {
-			break
-		} else if error != nil {
-			tx.Rollback()
-			return err
-		}
-		id := line[0]
-		cenumber := line[1]
-		person := line[2]
-		name := line[3]
-		synonym := line[4]
-		restricted := line[5]
-		specificity := line[6]
-		tdformula := line[7]
-		empiricalformula := line[8]
-		linearformula := line[9]
-		msds := line[10]
-		physicalstate := line[11]
-		coc := line[12]
-		symbol := line[14]
-		signalword := line[15]
-		hazardstatement := line[18]
-		precautionarystatement := line[19]
-		disposalcomment := line[20]
-		remark := line[21]
-		archive := line[23]
-		casnumber := line[26]
-		isradio := line[27]
+	log.Debug("2")
+	for _, k := range csvMap {
+		id := k["id"]
+		cenumber := k["ce_number"]
+		person := k["person"]
+		name := k["name"]
+		synonym := k["synonym"]
+		restricted := k["restricted_access"]
+		specificity := k["specificity"]
+		tdformula := k["tdformula"]
+		empiricalformula := k["empirical_formula"]
+		linearformula := k["linear_formula"]
+		msds := k["msds"]
+		physicalstate := k["physical_state"]
+		coc := k["class_of_compounds"]
+		symbol := k["symbol"]
+		signalword := k["signal_word"]
+		hazardstatement := k["hazard_statement"]
+		precautionarystatement := k["precautionary_statement"]
+		disposalcomment := k["disposal_comment"]
+		remark := k["remark"]
+		archive := k["archive"]
+		casnumber := k["cas_number"]
+		isradio := k["is_radio"]
 
 		newperson := mONperson[person]
 		if newperson == "" {
@@ -1542,7 +1558,7 @@ func (db *SQLiteDataStore) Import(dir string) error {
 
 			// coc
 			cocs := rnumber.FindAllString(coc, -1)
-			for _, c  := range cocs {
+			for _, c := range cocs {
 				sqlr = `INSERT INTO productclassofcompound (productclassofcompound_product_id, productclassofcompound_classofcompound_id) VALUES (?,?)`
 				if res, err = tx.Exec(sqlr, lastid, mONclassofcompound[c]); err != nil {
 					// not leaving on errors
@@ -1611,6 +1627,11 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		return err
 	}
 
+	// beginning new transaction
+	if tx, err = db.Beginx(); err != nil {
+		return err
+	}
+
 	//
 	// storages
 	//
@@ -1644,11 +1665,6 @@ func (db *SQLiteDataStore) Import(dir string) error {
 			return err
 		}
 		mONunit[id] = strconv.Itoa(nid)
-	}
-
-	// beginning new transaction
-	if tx, err = db.Beginx(); err != nil {
-		return err
 	}
 
 	if csvFile, err = os.Open(path.Join(dir, "storage.csv")); err != nil {
@@ -1690,6 +1706,17 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		openingdate := line[17]
 		toDestroy := line[18]
 		expirationdate := line[19]
+
+		log.Debug(log.WithFields(log.Fields{
+			"oldid":         oldid,
+			"product":       product,
+			"person":        person,
+			"storeLocation": storeLocation,
+			"unit":          unit,
+			"entrydate":     entrydate,
+			"exitdate":      exitdate,
+			"supplier":      supplier,
+		}))
 
 		newproduct := mONproduct[product]
 		newperson := mONperson[person]
@@ -1740,7 +1767,6 @@ func (db *SQLiteDataStore) Import(dir string) error {
 			*newexpirationdate, _ = time.Parse("2006-01-02 15:04:05", expirationdate)
 		}
 
-		log.Debug("oldid: " + oldid)
 		// do not import archived cards
 		if !newarchive {
 			reqValues := "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
@@ -1800,6 +1826,26 @@ func (db *SQLiteDataStore) Import(dir string) error {
 			}
 
 			sqlr += `) VALUES (` + reqValues + `)`
+
+			log.Debug(log.WithFields(log.Fields{
+				"newstorageCreationdate": newstorageCreationdate,
+				"newcomment":             newcomment,
+				"newreference":           newreference,
+				"newbatchNumber":         newbatchNumber,
+				"newvolumeWeight":        newvolumeWeight,
+				"newbarecode":            newbarecode,
+				"newtoDestroy":           newtoDestroy,
+				"newperson":              newperson,
+				"newproduct":             newproduct,
+				"newstoreLocation":       newstoreLocation,
+				"newunit":                newunit,
+				"newsupplier":            newsupplier,
+				"newentrydate":           newentrydate,
+				"newexitdate":            newexitdate,
+				"newopeningdate":         newopeningdate,
+				"newexpirationdate":      newexpirationdate,
+			}))
+
 			if _, err = tx.Exec(sqlr, reqArgs...); err != nil {
 				tx.Rollback()
 				return err
@@ -1810,6 +1856,11 @@ func (db *SQLiteDataStore) Import(dir string) error {
 	// committing changes
 	if err = tx.Commit(); err != nil {
 		tx.Rollback()
+		return err
+	}
+
+	// beginning new transaction
+	if tx, err = db.Beginx(); err != nil {
 		return err
 	}
 

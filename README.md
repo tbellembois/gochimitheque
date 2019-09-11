@@ -19,7 +19,7 @@ You need a Linux AMD64 machine with `Glibc2.28` minimum. No dependencies are req
 
 1. download the latest release from <https://github.com/tbellembois/gochimitheque/releases>
 2. uncompress is in a directory
-3. run `./gochimitheque`
+3. run `./gochimitheque --disableautoupgrade`
 4. open your web browser at `http://localhost:8081/login`
 
 Et voilà !
@@ -71,6 +71,7 @@ You need configure the systemd script with the following parameters:
 - `-mailserversender`: SMTP server sender email - *REQUIRED*
 - `-mailserverusetls`: use an SMTP TLS connection - default = `false`
 - `-mailservertlsskipverify`: skip SSL verification - default = `false`
+- `-disableautoupgrade`: disable application auto upgrade - not recommended - default = `false`
 - `-admins`: comma separated list of administrators emails that must be present in the database
 - `-logfile`: output log file - by default logs are sent to stdout
 - `-debug`: debug mode, do not enable in production
@@ -119,10 +120,18 @@ This will generate one CSV file per table.
 You can then import to the V2 version with:
 
 ```bash
-    /path/to/gochimitheque -proxyurl=https://appserver.foo.fr -importfrom=/path/to/csv
+    /path/to/gochimitheque -disableautoupgrade -proxyurl=https://appserver.foo.fr -importfrom=/path/to/csv
 ```
 
 This is important to specify the correct `-proxyurl` parameter as it will be used to generate the storages qr codes.
+
+# Upgrades
+
+By default Chimithèque will gracefully (without loosing current client connections) auto upgrade when a new release is published. You can disable auto upgrade with the `disableautoupgrade` command line parameter.
+
+This is strongly recommended to always run the last version of the application.
+
+If you prefer to perform a manual upgrade just stop it and replace the `gochimitheque` binary with the new one.
 
 # Support
 
