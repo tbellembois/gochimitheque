@@ -1413,10 +1413,8 @@ func (db *SQLiteDataStore) Import(dir string) error {
 	if csvFile, err = os.Open(path.Join(dir, "product.csv")); err != nil {
 		return (err)
 	}
-	log.Debug("1")
 	csvMap = helpers.CSVToMap(bufio.NewReader(csvFile))
 	i = 0
-	log.Debug("2")
 	for _, k := range csvMap {
 		id := k["id"]
 		cenumber := k["ce_number"]
@@ -1658,6 +1656,8 @@ func (db *SQLiteDataStore) Import(dir string) error {
 		}
 		id := line[0]
 		label := line[1]
+		// uppercase liter
+		label = strings.Replace(label, "l", "L", -1)
 		// finding new id
 		var nid int
 		if err = db.Get(&nid, `SELECT unit_id FROM unit WHERE unit_label = ?`, label); err != nil {
@@ -1670,42 +1670,27 @@ func (db *SQLiteDataStore) Import(dir string) error {
 	if csvFile, err = os.Open(path.Join(dir, "storage.csv")); err != nil {
 		return (err)
 	}
-	csvReader = csv.NewReader(bufio.NewReader(csvFile))
+	csvMap = helpers.CSVToMap(bufio.NewReader(csvFile))
 	i = 0
-	for {
-		line, error := csvReader.Read()
-
-		// skip header
-		if i == 0 {
-			i++
-			continue
-		}
-
-		if error == io.EOF {
-			break
-		} else if error != nil {
-			tx.Rollback()
-			return err
-		}
-		// for debug
-		oldid := line[0]
-		product := line[1]
-		person := line[2]
-		storeLocation := line[3]
-		unit := line[4]
-		entrydate := line[6]
-		exitdate := line[7]
-		comment := line[8]
-		barecode := line[9]
-		reference := line[10]
-		batchNumber := line[11]
-		supplier := line[12]
-		archive := line[13]
-		creationdate := line[15]
-		volumeWeight := line[16]
-		openingdate := line[17]
-		toDestroy := line[18]
-		expirationdate := line[19]
+	for _, k := range csvMap {
+		oldid := k["id"]
+		product := k["product"]
+		person := k["person"]
+		storeLocation := k["store_location"]
+		unit := k["unit"]
+		entrydate := k["entry_datetime"]
+		exitdate := k["exit_datetime"]
+		comment := k["comment"]
+		barecode := k["barecode"]
+		reference := k["reference"]
+		batchNumber := k["batch_number"]
+		supplier := k["supplier"]
+		archive := k["archive"]
+		creationdate := k["creation_datetime"]
+		volumeWeight := k["volume_weight"]
+		openingdate := k["opening_datetime"]
+		toDestroy := k["to_destroy"]
+		expirationdate := k["expiration_datetime"]
 
 		log.Debug(log.WithFields(log.Fields{
 			"oldid":         oldid,
