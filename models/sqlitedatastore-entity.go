@@ -384,15 +384,6 @@ func (db *SQLiteDataStore) UpdateEntity(e Entity) error {
 		return err
 	}
 
-	// removing former managers permissions
-	for _, m := range e.Managers {
-		sqlr = `DELETE FROM permission WHERE person = ?`
-		if _, err = tx.Exec(sqlr, m.PersonID); err != nil {
-			tx.Rollback()
-			return err
-		}
-	}
-
 	// adding the new ones
 	for _, m := range e.Managers {
 		// adding the manager
