@@ -326,13 +326,22 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 				}
 			case "entities":
 				if r.Method == "DELETE" {
-					m, e := env.DB.IsEntityEmpty(itemid)
-					if e != nil {
-						http.Error(w, e.Error(), http.StatusInternalServerError)
+					m, e1 := env.DB.IsEntityEmpty(itemid)
+					n, e2 := env.DB.HasEntityNoStorelocation(itemid)
+					if e1 != nil {
+						http.Error(w, e1.Error(), http.StatusInternalServerError)
+						return
+					}
+					if e2 != nil {
+						http.Error(w, e2.Error(), http.StatusInternalServerError)
 						return
 					}
 					if !m {
 						http.Error(w, "can not delete a non empty entity", http.StatusBadRequest)
+						return
+					}
+					if !n {
+						http.Error(w, "can not delete an entity with store locations", http.StatusBadRequest)
 						return
 					}
 				}

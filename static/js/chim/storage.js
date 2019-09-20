@@ -1243,6 +1243,9 @@ function operateEdit(e, value, row, index) {
                     "storage_expirationdate": storage_expirationdate,
                 });
             }
+
+            // lazily clearing all the cache storage
+            localStorage.clear();
             $.ajax({
                 url: ajax_url,
                 method: ajax_method,

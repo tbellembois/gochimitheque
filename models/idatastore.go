@@ -86,6 +86,7 @@ type Datastore interface {
 	CreateEntity(e Entity) (int, error)
 	UpdateEntity(e Entity) error
 	IsEntityEmpty(id int) (bool, error)
+	HasEntityNoStorelocation(id int) (bool, error)
 
 	// people
 	GetPeople(helpers.DbselectparamPerson) ([]Person, int, error)

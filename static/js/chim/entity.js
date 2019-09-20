@@ -294,12 +294,15 @@ function saveEntity() {
             "entity_name": entity_name,
             "entity_description": entity_description,
         });
+
+    // lazily clearing all the cache storage
+    localStorage.clear();
     $.ajax({
         url: ajax_url,
         method: ajax_method,
         dataType: 'json',
         data: data,
-    }).done(ajax_callback).fail(function(jqXHR, textStatus, errorThrown) {  
+    }).done(ajax_callback).fail(function(jqXHR, textStatus, errorThrown) {      
         handleHTTPError(jqXHR.statusText, jqXHR.status)
     }); 
 }

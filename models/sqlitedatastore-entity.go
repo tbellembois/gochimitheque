@@ -451,3 +451,25 @@ func (db *SQLiteDataStore) IsEntityEmpty(id int) (bool, error) {
 	}
 	return res, nil
 }
+
+// HasEntityNoStorelocation returns true is the entity has no store location
+func (db *SQLiteDataStore) HasEntityNoStorelocation(id int) (bool, error) {
+	var (
+		res   bool
+		count int
+		sqlr  string
+		err   error
+	)
+
+	sqlr = "SELECT count(*) from storelocation WHERE storelocation.entity = ?"
+	if err = db.Get(&count, sqlr, id); err != nil {
+		return false, err
+	}
+	log.WithFields(log.Fields{"id": id, "count": count}).Debug("HasEntityNoStorelocation")
+	if count == 0 {
+		res = true
+	} else {
+		res = false
+	}
+	return res, nil
+}

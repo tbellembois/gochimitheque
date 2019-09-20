@@ -397,7 +397,9 @@ function savePersonp() {
     };
 
     var person_password = $("input#person_password").val();
-
+        
+    // lazily clearing all the cache storage
+    localStorage.clear();
     $.ajax({
         url: proxyPath + "peoplep",
         method: "POST",
@@ -451,6 +453,8 @@ function savePerson() {
                 "person_password": person_password,
             });    
         }
+        // lazily clearing all the cache storage
+        localStorage.clear();
         $.ajax({
             url: ajax_url,
             method: ajax_method,
