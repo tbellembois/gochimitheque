@@ -211,6 +211,32 @@ func (db *SQLiteDataStore) GetEntities(p helpers.DbselectparamEntity) ([]Entity,
 		}
 	}
 
+	//
+	// getting number of store locations for each entity
+	//
+	for i, ent := range entities {
+		// getting the total store location count
+		req.Reset()
+		req.WriteString("SELECT count(storelocation_id) from storelocation")
+		req.WriteString(" WHERE entity = ?")
+		if err = db.Get(&entities[i].EntitySLC, req.String(), ent.EntityID); err != nil {
+			return nil, 0, err
+		}
+	}
+
+	//
+	// getting number of person for each entity
+	//
+	for i, ent := range entities {
+		// getting the total person count
+		req.Reset()
+		req.WriteString("SELECT count(personentities_person_id) from personentities")
+		req.WriteString(" WHERE personentities_entity_id = ?")
+		if err = db.Get(&entities[i].EntityPC, req.String(), ent.EntityID); err != nil {
+			return nil, 0, err
+		}
+	}
+
 	log.WithFields(log.Fields{"entities": entities, "count": count}).Debug("GetEntities")
 	return entities, count, nil
 }

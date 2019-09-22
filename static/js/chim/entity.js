@@ -152,10 +152,10 @@ function operateFormatter(value, row, index) {
     // buttons are hidden by default
     var actions = [
     '<button id="storelocations' + eid + '" eid="' + eid + '" class="storelocations btn btn-link btn-sm" style="display: none;" title="' + global.t("storelocations", container.PersonLanguage) + '" type="button">',
-        '<span class="mdi mdi-docker mdi-24px"></span>',
+        '<span class="mdi mdi-docker mdi-24px"><i>' + row.entity_slc + '</i></span>',
     '</button>',
     '<button id="members' + eid + '" eid="' + eid + '" class="members btn btn-link btn-sm" style="display: none;" title="' + global.t("members", container.PersonLanguage) + '" type="button">',
-        '<span class="mdi mdi-account-group mdi-24px"></span>',
+        '<span class="mdi mdi-account-group mdi-24px"><i>' + row.entity_pc + '</i></span>',
     '</button>',
     '<button id="edit' + eid + '" eid="' + eid + '" class="edit btn btn-link btn-sm" style="display: none;" title="' + global.t("edit", container.PersonLanguage) + '" type="button">',
         '<span class="mdi mdi-border-color mdi-24px"></span>',

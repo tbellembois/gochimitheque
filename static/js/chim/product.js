@@ -1379,7 +1379,7 @@ function operateFormatter(value, row, index) {
 
     if (row.product_sc != 0) {
         actions.push('<button id="storages' + pid + '" class="storages btn btn-link btn-sm" style="display: none;" title="storages" type="button">',
-        '<span class="mdi mdi-24px mdi-cube-unfolded"><i>' + row.product_sc + '</i>',
+        '<span class="mdi mdi-24px mdi-cube-unfolded"><i>' + row.product_sc + '</i></span>',
         '</button>');
     } else {
         actions.push('<button class="btn btn-link btn-sm"><span class="mdi mdi-24px mdi-blank">&nbsp;</span></button>');

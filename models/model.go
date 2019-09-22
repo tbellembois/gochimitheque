@@ -28,7 +28,7 @@ type Stock struct {
 
 // WelcomeAnnounce is the custom welcome page message
 type WelcomeAnnounce struct {
-	WelcomeAnnounceID int      `db:"welcomeannounce_id" json:"welcomeannounce_id" schema:"welcomeannounce_id"`
+	WelcomeAnnounceID   int    `db:"welcomeannounce_id" json:"welcomeannounce_id" schema:"welcomeannounce_id"`
 	WelcomeAnnounceText string `db:"welcomeannounce_text" json:"welcomeannounce_text" schema:"welcomeannounce_text"`
 }
 
@@ -53,6 +53,11 @@ type Entity struct {
 	EntityName        string   `db:"entity_name" json:"entity_name" schema:"entity_name"`
 	EntityDescription string   `db:"entity_description" json:"entity_description" schema:"entity_description"`
 	Managers          []Person `db:"-" json:"managers" schema:"managers"`
+
+	// total store location count
+	EntitySLC int `db:"entity_slc" json:"entity_slc" schema:"entity_slc"` // not in db but sqlx requires the "db" entry
+	// total person count
+	EntityPC int `db:"entity_pc" json:"entity_pc" schema:"entity_pc"` // not in db but sqlx requires the "db" entry
 }
 
 // Person represent a person
@@ -183,8 +188,8 @@ type PhysicalState struct {
 // ClassOfCompound is a product class of compound
 type ClassOfCompound struct {
 	// nullable values to handle optional Product foreign key (gorilla shema nil values)
-	C                    int            `db:"c" json:"c"` // not stored in db but db:"c" set for sqlx
-	ClassOfCompoundID    int  `db:"classofcompound_id" json:"classofcompound_id" schema:"classofcompound_id"`
+	C                    int    `db:"c" json:"c"` // not stored in db but db:"c" set for sqlx
+	ClassOfCompoundID    int    `db:"classofcompound_id" json:"classofcompound_id" schema:"classofcompound_id"`
 	ClassOfCompoundLabel string `db:"classofcompound_label" json:"classofcompound_label" schema:"classofcompound_label"`
 }
 
@@ -229,7 +234,7 @@ type Product struct {
 	CasNumber               `db:"casnumber" json:"casnumber" schema:"casnumber"`
 	CeNumber                `db:"cenumber" json:"cenumber" schema:"cenumber"`
 	Name                    `db:"name" json:"name" schema:"name"`
-	ClassOfCompound         []ClassOfCompound `db:"-" schema:"classofcompound" json:"classofcompound"`
+	ClassOfCompound         []ClassOfCompound        `db:"-" schema:"classofcompound" json:"classofcompound"`
 	Synonyms                []Name                   `db:"-" schema:"synonyms" json:"synonyms"`
 	Symbols                 []Symbol                 `db:"-" schema:"symbols" json:"symbols"`
 	HazardStatements        []HazardStatement        `db:"-" schema:"hazardstatements" json:"hazardstatements"`
