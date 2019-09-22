@@ -64,11 +64,10 @@ html
                 var urlParams = new URLSearchParams(window.location.search);
                 var message = urlParams.get("message");    
           
-                console.log(buildID)
-
-                // login page, displaying version
+                // login page, displaying version twice for more visibility
                 document.getElementById("logged").innerHTML = buildID;
-          
+                document.getElementById("appversion").innerHTML = buildID;
+
                 if (message != null) {
                     global.displayMessage(message, "success");
                 }

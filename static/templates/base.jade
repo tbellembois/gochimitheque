@@ -129,6 +129,9 @@ html
             // proxy path
             var proxyPath = "!{ c.ProxyPath }";
             
+            // version
+            var buildID = "!{ c.BuildID }";
+
             // request context
             var container = !{fmt.Sprintf("%s", json)};
 
@@ -151,6 +154,9 @@ html
                 if (message != null) {
                     global.displayMessage(message, "success");
                 }
+
+                // displaying version
+                document.getElementById("appversion").innerHTML = buildID;
 
                 // showing menu items given the connected person permissions
                 hasPermission("products", "-2", "GET").done(function(){
