@@ -103,12 +103,19 @@ function getData(params) {
 // when table is loaded
 $('#table').on('load-success.bs.table refresh.bs.table', function () {
     $("button.storelocations").each(function( index, b ) {
-        hasPermission("entities", $(b).attr("eid"), "GET").done(function(){
+        hasPermission("storelocations", $(b).attr("eid"), "GET").done(function(){
             $("#storelocations"+$(b).attr("eid")).fadeIn();
-            $("#members"+$(b).attr("eid")).fadeIn();
-            localStorage.setItem("entities:" + $(b).attr("eid") + ":GET", true);
+            localStorage.setItem("storelocations:" + $(b).attr("eid") + ":GET", true);
         }).fail(function(){
-            localStorage.setItem("entities:" + $(b).attr("eid") + ":GET", false);
+            localStorage.setItem("storelocations:" + $(b).attr("eid") + ":GET", false);
+        })
+    });
+    $("button.storelocations").each(function( index, b ) {
+        hasPermission("people", $(b).attr("eid"), "GET").done(function(){
+            $("#members"+$(b).attr("eid")).fadeIn();
+            localStorage.setItem("people:" + $(b).attr("eid") + ":GET", true);
+        }).fail(function(){
+            localStorage.setItem("people:" + $(b).attr("eid") + ":GET", false);
         })
     });
     $("button.storelocations").each(function( index, b ) {

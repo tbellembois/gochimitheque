@@ -11,6 +11,7 @@ package main
 import (
 	"database/sql"
 	"flag"
+	"fmt"
 	"net/http"
 	"net/http/pprof"
 	"os"
@@ -32,7 +33,7 @@ var (
 	BuildID string
 	// starting flags
 	listenport, proxyurl, proxypath, mailServerAddress, mailServerPort, mailServerSender, admins, logfile, importfrom *string
-	mailServerUseTLS, mailServerTLSSkipVerify, disableAutoUpgrade, debug                                              *bool
+	mailServerUseTLS, mailServerTLSSkipVerify, disableAutoUpgrade, debug, version                                     *bool
 )
 
 func preupgrade(tempBinaryPath string) error {
@@ -68,6 +69,7 @@ func init() {
 	admins = flag.String("admins", "", "the additional admins (comma separated email adresses)")
 	logfile = flag.String("logfile", "", "log to the given file")
 	debug = flag.Bool("debug", false, "debug (verbose log), default is error")
+	version = flag.Bool("version", false, "display application version")
 	importfrom = flag.String("importfrom", "", "full path of the directory containing the CSV to import")
 	flag.Parse()
 }
@@ -80,6 +82,11 @@ func prog(state overseer.State) {
 		dbname    = "./storage.db"
 		datastore models.Datastore
 	)
+
+	if *version {
+		fmt.Println(BuildID)
+		os.Exit(0)
+	}
 
 	// setting the log level
 	if *debug {

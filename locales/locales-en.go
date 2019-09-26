@@ -12,6 +12,10 @@ var LOCALES_EN = []byte(`
 	one = "created"
 [modified]
 	one = "modified"
+[select_all]
+	one = "select all"
+[none]
+	one = "none"
 
 [edit]
 	one = "edit"

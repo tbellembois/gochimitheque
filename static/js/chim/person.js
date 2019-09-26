@@ -63,37 +63,104 @@ $( document ).ready(function() {
     //
     
     // entities select2
-    $('select#entities').select2({
-        ajax: {
-            url: proxyPath + 'entities',
-            dataType: 'json',
-            data: function (params) {
-                var query = {
-                    search: params.term,
-                    page: params.page || 1,
-                    offset: (params.page-1)*10 || 0,
-                    limit: 10
-                }
-
-                // Query parameters will be ?search=[term]&page=[page]
-                return query;
-            },
-            processResults: function (data) {
-                // replacing email by text expected by select2
-                var newdata = $.map(data.rows, function (obj) {
-                    obj.text = obj.text || obj.entity_name;
-                    obj.id = obj.id || obj.entity_id;
-                    return obj;
-                });
-                // getting the number of loaded select elements
-                selectnbitems = $("ul#select2-entities-results li").length + 10;
-
-                return {
-                    results: newdata,
-                    pagination: {more: selectnbitems<data.total}
-                };
-            }
+    $.fn.select2.amd.require([
+        'select2/utils',
+        'select2/dropdown',
+        'select2/dropdown/attachBody'
+    ], function (Utils, Dropdown, AttachBody) {
+        function SelectAll() {
         }
+
+        SelectAll.prototype.render = function (decorated) {
+            var $rendered = decorated.call(this);
+            var self = this;
+
+            var $selectAll = $('<a/>').addClass('btn btn-info').text(global.t("select_all", container.PersonLanguage));
+            var $selectNone = $('<a/>').addClass('btn btn-info').text(global.t("none", container.PersonLanguage));
+
+            var checkOptionsCount = function () {
+                var count = $('.select2-results__option').length;
+                $selectAll.prop('disabled', count > 25);
+            };
+
+            var $container = $('.select2-container');
+            $container.bind('keyup click', checkOptionsCount);
+
+            var $dropdown = $rendered.find('.select2-dropdown');
+
+            $dropdown.prepend($selectNone);
+            $dropdown.prepend($selectAll);
+
+            $selectAll.on('click', function (e) {
+                var $results = $rendered.find('.select2-results__option[aria-selected=false]');
+
+                // Get all results that aren't selected
+                $results.each(function () {
+                    var $result = $(this);
+
+                    // Get the data object for it
+                    //var data = $result.data('data');
+                    var data = Utils.GetData(this, 'data');
+
+                    // Trigger the select event
+                    self.trigger('select', {
+                        data: data
+                    });
+                    
+                });
+
+                self.trigger('close');
+            });
+
+            $selectNone.on('click', function (e) {
+                // Trigger value changed with null value
+                self.$element.val(null);
+                self.$element.trigger('change');
+                self.trigger('close');
+            });
+
+            return $rendered;
+        };
+
+        $('select#entities').select2({
+            dropdownAdapter: Utils.Decorate(
+                Utils.Decorate(
+                    Dropdown,
+                    AttachBody
+                ),
+                SelectAll
+            ),
+            ajax: {
+                url: proxyPath + 'entities',
+                dataType: 'json',
+                data: function (params) {
+                    var query = {
+                        search: params.term,
+                        page: params.page || 1,
+                        offset: (params.page-1)*10 || 0,
+                        limit: 10
+                    }
+    
+                    // Query parameters will be ?search=[term]&page=[page]
+                    return query;
+                },
+                processResults: function (data) {
+                    // replacing email by text expected by select2
+                    var newdata = $.map(data.rows, function (obj) {
+                        obj.text = obj.text || obj.entity_name;
+                        obj.id = obj.id || obj.entity_id;
+                        return obj;
+                    });
+                    // getting the number of loaded select elements
+                    selectnbitems = $("ul#select2-entities-results li").length + 10;
+    
+                    return {
+                        results: newdata,
+                        pagination: {more: selectnbitems<data.total}
+                    };
+                }
+            }
+        });
     });
     $('select#entities').on('select2:unselecting', function (e) {
         var ismanager = false;

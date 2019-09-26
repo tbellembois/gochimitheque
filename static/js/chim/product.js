@@ -1382,7 +1382,9 @@ function operateFormatter(value, row, index) {
         '<span class="mdi mdi-24px mdi-cube-unfolded"><i>' + row.product_sc + '</i></span>',
         '</button>');
     } else {
-        actions.push('<button class="btn btn-link btn-sm"><span class="mdi mdi-24px mdi-blank">&nbsp;</span></button>');
+        actions.push('<button disabled id="storages' + pid + '" class="storages btn btn-link btn-sm" style="display: none;" title="storages" type="button">',
+        '<span class="mdi mdi-24px mdi-cube-unfolded"><i>' + row.product_sc + '</i></span>',
+        '</button>');
     }
 
     if (row.product_tsc != 0) {
@@ -1390,7 +1392,9 @@ function operateFormatter(value, row, index) {
         '<span class="mdi mdi-24px mdi-cube-scan">',
         '</button>');
     } else {
-        actions.push('<button class="btn btn-link btn-sm"><span class="mdi mdi-24px mdi-blank">&nbsp;</span></button>');
+        actions.push('<button disabled id="ostorages' + pid + '" class="ostorages btn btn-link btn-sm" style="display: none;" title="global availability" type="button">',
+        '<span class="mdi mdi-24px mdi-cube-scan">',
+        '</button>');
     }
 
     actions.push(

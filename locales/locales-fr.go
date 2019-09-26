@@ -12,6 +12,10 @@ var LOCALES_FR = []byte(`
 	one = "créé"
 [modified]
 	one = "modifié"
+[select_all]
+	one = "sélectionner tout"
+[none]
+	one = "aucun"
 
 [edit]
 	one = "editer"

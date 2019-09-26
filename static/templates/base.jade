@@ -172,8 +172,13 @@ html
                 }).fail(function(){
                     localStorage.setItem("products::POST", false);
                 })
-                hasPermission("entities", "", "POST").done(function(){
+                hasPermission("entities", "-2", "GET").done(function(){
                     $("#menu_entities").show();
+                    localStorage.setItem("entities:-2:GET", true);
+                }).fail(function(){
+                    localStorage.setItem("entities:-2:GET", false);
+                })
+                hasPermission("entities", "", "POST").done(function(){
                     $("#menu_create_entity").show();
                     localStorage.setItem("entities::POST", true);
                 }).fail(function(){
