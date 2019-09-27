@@ -18,6 +18,7 @@ type Datastore interface {
 	UpdateWelcomeAnnounce(w WelcomeAnnounce) error
 
 	// products
+	GetExposedProducts() ([]Product, int, error)
 	GetProducts(helpers.DbselectparamProduct) ([]Product, int, error)
 	GetProductsCasNumbers(helpers.Dbselectparam) ([]CasNumber, int, error)
 	GetProductsCasNumber(id int) (CasNumber, error)

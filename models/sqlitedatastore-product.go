@@ -938,6 +938,172 @@ func (db *SQLiteDataStore) GetProductsSignalWords(p helpers.Dbselectparam) ([]Si
 	return signalwords, count, nil
 }
 
+// GetExposedProducts return all the products
+func (db *SQLiteDataStore) GetExposedProducts() ([]Product, int, error) {
+	var (
+		products                                []Product
+		count                                   int
+		req, precreq, presreq, comreq, postsreq strings.Builder
+		cnstmt                                  *sqlx.NamedStmt
+		snstmt                                  *sqlx.NamedStmt
+		err                                     error
+	)
+
+	// pre request: select or count
+	precreq.WriteString(" SELECT count(DISTINCT p.product_id)")
+	presreq.WriteString(` SELECT p.product_id, 
+	p.product_specificity, 
+	p.product_msds,
+	p.product_restricted,
+	p.product_radioactive,
+	p.product_threedformula,
+	p.product_molformula,
+	p.product_disposalcomment,
+	p.product_remark,
+	linearformula.linearformula_id AS "linearformula.linearformula_id",
+	linearformula.linearformula_label AS "linearformula.linearformula_label",
+	empiricalformula.empiricalformula_id AS "empiricalformula.empiricalformula_id",
+	empiricalformula.empiricalformula_label AS "empiricalformula.empiricalformula_label",
+	physicalstate.physicalstate_id AS "physicalstate.physicalstate_id",
+	physicalstate.physicalstate_label AS "physicalstate.physicalstate_label",
+	signalword.signalword_id AS "signalword.signalword_id",
+	signalword.signalword_label AS "signalword.signalword_label",
+	name.name_id AS "name.name_id",
+	name.name_label AS "name.name_label",
+	cenumber.cenumber_id AS "cenumber.cenumber_id",
+	cenumber.cenumber_label AS "cenumber.cenumber_label",
+	casnumber.casnumber_id AS "casnumber.casnumber_id",
+	casnumber.casnumber_label AS "casnumber.casnumber_label",
+	casnumber.casnumber_cmr AS "casnumber.casnumber_cmr"`)
+
+	// common parts
+	comreq.WriteString(" FROM product as p")
+	// get name
+	comreq.WriteString(" JOIN name ON p.name = name.name_id")
+	// get casnumber
+	comreq.WriteString(" JOIN casnumber ON p.casnumber = casnumber.casnumber_id")
+	// get cenumber
+	comreq.WriteString(" LEFT JOIN cenumber ON p.cenumber = cenumber.cenumber_id")
+	// get physical state
+	comreq.WriteString(" LEFT JOIN physicalstate ON p.physicalstate = physicalstate.physicalstate_id")
+	// get signal word
+	comreq.WriteString(" LEFT JOIN signalword ON p.signalword = signalword.signalword_id")
+	// get empirical formula
+	comreq.WriteString(" JOIN empiricalformula ON p.empiricalformula = empiricalformula.empiricalformula_id")
+	// get linear formula
+	comreq.WriteString(" LEFT JOIN linearformula ON p.linearformula = linearformula.linearformula_id")
+	// get symbols
+	comreq.WriteString(" JOIN productsymbols AS ps ON ps.productsymbols_product_id = p.product_id")
+
+	// get hazardstatements
+	comreq.WriteString(" JOIN producthazardstatements AS phs ON phs.producthazardstatements_product_id = p.product_id")
+	// get precautionarystatements
+	comreq.WriteString(" JOIN productprecautionarystatements AS pps ON pps.productprecautionarystatements_product_id = p.product_id")
+
+	// post select request
+	postsreq.WriteString(" GROUP BY p.product_id")
+
+	// building count and select statements
+	if cnstmt, err = db.PrepareNamed(precreq.String() + comreq.String()); err != nil {
+		return nil, 0, err
+	}
+	if snstmt, err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); err != nil {
+		return nil, 0, err
+	}
+
+	m := map[string]interface{}{}
+	// select
+	if err = snstmt.Select(&products, m); err != nil {
+		return nil, 0, err
+	}
+	// count
+	if err = cnstmt.Get(&count, m); err != nil {
+		return nil, 0, err
+	}
+
+	//
+	// getting symbols
+	//
+	for i, pr := range products {
+		// note: do not modify p but products[i] instead
+		req.Reset()
+		req.WriteString("SELECT symbol_id, symbol_label, symbol_image FROM symbol")
+		req.WriteString(" JOIN productsymbols ON productsymbols.productsymbols_symbol_id = symbol.symbol_id")
+		req.WriteString(" JOIN product ON productsymbols.productsymbols_product_id = product.product_id")
+		req.WriteString(" WHERE product.product_id = ?")
+
+		if err = db.Select(&products[i].Symbols, req.String(), pr.ProductID); err != nil {
+			return nil, 0, err
+		}
+	}
+
+	//
+	// getting classes of compounds
+	//
+	for i, pr := range products {
+		// note: do not modify p but products[i] instead
+		req.Reset()
+		req.WriteString("SELECT classofcompound_id, classofcompound_label FROM classofcompound")
+		req.WriteString(" JOIN productclassofcompound ON productclassofcompound.productclassofcompound_classofcompound_id = classofcompound.classofcompound_id")
+		req.WriteString(" JOIN product ON productclassofcompound.productclassofcompound_product_id = product.product_id")
+		req.WriteString(" WHERE product.product_id = ?")
+
+		if err = db.Select(&products[i].ClassOfCompound, req.String(), pr.ProductID); err != nil {
+			return nil, 0, err
+		}
+	}
+
+	//
+	// getting synonyms
+	//
+	for i, pr := range products {
+		// note: do not modify p but products[i] instead
+		req.Reset()
+		req.WriteString("SELECT name_id, name_label FROM name")
+		req.WriteString(" JOIN productsynonyms ON productsynonyms.productsynonyms_name_id = name.name_id")
+		req.WriteString(" JOIN product ON productsynonyms.productsynonyms_product_id = product.product_id")
+		req.WriteString(" WHERE product.product_id = ?")
+
+		if err = db.Select(&products[i].Synonyms, req.String(), pr.ProductID); err != nil {
+			return nil, 0, err
+		}
+	}
+
+	//
+	// getting hazard statements
+	//
+	for i, pr := range products {
+		// note: do not modify p but products[i] instead
+		req.Reset()
+		req.WriteString("SELECT hazardstatement_id, hazardstatement_label, hazardstatement_reference FROM hazardstatement")
+		req.WriteString(" JOIN producthazardstatements ON producthazardstatements.producthazardstatements_hazardstatement_id = hazardstatement.hazardstatement_id")
+		req.WriteString(" JOIN product ON producthazardstatements.producthazardstatements_product_id = product.product_id")
+		req.WriteString(" WHERE product.product_id = ?")
+
+		if err = db.Select(&products[i].HazardStatements, req.String(), pr.ProductID); err != nil {
+			return nil, 0, err
+		}
+	}
+
+	//
+	// getting precautionary statements
+	//
+	for i, pr := range products {
+		// note: do not modify p but products[i] instead
+		req.Reset()
+		req.WriteString("SELECT precautionarystatement_id, precautionarystatement_label, precautionarystatement_reference FROM precautionarystatement")
+		req.WriteString(" JOIN productprecautionarystatements ON productprecautionarystatements.productprecautionarystatements_precautionarystatement_id = precautionarystatement.precautionarystatement_id")
+		req.WriteString(" JOIN product ON productprecautionarystatements.productprecautionarystatements_product_id = product.product_id")
+		req.WriteString(" WHERE product.product_id = ?")
+
+		if err = db.Select(&products[i].PrecautionaryStatements, req.String(), pr.ProductID); err != nil {
+			return nil, 0, err
+		}
+	}
+
+	return products, count, nil
+}
+
 // GetProducts return the products matching the search criteria
 func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Product, int, error) {
 	var (
@@ -1854,22 +2020,22 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 			p.Synonyms[i].NameID = int(lastid)
 		}
 	}
-		// if ClassOfCompoundID = -1 then it is a new class of compounds
-		for i, coc := range p.ClassOfCompound {
-			if coc.ClassOfCompoundID == -1 {
-				sqlr = `INSERT INTO classofcompound (classofcompound_label) VALUES (?)`
-				if res, err = tx.Exec(sqlr, strings.ToUpper(coc.ClassOfCompoundLabel)); err != nil {
-					tx.Rollback()
-					return err
-				}
-				// getting the last inserted id
-				if lastid, err = res.LastInsertId(); err != nil {
-					tx.Rollback()
-					return err
-				}
-				p.ClassOfCompound[i].ClassOfCompoundID = int(lastid)
+	// if ClassOfCompoundID = -1 then it is a new class of compounds
+	for i, coc := range p.ClassOfCompound {
+		if coc.ClassOfCompoundID == -1 {
+			sqlr = `INSERT INTO classofcompound (classofcompound_label) VALUES (?)`
+			if res, err = tx.Exec(sqlr, strings.ToUpper(coc.ClassOfCompoundLabel)); err != nil {
+				tx.Rollback()
+				return err
 			}
+			// getting the last inserted id
+			if lastid, err = res.LastInsertId(); err != nil {
+				tx.Rollback()
+				return err
+			}
+			p.ClassOfCompound[i].ClassOfCompoundID = int(lastid)
 		}
+	}
 	// if EmpiricalFormulaID = -1 then it is a new empirical formula
 	if p.EmpiricalFormula.EmpiricalFormulaID == -1 {
 		sqlr = `INSERT INTO empiricalformula (empiricalformula_label) VALUES (?)`

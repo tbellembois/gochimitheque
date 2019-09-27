@@ -825,6 +825,34 @@ func (env *Env) GetProductsSynonymsHandler(w http.ResponseWriter, r *http.Reques
 	return nil
 }
 
+// GetExposedProductsHandler returns a json of the product with the requested id
+func (env *Env) GetExposedProductsHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
+	log.Debug("GetExposedProductsHandler")
+
+	var (
+		err error
+	)
+
+	products, count, err := env.DB.GetExposedProducts()
+	if err != nil {
+		return &helpers.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the products",
+		}
+	}
+
+	type resp struct {
+		Rows  []models.Product `json:"rows"`
+		Total int              `json:"total"`
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resp{Rows: products, Total: count})
+	return nil
+}
+
 // GetProductsHandler returns a json list of the products matching the search criteria
 func (env *Env) GetProductsHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	log.Debug("GetProductsHandler")

@@ -33,7 +33,7 @@ var (
 	BuildID string
 	// starting flags
 	listenport, proxyurl, proxypath, mailServerAddress, mailServerPort, mailServerSender, admins, logfile, importfrom *string
-	mailServerUseTLS, mailServerTLSSkipVerify, disableAutoUpgrade, debug, version                                     *bool
+	mailServerUseTLS, mailServerTLSSkipVerify, disableAutoUpgrade, exposePubliclyProducts, debug, version             *bool
 )
 
 func preupgrade(tempBinaryPath string) error {
@@ -65,6 +65,7 @@ func init() {
 	mailServerSender = flag.String("mailserversender", "", "the mail server sender")
 	mailServerUseTLS = flag.Bool("mailserverusetls", false, "use TLS? (optional)")
 	mailServerTLSSkipVerify = flag.Bool("mailservertlsskipverify", false, "skip TLS verification? (optional)")
+	exposePubliclyProducts = flag.Bool("exposepubliclyproducts", false, "expose products to public")
 	disableAutoUpgrade = flag.Bool("disableautoupgrade", false, "disable application auto upgrade - not recommended (optional)")
 	admins = flag.String("admins", "", "the additional admins (comma separated email adresses)")
 	logfile = flag.String("logfile", "", "log to the given file")
@@ -279,6 +280,10 @@ func prog(state overseer.State) {
 	r.Handle("/f/{item:storelocations}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("POST")
 	r.Handle("/f/{item:storelocations}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE")
 	// products
+	if *exposePubliclyProducts {
+		r.Handle("/e/{item:products}", commonChain.Then(env.AppMiddleware(env.GetExposedProductsHandler))).Methods("GET")
+	}
+
 	r.Handle("/{item:products}/l2eformula/{f}", securechain.Then(env.AppMiddleware(env.ConvertProductEmpiricalToLinearFormulaHandler))).Methods("GET")
 	r.Handle("/{view:v}/{item:products}", securechain.Then(env.AppMiddleware(env.VGetProductsHandler))).Methods("GET")
 	r.Handle("/{view:vc}/{item:products}", securechain.Then(env.AppMiddleware(env.VCreateProductHandler))).Methods("GET")

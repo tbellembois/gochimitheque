@@ -225,7 +225,6 @@ type Product struct {
 	ProductMolFormula       sql.NullString `db:"product_molformula" json:"product_molformula" schema:"product_molformula"`
 	ProductDisposalComment  sql.NullString `db:"product_disposalcomment" json:"product_disposalcomment" schema:"product_disposalcomment"`
 	ProductRemark           sql.NullString `db:"product_remark" json:"product_remark" schema:"product_remark"`
-	ProductQRCode           string         `db:"product_qrcode" json:"product_qrcode" schema:"product_qrcode"`
 	EmpiricalFormula        `db:"empiricalformula" json:"empiricalformula" schema:"empiricalformula"`
 	LinearFormula           `db:"linearformula" json:"linearformula" schema:"linearformula"`
 	PhysicalState           `db:"physicalstate" json:"physicalstate" schema:"physicalstate"`
