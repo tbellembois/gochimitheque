@@ -32,8 +32,8 @@ var (
 	// BuildID is compile-time variable
 	BuildID string
 	// starting flags
-	listenport, proxyurl, proxypath, mailServerAddress, mailServerPort, mailServerSender, admins, logfile, importfrom *string
-	mailServerUseTLS, mailServerTLSSkipVerify, disableAutoUpgrade, exposePubliclyProducts, debug, version             *bool
+	listenport, proxyurl, proxypath, mailServerAddress, mailServerPort, mailServerSender, admins, logfile, importv1from, importfrom *string
+	mailServerUseTLS, mailServerTLSSkipVerify, disableAutoUpgrade, enablePublicProductsEndpoint, debug, version                     *bool
 )
 
 func preupgrade(tempBinaryPath string) error {
@@ -59,19 +59,20 @@ func init() {
 	// getting the program parameters
 	listenport = flag.String("port", "8081", "the port to listen")
 	proxyurl = flag.String("proxyurl", "http://localhost:"+*listenport, "the application url (without the path) if behind a proxy, with NO trailing /")
-	proxypath = flag.String("proxypath", "/", "the application path if behind a proxy, with the heading and trailing /")
+	proxypath = flag.String("proxypath", "/", "the application path if behind a proxy, with the trailing /")
 	mailServerAddress = flag.String("mailserveraddress", "", "the mail server address")
 	mailServerPort = flag.String("mailserverport", "", "the mail server address")
 	mailServerSender = flag.String("mailserversender", "", "the mail server sender")
 	mailServerUseTLS = flag.Bool("mailserverusetls", false, "use TLS? (optional)")
 	mailServerTLSSkipVerify = flag.Bool("mailservertlsskipverify", false, "skip TLS verification? (optional)")
-	exposePubliclyProducts = flag.Bool("exposepubliclyproducts", false, "expose products to public")
+	enablePublicProductsEndpoint = flag.Bool("enablepublicproductsendpoint", false, "enable public products endpoint (optional)")
 	disableAutoUpgrade = flag.Bool("disableautoupgrade", false, "disable application auto upgrade - not recommended (optional)")
-	admins = flag.String("admins", "", "the additional admins (comma separated email adresses)")
-	logfile = flag.String("logfile", "", "log to the given file")
+	admins = flag.String("admins", "", "the additional admins (comma separated email adresses) (optional) ")
+	logfile = flag.String("logfile", "", "log to the given file (optional)")
 	debug = flag.Bool("debug", false, "debug (verbose log), default is error")
 	version = flag.Bool("version", false, "display application version")
-	importfrom = flag.String("importfrom", "", "full path of the directory containing the CSV to import")
+	importv1from = flag.String("importv1from", "", "full path of the directory containing the Chimithèque v1 CSV to import")
+	importfrom = flag.String("importfrom", "", "base URL of the external Chimithèque instance (running with -enablepublicproductsendpoint) to import products from")
 	flag.Parse()
 }
 
@@ -126,8 +127,16 @@ func prog(state overseer.State) {
 	if err = datastore.CreateDatabase(); err != nil {
 		log.Fatal(err)
 	}
+	if *importv1from != "" {
+		log.Info("- import from Chimithèque v1 csv into database")
+		err := datastore.ImportV1(*importv1from)
+		if err != nil {
+			log.Error("an error occured: " + err.Error())
+		}
+		os.Exit(0)
+	}
 	if *importfrom != "" {
-		log.Info("- import from csv into database")
+		log.Info("- import from URL into database")
 		err := datastore.Import(*importfrom)
 		if err != nil {
 			log.Error("an error occured: " + err.Error())
@@ -280,7 +289,7 @@ func prog(state overseer.State) {
 	r.Handle("/f/{item:storelocations}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("POST")
 	r.Handle("/f/{item:storelocations}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE")
 	// products
-	if *exposePubliclyProducts {
+	if *enablePublicProductsEndpoint {
 		r.Handle("/e/{item:products}", commonChain.Then(env.AppMiddleware(env.GetExposedProductsHandler))).Methods("GET")
 	}
 

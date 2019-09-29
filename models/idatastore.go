@@ -11,7 +11,8 @@ import (
 // to store data
 type Datastore interface {
 	CreateDatabase() error
-	Import(dir string) error
+	ImportV1(dir string) error
+	Import(url string) error
 
 	// welcome announce
 	GetWelcomeAnnounce() (WelcomeAnnounce, error)

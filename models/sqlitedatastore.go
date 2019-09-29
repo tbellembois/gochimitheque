@@ -550,8 +550,14 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	return nil
 }
 
-// Import import data from CSV
-func (db *SQLiteDataStore) Import(dir string) error {
+// Import import data from another Chimithèque instance
+func (db *SQLiteDataStore) Import(url string) error {
+
+	return nil
+}
+
+// ImportV1 import data from CSV
+func (db *SQLiteDataStore) ImportV1(dir string) error {
 
 	var (
 		csvFile   *os.File
