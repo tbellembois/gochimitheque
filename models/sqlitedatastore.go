@@ -4,7 +4,10 @@ import (
 	"bufio"
 	"database/sql"
 	"encoding/csv"
+	"encoding/json"
+	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"path"
 	"regexp"
@@ -552,6 +555,299 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 
 // Import import data from another Chimithèque instance
 func (db *SQLiteDataStore) Import(url string) error {
+
+	type r struct {
+		Rows  []Product `json:"rows"`
+		Total int       `json:"total"`
+	}
+
+	var (
+		err         error
+		httpresp    *http.Response
+		bodyresp    r
+		tx          *sqlx.Tx
+		admin       Person
+		notimported int
+	)
+
+	log.Info("- gathering remote products from " + url + "/e/products")
+	if httpresp, err = http.Get(url + "/e/products"); err != nil {
+		log.Error("can not get remote products " + err.Error())
+	}
+	defer httpresp.Body.Close()
+
+	log.Info("- decoding respose")
+	if err = json.NewDecoder(httpresp.Body).Decode(&bodyresp); err != nil {
+		log.Error("can not decode remote response " + err.Error())
+	}
+	log.Info(fmt.Sprintf("  found %d products", bodyresp.Total))
+
+	log.Info("- retrieving default admin")
+	if admin, err = db.GetPersonByEmail("admin@chimitheque.fr"); err != nil {
+		log.Error("can not get default admin " + err.Error())
+		os.Exit(1)
+	}
+
+	log.Info("starting import")
+	for _, p := range bodyresp.Rows {
+		log.Debug(p)
+
+		// cas number already exist ?
+		var casnumber CasNumber
+		if casnumber, err = db.GetProductsCasNumberByLabel(p.CasNumberLabel); err != nil {
+			if err != sql.ErrNoRows {
+				log.Error("can not get product cas number " + err.Error())
+				os.Exit(1)
+			}
+		}
+		// new cas number
+		if casnumber == (CasNumber{}) {
+			// setting cas number id to -1 for the CreateProduct method
+			// to automatically insert it into the db
+			p.CasNumber.CasNumberID = -1
+		} else {
+			// do not insert products with existing cas number
+			notimported++
+			continue
+		}
+
+		// ce number already exist ?
+		if p.CeNumberID.Valid {
+			var cenumber CeNumber
+			if cenumber, err = db.GetProductsCeNumberByLabel(p.CeNumberLabel.String); err != nil {
+				if err != sql.ErrNoRows {
+					log.Error("can not get product ce number " + err.Error())
+					os.Exit(1)
+				}
+			}
+			// new ce number
+			if cenumber == (CeNumber{}) {
+				// setting ce number id to -1 for the CreateProduct method
+				// to automatically insert it into the db
+				p.CeNumber.CeNumberID = sql.NullInt64{Valid: true, Int64: -1}
+			} else {
+				p.CeNumber = cenumber
+			}
+		}
+
+		// empirical formula already exist ?
+		var eformula EmpiricalFormula
+		if eformula, err = db.GetProductsEmpiricalFormulaByLabel(p.EmpiricalFormula.EmpiricalFormulaLabel); err != nil {
+			if err != sql.ErrNoRows {
+				log.Error("can not get product empirical formula " + err.Error())
+				os.Exit(1)
+			}
+		}
+		// new empirical formula
+		if eformula == (EmpiricalFormula{}) {
+			// setting empirical formula id to -1 for the CreateProduct method
+			// to automatically insert it into the db
+			p.EmpiricalFormula.EmpiricalFormulaID = -1
+		} else {
+			p.EmpiricalFormula = eformula
+		}
+
+		// linear formula already exist ?
+		if p.LinearFormula.LinearFormulaID.Valid {
+			var lformula LinearFormula
+			if lformula, err = db.GetProductsLinearFormulaByLabel(p.LinearFormula.LinearFormulaLabel.String); err != nil {
+				if err != sql.ErrNoRows {
+					log.Error("can not get product linear formula " + err.Error())
+					os.Exit(1)
+				}
+			}
+			// new linear formula
+			if lformula == (LinearFormula{}) {
+				// setting linear formula id to -1 for the CreateProduct method
+				// to automatically insert it into the db
+				p.LinearFormula.LinearFormulaID = sql.NullInt64{Valid: true, Int64: -1}
+			} else {
+				p.LinearFormula = lformula
+			}
+		}
+
+		// physical state already exist ?
+		if p.PhysicalState.PhysicalStateID.Valid {
+			var physicalstate PhysicalState
+			if physicalstate, err = db.GetProductsPhysicalStateByLabel(p.PhysicalState.PhysicalStateLabel.String); err != nil {
+				if err != sql.ErrNoRows {
+					log.Error("can not get product physical state " + err.Error())
+					os.Exit(1)
+				}
+			}
+			// new physical state
+			if physicalstate == (PhysicalState{}) {
+				// setting physical state id to -1 for the CreateProduct method
+				// to automatically insert it into the db
+				p.PhysicalState.PhysicalStateID = sql.NullInt64{Valid: true, Int64: -1}
+			} else {
+				p.PhysicalState = physicalstate
+			}
+		}
+
+		// signal word already exist ?
+		if p.SignalWord.SignalWordID.Valid {
+			var signalword SignalWord
+			if signalword, err = db.GetProductsSignalWordByLabel(p.SignalWord.SignalWordLabel.String); err != nil {
+				if err != sql.ErrNoRows {
+					log.Error("can not get product signal word " + err.Error())
+					os.Exit(1)
+				}
+			}
+			// new signal word
+			if signalword == (SignalWord{}) {
+				// setting signal word id to -1 for the CreateProduct method
+				// to automatically insert it into the db
+				p.SignalWord.SignalWordID = sql.NullInt64{Valid: true, Int64: -1}
+			} else {
+				p.SignalWord = signalword
+			}
+		}
+
+		// name already exist ?
+		var name Name
+		if name, err = db.GetProductsNameByLabel(p.Name.NameLabel); err != nil {
+			if err != sql.ErrNoRows {
+				log.Error("can not get product name " + err.Error())
+				os.Exit(1)
+			}
+		}
+		// new name
+		if name == (Name{}) {
+			// setting name id to -1 for the CreateProduct method
+			// to automatically insert it into the db
+			p.Name.NameID = -1
+		} else {
+			p.Name = name
+		}
+
+		// synonyms
+		var (
+			processedSyn map[string]string
+			ok           bool
+		)
+		processedSyn = make(map[string]string)
+		for i, syn := range p.Synonyms {
+			// duplicates hunting
+			if _, ok = processedSyn[syn.NameLabel]; ok {
+				log.Debug("leaving duplicate synonym " + syn.NameLabel)
+				continue
+			}
+
+			processedSyn[syn.NameLabel] = ""
+
+			// synonym already exist ?
+			var syn2 Name
+			if syn2, err = db.GetProductsNameByLabel(syn.NameLabel); err != nil {
+				if err != sql.ErrNoRows {
+					log.Error("can not get product synonym " + err.Error())
+					os.Exit(1)
+				}
+			}
+			// new synonym
+			if syn2 == (Name{}) {
+				// setting synonym id to -1 for the CreateProduct method
+				// to automatically insert it into the db
+				p.Synonyms[i].NameID = -1
+			} else {
+				p.Synonyms[i] = syn2
+			}
+
+		}
+
+		// classes of compounds
+		for i, coc := range p.ClassOfCompound {
+			// class of compounds already exist ?
+			var coc2 ClassOfCompound
+			if coc2, err = db.GetProductsClassOfCompoundByLabel(coc.ClassOfCompoundLabel); err != nil {
+				if err != sql.ErrNoRows {
+					log.Error("can not get product class of compounds " + err.Error())
+					os.Exit(1)
+				}
+			}
+			// new class of compounds
+			if coc2 == (ClassOfCompound{}) {
+				// setting class of compounds id to -1 for the CreateProduct method
+				// to automatically insert it into the db
+				p.ClassOfCompound[i].ClassOfCompoundID = -1
+			} else {
+				p.ClassOfCompound[i] = coc2
+			}
+		}
+
+		// symbols
+		for i, sym := range p.Symbols {
+			// symbols already exist ?
+			var sym2 Symbol
+			if sym2, err = db.GetProductsSymbolByLabel(sym.SymbolLabel); err != nil {
+				if err != sql.ErrNoRows {
+					log.Error("can not get product symbol " + err.Error())
+					os.Exit(1)
+				}
+			}
+			// new symbol
+			if sym2 == (Symbol{}) {
+				// setting symbol id to -1 for the CreateProduct method
+				// to automatically insert it into the db
+				p.Symbols[i].SymbolID = -1
+			} else {
+				p.Symbols[i] = sym2
+			}
+		}
+
+		// hazard statements
+		for i, hs := range p.HazardStatements {
+			// hazard statement already exist ?
+			var hs2 HazardStatement
+			if hs2, err = db.GetProductsHazardStatementByReference(hs.HazardStatementReference); err != nil {
+				if err != sql.ErrNoRows {
+					log.Error("can not get product hazard statement " + err.Error())
+					os.Exit(1)
+				}
+			}
+			// new hazard statement
+			if hs2 == (HazardStatement{}) {
+				// setting hazard statement id to -1 for the CreateProduct method
+				// to automatically insert it into the db
+				p.HazardStatements[i].HazardStatementID = -1
+			} else {
+				p.HazardStatements[i] = hs2
+			}
+		}
+
+		// precautionnary statements
+		for i, ps := range p.PrecautionaryStatements {
+			// precautionary statement already exist ?
+			var ps2 PrecautionaryStatement
+			if ps2, err = db.GetProductsPrecautionaryStatementByReference(ps.PrecautionaryStatementReference); err != nil {
+				if err != sql.ErrNoRows {
+					log.Error("can not get product precautionary statement " + err.Error())
+					tx.Rollback()
+					os.Exit(1)
+				}
+			}
+			// new precautionary statement
+			if ps2 == (PrecautionaryStatement{}) {
+				// setting precautionary statement id to -1 for the CreateProduct method
+				// to automatically insert it into the db
+				p.PrecautionaryStatements[i].PrecautionaryStatementID = -1
+			} else {
+				p.PrecautionaryStatements[i] = ps2
+			}
+		}
+
+		// setting default admin as creator
+		p.Person = admin
+
+		// finally creating the product
+		if _, err = db.CreateProduct(p); err != nil {
+			log.Error("can not create product " + err.Error())
+			os.Exit(1)
+		}
+
+	}
+
+	log.Info(fmt.Printf("%d products not imported", notimported))
 
 	return nil
 }

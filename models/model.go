@@ -179,8 +179,8 @@ type LinearFormula struct {
 
 // PhysicalState is a product physical state
 type PhysicalState struct {
-	C int `db:"c" json:"c"` // not stored in db but db:"c" set for sqlx
 	// nullable values to handle optional Product foreign key (gorilla shema nil values)
+	C                  int            `db:"c" json:"c"` // not stored in db but db:"c" set for sqlx
 	PhysicalStateID    sql.NullInt64  `db:"physicalstate_id" json:"physicalstate_id" schema:"physicalstate_id"`
 	PhysicalStateLabel sql.NullString `db:"physicalstate_label" json:"physicalstate_label" schema:"physicalstate_label"`
 }
@@ -429,7 +429,7 @@ func StoragesToCSV(sts []Storage) string {
 }
 
 func (p Product) String() string {
-	out := fmt.Sprintf("ProductID:%d ProductSpecificity:%s EmpiricalFormula:%+v Person:%+s CasNumber:%s CeNumber:%s Name:%s PhysicalState:%s", p.ProductID, p.ProductSpecificity.String, p.EmpiricalFormula.EmpiricalFormulaLabel, p.Person.PersonEmail, p.CasNumber.CasNumberLabel, p.CeNumber.CeNumberLabel.String, p.Name.NameLabel, p.PhysicalState.PhysicalStateLabel.String)
+	out := fmt.Sprintf("ProductID:%d ProductSpecificity:%s EmpiricalFormula:%+v Person:%+s CasNumber:%s CeNumber:%s Name:%v Synonyms:%v PhysicalState:%v", p.ProductID, p.ProductSpecificity.String, p.EmpiricalFormula, p.Person, p.CasNumber, p.CeNumber, p.Name, p.Synonyms, p.PhysicalState)
 	return out
 }
 

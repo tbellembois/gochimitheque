@@ -57,7 +57,7 @@ func main() {
 
 func init() {
 	// getting the program parameters
-	listenport = flag.String("port", "8081", "the port to listen")
+	listenport = flag.String("listenport", "8081", "the port to listen")
 	proxyurl = flag.String("proxyurl", "http://localhost:"+*listenport, "the application url (without the path) if behind a proxy, with NO trailing /")
 	proxypath = flag.String("proxypath", "/", "the application path if behind a proxy, with the trailing /")
 	mailServerAddress = flag.String("mailserveraddress", "", "the mail server address")

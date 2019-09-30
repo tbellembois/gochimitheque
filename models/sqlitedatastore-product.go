@@ -192,6 +192,26 @@ func (db *SQLiteDataStore) GetProductsCeNumbers(p helpers.Dbselectparam) ([]CeNu
 	return cenumbers, count, nil
 }
 
+// GetProductsCeNumberByLabel return the ce numbers matching the given ce number
+func (db *SQLiteDataStore) GetProductsCeNumberByLabel(label string) (CeNumber, error) {
+
+	var (
+		ce   CeNumber
+		sqlr string
+		err  error
+	)
+	log.WithFields(log.Fields{"label": label}).Debug("GetProductsCeNumberByLabel")
+
+	sqlr = `SELECT cenumber.cenumber_id, cenumber.cenumber_label
+	FROM cenumber
+	WHERE cenumber_label = ?`
+	if err = db.Get(&ce, sqlr, label); err != nil {
+		return CeNumber{}, err
+	}
+	log.WithFields(log.Fields{"label": label, "ce": ce}).Debug("GetProductsCeNumberByLabel")
+	return ce, nil
+}
+
 // GetProductsEmpiricalFormulas return the empirical formulas matching the search criteria
 func (db *SQLiteDataStore) GetProductsEmpiricalFormulas(p helpers.Dbselectparam) ([]EmpiricalFormula, int, error) {
 	var (
@@ -258,6 +278,26 @@ func (db *SQLiteDataStore) GetProductsEmpiricalFormulas(p helpers.Dbselectparam)
 
 	log.WithFields(log.Fields{"eformulas": eformulas}).Debug("GetProductsEmpiricalFormulas")
 	return eformulas, count, nil
+}
+
+// GetProductsEmpiricalFormulaByLabel return the empirirical formula matching the given empirical formula
+func (db *SQLiteDataStore) GetProductsEmpiricalFormulaByLabel(label string) (EmpiricalFormula, error) {
+
+	var (
+		ef   EmpiricalFormula
+		sqlr string
+		err  error
+	)
+	log.WithFields(log.Fields{"label": label}).Debug("GetProductsEmpiricalFormulaByLabel")
+
+	sqlr = `SELECT empiricalformula.empiricalformula_id, empiricalformula.empiricalformula_label
+	FROM empiricalformula
+	WHERE empiricalformula.empiricalformula_label = ?`
+	if err = db.Get(&ef, sqlr, label); err != nil {
+		return EmpiricalFormula{}, err
+	}
+	log.WithFields(log.Fields{"label": label, "ef": ef}).Debug("GetProductsEmpiricalFormulaByLabel")
+	return ef, nil
 }
 
 // GetProductsLinearFormulas return the empirical formulas matching the search criteria
@@ -328,6 +368,26 @@ func (db *SQLiteDataStore) GetProductsLinearFormulas(p helpers.Dbselectparam) ([
 	return lformulas, count, nil
 }
 
+// GetProductsLinearFormulaByLabel return the linear formula matching the given linear formula
+func (db *SQLiteDataStore) GetProductsLinearFormulaByLabel(label string) (LinearFormula, error) {
+
+	var (
+		lf   LinearFormula
+		sqlr string
+		err  error
+	)
+	log.WithFields(log.Fields{"label": label}).Debug("GetProductsLinearFormulaByLabel")
+
+	sqlr = `SELECT linearformula.linearformula_id, linearformula.linearformula_label
+	FROM linearformula
+	WHERE linearformula.linearformula_label = ?`
+	if err = db.Get(&lf, sqlr, label); err != nil {
+		return LinearFormula{}, err
+	}
+	log.WithFields(log.Fields{"label": label, "lf": lf}).Debug("GetProductsLinearFormulaByLabel")
+	return lf, nil
+}
+
 // GetProductsClassOfCompounds return the classe of compounds matching the search criteria
 func (db *SQLiteDataStore) GetProductsClassOfCompounds(p helpers.Dbselectparam) ([]ClassOfCompound, int, error) {
 	var (
@@ -396,6 +456,26 @@ func (db *SQLiteDataStore) GetProductsClassOfCompounds(p helpers.Dbselectparam) 
 	return classofcompounds, count, nil
 }
 
+// GetProductsClassOfCompoundByLabel return the class of compounds matching the given label
+func (db *SQLiteDataStore) GetProductsClassOfCompoundByLabel(label string) (ClassOfCompound, error) {
+
+	var (
+		coc  ClassOfCompound
+		sqlr string
+		err  error
+	)
+	log.WithFields(log.Fields{"label": label}).Debug("GetProductsClassOfCompoundByLabel")
+
+	sqlr = `SELECT classofcompound.classofcompound_id, classofcompound.classofcompound_label
+	FROM classofcompound
+	WHERE classofcompound.classofcompound_label = ?`
+	if err = db.Get(&coc, sqlr, strings.ToUpper(label)); err != nil {
+		return ClassOfCompound{}, err
+	}
+	log.WithFields(log.Fields{"label": label, "coc": coc}).Debug("GetProductsClassOfCompoundByLabel")
+	return coc, nil
+}
+
 // GetProductsName return the name matching the given id
 func (db *SQLiteDataStore) GetProductsName(id int) (Name, error) {
 
@@ -413,6 +493,26 @@ func (db *SQLiteDataStore) GetProductsName(id int) (Name, error) {
 		return Name{}, err
 	}
 	log.WithFields(log.Fields{"ID": id, "name": name}).Debug("GetProductsName")
+	return name, nil
+}
+
+// GetProductsNameByLabel return the name matching the given label
+func (db *SQLiteDataStore) GetProductsNameByLabel(label string) (Name, error) {
+
+	var (
+		name Name
+		sqlr string
+		err  error
+	)
+	log.WithFields(log.Fields{"label": label}).Debug("GetProductsNameByLabel")
+
+	sqlr = `SELECT name.name_id, name.name_label
+	FROM name
+	WHERE name.name_label = ?`
+	if err = db.Get(&name, sqlr, strings.ToUpper(label)); err != nil {
+		return Name{}, err
+	}
+	log.WithFields(log.Fields{"label": label, "name": name}).Debug("GetProductsNameByLabel")
 	return name, nil
 }
 
@@ -496,6 +596,26 @@ func (db *SQLiteDataStore) GetProductsSignalWord(id int) (SignalWord, error) {
 	return signalword, nil
 }
 
+// GetProductsSignalWordByLabel return the signal word matching the given label
+func (db *SQLiteDataStore) GetProductsSignalWordByLabel(label string) (SignalWord, error) {
+
+	var (
+		sw   SignalWord
+		sqlr string
+		err  error
+	)
+	log.WithFields(log.Fields{"label": label}).Debug("GetProductsSignalWordByLabel")
+
+	sqlr = `SELECT signalword.signalword_id, signalword.signalword_label
+	FROM signalword
+	WHERE signalword.signalword_label = ?`
+	if err = db.Get(&sw, sqlr, label); err != nil {
+		return SignalWord{}, err
+	}
+	log.WithFields(log.Fields{"label": label, "sw": sw}).Debug("GetProductsSignalWordByLabel")
+	return sw, nil
+}
+
 // GetProductsHazardStatement return the HazardStatement matching the given id
 func (db *SQLiteDataStore) GetProductsHazardStatement(id int) (HazardStatement, error) {
 
@@ -553,6 +673,26 @@ func (db *SQLiteDataStore) GetProductsSymbol(id int) (Symbol, error) {
 		return Symbol{}, err
 	}
 	log.WithFields(log.Fields{"ID": id, "symbol": symbol}).Debug("GetProductsSymbol")
+	return symbol, nil
+}
+
+// GetProductsSymbolByLabel return the symbol matching the given label
+func (db *SQLiteDataStore) GetProductsSymbolByLabel(label string) (Symbol, error) {
+
+	var (
+		symbol Symbol
+		sqlr   string
+		err    error
+	)
+	log.WithFields(log.Fields{"label": label}).Debug("GetProductsSymbolByLabel")
+
+	sqlr = `SELECT symbol.symbol_id, symbol.symbol_label
+	FROM symbol
+	WHERE symbol.symbol_label = ?`
+	if err = db.Get(&symbol, sqlr, label); err != nil {
+		return Symbol{}, err
+	}
+	log.WithFields(log.Fields{"label": label, "symbol": symbol}).Debug("GetProductsSymbolByLabel")
 	return symbol, nil
 }
 
@@ -884,6 +1024,26 @@ func (db *SQLiteDataStore) GetProductsPhysicalStates(p helpers.Dbselectparam) ([
 
 	log.WithFields(log.Fields{"physicalstates": physicalstates}).Debug("GetProductsPhysicalStates")
 	return physicalstates, count, nil
+}
+
+// GetProductsPhysicalStateByLabel return the physical state matching the given label
+func (db *SQLiteDataStore) GetProductsPhysicalStateByLabel(label string) (PhysicalState, error) {
+
+	var (
+		ps   PhysicalState
+		sqlr string
+		err  error
+	)
+	log.WithFields(log.Fields{"label": label}).Debug("GetProductsPhysicalStateByLabel")
+
+	sqlr = `SELECT physicalstate.physicalstate_id, physicalstate.physicalstate_label
+	FROM physicalstate
+	WHERE physicalstate.physicalstate_label = ?`
+	if err = db.Get(&ps, sqlr, label); err != nil {
+		return PhysicalState{}, err
+	}
+	log.WithFields(log.Fields{"label": label, "ps": ps}).Debug("GetProductsPhysicalStateByLabel")
+	return ps, nil
 }
 
 // GetProductsSignalWords return the signal words matching the search criteria
@@ -1653,6 +1813,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 
 	// if CasNumberID = -1 then it is a new cas
 	if p.CasNumber.CasNumberID == -1 {
+		log.Debug("new casnumber " + p.CasNumberLabel)
 		sqlr = `INSERT INTO casnumber (casnumber_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.CasNumberLabel); err != nil {
 			tx.Rollback()
@@ -1668,8 +1829,9 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	}
 	// if CeNumberID = -1 then it is a new ce
 	if v, err := p.CeNumber.CeNumberID.Value(); p.CeNumber.CeNumberID.Valid && err == nil && v.(int64) == -1 {
+		log.Debug("new cenumber " + p.CeNumberLabel.String)
 		sqlr = `INSERT INTO cenumber (cenumber_label) VALUES (?)`
-		if res, err = tx.Exec(sqlr, p.CeNumberLabel); err != nil {
+		if res, err = tx.Exec(sqlr, p.CeNumberLabel.String); err != nil {
 			tx.Rollback()
 			return 0, err
 		}
@@ -1688,6 +1850,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	}
 	// if NameID = -1 then it is a new name
 	if p.Name.NameID == -1 {
+		log.Debug("new name " + p.NameLabel)
 		sqlr = `INSERT INTO name (name_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, strings.ToUpper(p.NameLabel)); err != nil {
 			tx.Rollback()
@@ -1703,6 +1866,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	}
 	for i, syn := range p.Synonyms {
 		if syn.NameID == -1 {
+			log.Debug("new name(syn) " + syn.NameLabel)
 			sqlr = `INSERT INTO name (name_label) VALUES (?)`
 			if res, err = tx.Exec(sqlr, strings.ToUpper(syn.NameLabel)); err != nil {
 				tx.Rollback()
@@ -1719,6 +1883,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	// if ClassOfCompoundID = -1 then it is a new class of compounds
 	for i, coc := range p.ClassOfCompound {
 		if coc.ClassOfCompoundID == -1 {
+			log.Debug("new classofcompound " + coc.ClassOfCompoundLabel)
 			sqlr = `INSERT INTO classofcompound (classofcompound_label) VALUES (?)`
 			if res, err = tx.Exec(sqlr, strings.ToUpper(coc.ClassOfCompoundLabel)); err != nil {
 				tx.Rollback()
@@ -1734,6 +1899,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	}
 	// if EmpiricalFormulaID = -1 then it is a new empirical formula
 	if p.EmpiricalFormula.EmpiricalFormulaID == -1 {
+		log.Debug("new empiricalformula " + p.EmpiricalFormulaLabel)
 		sqlr = `INSERT INTO empiricalformula (empiricalformula_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.EmpiricalFormulaLabel); err != nil {
 			tx.Rollback()
@@ -1749,8 +1915,9 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	}
 	// if LinearFormulaID = -1 then it is a new linear formula
 	if v, err := p.LinearFormula.LinearFormulaID.Value(); p.LinearFormula.LinearFormulaID.Valid && err == nil && v.(int64) == -1 {
+		log.Debug("new linearformula " + p.LinearFormulaLabel.String)
 		sqlr = `INSERT INTO linearformula (linearformula_label) VALUES (?)`
-		if res, err = tx.Exec(sqlr, p.LinearFormulaLabel); err != nil {
+		if res, err = tx.Exec(sqlr, p.LinearFormulaLabel.String); err != nil {
 			tx.Rollback()
 			return 0, err
 		}
@@ -1764,8 +1931,9 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	}
 	// if PhysicalStateID = -1 then it is a new physical state
 	if v, err := p.PhysicalState.PhysicalStateID.Value(); p.PhysicalState.PhysicalStateID.Valid && err == nil && v.(int64) == -1 {
+		log.Debug("new physicalstate " + p.PhysicalStateLabel.String)
 		sqlr = `INSERT INTO physicalstate (physicalstate_label) VALUES (?)`
-		if res, err = tx.Exec(sqlr, p.PhysicalStateLabel); err != nil {
+		if res, err = tx.Exec(sqlr, p.PhysicalStateLabel.String); err != nil {
 			tx.Rollback()
 			return 0, err
 		}
@@ -1776,26 +1944,6 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 		}
 		// updating the product PhysicalStateID (PhysicalStateLabel already set)
 		p.PhysicalState.PhysicalStateID = sql.NullInt64{Valid: true, Int64: lastid}
-	}
-	// if PhysicalStateID = -1 then it is a new physical state
-	if v, err := p.PhysicalState.PhysicalStateID.Value(); p.PhysicalState.PhysicalStateID.Valid && err == nil && v.(int64) == -1 {
-		sqlr = `INSERT INTO physicalstate (physicalstate_label) VALUES (?)`
-		if res, err = tx.Exec(sqlr, p.PhysicalStateLabel); err != nil {
-			tx.Rollback()
-			return 0, err
-		}
-		// getting the last inserted id
-		if lastid, err = res.LastInsertId(); err != nil {
-			tx.Rollback()
-			return 0, err
-		}
-		// updating the product ClassOfCompoundID (ClassOfCompoundLabel already set)
-		p.PhysicalState.PhysicalStateID = sql.NullInt64{Valid: true, Int64: lastid}
-	}
-	if err != nil {
-		log.Error("classofcompound error - " + err.Error())
-		tx.Rollback()
-		return 0, err
 	}
 
 	// finally updating the product
@@ -1867,7 +2015,8 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 		return 0, err
 	}
 
-	//log.Debug(ibuilder.ToSql())
+	//log.Debug(sqlr)
+	//log.Debug(sqla)
 
 	if res, err = tx.Exec(sqlr, sqla...); err != nil {
 		log.Error("product error - " + err.Error())
@@ -1893,6 +2042,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 			return 0, err
 		}
 	}
+
 	// adding classes of compounds
 	for _, coc := range p.ClassOfCompound {
 		sqlr = `INSERT INTO productclassofcompound (productclassofcompound_product_id, productclassofcompound_classofcompound_id) VALUES (?,?)`
@@ -1928,7 +2078,6 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 			return 0, err
 		}
 	}
-
 	// committing changes
 	if err = tx.Commit(); err != nil {
 		tx.Rollback()
@@ -1957,6 +2106,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 
 	// if CasNumberID = -1 then it is a new cas
 	if p.CasNumber.CasNumberID == -1 {
+		log.Debug("new casnumber " + p.CasNumberLabel)
 		sqlr = `INSERT INTO casnumber (casnumber_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.CasNumberLabel); err != nil {
 			tx.Rollback()
@@ -1972,8 +2122,9 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	}
 	// if CeNumberID = -1 then it is a new ce
 	if v, err := p.CeNumber.CeNumberID.Value(); p.CeNumber.CeNumberID.Valid && err == nil && v.(int64) == -1 {
+		log.Debug("new cenumber " + p.CeNumberLabel.String)
 		sqlr = `INSERT INTO cenumber (cenumber_label) VALUES (?)`
-		if res, err = tx.Exec(sqlr, p.CeNumberLabel); err != nil {
+		if res, err = tx.Exec(sqlr, p.CeNumberLabel.String); err != nil {
 			tx.Rollback()
 			return err
 		}
@@ -1992,6 +2143,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	}
 	// if NameID = -1 then it is a new name
 	if p.Name.NameID == -1 {
+		log.Debug("new name " + p.NameLabel)
 		sqlr = `INSERT INTO name (name_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, strings.ToUpper(p.NameLabel)); err != nil {
 			tx.Rollback()
@@ -2007,6 +2159,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	}
 	for i, syn := range p.Synonyms {
 		if syn.NameID == -1 {
+			log.Debug("new name(syn) " + syn.NameLabel)
 			sqlr = `INSERT INTO name (name_label) VALUES (?)`
 			if res, err = tx.Exec(sqlr, strings.ToUpper(syn.NameLabel)); err != nil {
 				tx.Rollback()
@@ -2023,6 +2176,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	// if ClassOfCompoundID = -1 then it is a new class of compounds
 	for i, coc := range p.ClassOfCompound {
 		if coc.ClassOfCompoundID == -1 {
+			log.Debug("new classofcompound " + coc.ClassOfCompoundLabel)
 			sqlr = `INSERT INTO classofcompound (classofcompound_label) VALUES (?)`
 			if res, err = tx.Exec(sqlr, strings.ToUpper(coc.ClassOfCompoundLabel)); err != nil {
 				tx.Rollback()
@@ -2038,7 +2192,8 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	}
 	// if EmpiricalFormulaID = -1 then it is a new empirical formula
 	if p.EmpiricalFormula.EmpiricalFormulaID == -1 {
-		sqlr = `INSERT INTO empiricalformula (empiricalformula_label) VALUES (?)`
+		log.Debug("new empiricalformula " + p.EmpiricalFormulaLabel)
+		sqlr = `INSERT INTO empiricalformula (p.EmpiricalFormulaLabel) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.EmpiricalFormulaLabel); err != nil {
 			tx.Rollback()
 			return err
@@ -2053,8 +2208,9 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	}
 	// if LinearFormulaID = -1 then it is a new linear formula
 	if v, err := p.LinearFormula.LinearFormulaID.Value(); p.LinearFormula.LinearFormulaID.Valid && err == nil && v.(int64) == -1 {
+		log.Debug("new linearformula " + p.LinearFormulaLabel.String)
 		sqlr = `INSERT INTO linearformula (linearformula_label) VALUES (?)`
-		if res, err = tx.Exec(sqlr, p.LinearFormulaLabel); err != nil {
+		if res, err = tx.Exec(sqlr, p.LinearFormulaLabel.String); err != nil {
 			tx.Rollback()
 			return err
 		}
@@ -2068,8 +2224,9 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	}
 	// if PhysicalStateID = -1 then it is a new physical state
 	if v, err := p.PhysicalState.PhysicalStateID.Value(); p.PhysicalState.PhysicalStateID.Valid && err == nil && v.(int64) == -1 {
+		log.Debug("new physicalstate " + p.PhysicalStateLabel.String)
 		sqlr = `INSERT INTO physicalstate (physicalstate_label) VALUES (?)`
-		if res, err = tx.Exec(sqlr, p.PhysicalStateLabel); err != nil {
+		if res, err = tx.Exec(sqlr, p.PhysicalStateLabel.String); err != nil {
 			tx.Rollback()
 			return err
 		}
@@ -2078,13 +2235,8 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 			tx.Rollback()
 			return err
 		}
-		// updating the product ClassOfCompoundID (ClassOfCompoundLabel already set)
+		// updating the product PhysicalStateID (PhysicalStateLabel already set)
 		p.PhysicalState.PhysicalStateID = sql.NullInt64{Valid: true, Int64: lastid}
-	}
-	if err != nil {
-		log.Error("classofcompound error - " + err.Error())
-		tx.Rollback()
-		return err
 	}
 
 	// finally updating the product

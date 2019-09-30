@@ -21,27 +21,47 @@ type Datastore interface {
 	// products
 	GetExposedProducts() ([]Product, int, error)
 	GetProducts(helpers.DbselectparamProduct) ([]Product, int, error)
+
 	GetProductsCasNumbers(helpers.Dbselectparam) ([]CasNumber, int, error)
 	GetProductsCasNumber(id int) (CasNumber, error)
 	GetProductsCasNumberByLabel(label string) (CasNumber, error)
+
 	GetProductsCeNumbers(helpers.Dbselectparam) ([]CeNumber, int, error)
+	GetProductsCeNumberByLabel(label string) (CeNumber, error)
+
 	GetProductsNames(helpers.Dbselectparam) ([]Name, int, error)
 	GetProductsName(id int) (Name, error)
+	GetProductsNameByLabel(label string) (Name, error)
+
 	GetProductsSymbols(helpers.Dbselectparam) ([]Symbol, int, error)
 	GetProductsSymbol(id int) (Symbol, error)
+	GetProductsSymbolByLabel(label string) (Symbol, error)
+
 	GetProductsEmpiricalFormulas(helpers.Dbselectparam) ([]EmpiricalFormula, int, error)
-	GetProductsLinearFormulas(helpers.Dbselectparam) ([]LinearFormula, int, error)
 	GetProductsEmpiricalFormula(id int) (EmpiricalFormula, error)
+	GetProductsEmpiricalFormulaByLabel(label string) (EmpiricalFormula, error)
+
+	GetProductsLinearFormulas(helpers.Dbselectparam) ([]LinearFormula, int, error)
+	GetProductsLinearFormulaByLabel(label string) (LinearFormula, error)
+
 	GetProductsPhysicalStates(helpers.Dbselectparam) ([]PhysicalState, int, error)
+	GetProductsPhysicalStateByLabel(label string) (PhysicalState, error)
+
 	GetProductsSignalWords(helpers.Dbselectparam) ([]SignalWord, int, error)
 	GetProductsSignalWord(id int) (SignalWord, error)
+	GetProductsSignalWordByLabel(label string) (SignalWord, error)
+
 	GetProductsClassOfCompounds(helpers.Dbselectparam) ([]ClassOfCompound, int, error)
+	GetProductsClassOfCompoundByLabel(label string) (ClassOfCompound, error)
+
 	GetProductsHazardStatementByReference(string) (HazardStatement, error)
 	GetProductsHazardStatements(helpers.Dbselectparam) ([]HazardStatement, int, error)
 	GetProductsHazardStatement(id int) (HazardStatement, error)
+
 	GetProductsPrecautionaryStatementByReference(string) (PrecautionaryStatement, error)
 	GetProductsPrecautionaryStatements(helpers.Dbselectparam) ([]PrecautionaryStatement, int, error)
 	GetProductsPrecautionaryStatement(id int) (PrecautionaryStatement, error)
+
 	GetProduct(id int) (Product, error)
 	CountProductStorages(id int) (int, error)
 	DeleteProduct(id int) error
