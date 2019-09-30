@@ -58,7 +58,7 @@ func main() {
 func init() {
 	// getting the program parameters
 	listenport = flag.String("listenport", "8081", "the port to listen")
-	proxyurl = flag.String("proxyurl", "http://localhost:"+*listenport, "the application url (without the path) if behind a proxy, with NO trailing /")
+	proxyurl = flag.String("proxyurl", "http://localhost", "the application url (without the path) if behind a proxy, with NO trailing /")
 	proxypath = flag.String("proxypath", "/", "the application path if behind a proxy, with the trailing /")
 	mailServerAddress = flag.String("mailserveraddress", "", "the mail server address")
 	mailServerPort = flag.String("mailserverport", "", "the mail server address")
@@ -109,7 +109,7 @@ func prog(state overseer.State) {
 	// global variables init
 	global.BuildID = BuildID
 	global.ProxyPath = *proxypath
-	global.ProxyURL = *proxyurl
+	global.ProxyURL = *proxyurl + ":" + *listenport
 	global.MailServerAddress = *mailServerAddress
 	global.MailServerSender = *mailServerSender
 	global.MailServerPort = *mailServerPort

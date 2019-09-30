@@ -588,7 +588,7 @@ func (db *SQLiteDataStore) Import(url string) error {
 		os.Exit(1)
 	}
 
-	log.Info("starting import")
+	log.Info("- starting import")
 	for _, p := range bodyresp.Rows {
 		log.Debug(p)
 
@@ -724,10 +724,13 @@ func (db *SQLiteDataStore) Import(url string) error {
 		// synonyms
 		var (
 			processedSyn map[string]string
+			newSyn       []Name
 			ok           bool
 		)
+		// duplicate names map
 		processedSyn = make(map[string]string)
-		for i, syn := range p.Synonyms {
+		processedSyn[p.Name.NameLabel] = ""
+		for _, syn := range p.Synonyms {
 			// duplicates hunting
 			if _, ok = processedSyn[syn.NameLabel]; ok {
 				log.Debug("leaving duplicate synonym " + syn.NameLabel)
@@ -748,12 +751,14 @@ func (db *SQLiteDataStore) Import(url string) error {
 			if syn2 == (Name{}) {
 				// setting synonym id to -1 for the CreateProduct method
 				// to automatically insert it into the db
-				p.Synonyms[i].NameID = -1
+				//p.Synonyms[i].NameID = -1
+				newSyn = append(newSyn, Name{NameID: -1, NameLabel: syn.NameLabel})
 			} else {
-				p.Synonyms[i] = syn2
+				//p.Synonyms[i] = syn2
+				newSyn = append(newSyn, syn2)
 			}
-
 		}
+		p.Synonyms = newSyn
 
 		// classes of compounds
 		for i, coc := range p.ClassOfCompound {

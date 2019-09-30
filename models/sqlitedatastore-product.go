@@ -2074,6 +2074,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	for _, syn := range p.Synonyms {
 		sqlr = `INSERT INTO productsynonyms (productsynonyms_product_id, productsynonyms_name_id) VALUES (?,?)`
 		if res, err = tx.Exec(sqlr, p.ProductID, syn.NameID); err != nil {
+			log.Error("productsynonyms error - " + err.Error())
 			tx.Rollback()
 			return 0, err
 		}
