@@ -1,3 +1,23 @@
+- [Chimithèque](#chimith%c3%a8que)
+- [Quick start (to have a quick view of the application)](#quick-start-to-have-a-quick-view-of-the-application)
+- [Production installation](#production-installation)
+  - [Requirements](#requirements)
+  - [Installation](#installation)
+    - [Binary command line parameters](#binary-command-line-parameters)
+  - [Setting up application administrators](#setting-up-application-administrators)
+- [Database backup](#database-backup)
+- [Chimithèque V2 initial database import](#chimith%c3%a8que-v2-initial-database-import)
+  - [Principle](#principle)
+  - [Importing from another public instance](#importing-from-another-public-instance)
+- [Chimithèque V1 database migration](#chimith%c3%a8que-v1-database-migration)
+  - [Export](#export)
+    - [PostgreSQL](#postgresql)
+  - [Import](#import)
+- [Upgrades](#upgrades)
+- [Support](#support)
+- [V1/V2 version](#v1v2-version)
+- [List of public database Chimithèque instances](#list-of-public-database-chimith%c3%a8que-instances)
+
 # Chimithèque
 
 Chimithèque is an open source chemical product management application started by the ENS-Lyon (France) and co-developped with the Université Clermont-Auvergne (France).
@@ -71,7 +91,8 @@ You need configure the systemd script with the following parameters:
 - `-mailserversender`: SMTP server sender email - *REQUIRED*
 - `-mailserverusetls`: use an SMTP TLS connection - default = `false`
 - `-mailservertlsskipverify`: skip SSL verification - default = `false`
-- `-disableautoupgrade`: disable application auto upgrade - not recommended - default = `false`
+- `-enableautoupgrade`: enable application auto upgrade - recommended - default = `false`
+- `-enablepublicproductsendpoint`: enable public products endpoint - default = `false`
 - `-admins`: comma separated list of administrators emails that must be present in the database
 - `-logfile`: output log file - by default logs are sent to stdout
 - `-debug`: debug mode, do not enable in production
@@ -98,10 +119,29 @@ You can backup the database with:
 ```bash
     sqlite3 /path/to/chimitheque/storage.db ".backup '/path/to/backup/storage.sq3'"
 ```
+# Chimithèque V2 initial database import
+
+## Principle
+
+Each Chimithèque application administrator can share its products database with the `-enablepublicproductsendpoint`.
+Note that only products informations (product cards) will be shared.
+
+You need at least one other public Chimithèque instance to be able to populate your new Chimithèque database.
+
+## Importing from another public instance
+
+```bash
+    ./gochimitheque -importfrom [publicInstance]
+```
+
+example:
+```bash
+    ./gochimitheque -importfrom https://chimitheque.ens-lyon.fr
+```
 
 # Chimithèque V1 database migration
 
-## export
+## Export
 
 Databases of the V1 version must be exported into `CSV` to be imported in the V2 version.
 
@@ -115,19 +155,19 @@ In PostgreSQL this can be done with the command:
 
 This will generate one CSV file per table.
 
-## import
+## Import
 
 You can then import to the V2 version with:
 
 ```bash
-    /path/to/gochimitheque -disableautoupgrade -proxyurl=https://appserver.foo.fr -importfrom=/path/to/csv
+    /path/to/gochimitheque -proxyurl=https://appserver.foo.fr -importfrom=/path/to/csv
 ```
 
 This is important to specify the correct `-proxyurl` parameter as it will be used to generate the storages qr codes.
 
 # Upgrades
 
-By default Chimithèque will gracefully (without loosing current client connections) auto upgrade when a new release is published. You can disable auto upgrade with the `disableautoupgrade` command line parameter.
+You can enable automatic upgrades when a new release is published with the `enableautoupgrade` command line parameter.
 
 This is strongly recommended to always run the last version of the application.
 
@@ -139,7 +179,6 @@ Please do not contact the members of the Chimithèque development team directly.
 
 Subscribe to the mailing list: <https://groupes.renater.fr/sympa/subscribe/chimitheque?previous_action=info> or open a Github issue.
 
-
 # V1/V2 version
 
 The v2 version has been rewritten in Golang.
@@ -148,3 +187,7 @@ The v2 version has been rewritten in Golang.
 - much easier to deploy (zero dependencies, embeded database)
 - responsive design
 - simplified GUI
+
+# List of public database Chimithèque instances
+
+- ENS de Lyon: `https://chimitheque.ens-lyon.fr`

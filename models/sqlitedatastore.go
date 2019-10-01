@@ -533,15 +533,26 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	}
 
 	// inserting default admin
+	var admin Person
 	if err = db.Get(&c, `SELECT count(*) FROM person`); err != nil {
 		return err
 	}
 	if c == 0 {
 		log.Info("  inserting admin user")
-		admin := Person{PersonEmail: "admin@chimitheque.fr", Permissions: []Permission{Permission{PermissionPermName: "all", PermissionItemName: "all", PermissionEntityID: -1}}}
+		admin = Person{PersonEmail: "admin@chimitheque.fr", Permissions: []Permission{Permission{PermissionPermName: "all", PermissionItemName: "all", PermissionEntityID: -1}}}
 		admin.PersonID, _ = db.CreatePerson(admin)
 		admin.PersonPassword = "chimitheque"
 		db.UpdatePersonPassword(admin)
+	}
+
+	// inserting sample entity
+	if err = db.Get(&c, `SELECT count(*) FROM entity`); err != nil {
+		return err
+	}
+	if c == 0 {
+		log.Info("  inserting sample entity")
+		sentity := Entity{EntityName: "sample entity", EntityDescription: "you can delete me, I am just a sample entity", Managers: []Person{admin}}
+		db.CreateEntity(sentity)
 	}
 
 	// tables creation
@@ -576,7 +587,7 @@ func (db *SQLiteDataStore) Import(url string) error {
 	}
 	defer httpresp.Body.Close()
 
-	log.Info("- decoding respose")
+	log.Info("- decoding response")
 	if err = json.NewDecoder(httpresp.Body).Decode(&bodyresp); err != nil {
 		log.Error("can not decode remote response " + err.Error())
 	}
@@ -590,7 +601,6 @@ func (db *SQLiteDataStore) Import(url string) error {
 
 	log.Info("- starting import")
 	for _, p := range bodyresp.Rows {
-		log.Debug(p)
 
 		// cas number already exist ?
 		var casnumber CasNumber
@@ -751,10 +761,8 @@ func (db *SQLiteDataStore) Import(url string) error {
 			if syn2 == (Name{}) {
 				// setting synonym id to -1 for the CreateProduct method
 				// to automatically insert it into the db
-				//p.Synonyms[i].NameID = -1
 				newSyn = append(newSyn, Name{NameID: -1, NameLabel: syn.NameLabel})
 			} else {
-				//p.Synonyms[i] = syn2
 				newSyn = append(newSyn, syn2)
 			}
 		}
@@ -852,7 +860,7 @@ func (db *SQLiteDataStore) Import(url string) error {
 
 	}
 
-	log.Info(fmt.Printf("%d products not imported", notimported))
+	log.Info(fmt.Sprintf("%d products not imported (duplicates)", notimported))
 
 	return nil
 }

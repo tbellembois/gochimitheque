@@ -33,7 +33,7 @@ var (
 	BuildID string
 	// starting flags
 	listenport, proxyurl, proxypath, mailServerAddress, mailServerPort, mailServerSender, admins, logfile, importv1from, importfrom *string
-	mailServerUseTLS, mailServerTLSSkipVerify, disableAutoUpgrade, enablePublicProductsEndpoint, debug, version                     *bool
+	mailServerUseTLS, mailServerTLSSkipVerify, enableAutoUpgrade, enablePublicProductsEndpoint, debug, version                      *bool
 )
 
 func preupgrade(tempBinaryPath string) error {
@@ -48,7 +48,7 @@ func main() {
 			User: "tbellembois",
 			Repo: "gochimitheque",
 			Asset: func(string) bool {
-				return !*disableAutoUpgrade
+				return *enableAutoUpgrade
 			}},
 		PreUpgrade: preupgrade,
 		Debug:      *debug, //display log of overseer actions
@@ -66,7 +66,7 @@ func init() {
 	mailServerUseTLS = flag.Bool("mailserverusetls", false, "use TLS? (optional)")
 	mailServerTLSSkipVerify = flag.Bool("mailservertlsskipverify", false, "skip TLS verification? (optional)")
 	enablePublicProductsEndpoint = flag.Bool("enablepublicproductsendpoint", false, "enable public products endpoint (optional)")
-	disableAutoUpgrade = flag.Bool("disableautoupgrade", false, "disable application auto upgrade - not recommended (optional)")
+	enableAutoUpgrade = flag.Bool("enableautoupgrade", false, "enable application auto upgrade - recommended (optional)")
 	admins = flag.String("admins", "", "the additional admins (comma separated email adresses) (optional) ")
 	logfile = flag.String("logfile", "", "log to the given file (optional)")
 	debug = flag.Bool("debug", false, "debug (verbose log), default is error")
