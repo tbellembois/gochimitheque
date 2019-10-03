@@ -33,7 +33,7 @@ var (
 	BuildID string
 	// starting flags
 	listenport, proxyurl, proxypath, mailServerAddress, mailServerPort, mailServerSender, admins, logfile, importv1from, importfrom *string
-	mailServerUseTLS, mailServerTLSSkipVerify, enableAutoUpgrade, enablePublicProductsEndpoint, debug, version                      *bool
+	useproxy, mailServerUseTLS, mailServerTLSSkipVerify, enableAutoUpgrade, enablePublicProductsEndpoint, debug, version            *bool
 )
 
 func preupgrade(tempBinaryPath string) error {
@@ -58,7 +58,8 @@ func main() {
 func init() {
 	// getting the program parameters
 	listenport = flag.String("listenport", "8081", "the port to listen")
-	proxyurl = flag.String("proxyurl", "http://localhost", "the application url (without the path) if behind a proxy, with NO trailing /")
+	useproxy = flag.Bool("useproxy", false, "use HTTP proxy? (optional) - if true requires proxyurl and proxypath parameters")
+	proxyurl = flag.String("proxyurl", "", "the application url (without the path) if behind a proxy, with NO trailing /")
 	proxypath = flag.String("proxypath", "/", "the application path if behind a proxy, with the trailing /")
 	mailServerAddress = flag.String("mailserveraddress", "", "the mail server address")
 	mailServerPort = flag.String("mailserverport", "", "the mail server address")
@@ -109,14 +110,23 @@ func prog(state overseer.State) {
 	// global variables init
 	global.BuildID = BuildID
 	global.ProxyPath = *proxypath
-	global.ProxyURL = *proxyurl + ":" + *listenport
+	global.ProxyURL = *proxyurl
+	if *useproxy {
+		if *proxyurl == "" {
+			log.Error("proxyurl parameter required")
+			os.Exit(1)
+		}
+		global.ApplicationFullURL = *proxyurl + *proxypath
+	} else {
+		global.ApplicationFullURL = "http://localhost:" + *listenport + "/"
+	}
 	global.MailServerAddress = *mailServerAddress
 	global.MailServerSender = *mailServerSender
 	global.MailServerPort = *mailServerPort
 	global.MailServerUseTLS = *mailServerUseTLS
 	global.MailServerTLSSkipVerify = *mailServerTLSSkipVerify
 	log.Info("- application version: " + global.BuildID)
-	log.Info("- application endpoint: " + global.ProxyURL + global.ProxyPath)
+	log.Info("- application endpoint: " + global.ApplicationFullURL)
 
 	// database initialization
 	log.Info("- opening database connection to " + dbname)

@@ -56,6 +56,10 @@ var (
 	// ProxyURL is application base url
 	// "http://localhost:8081" by default
 	ProxyURL string
+	// ApplicationFullURL is application full url
+	// "http://localhost:8081" by default
+	// "ProxyURL + ProxyPath" if behind a proxy
+	ApplicationFullURL string
 	// MailServerAddress is the SMTP server address
 	// such as smtp.univ.fr
 	MailServerAddress string
