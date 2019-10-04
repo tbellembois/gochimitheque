@@ -20,7 +20,7 @@
 
 # Chimithèque
 
-Chimithèque is an open source chemical product management application started by the ENS-Lyon (France) and co-developped with the Université Clermont-Auvergne (France).
+Chimithèque is an open source chemical product management application started by the ENS-Lyon (France) and co-developped with the Université Clermont-Auvergne (France). It is written in Golang.
 
 *projet leader*: Delphine Pitrat (delphine[dot]pitrat[at]ens-lyon[dot]fr)
 
@@ -100,7 +100,7 @@ You need configure the systemd script with the following parameters:
 
 > example:
 >
-> `gochimitheque -proxyurl https://appserver.foo.fr -proxypath=/chimitheque/ -admins=john.bar@foo.fr,jean.dupont@foo.fr --mailserveraddress smtp.foo.fr --mailserverport 25 --mailserversender noreply@foo.fr"`
+> `gochimitheque -proxyurl=https://appserver.foo.fr -proxypath=/chimitheque/ -admins=john.bar@foo.fr,jean.dupont@foo.fr -mailserveraddress=smtp.foo.fr -mailserverport=25 -mailserversender=noreply@foo.fr"`
 >
 > will run the appplication behind a proxy at the URL `https://appserver.foo.fr/chimitheque` with 2 additionnal administrators `john.bar@foo.fr` and `jean.dupont@foo.fr`
 
@@ -108,7 +108,7 @@ You need configure the systemd script with the following parameters:
 
 A static administrator `admin@chimitheque.fr` is created during the installation. His password must be changed after the first connection.
 
-You can add add additional administrators with the `admins` command line parameters. Note that those admins must already be present in the database.
+You can add additional administrators with the `-admins` command line parameters. Note that those admins must already be present in the database.
 
 > example: `-admins=john.bar@foo.com,jean.dupont@foo.com`
 
@@ -124,7 +124,7 @@ You can backup the database with:
 
 ## Principle
 
-Each Chimithèque application administrator can share its products database with the `-enablepublicproductsendpoint`.
+Each Chimithèque application administrator can share its products database with `-enablepublicproductsendpoint`.
 Note that only products informations (product cards) will be shared.
 
 You need at least one other public Chimithèque instance to be able to populate your new Chimithèque database.
@@ -132,12 +132,12 @@ You need at least one other public Chimithèque instance to be able to populate 
 ## Importing from another public instance
 
 ```bash
-    ./gochimitheque -importfrom [publicInstance]
+    ./gochimitheque -importfrom=[publicInstance]
 ```
 
 example:
 ```bash
-    ./gochimitheque -importfrom https://chimitheque.ens-lyon.fr
+    ./gochimitheque -importfrom=https://chimitheque.ens-lyon.fr
 ```
 
 # Chimithèque V1 database migration
