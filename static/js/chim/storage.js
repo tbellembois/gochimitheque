@@ -37,7 +37,8 @@ $( document ).ready(function() {
     //
     $('select#s_storelocation').select2({
         templateResult: formatStorelocation,
-        //placeholder: "store location",
+        allowClear: true,
+        placeholder: "store location",
         ajax: {
             url: proxyPath + 'storelocations',
             delay: 400,
@@ -74,7 +75,7 @@ $( document ).ready(function() {
     $('select#s_casnumber').select2({
         tags: false,
         allowClear: true,
-        //placeholder: "select a cas number",
+        placeholder: "select a cas number",
         ajax: {
             url: proxyPath + 'products/casnumbers/',
             delay: 400,
@@ -111,7 +112,7 @@ $( document ).ready(function() {
     $('select#s_name').select2({
         tags: false,
         allowClear: true,
-        //placeholder: "select a name",
+        placeholder: "select a name",
         ajax: {
             url: proxyPath + 'products/names/',
             delay: 400,
@@ -149,7 +150,7 @@ $( document ).ready(function() {
     $('select#s_empiricalformula').select2({
         tags: false,
         allowClear: true,
-        //placeholder: "select a formula",
+        placeholder: "select a formula",
         ajax: {
             url: proxyPath + 'products/empiricalformulas/',
             delay: 400,
@@ -187,7 +188,7 @@ $( document ).ready(function() {
     $('select#s_signalword').select2({
         templateResult: formatSignalWord,
         allowClear: true,
-        //placeholder: "select signal word",
+        placeholder: "select signal word",
         ajax: {
             url: proxyPath + 'products/signalwords/',
             delay: 400,
@@ -357,6 +358,7 @@ $( document ).ready(function() {
     //
     $('select#storelocation').select2({
         templateResult: formatStorelocation,
+        placeholder: "store location",
         ajax: {
             url: proxyPath + 'storelocations',
             delay: 400,
