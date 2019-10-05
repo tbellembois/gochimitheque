@@ -90,6 +90,9 @@ var updateQueryStringParam = function (key, value) {
 };
 
 function cleanQueryParams() {
+
+    console.log("cleanQueryParams")
+
     // root url
     var root = window.location.protocol + '//' + window.location.hostname + ":" + window.location.port + window.location.pathname;
     // var urlParams = new URLSearchParams(window.location.search);
@@ -165,6 +168,10 @@ function clearsearch() {
 }
 
 function search() {
+
+    console.log("search")
+
+    cleanQueryParams();
 
     var s_custom_name_part_of;
     var s_storage_barecode;

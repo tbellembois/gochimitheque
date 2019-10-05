@@ -157,8 +157,8 @@ func (env *Env) ToogleProductBookmarkHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	json.NewEncoder(w).Encode(product)
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(product)
 	return nil
 }
 

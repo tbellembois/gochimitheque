@@ -9,6 +9,8 @@ $( document ).ready(function() {
 });
 $('#table').on('load-success.bs.table refresh.bs.table', function () {
       
+    console.log("tableload")
+
     // getting request parameters
     var urlParams = new URLSearchParams(window.location.search);
 
@@ -140,7 +142,7 @@ $('#table').on('load-success.bs.table refresh.bs.table', function () {
 
     // need to clean the request from its parameters to avoid selecting
     // former search parameters
-    cleanQueryParams();
+    //cleanQueryParams();
 });
 //
 // close buttons actions
@@ -163,7 +165,10 @@ function closeEdit() {
 //
 function queryParams(params) {
     
+    console.log("queryParams")
+
     // getting request parameters
+    // window.location.search only populated on product/storage view
     var urlParams = new URLSearchParams(window.location.search);
     
     // search form parameters
@@ -412,7 +417,11 @@ function queryParams(params) {
     } else if ($('select#s_hazardstatements').hasClass("select2-hidden-accessible")) {
         hs = $('select#s_hazardstatements').select2('data');
         if (hs.length != 0) {
-            params["hazardstatements"] = hs;
+            s_hazardstatements = [];
+            hs.forEach(function(e) {
+                s_hazardstatements.push(e.id);
+            });
+            params["hazardstatements"] = s_hazardstatements;
         }
     }
     if (precautionarystatements.length != 0) {
@@ -420,17 +429,20 @@ function queryParams(params) {
     } else if ($('select#s_precautionarystatements').hasClass("select2-hidden-accessible")) {
         ps = $('select#s_precautionarystatements').select2('data');
         if (ps.length != 0) {
-            params["precautionarystatements"] = ps;
+            s_precautionarystatements = [];
+            ps.forEach(function(e) {
+                s_precautionarystatements.push(e.id);
+            });
+            params["precautionarystatements"] = s_precautionarystatements;
         }
     }
     if (symbols.length != 0) {
         params["symbols"] = symbols;
-    }
-    else if ($('select#s_symbols').hasClass("select2-hidden-accessible")) {
+    } else if ($('select#s_symbols').hasClass("select2-hidden-accessible")) {
         sy = $('select#s_symbols').select2('data');
         if (sy.length != 0) {
             s_symbols = [];
-            i.forEach(function(e) {
+            sy.forEach(function(e) {
                 s_symbols.push(e.id);
             });
             params["symbols"] = s_symbols;
