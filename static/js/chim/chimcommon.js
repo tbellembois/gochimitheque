@@ -91,7 +91,7 @@ var updateQueryStringParam = function (key, value) {
 
 function cleanQueryParams() {
 
-    console.log("cleanQueryParams")
+    //console.log("cleanQueryParams")
 
     // root url
     var root = window.location.protocol + '//' + window.location.hostname + ":" + window.location.port + window.location.pathname;
@@ -169,7 +169,7 @@ function clearsearch() {
 
 function search() {
 
-    console.log("search")
+    //console.log("search")
 
     cleanQueryParams();
 

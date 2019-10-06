@@ -23,8 +23,11 @@
     text-overflow: ellipsis;
     min-width: 96px;
 }
-.iconlabel {
+.iconlabel, #filter-item {
     font-family: economicaregular;
+}
+#filter-item {
+    font-size: 1.5em;
 }
 @font-face {
     font-family: 'economicaregular';

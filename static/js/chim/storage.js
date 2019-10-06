@@ -613,6 +613,9 @@ $('#s_storage_archive_button').on('click', function () {
 // stock
 //
 function showStockRecursive(sl, depth) {
+
+    //console.log(sl)
+
     // pre checking if there is a stock or not for sl
     var hasStock = false;
     for (var i in sl.stock) { 
@@ -1163,7 +1166,6 @@ function operateEdit(e, value, row, index) {
         //- // appending hl parameter to highlight updated row
         //- updateQueryStringParam("hl", data.storage_id.Int64);
         //- $table.bootstrapTable('refresh');
-        console.log(data)
         global.displayMessage("storage " + data.storage_id.Int64 + " updated", "success");
         setTimeout(function(){ window.location = proxyPath + "v/storages?product="+data.product.product_id+"&hl="+data.product.product_id; }, 1000);
     }

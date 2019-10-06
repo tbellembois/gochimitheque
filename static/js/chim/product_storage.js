@@ -9,7 +9,7 @@ $( document ).ready(function() {
 });
 $('#table').on('load-success.bs.table refresh.bs.table', function () {
       
-    console.log("tableload")
+    //console.log("tableload")
 
     // getting request parameters
     var urlParams = new URLSearchParams(window.location.search);
@@ -165,7 +165,7 @@ function closeEdit() {
 //
 function queryParams(params) {
     
-    console.log("queryParams")
+    //console.log("queryParams")
 
     // getting request parameters
     // window.location.search only populated on product/storage view

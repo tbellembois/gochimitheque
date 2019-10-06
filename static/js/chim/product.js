@@ -1910,7 +1910,6 @@ function operateEdit(e, value, row, index) {
                 limit: 1,
             },
         }).done(function(data, textStatus, jqXHR) {
-            console.log(data)
             var newOption = new Option(data.rows[0].empiricalformula_label, data.rows[0].empiricalformula_id, true, true);
             $('select#empiricalformula').append(newOption).trigger('change');
         }).fail(function(jqXHR, textStatus, errorThrown) {
@@ -1932,7 +1931,6 @@ function operateEdit(e, value, row, index) {
                 limit: 1,
             },
         }).done(function(data, textStatus, jqXHR) {
-            console.log(data)
             var newOption = new Option(data.rows[0].casnumber_label, data.rows[0].casnumber_id, true, true);
             $('select#casnumber').append(newOption).trigger('change');
         }).fail(function(jqXHR, textStatus, errorThrown) {
