@@ -193,3 +193,5 @@ The v2 version has been rewritten in Golang.
 # List of public database Chimithèque instances
 
 - ENS de Lyon: `https://chimitheque.ens-lyon.fr`
+
+If you want to share your product database please send an email to the mailing list or create a Github issue.
