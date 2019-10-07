@@ -32,8 +32,8 @@ var (
 	// BuildID is compile-time variable
 	BuildID string
 	// starting flags
-	listenport, proxyurl, proxypath, mailServerAddress, mailServerPort, mailServerSender, admins, logfile, importv1from, importfrom *string
-	useproxy, mailServerUseTLS, mailServerTLSSkipVerify, enableAutoUpgrade, enablePublicProductsEndpoint, debug, version            *bool
+	listenport, proxyurl, proxypath, mailServerAddress, mailServerPort, mailServerSender, admins, logfile, importv1from, importfrom          *string
+	useproxy, mailServerUseTLS, mailServerTLSSkipVerify, enableAutoUpgrade, enablePublicProductsEndpoint, resetAdminPassword, debug, version *bool
 )
 
 func preupgrade(tempBinaryPath string) error {
@@ -71,6 +71,7 @@ func init() {
 	admins = flag.String("admins", "", "the additional admins (comma separated email adresses) (optional) ")
 	logfile = flag.String("logfile", "", "log to the given file (optional)")
 	debug = flag.Bool("debug", false, "debug (verbose log), default is error")
+	resetAdminPassword = flag.Bool("resetadminpassword", false, "reset the admin password to `chimitheque`")
 	version = flag.Bool("version", false, "display application version")
 	importv1from = flag.String("importv1from", "", "full path of the directory containing the Chimithèque v1 CSV to import")
 	importfrom = flag.String("importfrom", "", "base URL of the external Chimithèque instance (running with -enablepublicproductsendpoint) to import products from")
@@ -142,6 +143,7 @@ func prog(state overseer.State) {
 		err := datastore.ImportV1(*importv1from)
 		if err != nil {
 			log.Error("an error occured: " + err.Error())
+			os.Exit(1)
 		}
 		os.Exit(0)
 	}
@@ -150,6 +152,22 @@ func prog(state overseer.State) {
 		err := datastore.Import(*importfrom)
 		if err != nil {
 			log.Error("an error occured: " + err.Error())
+			os.Exit(1)
+		}
+		os.Exit(0)
+	}
+	if *resetAdminPassword {
+		log.Info("- reseting admin password to `chimitheque`")
+		a, err := datastore.GetPersonByEmail("admin@chimitheque.fr")
+		if err != nil {
+			log.Error("an error occured: " + err.Error())
+			os.Exit(1)
+		}
+		a.PersonPassword = "chimitheque"
+		err = datastore.UpdatePersonPassword(a)
+		if err != nil {
+			log.Error("an error occured: " + err.Error())
+			os.Exit(1)
 		}
 		os.Exit(0)
 	}
