@@ -83,7 +83,7 @@ It is strongly recommended to run Chimithèque behind an HTTP proxy server with 
 
 You need configure the systemd script with the following parameters:
 
-- `-port`: application listening port - default = `8081`
+- `-listenport`: application listening port - default = `8081`
 - `-useproxy`: use an HTTP proxy - default = `false`
 - `-proxyurl`: proxy base URL with no trailing slash
 - `-proxypath`: proxy path - default = `/`

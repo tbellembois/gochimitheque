@@ -82,6 +82,74 @@ func (db *SQLiteDataStore) ComputeStockStorelocation(p Product, s *StoreLocation
 	return c
 }
 
+// ComputeStockStorelocationNoUnit returns the quantity of product p with no unit in the store location s
+func (db *SQLiteDataStore) ComputeStockStorelocationNoUnit(p Product, s *StoreLocation) float64 {
+
+	var (
+		c           float64 // current s stock for p
+		nullc       sql.NullFloat64
+		sdbchildren []StoreLocation
+		t           float64 // total s stock for p
+		err         error
+	)
+
+	sqlr := `SELECT count(*) FROM storage
+	LEFT JOIN unit on storage.unit = unit.unit_id
+	WHERE storage.storelocation = ? AND
+	storage.storage_quantity IS NOT NULL AND
+	storage.product = ? AND
+	storage.unit IS NULL`
+
+	// getting current s stock
+	if err = db.Get(&nullc, sqlr, s.StoreLocationID.Int64, p.ProductID); err != nil {
+		log.WithFields(log.Fields{"err": err.Error()}).Error("ComputeStockStorelocationNoUnit")
+		return 0
+	}
+	if nullc.Valid {
+		c = nullc.Float64
+		t = nullc.Float64
+	}
+	log.WithFields(log.Fields{"p": p, "s": s, "c": c}).Debug("ComputeStockStorelocationNoUnit")
+
+	// getting s children
+	if sdbchildren, err = db.GetStoreLocationChildren(int(s.StoreLocationID.Int64)); err != nil {
+		log.WithFields(log.Fields{"err": err.Error()}).Error("ComputeStockStorelocationNoUnit")
+		return 0
+	}
+
+	// retrieving or appending children to s and computing their stocks
+	for _, sdbchild := range sdbchildren {
+		var (
+			child      *StoreLocation
+			childfound bool
+		)
+		childfound = false
+		for i, schild := range (*s).Children {
+			if schild.StoreLocationID == sdbchild.StoreLocationID {
+				// child found
+				child = (*s).Children[i]
+				childfound = true
+				break
+			}
+		}
+		if !childfound {
+			// child not found
+			child = &StoreLocation{
+				StoreLocationID:   sdbchild.StoreLocationID,
+				StoreLocationName: sdbchild.StoreLocationName,
+				Entity:            sdbchild.Entity,
+			}
+			(*s).Children = append((*s).Children, child)
+		}
+
+		t += db.ComputeStockStorelocationNoUnit(p, child)
+	}
+
+	(*s).Stocks = append((*s).Stocks, Stock{Total: t, Current: c, Unit: Unit{}})
+
+	return c
+}
+
 // ComputeStockEntity returns the root store locations of the entity(ies) of the loggued user.
 // Each store location has a Stocks []Stock field containing the stocks of the product p for each unit
 func (db *SQLiteDataStore) ComputeStockEntity(p Product, r *http.Request) []StoreLocation {
@@ -121,11 +189,15 @@ func (db *SQLiteDataStore) ComputeStockEntity(p Product, r *http.Request) []Stor
 		return []StoreLocation{}
 	}
 
-	// computing stocks
+	// computing stocks for storages with units
 	for i := range storelocations {
 		for _, u := range units {
 			db.ComputeStockStorelocation(p, &storelocations[i], u)
 		}
+	}
+	// computing stocks for storages with units
+	for i := range storelocations {
+		db.ComputeStockStorelocationNoUnit(p, &storelocations[i])
 	}
 
 	return storelocations
