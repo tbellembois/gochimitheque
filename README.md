@@ -33,11 +33,19 @@ Main goals:
 
 ![screenshot](screenshot.png)
 
+# Download
+
+Chimithèque releases can be downloaded here: <https://github.com/tbellembois/gochimitheque/releases>.
+
+Download the `gochimitheque` binary (in the assets section), not the source code archive.
+
+The permanent link to the latest release is <https://github.com/tbellembois/gochimitheque/releases/latest/download/gochimitheque>
+
 # Quick start (to have a quick view of the application)
 
 You need a Linux AMD64 machine with `Glibc2.28` minimum. No dependencies are required.
 
-1. download the latest release from <https://github.com/tbellembois/gochimitheque/releases>
+1. download the latest `gochimitheque` binary here <https://github.com/tbellembois/gochimitheque/releases/latest/download/gochimitheque>
 2. uncompress is in a directory
 3. run `./gochimitheque --disableautoupgrade`
 4. open your web browser at `http://localhost:8081/login`
