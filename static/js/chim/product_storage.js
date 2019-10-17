@@ -6,6 +6,18 @@
 // startup actions
 //
 $( document ).ready(function() {  
+    $('body').keypress(function(event){
+        var keycode = (event.keyCode ? event.keyCode : event.which);
+        if(keycode == '13'){
+            search();	
+        }
+    });
+    $('#s_casnumber,#s_empiricalformula,#s_storelocation,#s_name,#s_signalword').on("select2:close", function(e) {
+        setTimeout(function() {
+            $('.select2-container-active').removeClass('select2-container-active');
+            $(':focus').blur();
+        }, 1);
+    });
 });
 $('#table').on('load-success.bs.table refresh.bs.table', function () {
       

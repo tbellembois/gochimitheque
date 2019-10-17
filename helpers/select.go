@@ -87,7 +87,7 @@ type dbselectparamProduct struct {
 	PrecautionaryStatements []int //ids
 	SignalWord              int   // id
 	CasNumberCmr            bool
-	ProductSpecificity string
+	ProductSpecificity      string
 }
 
 // DbselectparamStorage contains the parameters of the GetStorages function
@@ -137,7 +137,7 @@ type dbselectparamStorage struct {
 	Product        int // id
 	Storelocation  int // id
 	Storage        int // id
-	Bookmark      bool
+	Bookmark       bool
 	History        bool
 	StorageArchive bool
 
@@ -564,7 +564,7 @@ func Newdbselectparam(r *http.Request, f func(string) (string, error)) (*dbselec
 
 	// populating with request values
 	if s, ok := r.URL.Query()["search"]; ok {
-		if f != nil {
+		if f != nil && s[0] != "" {
 			fs, err := f(s[0])
 			if err != nil {
 				return nil, &AppError{

@@ -367,7 +367,7 @@ func (env *Env) GetProductsEmpiricalFormulasHandler(w http.ResponseWriter, r *ht
 	)
 
 	// init db request parameters
-	if dsp, aerr = helpers.Newdbselectparam(r, utils.SortEmpiricalFormula); err != nil {
+	if dsp, aerr = helpers.Newdbselectparam(r, utils.SortEmpiricalFormula); aerr != nil {
 		return aerr
 	}
 
