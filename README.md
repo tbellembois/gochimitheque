@@ -1,4 +1,5 @@
 - [Chimithèque](#chimith%c3%a8que)
+- [Download](#download)
 - [Quick start (to have a quick view of the application)](#quick-start-to-have-a-quick-view-of-the-application)
 - [Production installation](#production-installation)
   - [Requirements](#requirements)
@@ -170,7 +171,7 @@ This will generate one CSV file per table.
 You can then import to the V2 version with:
 
 ```bash
-    /path/to/gochimitheque -proxyurl=https://appserver.foo.fr -importfrom=/path/to/csv
+    /path/to/gochimitheque -proxyurl=https://appserver.foo.fr -importv1from=/path/to/csv
 ```
 
 This is important to specify the correct `-proxyurl` parameter as it will be used to generate the storages qr codes.
