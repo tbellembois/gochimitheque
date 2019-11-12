@@ -21,16 +21,16 @@
 
 # Chimithèque
 
-Chimithèque is an open source chemical product management application started by the ENS-Lyon (France) and co-developped with the Université Clermont-Auvergne (France). It is written in Golang.
+Chimithèque is an open source *chemical product management* application started by the ENS-Lyon (France) and co-developped with the Université Clermont-Auvergne (France). It is written in *Golang*.
 
 *projet leader*: Delphine Pitrat (delphine[dot]pitrat[at]ens-lyon[dot]fr)
 
 The project has started in 2015 and has moved to Github in 2017.
 
 Main goals:
-- simplicity: do one think (stores products) but do it well
-- security: provide a global listing of the chemicals products storages
-- cost/ecology: borrow a product before ordering a new one
+- *simplicity*: do one think (stores products) but do it well
+- *security*: provide a global listing of the chemicals products storages
+- *cost/ecology*: share products to avoid waste
 
 ![screenshot](screenshot.png)
 
@@ -44,7 +44,7 @@ The permanent link to the latest release is <https://github.com/tbellembois/goch
 
 # Quick start (to have a quick view of the application)
 
-You need a Linux AMD64 machine with `Glibc2.28` minimum. No dependencies are required.
+You need a *Linux AMD64* machine with `Glibc2.28` minimum. *No dependencies* are required.
 
 1. download the latest `gochimitheque` binary here <https://github.com/tbellembois/gochimitheque/releases/latest/download/gochimitheque>
 2. uncompress is in a directory
@@ -55,13 +55,13 @@ Et voilà !
 
 Now login with the email `admin@chimitheque.fr` and password `chimitheque`, and change the password immediatly.
 
-Do not use this mode in production.
+Do *not* use this mode in production.
 
 # Production installation
 
 ## Requirements
 
-- linux (Chimithèque can be cross compiled to run on Windows but binaries are not provided and this documentation does not cover this situation)
+- linux
 - an SMTP server (for password recovery)
 
 ## Installation
@@ -118,13 +118,13 @@ You need configure the systemd script with the following parameters:
 
 A static administrator `admin@chimitheque.fr` is created during the installation. His password must be changed after the first connection.
 
-You can add additional administrators with the `-admins` command line parameters. Note that those admins must already be present in the database.
+You can add additional administrators with the `-admins` command line parameters. Note that those admins *must already be present* in the database.
 
 > example: `-admins=john.bar@foo.com,jean.dupont@foo.com`
 
 # Database backup
 
-Chimithèque uses a local sqlite database. You are strongly encouraged to schedule regular plain text dump in a separate machine in case of disk failure.
+Chimithèque uses a local *sqlite* database. You are strongly encouraged to schedule regular plain text dump in a separate machine in case of disk failure.
 
 You can backup the database with:
 ```bash
@@ -186,7 +186,7 @@ If you prefer to perform a manual upgrade just stop it and replace the `gochimit
 
 # Support
 
-Please do not contact the members of the Chimithèque development team directly.
+Please do not (never) contact the members of the Chimithèque development team directly.
 
 Subscribe to the mailing list: <https://groupes.renater.fr/sympa/subscribe/chimitheque?previous_action=info> or open a Github issue.
 
