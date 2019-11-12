@@ -62,6 +62,7 @@ func sendMail(to string, subject string, body string) error {
 	// build message
 	message += fmt.Sprintf("From: %s\r\n", global.MailServerSender)
 	message += fmt.Sprintf("To: %s\r\n", to)
+	message += fmt.Sprintf("Date: %s\r\n", time.Now().Format(time.RFC1123Z))
 	message += fmt.Sprintf("Subject: %s\r\n", subject)
 	message += "\r\n" + body
 
