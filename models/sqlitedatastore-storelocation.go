@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
@@ -259,19 +260,33 @@ func (db *SQLiteDataStore) CreateStoreLocation(s StoreLocation) (int, error) {
 	// building column names/values
 	col := make([]string, 0, len(m))
 	val := make([]interface{}, 0, len(m))
+	// for k, v := range m {
+	// 	col = append(col, k)
+	// 	rt := reflect.TypeOf(v)
+	// 	rv := reflect.ValueOf(v)
+	// 	switch rt.Kind() {
+	// 	case reflect.Int, reflect.Int64:
+	// 		val = append(val, strconv.Itoa(int(rv.Int())))
+	// 	case reflect.String:
+	// 		val = append(val, rv.String())
+	// 	case reflect.Bool:
+	// 		val = append(val, rv.Bool())
+	// 	default:
+	// 		panic("unknown type:" + rt.String())
+	// 	}
+	// }
 	for k, v := range m {
 		col = append(col, k)
-		rt := reflect.TypeOf(v)
-		rv := reflect.ValueOf(v)
-		switch rt.Kind() {
-		case reflect.Int, reflect.Int64:
-			val = append(val, strconv.Itoa(int(rv.Int())))
-		case reflect.String:
-			val = append(val, rv.String())
-		case reflect.Bool:
-			val = append(val, rv.Bool())
+
+		switch t := v.(type) {
+		case int:
+			val = append(val, v.(int))
+		case string:
+			val = append(val, v.(string))
+		case bool:
+			val = append(val, v.(bool))
 		default:
-			panic("unknown type:" + rt.String())
+			panic(fmt.Sprintf("unknown type: %T", t))
 		}
 	}
 

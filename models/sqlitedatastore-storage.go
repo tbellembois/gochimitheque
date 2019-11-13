@@ -3,7 +3,6 @@ package models
 import (
 	"database/sql"
 	"fmt"
-	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -184,13 +183,13 @@ func (db *SQLiteDataStore) GetStoragesSuppliers(p helpers.Dbselectparam) ([]Supp
 // and membership
 func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storage, int, error) {
 	var (
-		storages                           []Storage
-		count                              int
+		storages                                  []Storage
+		count                                     int
 		precreq, presreq, comreq, postsreq, reqhc strings.Builder
-		cnstmt                             *sqlx.NamedStmt
-		snstmt                             *sqlx.NamedStmt
-		err                                error
-		isadmin                            bool
+		cnstmt                                    *sqlx.NamedStmt
+		snstmt                                    *sqlx.NamedStmt
+		err                                       error
+		isadmin                                   bool
 	)
 	log.WithFields(log.Fields{"p": p}).Debug("GetStorages")
 
@@ -290,19 +289,9 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 	}
 
 	// filter by permissions
-	// comreq.WriteString(` JOIN permission AS perm, entity as e ON
-	// 	(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
-	// 	(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
-	// 	(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
-	// 	(perm.person = :personid and perm.permission_item_name = "storages" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
-	// 	(perm.person = :personid and perm.permission_item_name = "storages" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
-	// 	(perm.person = :personid and perm.permission_item_name = "storages" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
-	// 	(perm.person = :personid and perm.permission_item_name = "storages" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
-	// 	`)
 	comreq.WriteString(` JOIN permission AS perm, entity as e ON
 	perm.person = :personid and (perm.permission_item_name in ("all", "storages")) and (perm.permission_perm_name in ("all", "r")) and (perm.permission_entity_id in (-1, e.entity_id))
 	`)
-	//comreq.WriteString(" WHERE (storelocation.storelocation_fullpath LIKE :search OR name.name_label LIKE :search)")
 	comreq.WriteString(" WHERE 1")
 	if p.GetProduct() != -1 {
 		comreq.WriteString(" AND product.product_id = :product")
@@ -830,24 +819,42 @@ func (db *SQLiteDataStore) CreateStorage(s Storage) (int, error) {
 	// building column names/values
 	col := make([]string, 0, len(m))
 	val := make([]interface{}, 0, len(m))
+	// for k, v := range m {
+	// 	col = append(col, k)
+	// 	rt := reflect.TypeOf(v)
+	// 	rv := reflect.ValueOf(v)
+	// 	switch rt.Kind() {
+	// 	case reflect.Int:
+	// 		val = append(val, strconv.Itoa(int(rv.Int())))
+	// 	case reflect.Float64:
+	// 		val = append(val, rv.Float())
+	// 	case reflect.Int64:
+	// 		val = append(val, rv.Int())
+	// 	case reflect.String:
+	// 		val = append(val, rv.String())
+	// 	case reflect.Bool:
+	// 		val = append(val, rv.Bool())
+	// 	default:
+	// 		val = append(val, v)
+	// 		//panic("unknown type:" + rt.String() + " for " + k)
+	// 	}
+	// }
 	for k, v := range m {
 		col = append(col, k)
-		rt := reflect.TypeOf(v)
-		rv := reflect.ValueOf(v)
-		switch rt.Kind() {
-		case reflect.Int:
-			val = append(val, strconv.Itoa(int(rv.Int())))
-		case reflect.Float64:
-			val = append(val, rv.Float())
-		case reflect.Int64:
-			val = append(val, rv.Int())
-		case reflect.String:
-			val = append(val, rv.String())
-		case reflect.Bool:
-			val = append(val, rv.Bool())
+
+		switch t := v.(type) {
+		case int:
+			val = append(val, v.(int))
+		case string:
+			val = append(val, v.(string))
+		case bool:
+			val = append(val, v.(bool))
+		case int64:
+			val = append(val, v.(int64))
+		case float64:
+			val = append(val, v.(float64))
 		default:
-			val = append(val, v)
-			//panic("unknown type:" + rt.String() + " for " + k)
+			panic(fmt.Sprintf("unknown type: %T", t))
 		}
 	}
 

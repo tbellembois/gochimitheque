@@ -6,7 +6,17 @@ import (
 	"encoding/csv"
 	"io"
 	"log"
+	"time"
 )
+
+// TimeTrack displays the run time of the function "name"
+// from the start time "start"
+// use: defer helpers.TimeTrack(time.Now(), "GetProducts")
+// at the begining of the function to track
+func TimeTrack(start time.Time, name string) {
+	elapsed := time.Since(start)
+	log.Printf("%s took %s", name, elapsed)
+}
 
 // GetPasswordHash return password hash for the login,
 func GetPasswordHash(login string) ([]byte, error) {

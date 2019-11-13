@@ -1,12 +1,13 @@
-package main
+// +build go1.12,linux
 
 //go:generate go run gogenerate/localejs.go
 //go:generate gopherjs build gopherjs/gjs-common.go -o static/js/chim/gjs-common.js -m
 //go:generate rice embed-go
 //go:generate jade -writer -basedir static/templates -d ./jade welcomeannounce/index.jade home/index.jade login/index.jade entity/index.jade entity/create.jade product/index.jade product/create.jade storage/index.jade storage/create.jade storelocation/index.jade storelocation/create.jade person/index.jade person/create.jade person/pupdate.jade test.jade
+package main
 
 // build with
-//go build -ldflags "-X main.BuildID=$(git tag | head -1)" -o gochimitheque
+//go build -trimpath -ldflags "-X main.BuildID=$(git tag | head -1)" -o gochimitheque
 
 import (
 	"database/sql"

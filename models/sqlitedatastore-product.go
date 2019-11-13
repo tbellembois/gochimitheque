@@ -3,10 +3,9 @@ package models
 import (
 	"database/sql"
 	"fmt"
-	"reflect"
 	"regexp"
-	"strconv"
 	"strings"
+	"sync"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
@@ -1275,6 +1274,7 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 		err                                                    error
 		rperm                                                  bool
 		isadmin                                                bool
+		wg                                                     sync.WaitGroup
 	)
 	log.WithFields(log.Fields{"p": p}).Debug("GetProducts")
 
@@ -1348,7 +1348,6 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	// get storages, store locations and entities
 	comreq.WriteString(" LEFT JOIN storage ON storage.product = p.product_id")
 	if p.GetEntity() != -1 || p.GetStorelocation() != -1 || p.GetStorageBarecode() != "" {
-		//comreq.WriteString(" JOIN storage ON storage.product = p.product_id")
 		comreq.WriteString(" JOIN storelocation ON storage.storelocation = storelocation.storelocation_id")
 		comreq.WriteString(" JOIN entity ON storelocation.entity = entity.entity_id")
 	}
@@ -1370,19 +1369,9 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	}
 
 	// filter by permissions
-	// comreq.WriteString(` JOIN permission AS perm, entity as e ON
-	// (perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
-	// (perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
-	// (perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
-	// (perm.person = :personid and perm.permission_item_name = "products" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
-	// (perm.person = :personid and perm.permission_item_name = "products" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
-	// (perm.person = :personid and perm.permission_item_name = "products" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
-	// (perm.person = :personid and perm.permission_item_name = "products" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
-	// `)
 	comreq.WriteString(` JOIN permission AS perm, entity as e ON
 	perm.person = :personid and (perm.permission_item_name in ("all", "products")) and (perm.permission_perm_name in ("all", "r")) and (perm.permission_entity_id in (-1, e.entity_id))
 	`)
-	//comreq.WriteString(" WHERE name.name_label LIKE :search")
 	comreq.WriteString(" WHERE 1")
 	if p.GetProduct() != -1 {
 		comreq.WriteString(" AND p.product_id = :product")
@@ -1500,127 +1489,157 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	//
 	// cleaning product_sl
 	//
-	r := regexp.MustCompile("([a-zA-Z]{1}[0-9]+)\\.[0-9]+")
-	for i, pr := range products {
-		// note: do not modify p but products[i] instead
-		m := r.FindAllStringSubmatch(pr.ProductSL.String, -1)
-		// lazily adding only the first match
-		if len(m) > 0 {
-			products[i].ProductSL.String = m[0][1]
-		} else {
-			products[i].ProductSL.String = ""
+	wg.Add(1)
+	go func() {
+		r := regexp.MustCompile("([a-zA-Z]{1}[0-9]+)\\.[0-9]+")
+		for i, pr := range products {
+			// note: do not modify p but products[i] instead
+			m := r.FindAllStringSubmatch(pr.ProductSL.String, -1)
+			// lazily adding only the first match
+			if len(m) > 0 {
+				products[i].ProductSL.String = m[0][1]
+			} else {
+				products[i].ProductSL.String = ""
+			}
 		}
-	}
+		wg.Done()
+	}()
 
 	//
 	// getting symbols
 	//
-	for i, pr := range products {
-		// note: do not modify p but products[i] instead
-		req.Reset()
-		req.WriteString("SELECT symbol_id, symbol_label, symbol_image FROM symbol")
-		req.WriteString(" JOIN productsymbols ON productsymbols.productsymbols_symbol_id = symbol.symbol_id")
-		req.WriteString(" JOIN product ON productsymbols.productsymbols_product_id = product.product_id")
-		req.WriteString(" WHERE product.product_id = ?")
+	wg.Add(1)
+	go func() {
+		for i, pr := range products {
+			// note: do not modify p but products[i] instead
+			req.Reset()
+			req.WriteString("SELECT symbol_id, symbol_label, symbol_image FROM symbol")
+			req.WriteString(" JOIN productsymbols ON productsymbols.productsymbols_symbol_id = symbol.symbol_id")
+			req.WriteString(" JOIN product ON productsymbols.productsymbols_product_id = product.product_id")
+			req.WriteString(" WHERE product.product_id = ?")
 
-		if err = db.Select(&products[i].Symbols, req.String(), pr.ProductID); err != nil {
-			return nil, 0, err
+			if err = db.Select(&products[i].Symbols, req.String(), pr.ProductID); err != nil {
+				//return nil, 0, err
+			}
 		}
-	}
+		wg.Done()
+	}()
 
 	//
 	// getting classes of compounds
 	//
-	for i, pr := range products {
-		// note: do not modify p but products[i] instead
-		req.Reset()
-		req.WriteString("SELECT classofcompound_id, classofcompound_label FROM classofcompound")
-		req.WriteString(" JOIN productclassofcompound ON productclassofcompound.productclassofcompound_classofcompound_id = classofcompound.classofcompound_id")
-		req.WriteString(" JOIN product ON productclassofcompound.productclassofcompound_product_id = product.product_id")
-		req.WriteString(" WHERE product.product_id = ?")
+	wg.Add(1)
+	go func() {
+		for i, pr := range products {
+			// note: do not modify p but products[i] instead
+			req.Reset()
+			req.WriteString("SELECT classofcompound_id, classofcompound_label FROM classofcompound")
+			req.WriteString(" JOIN productclassofcompound ON productclassofcompound.productclassofcompound_classofcompound_id = classofcompound.classofcompound_id")
+			req.WriteString(" JOIN product ON productclassofcompound.productclassofcompound_product_id = product.product_id")
+			req.WriteString(" WHERE product.product_id = ?")
 
-		if err = db.Select(&products[i].ClassOfCompound, req.String(), pr.ProductID); err != nil {
-			return nil, 0, err
+			if err = db.Select(&products[i].ClassOfCompound, req.String(), pr.ProductID); err != nil {
+				//return nil, 0, err
+			}
 		}
-	}
+		wg.Done()
+	}()
 
 	//
 	// getting synonyms
 	//
-	for i, pr := range products {
-		// note: do not modify p but products[i] instead
-		req.Reset()
-		req.WriteString("SELECT name_id, name_label FROM name")
-		req.WriteString(" JOIN productsynonyms ON productsynonyms.productsynonyms_name_id = name.name_id")
-		req.WriteString(" JOIN product ON productsynonyms.productsynonyms_product_id = product.product_id")
-		req.WriteString(" WHERE product.product_id = ?")
+	wg.Add(1)
+	go func() {
+		for i, pr := range products {
+			// note: do not modify p but products[i] instead
+			req.Reset()
+			req.WriteString("SELECT name_id, name_label FROM name")
+			req.WriteString(" JOIN productsynonyms ON productsynonyms.productsynonyms_name_id = name.name_id")
+			req.WriteString(" JOIN product ON productsynonyms.productsynonyms_product_id = product.product_id")
+			req.WriteString(" WHERE product.product_id = ?")
 
-		if err = db.Select(&products[i].Synonyms, req.String(), pr.ProductID); err != nil {
-			return nil, 0, err
+			if err = db.Select(&products[i].Synonyms, req.String(), pr.ProductID); err != nil {
+				//return nil, 0, err
+			}
 		}
-	}
+		wg.Done()
+	}()
 
 	//
 	// getting hazard statements
 	//
-	for i, pr := range products {
-		// note: do not modify p but products[i] instead
-		req.Reset()
-		req.WriteString("SELECT hazardstatement_id, hazardstatement_label, hazardstatement_reference FROM hazardstatement")
-		req.WriteString(" JOIN producthazardstatements ON producthazardstatements.producthazardstatements_hazardstatement_id = hazardstatement.hazardstatement_id")
-		req.WriteString(" JOIN product ON producthazardstatements.producthazardstatements_product_id = product.product_id")
-		req.WriteString(" WHERE product.product_id = ?")
+	wg.Add(1)
+	go func() {
+		for i, pr := range products {
+			// note: do not modify p but products[i] instead
+			req.Reset()
+			req.WriteString("SELECT hazardstatement_id, hazardstatement_label, hazardstatement_reference FROM hazardstatement")
+			req.WriteString(" JOIN producthazardstatements ON producthazardstatements.producthazardstatements_hazardstatement_id = hazardstatement.hazardstatement_id")
+			req.WriteString(" JOIN product ON producthazardstatements.producthazardstatements_product_id = product.product_id")
+			req.WriteString(" WHERE product.product_id = ?")
 
-		if err = db.Select(&products[i].HazardStatements, req.String(), pr.ProductID); err != nil {
-			return nil, 0, err
+			if err = db.Select(&products[i].HazardStatements, req.String(), pr.ProductID); err != nil {
+				//return nil, 0, err
+			}
 		}
-	}
+		wg.Done()
+	}()
 
 	//
 	// getting precautionary statements
 	//
-	for i, pr := range products {
-		// note: do not modify p but products[i] instead
-		req.Reset()
-		req.WriteString("SELECT precautionarystatement_id, precautionarystatement_label, precautionarystatement_reference FROM precautionarystatement")
-		req.WriteString(" JOIN productprecautionarystatements ON productprecautionarystatements.productprecautionarystatements_precautionarystatement_id = precautionarystatement.precautionarystatement_id")
-		req.WriteString(" JOIN product ON productprecautionarystatements.productprecautionarystatements_product_id = product.product_id")
-		req.WriteString(" WHERE product.product_id = ?")
+	wg.Add(1)
+	go func() {
+		for i, pr := range products {
+			// note: do not modify p but products[i] instead
+			req.Reset()
+			req.WriteString("SELECT precautionarystatement_id, precautionarystatement_label, precautionarystatement_reference FROM precautionarystatement")
+			req.WriteString(" JOIN productprecautionarystatements ON productprecautionarystatements.productprecautionarystatements_precautionarystatement_id = precautionarystatement.precautionarystatement_id")
+			req.WriteString(" JOIN product ON productprecautionarystatements.productprecautionarystatements_product_id = product.product_id")
+			req.WriteString(" WHERE product.product_id = ?")
 
-		if err = db.Select(&products[i].PrecautionaryStatements, req.String(), pr.ProductID); err != nil {
-			return nil, 0, err
+			if err = db.Select(&products[i].PrecautionaryStatements, req.String(), pr.ProductID); err != nil {
+				//return nil, 0, err
+			}
 		}
-	}
+		wg.Done()
+	}()
 
 	//
 	// getting number of storages for each product
 	//
-	for i, pr := range products {
-		// getting the total storage count
-		reqtsc.Reset()
-		reqtsc.WriteString("SELECT count(DISTINCT storage_id) from storage")
-		reqtsc.WriteString(" JOIN product ON storage.product = ? AND storage.storage IS NULL AND storage.storage_archive == false")
-		if isadmin {
-			reqsc.Reset()
-			reqsc.WriteString("SELECT count(DISTINCT storage_id) from storage")
-			reqsc.WriteString(" JOIN product ON storage.product = ? AND storage.storage IS NULL AND storage.storage_archive == false")
-		} else {
-			// getting the storage count of the logged user entities
-			reqsc.Reset()
-			reqsc.WriteString("SELECT count(DISTINCT storage_id) from storage")
-			reqsc.WriteString(" JOIN product ON storage.product = ? AND storage.storage IS NULL AND storage.storage_archive == false")
-			reqsc.WriteString(" JOIN storelocation ON storage.storelocation = storelocation.storelocation_id")
-			reqsc.WriteString(" JOIN entity ON storelocation.entity = entity.entity_id")
-			reqsc.WriteString(" JOIN personentities ON (entity.entity_id = personentities.personentities_entity_id) AND")
-			reqsc.WriteString(" (personentities.personentities_person_id = ?)")
+	wg.Add(1)
+	go func() {
+		for i, pr := range products {
+			// getting the total storage count
+			reqtsc.Reset()
+			reqtsc.WriteString("SELECT count(DISTINCT storage_id) from storage")
+			reqtsc.WriteString(" JOIN product ON storage.product = ? AND storage.storage IS NULL AND storage.storage_archive == false")
+			if isadmin {
+				reqsc.Reset()
+				reqsc.WriteString("SELECT count(DISTINCT storage_id) from storage")
+				reqsc.WriteString(" JOIN product ON storage.product = ? AND storage.storage IS NULL AND storage.storage_archive == false")
+			} else {
+				// getting the storage count of the logged user entities
+				reqsc.Reset()
+				reqsc.WriteString("SELECT count(DISTINCT storage_id) from storage")
+				reqsc.WriteString(" JOIN product ON storage.product = ? AND storage.storage IS NULL AND storage.storage_archive == false")
+				reqsc.WriteString(" JOIN storelocation ON storage.storelocation = storelocation.storelocation_id")
+				reqsc.WriteString(" JOIN entity ON storelocation.entity = entity.entity_id")
+				reqsc.WriteString(" JOIN personentities ON (entity.entity_id = personentities.personentities_entity_id) AND")
+				reqsc.WriteString(" (personentities.personentities_person_id = ?)")
+			}
+			if err = db.Get(&products[i].ProductSC, reqsc.String(), pr.ProductID, p.GetLoggedPersonID()); err != nil {
+				//return nil, 0, err
+			}
+			if err = db.Get(&products[i].ProductTSC, reqtsc.String(), pr.ProductID, p.GetLoggedPersonID()); err != nil {
+				//return nil, 0, err
+			}
 		}
-		if err = db.Get(&products[i].ProductSC, reqsc.String(), pr.ProductID, p.GetLoggedPersonID()); err != nil {
-			return nil, 0, err
-		}
-		if err = db.Get(&products[i].ProductTSC, reqtsc.String(), pr.ProductID, p.GetLoggedPersonID()); err != nil {
-			return nil, 0, err
-		}
-	}
+		wg.Done()
+	}()
+
+	wg.Wait()
 
 	return products, count, nil
 }
@@ -1993,19 +2012,33 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	// building column names/values
 	col := make([]string, 0, len(s))
 	val := make([]interface{}, 0, len(s))
+	// for k, v := range s {
+	// 	col = append(col, k)
+	// 	rt := reflect.TypeOf(v)
+	// 	rv := reflect.ValueOf(v)
+	// 	switch rt.Kind() {
+	// 	case reflect.Int:
+	// 		val = append(val, strconv.Itoa(int(rv.Int())))
+	// 	case reflect.String:
+	// 		val = append(val, rv.String())
+	// 	case reflect.Bool:
+	// 		val = append(val, rv.Bool())
+	// 	default:
+	// 		panic("unknown type:" + rt.String())
+	// 	}
+	// }
 	for k, v := range s {
 		col = append(col, k)
-		rt := reflect.TypeOf(v)
-		rv := reflect.ValueOf(v)
-		switch rt.Kind() {
-		case reflect.Int:
-			val = append(val, strconv.Itoa(int(rv.Int())))
-		case reflect.String:
-			val = append(val, rv.String())
-		case reflect.Bool:
-			val = append(val, rv.Bool())
+
+		switch t := v.(type) {
+		case int:
+			val = append(val, v.(int))
+		case string:
+			val = append(val, v.(string))
+		case bool:
+			val = append(val, v.(bool))
 		default:
-			panic("unknown type:" + rt.String())
+			panic(fmt.Sprintf("unknown type: %T", t))
 		}
 	}
 
