@@ -246,12 +246,12 @@ func (env *Env) FormatProductEmpiricalFormulaHandler(w http.ResponseWriter, r *h
 func (env *Env) ValidateProductCasNumberHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	vars := mux.Vars(r)
 	var (
-		err  error
-		resp string
-		cas models.CasNumber
+		err        error
+		resp       string
+		cas        models.CasNumber
 		nbProducts int
-		aerr     *helpers.AppError
-		dspp     helpers.DbselectparamProduct
+		aerr       *helpers.AppError
+		dspp       helpers.DbselectparamProduct
 		product_id int
 	)
 
@@ -269,6 +269,14 @@ func (env *Env) ValidateProductCasNumberHandler(w http.ResponseWriter, r *http.R
 		resp = "true"
 	} else {
 		resp = global.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "casnumber_validate_wrongcas", PluralCount: 1})
+	}
+
+	// returning true on 0000-00-0 cas (ie. no cas number)
+	if r.Form.Get("casnumber") == "0000-00-0" {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(resp)
+		return nil
 	}
 
 	// converting the id
@@ -306,7 +314,7 @@ func (env *Env) ValidateProductCasNumberHandler(w http.ResponseWriter, r *http.R
 			resp = global.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "casnumber_validate_casspecificity", PluralCount: 1})
 		}
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp)
