@@ -462,7 +462,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	}
 	if c == 0 {
 		log.Info("  inserting zero cas number")
-		if _, err = db.Exec(`INSERT INTO casnumber (casnumber_label) VALUES ("0000")`); err != nil {
+		if _, err = db.Exec(`INSERT INTO casnumber (casnumber_label) VALUES ("0000-00-0")`); err != nil {
 			return err
 		}
 	}
