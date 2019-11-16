@@ -1254,8 +1254,8 @@ func (db *SQLiteDataStore) ImportV1(dir string) error {
 			continue
 		}
 
-		sqlr = `INSERT INTO empiricalformula(empiricalformula_id, empiricalformula_label) VALUES (?, ?)`
-		if res, err = tx.Exec(sqlr, id, label); err != nil {
+		sqlr = `INSERT INTO empiricalformula(empiricalformula_label) VALUES (?)`
+		if res, err = tx.Exec(sqlr, label); err != nil {
 			tx.Rollback()
 			return err
 		}
@@ -1298,8 +1298,8 @@ func (db *SQLiteDataStore) ImportV1(dir string) error {
 			continue
 		}
 
-		sqlr = `INSERT INTO linearformula(linearformula_id, linearformula_label) VALUES (?, ?)`
-		if res, err = tx.Exec(sqlr, id, label); err != nil {
+		sqlr = `INSERT INTO linearformula(linearformula_label) VALUES (?)`
+		if res, err = tx.Exec(sqlr, label); err != nil {
 			tx.Rollback()
 			return err
 		}
@@ -1561,7 +1561,7 @@ func (db *SQLiteDataStore) ImportV1(dir string) error {
 		return err
 	}
 	log.Info("  retrieving zero casnumber id")
-	if err = db.Get(&zerocasnumberid, `SELECT casnumber_id FROM casnumber WHERE casnumber_label = "0000"`); err != nil {
+	if err = db.Get(&zerocasnumberid, `SELECT casnumber_id FROM casnumber WHERE casnumber_label = "0000-00-0"`); err != nil {
 		log.Error("error retrieving zero casnumber id")
 		return err
 	}
@@ -1855,6 +1855,39 @@ func (db *SQLiteDataStore) ImportV1(dir string) error {
 				reqArgs = append(reqArgs, newcenumber)
 			}
 			sqlr += `) VALUES (` + reqValues + `)`
+
+			log.Debug(fmt.Sprintf(`newperson: %s,
+			newname: %s,
+			newrestricted: %t,
+			newspecificity: %s,
+			newtdformula: %s,
+			newempiricalformula: %s,
+			newlinearformula: %v,
+			newmsds: %s,
+			newphysicalstate: %v,
+			newsignalword: %s,
+			newdisposalcomment: %s,
+			newremark: %s,
+			newarchive: %t,
+			newcasnumber: %s,
+			newcenumber: %s,
+			newisradio: %t
+			`, newperson,
+				newname,
+				newrestricted,
+				newspecificity,
+				newtdformula,
+				newempiricalformula,
+				newlinearformula,
+				newmsds,
+				newphysicalstate,
+				newsignalword,
+				newdisposalcomment,
+				newremark,
+				newarchive,
+				newcasnumber,
+				newcenumber,
+				newisradio))
 
 			if res, err = tx.Exec(sqlr, reqArgs...); err != nil {
 				tx.Rollback()
