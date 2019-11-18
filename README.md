@@ -1,6 +1,6 @@
 - [Chimithèque](#chimith%c3%a8que)
 - [Download](#download)
-- [Quick start (to have a quick view of the application)](#quick-start-to-have-a-quick-view-of-the-application)
+- [Quick start](#quick-start)
 - [Production installation](#production-installation)
   - [Requirements](#requirements)
   - [Installation](#installation)
@@ -42,7 +42,7 @@ Download the `gochimitheque` binary (in the assets section), not the source code
 
 The permanent link to the latest release is <https://github.com/tbellembois/gochimitheque/releases/latest/download/gochimitheque>
 
-# Quick start (to have a quick view of the application)
+# Quick start
 
 You need a *Linux AMD64* machine with `Glibc2.28` minimum. *No dependencies* are required.
 
@@ -154,7 +154,7 @@ example:
 
 ## Export
 
-Databases of the V1 version must be exported into `CSV` to be imported in the V2 version.
+Databases of the V1 version must be exported into `CSV` (with headers) to be imported in the V2 version.
 
 ### PostgreSQL
 
