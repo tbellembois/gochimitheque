@@ -4,9 +4,11 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/csv"
+	"fmt"
 	"io"
-	"log"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // TimeTrack displays the run time of the function "name"
@@ -35,6 +37,7 @@ func CSVToMap(reader io.Reader) []map[string]string {
 	var header []string
 	for {
 		record, err := r.Read()
+		log.Debug(fmt.Sprintf("record: %s", record))
 		if err == io.EOF {
 			break
 		}

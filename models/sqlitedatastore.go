@@ -1421,24 +1421,12 @@ func (db *SQLiteDataStore) ImportV1(dir string) error {
 	if csvFile, err = os.Open(path.Join(dir, "product.csv")); err != nil {
 		return (err)
 	}
-	csvReader = csv.NewReader(bufio.NewReader(csvFile))
+	csvMap = helpers.CSVToMap(bufio.NewReader(csvFile))
 	i = 0
-	for {
-		line, error := csvReader.Read()
+	for _, k := range csvMap {
 
-		// skip header
-		if i == 0 {
-			i++
-			continue
-		}
-
-		if error == io.EOF {
-			break
-		} else if error != nil {
-			tx.Rollback()
-			return err
-		}
-		casnumber := line[26]
+		casnumber := k["cas_number"]
+		log.Debug(fmt.Sprintf("casnumber: %s", casnumber))
 		if _, ok := mRNNcasnumber[casnumber]; !ok {
 			sqlr = `INSERT INTO casnumber(casnumber_label) VALUES (?)`
 			if res, err = tx.Exec(sqlr, casnumber); err != nil {
@@ -1462,24 +1450,11 @@ func (db *SQLiteDataStore) ImportV1(dir string) error {
 	if csvFile, err = os.Open(path.Join(dir, "product.csv")); err != nil {
 		return (err)
 	}
-	csvReader = csv.NewReader(bufio.NewReader(csvFile))
+	csvMap = helpers.CSVToMap(bufio.NewReader(csvFile))
 	i = 0
-	for {
-		line, error := csvReader.Read()
+	for _, k := range csvMap {
 
-		// skip header
-		if i == 0 {
-			i++
-			continue
-		}
-
-		if error == io.EOF {
-			break
-		} else if error != nil {
-			tx.Rollback()
-			return err
-		}
-		cenumber := line[1]
+		cenumber := k["ce_number"]
 		if cenumber != "" {
 			if _, ok := mRNNcenumber[cenumber]; !ok {
 				sqlr = `INSERT INTO cenumber(cenumber_label) VALUES (?)`
@@ -1869,6 +1844,7 @@ func (db *SQLiteDataStore) ImportV1(dir string) error {
 			newdisposalcomment: %s,
 			newremark: %s,
 			newarchive: %t,
+			casnumber: %s,
 			newcasnumber: %s,
 			newcenumber: %s,
 			newisradio: %t
@@ -1885,6 +1861,7 @@ func (db *SQLiteDataStore) ImportV1(dir string) error {
 				newdisposalcomment,
 				newremark,
 				newarchive,
+				casnumber,
 				newcasnumber,
 				newcenumber,
 				newisradio))
