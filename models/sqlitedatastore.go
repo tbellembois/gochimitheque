@@ -473,7 +473,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	}
 	if c == 1 {
 		log.Info("  inserting CMRs")
-		r = csv.NewReader(strings.NewReader(CMR))
+		r = csv.NewReader(strings.NewReader(CMR_CAS))
 		r.Comma = ','
 		if records, err = r.ReadAll(); err != nil {
 			return err

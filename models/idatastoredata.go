@@ -1,6 +1,7 @@
 package models
 
 // PRECAUTIONARYSTATEMENT is the list of chemical products precautionary statements
+// They are inserted into the database during its creation
 const PRECAUTIONARYSTATEMENT = `
 .Absorb spillage to prevent material damage.	P390
 .Avoid breathing dust/fume/gas/mist/vapours/spray.	P261
@@ -142,6 +143,7 @@ const PRECAUTIONARYSTATEMENT = `
 `
 
 // HAZARDSTATEMENT is the list of chemical products hazard statements
+// They are inserted into the database during its creation
 const HAZARDSTATEMENT = `
 .Can become flammable in use.	EUH209A
 .Can become highly flammable in use or can become flammable in use.	EUH209
@@ -243,8 +245,9 @@ const HAZARDSTATEMENT = `
 .Warning! Do not use together with other products. May release dangerous gases (chlorine).	EUH206
 `
 
-// CMR is a list of product CAS numbers that are CMRs
-const CMR = `
+// CMR_CAS is a list of product CAS numbers that are CMRs
+// They are inserted into the database during its creation
+const CMR_CAS = `
 100-00-5,C2 M2
 100-40-3,C2
 100-42-5,R2
@@ -1719,3 +1722,24 @@ const CMR = `
 99464-83-2,M2
 99610-72-7,R2
 `
+
+// CMR_H is a list of H phrases that are CMRs
+// They are NOT inserted into the database
+var CMR_H = map[string]string{
+	"H340":   "M1",
+	"H341":   "M2",
+	"H350":   "C1",
+	"H350i":  "C1",
+	"H351":   "C2",
+	"H360":   "R1",
+	"H360F":  "R1",
+	"H360D":  "R1",
+	"H360Fd": "R1",
+	"H360Df": "R1",
+	"H360FD": "R1",
+	"H361":   "R2",
+	"H361f":  "R2",
+	"H361d":  "R2",
+	"H361fd": "R2",
+	"H362":   "L",
+}
