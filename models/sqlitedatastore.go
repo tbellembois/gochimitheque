@@ -114,10 +114,11 @@ func NewSQLiteDBstore(dataSourceName string) (*SQLiteDataStore, error) {
 // CreateDatabase creates the database tables
 func (db *SQLiteDataStore) CreateDatabase() error {
 	var (
-		err     error
-		c       int
-		r       *csv.Reader
-		records [][]string
+		err         error
+		c           int
+		userVersion int
+		r           *csv.Reader
+		records     [][]string
 	)
 
 	// schema definition
@@ -412,6 +413,43 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		return err
 	}
 
+	// shema migration
+	if err = db.Get(&userVersion, `PRAGMA user_version`); err != nil {
+		return err
+	}
+	log.Info(fmt.Sprintf("  user_version:%d", userVersion))
+
+	switch userVersion {
+	case 0:
+		migrationOne := `BEGIN TRANSACTION;
+		ALTER TABLE hazardstatement ADD hazardstatement_cmr string;
+		
+		UPDATE hazardstatement SET hazardstatement_cmr='M1' WHERE hazardstatement_reference='H340';
+		UPDATE hazardstatement SET hazardstatement_cmr='M2' WHERE hazardstatement_reference='H341';
+		UPDATE hazardstatement SET hazardstatement_cmr='C1' WHERE hazardstatement_reference='H350';
+		UPDATE hazardstatement SET hazardstatement_cmr='C1' WHERE hazardstatement_reference='H350i';
+		UPDATE hazardstatement SET hazardstatement_cmr='C2' WHERE hazardstatement_reference='H351';
+		UPDATE hazardstatement SET hazardstatement_cmr='R1' WHERE hazardstatement_reference='H360';
+		UPDATE hazardstatement SET hazardstatement_cmr='R1' WHERE hazardstatement_reference='H360F';
+		UPDATE hazardstatement SET hazardstatement_cmr='R1' WHERE hazardstatement_reference='H360D';
+		UPDATE hazardstatement SET hazardstatement_cmr='R1' WHERE hazardstatement_reference='H360Fd';
+		UPDATE hazardstatement SET hazardstatement_cmr='R1' WHERE hazardstatement_reference='H360Df';
+		UPDATE hazardstatement SET hazardstatement_cmr='R1' WHERE hazardstatement_reference='H360FD';
+		UPDATE hazardstatement SET hazardstatement_cmr='R2' WHERE hazardstatement_reference='H361';
+		UPDATE hazardstatement SET hazardstatement_cmr='R2' WHERE hazardstatement_reference='H361f';
+		UPDATE hazardstatement SET hazardstatement_cmr='R2' WHERE hazardstatement_reference='H361d';
+		UPDATE hazardstatement SET hazardstatement_cmr='R2' WHERE hazardstatement_reference='H361fd';
+		UPDATE hazardstatement SET hazardstatement_cmr='L' WHERE hazardstatement_reference='H362';
+
+		PRAGMA user_version=1;
+		COMMIT;
+		`
+		log.Info("  migrating to user_version 1")
+		if _, err = db.Exec(migrationOne); err != nil {
+			return err
+		}
+	}
+
 	// welcome announce
 	if err = db.Get(&c, `SELECT count(*) FROM welcomeannounce`); err != nil {
 		return err
@@ -497,7 +535,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 			return err
 		}
 		for _, record := range records {
-			if _, err = db.Exec(`INSERT INTO hazardstatement (hazardstatement_label, hazardstatement_reference) VALUES (?, ?)`, record[0], record[1]); err != nil {
+			if _, err = db.Exec(`INSERT INTO hazardstatement (hazardstatement_label, hazardstatement_reference, hazardstatement_cmr) VALUES (?, ?, ?)`, record[0], record[1], record[2]); err != nil {
 				return err
 			}
 		}

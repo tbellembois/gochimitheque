@@ -202,9 +202,10 @@ type SignalWord struct {
 
 // HazardStatement is a product hazard statement
 type HazardStatement struct {
-	HazardStatementID        int    `db:"hazardstatement_id" json:"hazardstatement_id" schema:"hazardstatement_id"`
-	HazardStatementLabel     string `db:"hazardstatement_label" json:"hazardstatement_label" schema:"hazardstatement_label"`
-	HazardStatementReference string `db:"hazardstatement_reference" json:"hazardstatement_reference" schema:"hazardstatement_reference"`
+	HazardStatementID        int            `db:"hazardstatement_id" json:"hazardstatement_id" schema:"hazardstatement_id"`
+	HazardStatementLabel     string         `db:"hazardstatement_label" json:"hazardstatement_label" schema:"hazardstatement_label"`
+	HazardStatementReference string         `db:"hazardstatement_reference" json:"hazardstatement_reference" schema:"hazardstatement_reference"`
+	HazardStatementCMR       sql.NullString `db:"hazardstatement_cmr" json:"hazardstatement_cmr" schema:"hazardstatement_cmr"`
 }
 
 // PrecautionaryStatement is a product precautionary statement
@@ -247,6 +248,8 @@ type Product struct {
 	ProductSC int `db:"product_sc" json:"product_sc" schema:"product_sc"` // not in db but sqlx requires the "db" entry
 	// storage barecode concatenation
 	ProductSL sql.NullString `db:"product_sl" json:"product_sl" schema:"product_sl"` // not in db but sqlx requires the "db" entry
+	// hazard statement CMR concatenation
+	HazardStatementCMR sql.NullString `db:"hazardstatement_cmr" json:"hazardstatement_cmr" schema:"hazardstatement_cmr"` // not in db but sqlx requires the "db" entry
 }
 
 // Bookmark is a product person bookmark

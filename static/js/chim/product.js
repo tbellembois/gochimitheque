@@ -1205,8 +1205,13 @@ function detailFormatter(index, row) {
         html.push("<div class='col-sm-4'>")
             html.push("<span class='iconlabel'>" + global.t("casnumber_label_title", container.PersonLanguage) + "</span> " + row["casnumber"]["casnumber_label"])
             if (row["casnumber"]["casnumber_cmr"]["Valid"]) {
-                html.push("<span class='iconlabel'>" + global.t("casnumber_cmr_title", container.PersonLanguage) + "</span> " + row["casnumber"]["casnumber_cmr"]["String"])
+                html.push("&nbsp;<span class='iconlabel'>" + global.t("casnumber_cmr_title", container.PersonLanguage) + "</span> " + row["casnumber"]["casnumber_cmr"]["String"])
             }
+            $.each(row.hazardstatements, function( index, value ) {
+                if (value.hazardstatement_cmr.Valid) {
+                    html.push("&nbsp;"+value.hazardstatement_cmr.String);
+                }
+            }); 
         html.push("</div>")
 
         if (row["cenumber"]["cenumber_id"]["Valid"]) {
@@ -1370,7 +1375,7 @@ function operateFormatter(value, row, index) {
     // buttons are hidden by default
     var actions = [];
 
-    actions.push('<div class="float-right">');
+    actions.push('<div class="float-right" style="position: relative">');
 
     $.each(row.symbols, function( index, value ) {
         if (value.symbol_label == "SGH02") {
@@ -1414,9 +1419,16 @@ function operateFormatter(value, row, index) {
     '<div class="collapse" id="ostorages-collapse-' + pid + '"></div>'
     );
 
+    actions.push('<div class="position-absolute" style="right: 0px; bottom: -8px;">');
     if (row.casnumber.casnumber_cmr.Valid) {
-        actions.push('<span title="CMR" class="mdi mdi-16px mdi-alert-outline text-danger"></span><span class="text-danger">' + row.casnumber.casnumber_cmr.String + '</span>');
-    }    
+        actions.push('<span title="CMR" class="text-danger font-italic">' + row.casnumber.casnumber_cmr.String + '</span>');
+    }  
+    $.each(row.hazardstatements, function( index, value ) {
+        if (value.hazardstatement_cmr.Valid) {
+            actions.push('<span title="CMR" class="text-danger font-italic">' + value.hazardstatement_cmr.String + '</span>');
+        }
+    });
+    actions.push('</div>');
     if (row.product_restricted.Valid && row.product_restricted.Bool) {
         actions.push('<span title="restricted access" class="mdi mdi-16px mdi-hand"></span>');
     }  

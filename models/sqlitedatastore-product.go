@@ -1318,19 +1318,25 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	casnumber.casnumber_id AS "casnumber.casnumber_id",
 	casnumber.casnumber_label AS "casnumber.casnumber_label",
 	casnumber.casnumber_cmr AS "casnumber.casnumber_cmr",
-	GROUP_CONCAT(DISTINCT storage.storage_barecode) AS "product_sl"`)
+	GROUP_CONCAT(DISTINCT storage.storage_barecode) AS "product_sl",
+	GROUP_CONCAT(DISTINCT hazardstatement.hazardstatement_cmr) AS "hazardstatement_cmr"`)
 
 	// common parts
 	comreq.WriteString(" FROM product as p")
 	// get name
 	comreq.WriteString(" JOIN name ON p.name = name.name_id")
 	// get CMR
-	if p.GetCasNumberCmr() {
-		comreq.WriteString(" JOIN casnumber ON p.casnumber = casnumber.casnumber_id AND casnumber.casnumber_cmr IS NOT NULL")
-	} else {
-		// get casnumber
-		comreq.WriteString(" JOIN casnumber ON p.casnumber = casnumber.casnumber_id")
-	}
+	// if p.GetCasNumberCmr() {
+	// 	comreq.WriteString(" JOIN casnumber ON p.casnumber = casnumber.casnumber_id AND casnumber.casnumber_cmr IS NOT NULL")
+	// } else {
+	// 	// get casnumber
+	// 	comreq.WriteString(" JOIN casnumber ON p.casnumber = casnumber.casnumber_id")
+	// }
+	// get hazardstatement GROUP_CONCAT for CMR detection
+	comreq.WriteString(" LEFT JOIN producthazardstatements ON producthazardstatements.producthazardstatements_product_id = p.product_id")
+	comreq.WriteString(" LEFT JOIN hazardstatement ON producthazardstatements.producthazardstatements_hazardstatement_id = hazardstatement.hazardstatement_id")
+	// get casnumber
+	comreq.WriteString(" JOIN casnumber ON p.casnumber = casnumber.casnumber_id")
 	// get cenumber
 	comreq.WriteString(" LEFT JOIN cenumber ON p.cenumber = cenumber.cenumber_id")
 	// get person
@@ -1373,6 +1379,9 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	perm.person = :personid and (perm.permission_item_name in ("all", "products")) and (perm.permission_perm_name in ("all", "r")) and (perm.permission_entity_id in (-1, e.entity_id))
 	`)
 	comreq.WriteString(" WHERE 1")
+	if p.GetCasNumberCmr() {
+		comreq.WriteString(" AND (casnumber.casnumber_cmr IS NOT NULL OR hazardstatement_cmr IS NOT NULL)")
+	}
 	if p.GetProduct() != -1 {
 		comreq.WriteString(" AND p.product_id = :product")
 	}
@@ -1573,7 +1582,7 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 		for i, pr := range products {
 			// note: do not modify p but products[i] instead
 			req.Reset()
-			req.WriteString("SELECT hazardstatement_id, hazardstatement_label, hazardstatement_reference FROM hazardstatement")
+			req.WriteString("SELECT hazardstatement_id, hazardstatement_label, hazardstatement_reference, hazardstatement_cmr FROM hazardstatement")
 			req.WriteString(" JOIN producthazardstatements ON producthazardstatements.producthazardstatements_hazardstatement_id = hazardstatement.hazardstatement_id")
 			req.WriteString(" JOIN product ON producthazardstatements.producthazardstatements_product_id = product.product_id")
 			req.WriteString(" WHERE product.product_id = ?")
@@ -1745,7 +1754,7 @@ func (db *SQLiteDataStore) GetProduct(id int) (Product, error) {
 	//
 	// getting hazard statements
 	//
-	sqlr = `SELECT hazardstatement_id, hazardstatement_label, hazardstatement_reference FROM hazardstatement
+	sqlr = `SELECT hazardstatement_id, hazardstatement_label, hazardstatement_reference, hazardstatement_cmr FROM hazardstatement
 	JOIN producthazardstatements ON producthazardstatements.producthazardstatements_hazardstatement_id = hazardstatement.hazardstatement_id
 	JOIN product ON producthazardstatements.producthazardstatements_product_id = product.product_id
 	WHERE product.product_id = ?`
@@ -2012,21 +2021,6 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	// building column names/values
 	col := make([]string, 0, len(s))
 	val := make([]interface{}, 0, len(s))
-	// for k, v := range s {
-	// 	col = append(col, k)
-	// 	rt := reflect.TypeOf(v)
-	// 	rv := reflect.ValueOf(v)
-	// 	switch rt.Kind() {
-	// 	case reflect.Int:
-	// 		val = append(val, strconv.Itoa(int(rv.Int())))
-	// 	case reflect.String:
-	// 		val = append(val, rv.String())
-	// 	case reflect.Bool:
-	// 		val = append(val, rv.Bool())
-	// 	default:
-	// 		panic("unknown type:" + rt.String())
-	// 	}
-	// }
 	for k, v := range s {
 		col = append(col, k)
 

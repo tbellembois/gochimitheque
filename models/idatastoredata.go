@@ -145,104 +145,104 @@ const PRECAUTIONARYSTATEMENT = `
 // HAZARDSTATEMENT is the list of chemical products hazard statements
 // They are inserted into the database during its creation
 const HAZARDSTATEMENT = `
-.Can become flammable in use.	EUH209A
-.Can become highly flammable in use or can become flammable in use.	EUH209
-.Can become highly flammable in use.	EUH30
-.Catches fire spontaneously if exposed to air.	H250
-.Causes damage to organs <or state all organs affected	H370
-.Causes damage to organs <or state all organs affected	H372
-.Causes serious eye damage.	H318
-.Causes serious eye irritation.	H319
-.Causes severe skin burns and eye damage.	H314
-.Causes skin irritation.	H315
-.Contact with acids liberates toxic gas.	EUH031
-.Contact with acids liberates very toxic gas.	EUH032
-.Contact with water liberates toxic gas.	EUH029
-.Contains (name of sensitising substance). May produce an allergic reaction.	EUH208
-.Contains chromium (VI). May produce an allergic reaction.	EUH203
-.Contains epoxy constituents. See information supplied by the manufacturer.	EUH205
-.Contains gas under pressure; may explode if heated.	H280
-.Contains isocyanates. See information supplied by the manufacturer.	EUH204
-.Contains lead. Should not be used on surfaces liable to be chewed or sucked by children.Warning! Contains lead.	EUH201
-.Contains refrigerated gas; may cause cryogenic burns or injury.	H281
-.Corrosive to the respiratory tract.	EUH071
-.Cyanoacrylate. Danger. Bonds skin and eyes in seconds. Keep out of the reach of children.	EUH202
-.Explosive	H202
-.Explosive when dry	EUH001
-.Explosive with or without contact with air.	EUH006
-.Explosive; fire	H203
-.Explosive; mass explosion hazard.	H201
-.Extremely flammable aerosol.	H222
-.Extremely flammable gas.	H220
-.Extremely flammable liquid and vapour.	H224
-.Fatal if inhaled.	H330
-.Fatal if swallowed.	H300
-.Fatal in contact with skin.	H310
-.Fire or projection hazard.	H204
-.Flammable aerosol.	H223
-.Flammable gas.	H221
-.Flammable liquid and vapour.	H226
-.Flammable solid.	H228
-.Harmful if inhaled.	H332
-.Harmful if swallowed.	H302
-.Harmful in contact with skin.	H312
-.Harmful to aquatic life with long lasting effects.	H412
-.Hazardous to the ozone layer.	EUH059
-.Heating may cause a fire or explosion.	H241
-.Heating may cause a fire.	H242
-.Heating may cause an explosion.	H240
-.Highly flammable liquid and vapour.	H225
-.In contact with water releases flammable gas.	H261
-.In contact with water releases flammable gases which may ignite spontaneously.	H260
-.In use may form flammable/explosive vapour-air mixture.	EUH018
-.May be corrosive to metals.	H290
-.May be fatal if swallowed and enters airways.	H304
-.May cause allergy or asthma symptoms or breathing difficulties if inhaled.	H334
-.May cause an allergic skin reaction.	H317
-.May cause cancer <state route of exposure if it is conclusively proven that no other routes of exposure cause the hazard>.	H350
-.May cause cancer by inhalation.	H350i
-.May cause damage to organs <or state all organs affected	H371
-.May cause damage to organs <or state all organs affected	H373
-.May cause drowsiness or dizziness.	H336
-.May cause fire or explosion; strong oxidizer.	H271
-.May cause genetic defects <state route of exposure if it is conclusively proven that no other routes of exposure cause the hazard>.	H340
-.May cause harm to breast-fed children.	H362
-.May cause long lasting harmful effects to aquatic life.	H413
-.May cause or intensify fire; oxidizer.	H270
-.May cause respiratory irritation.	H335
-.May damage fertility or the unborn child <state specific effect if known > <state route of exposure if it is conclusively proven that no other routes of exposure cause the hazard>.	H360
-.May damage fertility.	H360F
-.May damage fertility. May damage the unborn child.	H360FD
-.May damage fertility. Suspected of damaging the unborn child.	H360Fd
-.May damage the unborn child.	H360D
-.May damage the unborn child. Suspected of damaging fertility.	H360Df
-.May form explosive peroxides.	EUH019
-.May intensify fire; oxidizer.	H272
-.May mass explode in fire.	H205
-.Reacts violently with water.	EUH014
-.Repeated exposure may cause skin dryness or cracking.	EUH066
-.Risk of explosion if heated under confinement.	EUH044
-.Safety data sheet available on request	EUH210
-.Self-heating in large quantities; may catch fire.	H252
-.Self-heating: may catch fire.	H251
-.Suspected of causing cancer <state route of exposure if it is conclusively proven that no other routs of exposure cause the hazard>.	H351
-.Suspected of causing genetic defects <state route of exposure if it is conclusively proven that no other routes of exposure cause the hazard>.	H341
-.Suspected of damaging fertility or the unborn child <state specific effect if known> <state route of exposure if it is conclusively proven that no other routes of exposure cause the hazard>.	H361
-.Suspected of damaging fertility.	H361f
-.Suspected of damaging fertility. Suspected of damaging the unborn child.	H361fd
-.Suspected of damaging the unborn child.	H361d
-.To avoid risks to human health and the environment	EUH401
-.Toxic by eye contact	EUH070
-.Toxic if inhaled.	H331
-.Toxic if swallowed.	H301
-.Toxic in contact with skin.	H311
-.Toxic to aquatic life with long lasting effects.	H411
-.Unstable explosives.	H200
-.Very toxic to aquatic life with long lasting effects.	H410
-.Very toxic to aquatic life.	H400
-.Warning! Contains cadmium. Dangerous fumes are formed during use. See informationsupplied by the manufacturer. Comply with the safety instructions. Contains (name of sensitising substance). May produce an allergic reaction	EUH207
-.Warning! Contains lead.	EUH201A
-.Warning! Do not use together with other products. May release dangerous gases (chlorine).	EUH206
+.Can become flammable in use.	EUH209A	
+.Can become highly flammable in use or can become flammable in use.	EUH209	
+.Can become highly flammable in use.	EUH30	
+.Catches fire spontaneously if exposed to air.	H250	
+.Causes damage to organs <or state all organs affected	H370	
+.Causes damage to organs <or state all organs affected	H372	
+.Causes serious eye damage.	H318	
+.Causes serious eye irritation.	H319	
+.Causes severe skin burns and eye damage.	H314	
+.Causes skin irritation.	H315	
+.Contact with acids liberates toxic gas.	EUH031	
+.Contact with acids liberates very toxic gas.	EUH032	
+.Contact with water liberates toxic gas.	EUH029	
+.Contains (name of sensitising substance). May produce an allergic reaction.	EUH208	
+.Contains chromium (VI). May produce an allergic reaction.	EUH203	
+.Contains epoxy constituents. See information supplied by the manufacturer.	EUH205	
+.Contains gas under pressure; may explode if heated.	H280	
+.Contains isocyanates. See information supplied by the manufacturer.	EUH204	
+.Contains lead. Should not be used on surfaces liable to be chewed or sucked by children.Warning! Contains lead.	EUH201	
+.Contains refrigerated gas; may cause cryogenic burns or injury.	H281	
+.Corrosive to the respiratory tract.	EUH071	
+.Cyanoacrylate. Danger. Bonds skin and eyes in seconds. Keep out of the reach of children.	EUH202	
+.Explosive	H202	
+.Explosive when dry	EUH001	
+.Explosive with or without contact with air.	EUH006	
+.Explosive; fire	H203	
+.Explosive; mass explosion hazard.	H201	
+.Extremely flammable aerosol.	H222	
+.Extremely flammable gas.	H220	
+.Extremely flammable liquid and vapour.	H224	
+.Fatal if inhaled.	H330	
+.Fatal if swallowed.	H300	
+.Fatal in contact with skin.	H310	
+.Fire or projection hazard.	H204	
+.Flammable aerosol.	H223	
+.Flammable gas.	H221	
+.Flammable liquid and vapour.	H226	
+.Flammable solid.	H228	
+.Harmful if inhaled.	H332	
+.Harmful if swallowed.	H302	
+.Harmful in contact with skin.	H312	
+.Harmful to aquatic life with long lasting effects.	H412	
+.Hazardous to the ozone layer.	EUH059	
+.Heating may cause a fire or explosion.	H241	
+.Heating may cause a fire.	H242	
+.Heating may cause an explosion.	H240	
+.Highly flammable liquid and vapour.	H225	
+.In contact with water releases flammable gas.	H261	
+.In contact with water releases flammable gases which may ignite spontaneously.	H260	
+.In use may form flammable/explosive vapour-air mixture.	EUH018	
+.May be corrosive to metals.	H290	
+.May be fatal if swallowed and enters airways.	H304	
+.May cause allergy or asthma symptoms or breathing difficulties if inhaled.	H334	
+.May cause an allergic skin reaction.	H317	
+.May cause cancer <state route of exposure if it is conclusively proven that no other routes of exposure cause the hazard>.	H350	C1
+.May cause cancer by inhalation.	H350i	C1
+.May cause damage to organs <or state all organs affected	H371	
+.May cause damage to organs <or state all organs affected	H373	
+.May cause drowsiness or dizziness.	H336	
+.May cause fire or explosion; strong oxidizer.	H271	
+.May cause genetic defects <state route of exposure if it is conclusively proven that no other routes of exposure cause the hazard>.	H340	M1
+.May cause harm to breast-fed children.	H362	L
+.May cause long lasting harmful effects to aquatic life.	H413	
+.May cause or intensify fire; oxidizer.	H270	
+.May cause respiratory irritation.	H335	
+.May damage fertility or the unborn child <state specific effect if known > <state route of exposure if it is conclusively proven that no other routes of exposure cause the hazard>.	H360	R1
+.May damage fertility.	H360F	R1
+.May damage fertility. May damage the unborn child.	H360FD	R1
+.May damage fertility. Suspected of damaging the unborn child.	H360Fd	R1
+.May damage the unborn child.	H360D	R1
+.May damage the unborn child. Suspected of damaging fertility.	H360Df	R1
+.May form explosive peroxides.	EUH019	
+.May intensify fire; oxidizer.	H272	
+.May mass explode in fire.	H205	
+.Reacts violently with water.	EUH014	
+.Repeated exposure may cause skin dryness or cracking.	EUH066	
+.Risk of explosion if heated under confinement.	EUH044	
+.Safety data sheet available on request	EUH210	
+.Self-heating in large quantities; may catch fire.	H252	
+.Self-heating: may catch fire.	H251	
+.Suspected of causing cancer <state route of exposure if it is conclusively proven that no other routs of exposure cause the hazard>.	H351	C2
+.Suspected of causing genetic defects <state route of exposure if it is conclusively proven that no other routes of exposure cause the hazard>.	H341	M2
+.Suspected of damaging fertility or the unborn child <state specific effect if known> <state route of exposure if it is conclusively proven that no other routes of exposure cause the hazard>.	H361	R2
+.Suspected of damaging fertility.	H361f	R2
+.Suspected of damaging fertility. Suspected of damaging the unborn child.	H361fd	R2
+.Suspected of damaging the unborn child.	H361d	R2
+.To avoid risks to human health and the environment	EUH401	
+.Toxic by eye contact	EUH070	
+.Toxic if inhaled.	H331	
+.Toxic if swallowed.	H301	
+.Toxic in contact with skin.	H311	
+.Toxic to aquatic life with long lasting effects.	H411	
+.Unstable explosives.	H200	
+.Very toxic to aquatic life with long lasting effects.	H410	
+.Very toxic to aquatic life.	H400	
+.Warning! Contains cadmium. Dangerous fumes are formed during use. See informationsupplied by the manufacturer. Comply with the safety instructions. Contains (name of sensitising substance). May produce an allergic reaction	EUH207	
+.Warning! Contains lead.	EUH201A	
+.Warning! Do not use together with other products. May release dangerous gases (chlorine).	EUH206	
 `
 
 // CMR_CAS is a list of product CAS numbers that are CMRs
