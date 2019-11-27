@@ -58,8 +58,8 @@ html
                             div.dropdown-menu(aria-labelledby="navbarDropdown")
                                 a(href=c.ProxyPath + "v/entities", title="list").dropdown-item
                                     = T("list", 1)
-                                    a#menu_create_entity.collapse(href=c.ProxyPath + "vc/entities", title="create").dropdown-item
-                                        = T("create", 1)
+                                a#menu_create_entity.collapse(href=c.ProxyPath + "vc/entities", title="create").dropdown-item
+                                    = T("create", 1)
 
                         li.nav-item.dropdown#menu_storelocations.collapse
                             a(href="#", title="manage storelocations").nav-link.dropdown-toggle#navbarDropdown(
@@ -72,8 +72,8 @@ html
                             div.dropdown-menu(aria-labelledby="navbarDropdown")
                                 a(href=c.ProxyPath + "v/storelocations", title="list").dropdown-item
                                     = T("list", 1)
-                                    a#menu_create_storelocation.collapse(href=c.ProxyPath + "vc/storelocations", title="create").dropdown-item
-                                        = T("create", 1)
+                                a#menu_create_storelocation.collapse(href=c.ProxyPath + "vc/storelocations", title="create").dropdown-item
+                                    = T("create", 1)
 
                         li.nav-item.dropdown#menu_people.collapse
                             a(href="#", title="manage people").nav-link.dropdown-toggle#navbarDropdown(
@@ -166,7 +166,7 @@ html
                 }).fail(function(){
                     localStorage.setItem("products:-2:GET", false);
                 })
-                hasPermission("products", "", "POST").done(function(){
+                hasPermission("products", "-2", "POST").done(function(){
                     $("#menu_create_product").show();
                     localStorage.setItem("products::POST", true);
                 }).fail(function(){
@@ -178,7 +178,7 @@ html
                 }).fail(function(){
                     localStorage.setItem("entities:-2:GET", false);
                 })
-                hasPermission("entities", "", "POST").done(function(){
+                hasPermission("entities", "-1", "POST").done(function(){
                     $("#menu_create_entity").show();
                     localStorage.setItem("entities::POST", true);
                 }).fail(function(){
@@ -196,7 +196,7 @@ html
                 }).fail(function(){
                     localStorage.setItem("storages:-2:GET", false);
                 })
-                hasPermission("storages", "", "POST").done(function(){
+                hasPermission("storages", "-2", "POST").done(function(){
                     $("#menu_create_storelocation").show();
                     localStorage.setItem("storages::POST", true);
                 }).fail(function(){
@@ -208,7 +208,7 @@ html
                 }).fail(function(){
                     localStorage.setItem("people:-2:GET", false);
                 })
-                hasPermission("people", "", "POST").done(function(){
+                hasPermission("people", "-2", "POST").done(function(){
                     $("#menu_create_person").show();
                     localStorage.setItem("people::POST", true);
                 }).fail(function(){

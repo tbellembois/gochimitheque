@@ -192,12 +192,14 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 		// id and item translations and setup for the HasPersonPermission method, and some bypasses
 		//
 		switch item {
-		case "peoplepass", "peoplep", "bookmarks", "delete-token", "borrowings", "download":
+		case "peoplepass", "peoplep", "bookmarks", "delete-token", "borrowings", "download", "validate", "format":
 			// everybody can change his password
 			// everybody can bookmark a product
 			// everybody can borrow a storage
 			// everybody can logout
 			// everybody can download an export
+			// everybody can validate an item
+			// everybody can format an item
 			h.ServeHTTP(w, r)
 			return
 		case "welcomeannounce":

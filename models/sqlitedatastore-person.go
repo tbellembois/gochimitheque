@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 	"strings"
 	"time"
 
@@ -371,6 +372,10 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 		(person = ? AND permission_perm_name = "all" AND permission_item_name = ?) OR
 		(person = ? AND permission_perm_name = ? AND permission_item_name = "all")  OR
 		(person = ? AND permission_perm_name = ? AND permission_item_name = ?)`
+
+		log.Debug(fmt.Sprintf("sqlr:%s", sqlr))
+		log.Debug(fmt.Sprintf("id:%d item:%s perm:%s", id, item, perm))
+
 		if err = db.Get(&count, sqlr, id, id, item, id, perm, id, perm, item); err != nil {
 			switch {
 			case err == sql.ErrNoRows:
@@ -394,6 +399,9 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 		`, id, id, perm, id, item, id, item, perm); err != nil {
 			return false, err
 		}
+
+		log.Debug(fmt.Sprintf("sqlr:%s", sqlr))
+		log.Debug(fmt.Sprintf("id:%d item:%s perm:%s", id, item, perm))
 
 		if err = db.Get(&count, sqlr, sqlargs...); err != nil {
 			switch {
@@ -426,8 +434,8 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 			return false, err
 		}
 
-		//log.Debug(sqlr)
-		//log.Debug(fmt.Sprintf("id:%d item:%s perm:%s eids:%s", id, item, perm, eids))
+		log.Debug(fmt.Sprintf("sqlr:%s", sqlr))
+		log.Debug(fmt.Sprintf("id:%d item:%s perm:%s eids:%s", id, item, perm, eids))
 
 		if err = db.Get(&count, sqlr, sqlargs...); err != nil {
 			switch {

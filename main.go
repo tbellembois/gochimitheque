@@ -249,14 +249,22 @@ func prog(state overseer.State) {
 	r.Handle("/reset", commonChain.Then(env.AppMiddleware(env.ResetHandler))).Methods("GET")
 	r.Handle("/captcha", commonChain.Then(env.AppMiddleware(env.CaptchaHandler))).Methods("GET")
 
+	// products public
+	if *enablePublicProductsEndpoint {
+		r.Handle("/e/{item:products}", commonChain.Then(env.AppMiddleware(env.GetExposedProductsHandler))).Methods("GET")
+	}
+
 	// developper tests
 	r.Handle("/v/test", securechain.Then(env.AppMiddleware(env.VTestHandler))).Methods("GET")
+
 	// home page
 	r.Handle("/", securechain.Then(env.AppMiddleware(env.HomeHandler))).Methods("GET")
+
 	// welcome announce
 	r.Handle("/{view:v}/{item:welcomeannounce}", securechain.Then(env.AppMiddleware(env.VWelcomeAnnounceHandler))).Methods("GET")
 	r.Handle("/{item:welcomeannounce}", securechain.Then(env.AppMiddleware(env.UpdateWelcomeAnnounceHandler))).Methods("PUT")
 	r.Handle("/{item:welcomeannounce}", commonChain.Then(env.AppMiddleware(env.GetWelcomeAnnounceHandler))).Methods("GET")
+
 	// entities
 	r.Handle("/{view:v}/{item:entities}", securechain.Then(env.AppMiddleware(env.VGetEntitiesHandler))).Methods("GET")
 	r.Handle("/{view:vc}/{item:entities}", securechain.Then(env.AppMiddleware(env.VCreateEntityHandler))).Methods("GET")
@@ -317,10 +325,6 @@ func prog(state overseer.State) {
 	r.Handle("/f/{item:storelocations}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT")
 	r.Handle("/f/{item:storelocations}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("POST")
 	r.Handle("/f/{item:storelocations}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE")
-	// products
-	if *enablePublicProductsEndpoint {
-		r.Handle("/e/{item:products}", commonChain.Then(env.AppMiddleware(env.GetExposedProductsHandler))).Methods("GET")
-	}
 
 	r.Handle("/{item:products}/l2eformula/{f}", securechain.Then(env.AppMiddleware(env.ConvertProductEmpiricalToLinearFormulaHandler))).Methods("GET")
 	r.Handle("/{view:v}/{item:products}", securechain.Then(env.AppMiddleware(env.VGetProductsHandler))).Methods("GET")
@@ -392,15 +396,15 @@ func prog(state overseer.State) {
 	r.Handle("/f/{item:storages}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE")
 
 	// validators
-	r.Handle("/validate/entity/{id}/name/", securechain.Then(env.AppMiddleware(env.ValidateEntityNameHandler))).Methods("POST")
-	r.Handle("/validate/person/{id}/email/", securechain.Then(env.AppMiddleware(env.ValidatePersonEmailHandler))).Methods("POST")
-	r.Handle("/validate/product/{id}/casnumber/", securechain.Then(env.AppMiddleware(env.ValidateProductCasNumberHandler))).Methods("POST")
-	r.Handle("/validate/product/{id}/cenumber/", securechain.Then(env.AppMiddleware(env.ValidateProductCeNumberHandler))).Methods("POST")
-	r.Handle("/validate/product/{id}/name/", securechain.Then(env.AppMiddleware(env.ValidateProductNameHandler))).Methods("POST")
-	r.Handle("/validate/product/{id}/empiricalformula/", securechain.Then(env.AppMiddleware(env.ValidateProductEmpiricalFormulaHandler))).Methods("POST")
+	r.Handle("/{item:validate}/entity/{id}/name/", securechain.Then(env.AppMiddleware(env.ValidateEntityNameHandler))).Methods("POST")
+	r.Handle("/{item:validate}/person/{id}/email/", securechain.Then(env.AppMiddleware(env.ValidatePersonEmailHandler))).Methods("POST")
+	r.Handle("/{item:validate}/product/{id}/casnumber/", securechain.Then(env.AppMiddleware(env.ValidateProductCasNumberHandler))).Methods("POST")
+	r.Handle("/{item:validate}/product/{id}/cenumber/", securechain.Then(env.AppMiddleware(env.ValidateProductCeNumberHandler))).Methods("POST")
+	r.Handle("/{item:validate}/product/{id}/name/", securechain.Then(env.AppMiddleware(env.ValidateProductNameHandler))).Methods("POST")
+	r.Handle("/{item:validate}/product/{id}/empiricalformula/", securechain.Then(env.AppMiddleware(env.ValidateProductEmpiricalFormulaHandler))).Methods("POST")
 
 	// formatters
-	r.Handle("/format/product/{id}/empiricalformula/", securechain.Then(env.AppMiddleware(env.FormatProductEmpiricalFormulaHandler))).Methods("POST")
+	r.Handle("/{item:format}/product/{id}/empiricalformula/", securechain.Then(env.AppMiddleware(env.FormatProductEmpiricalFormulaHandler))).Methods("POST")
 
 	// export download
 	r.Handle("/{item:download}/{id}", securechain.Then(env.AppMiddleware(env.DownloadExportHandler))).Methods("GET")

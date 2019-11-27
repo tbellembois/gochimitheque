@@ -47,8 +47,9 @@ possible items:
 - restricted product card
 - storage card
 - store location
+- entity
 
-permissions on other items (suppliers, classes of compounds...) are link to the items above
+permissions on other items (suppliers, classes of compounds...) are linked to the items above
 
 entities / people management:
 - only super admins can create new entities and modify entities
