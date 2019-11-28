@@ -559,6 +559,28 @@ func (db *SQLiteDataStore) GetStorage(id int) (Storage, error) {
 	return storage, nil
 }
 
+// GetStorageEntity returns the entity of the storage with id "id"
+func (db *SQLiteDataStore) GetStorageEntity(id int) (Entity, error) {
+	var (
+		entity Entity
+		sqlr   string
+		err    error
+	)
+
+	sqlr = `SELECT 
+	entity.entity_id AS "entity_id",
+	entity.entity_name AS "entity_name"
+	FROM storage
+	JOIN storelocation ON storage.storelocation = storelocation.storelocation_id
+	JOIN entity ON storelocation.entity = entity.entity_id
+	WHERE storage.storage_id = ?`
+	if err = db.Get(&entity, sqlr, id); err != nil {
+		return Entity{}, err
+	}
+	log.WithFields(log.Fields{"ID": id, "entity": entity}).Debug("GetStorageEntity")
+	return entity, nil
+}
+
 // DeleteStorage deletes the storages with the given id
 func (db *SQLiteDataStore) DeleteStorage(id int) error {
 

@@ -256,8 +256,8 @@ func (db *SQLiteDataStore) GetPersonEntities(LoggedPersonID int, id int) ([]Enti
 	// building argument map
 	m := map[string]interface{}{
 		"personid": id}
-	log.Debug(sqlr)
-	log.Debug(m)
+	// log.Debug(sqlr)
+	// log.Debug(m)
 
 	if err = sstmt.Select(&entities, m); err != nil {
 		return nil, err
@@ -291,76 +291,37 @@ func (db *SQLiteDataStore) DoesPersonBelongsTo(id int, entities []Entity) (bool,
 	return count > 0, nil
 }
 
-// HasPersonPermission returns true if the person with id "id" has the permission "perm" on the item "item" id "itemid"
-func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string, itemid int) (bool, error) {
-	// itemid == -1 means all itemid
-	// itemid == -2 means any itemid
+// HasPersonPermission returns true if the person with id "personid" has the permission "perm" in the entities with ids "eids"
+func (db *SQLiteDataStore) HasPersonPermission(personid int, perm string, item string, eids []int) (bool, error) {
+	//defer helpers.TimeTrack(time.Now(), "HasPersonPermission")
+
 	var (
 		res     bool
 		count   int
 		sqlr    string
 		sqlargs []interface{}
 		err     error
-		eids    []int
 		isadmin bool
 	)
 
 	log.WithFields(log.Fields{
-		"id":     id,
-		"perm":   perm,
-		"item":   item,
-		"itemid": itemid}).Debug("HasPersonPermission")
+		"id":   personid,
+		"perm": perm,
+		"item": item,
+		"eids": eids}).Debug("HasPersonPermission")
 
 	// is the user an admin?
-	if isadmin, err = db.IsPersonAdmin(id); err != nil {
+	if isadmin, err = db.IsPersonAdmin(personid); err != nil {
 		return false, err
 	}
-	// if yes return true
 	if isadmin {
 		return true, nil
 	}
 
 	//
-	// first: retrieving the entities of the item to be accessed
+	// has the logged user "perm" on the "item" of the entities in "eids"
 	//
-	if itemid != -1 && itemid != -2 {
-		switch item {
-		case "people":
-			// retrieving the requested person entities
-			var rpe []Entity
-			if rpe, err = db.GetPersonEntities(id, itemid); err != nil {
-				return false, err
-			}
-			// and their ids
-			for _, i := range rpe {
-				eids = append(eids, i.EntityID)
-			}
-			// if the person is in not entity
-			// only admin can modify them
-			if len(eids) == 0 {
-				return false, nil
-			}
-		case "entities":
-			eids = append(eids, itemid)
-		case "storages":
-			eids = append(eids, itemid)
-		case "products":
-			eids = append(eids, itemid)
-		case "storelocations":
-			// retrieving the requested store location entity
-			var rpe Entity
-			if rpe, err = db.GetStoreLocationEntity(itemid); err != nil {
-				return false, err
-			}
-			eids = append(eids, rpe.EntityID)
-		}
-		log.WithFields(log.Fields{"eids": eids}).Debug("HasPersonPermission")
-	}
-
-	//
-	// second: has the logged user "perm" on the "item" of the entities in "eids"
-	//
-	if itemid == -2 {
+	if eids[0] == -2 {
 		// possible matchs:
 		// permission_perm_name | permission_item_name
 		// all | all
@@ -374,9 +335,9 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 		(person = ? AND permission_perm_name = ? AND permission_item_name = ?)`
 
 		log.Debug(fmt.Sprintf("sqlr:%s", sqlr))
-		log.Debug(fmt.Sprintf("id:%d item:%s perm:%s", id, item, perm))
+		log.Debug(fmt.Sprintf("id:%d item:%s perm:%s", personid, item, perm))
 
-		if err = db.Get(&count, sqlr, id, id, item, id, perm, id, perm, item); err != nil {
+		if err = db.Get(&count, sqlr, personid, personid, item, personid, perm, personid, perm, item); err != nil {
 			switch {
 			case err == sql.ErrNoRows:
 				return false, nil
@@ -384,7 +345,7 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 				return false, err
 			}
 		}
-	} else if itemid == -1 {
+	} else if eids[0] == -1 {
 		// possible matchs:
 		// permission_perm_name | permission_item_name | permission_entity_id
 		// all | ?   | -1 (ex: all permissions on all entities)
@@ -396,12 +357,12 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 		person = ? AND permission_item_name = "all" AND permission_perm_name = ? AND permission_entity_id = -1 OR
 		person = ? AND permission_item_name = ? AND permission_perm_name = "all" AND permission_entity_id = -1 OR 
 		person = ? AND permission_item_name = ? AND permission_perm_name = ? AND permission_entity_id = -1
-		`, id, id, perm, id, item, id, item, perm); err != nil {
+		`, personid, personid, perm, personid, item, personid, item, perm); err != nil {
 			return false, err
 		}
 
 		log.Debug(fmt.Sprintf("sqlr:%s", sqlr))
-		log.Debug(fmt.Sprintf("id:%d item:%s perm:%s", id, item, perm))
+		log.Debug(fmt.Sprintf("id:%d item:%s perm:%s", personid, item, perm))
 
 		if err = db.Get(&count, sqlr, sqlargs...); err != nil {
 			switch {
@@ -412,6 +373,7 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 			}
 		}
 	} else {
+		// itemid is an int
 		// possible matchs:
 		// permission_perm_name | permission_item_name | permission_entity_id
 		// all | ?   | -1 (ex: all permissions on all entities)
@@ -430,12 +392,12 @@ func (db *SQLiteDataStore) HasPersonPermission(id int, perm string, item string,
 		person = ? AND permission_item_name = ? AND permission_perm_name = "all" AND permission_entity_id = -1 OR 
 		person = ? AND permission_item_name = ? AND permission_perm_name = ? AND permission_entity_id = -1 OR
 		person = ? AND permission_item_name = ? AND permission_perm_name = ? AND permission_entity_id IN (?)
-		`, id, eids, id, perm, id, perm, eids, id, item, eids, id, item, id, item, perm, id, item, perm, eids); err != nil {
+		`, personid, eids, personid, perm, personid, perm, eids, personid, item, eids, personid, item, personid, item, perm, personid, item, perm, eids); err != nil {
 			return false, err
 		}
 
 		log.Debug(fmt.Sprintf("sqlr:%s", sqlr))
-		log.Debug(fmt.Sprintf("id:%d item:%s perm:%s eids:%s", id, item, perm, eids))
+		log.Debug(fmt.Sprintf("id:%d item:%s perm:%s eids:%s", personid, item, perm, eids))
 
 		if err = db.Get(&count, sqlr, sqlargs...); err != nil {
 			switch {

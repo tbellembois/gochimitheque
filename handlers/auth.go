@@ -18,7 +18,6 @@ import (
 
 	"github.com/dchest/passwordreset"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/gorilla/mux"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	log "github.com/sirupsen/logrus"
 	"github.com/steambap/captcha"
@@ -446,46 +445,5 @@ func (env *Env) GetTokenHandler(w http.ResponseWriter, r *http.Request) *helpers
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(tokenString))
 
-	return nil
-}
-
-// HasPermissionHandler returns true if the person with id "personid" has the permission "perm" on item "item" with itemid "itemid"
-func (env *Env) HasPermissionHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
-	vars := mux.Vars(r)
-	var (
-		personid int
-		itemid   int
-		perm     string
-		item     string
-		err      error
-		p        bool
-	)
-
-	if personid, err = strconv.Atoi(vars["personid"]); err != nil {
-		return &helpers.AppError{
-			Error:   err,
-			Message: "personid atoi conversion",
-			Code:    http.StatusInternalServerError}
-	}
-	if itemid, err = strconv.Atoi(vars["itemid"]); err != nil {
-		return &helpers.AppError{
-			Error:   err,
-			Message: "itemid atoi conversion",
-			Code:    http.StatusInternalServerError}
-	}
-	perm = vars["perm"]
-	item = vars["item"]
-
-	if p, err = env.DB.HasPersonPermission(personid, perm, item, itemid); err != nil {
-		return &helpers.AppError{
-			Error:   err,
-			Message: "getting permissions error",
-			Code:    http.StatusInternalServerError}
-	}
-	log.WithFields(log.Fields{"personid": personid, "perm": perm, "item": item, "itemid": itemid}).Debug("HasPermissionHandler")
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(p)
 	return nil
 }

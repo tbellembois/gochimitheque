@@ -77,6 +77,7 @@ type Datastore interface {
 	GetStorage(id int) (Storage, error)
 	GetStoragesUnits(helpers.Dbselectparam) ([]Unit, int, error)
 	GetStoragesSuppliers(helpers.Dbselectparam) ([]Supplier, int, error)
+	GetStorageEntity(id int) (Entity, error)
 	DeleteStorage(id int) error
 	ArchiveStorage(id int) error
 	RestoreStorage(id int) error
@@ -118,7 +119,7 @@ type Datastore interface {
 	GetPersonEntities(loggedpersonID int, id int) ([]Entity, error)
 	GetPersonManageEntities(id int) ([]Entity, error)
 	DoesPersonBelongsTo(id int, entities []Entity) (bool, error)
-	HasPersonPermission(id int, perm string, item string, itemid int) (bool, error)
+	HasPersonPermission(id int, perm string, item string, eids []int) (bool, error)
 	CreatePerson(p Person) (int, error)
 	UpdatePerson(p Person) error
 	UpdatePersonPassword(p Person) error

@@ -1143,7 +1143,7 @@ $('#table').on('load-success.bs.table refresh.bs.table', function () {
         localStorage.setItem("products:-1:PUT", false);
     }) 
 
-    $("table#table").find("tr").each(function( index, b ) {
+    $("table#table").find("tr[product_id]").each(function( index, b ) {
         hasPermission("products", $(b).attr("product_id"), "DELETE").done(function(){
             $("#delete"+$(b).attr("product_id")).fadeIn();
             localStorage.setItem("products:" + $(b).attr("product_id") + ":DELETE", true);

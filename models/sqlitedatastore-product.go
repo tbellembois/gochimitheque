@@ -1265,6 +1265,8 @@ func (db *SQLiteDataStore) GetExposedProducts() ([]Product, int, error) {
 
 // GetProducts return the products matching the search criteria
 func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Product, int, error) {
+	//defer helpers.TimeTrack(time.Now(), "GetProducts")
+
 	var (
 		products                                               []Product
 		count                                                  int
@@ -1284,7 +1286,7 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	}
 
 	// shortcut
-	if rperm, err = db.HasPersonPermission(p.GetLoggedPersonID(), "r", "rproducts", -1); err != nil {
+	if rperm, err = db.HasPersonPermission(p.GetLoggedPersonID(), "r", "rproducts", []int{-1}); err != nil {
 		return nil, 0, err
 	}
 	log.WithFields(log.Fields{"rperm": rperm}).Debug("GetProducts")
@@ -1318,8 +1320,12 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	casnumber.casnumber_id AS "casnumber.casnumber_id",
 	casnumber.casnumber_label AS "casnumber.casnumber_label",
 	casnumber.casnumber_cmr AS "casnumber.casnumber_cmr",
-	GROUP_CONCAT(DISTINCT storage.storage_barecode) AS "product_sl",
-	GROUP_CONCAT(DISTINCT hazardstatement.hazardstatement_cmr) AS "hazardstatement_cmr"`)
+	GROUP_CONCAT(DISTINCT storage.storage_barecode) AS "product_sl"
+	`)
+
+	if p.GetCasNumberCmr() {
+		presreq.WriteString(`,GROUP_CONCAT(DISTINCT hazardstatement.hazardstatement_cmr) AS "hazardstatement_cmr"`)
+	}
 
 	// common parts
 	comreq.WriteString(" FROM product as p")
@@ -1333,8 +1339,10 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	// 	comreq.WriteString(" JOIN casnumber ON p.casnumber = casnumber.casnumber_id")
 	// }
 	// get hazardstatement GROUP_CONCAT for CMR detection
-	comreq.WriteString(" LEFT JOIN producthazardstatements ON producthazardstatements.producthazardstatements_product_id = p.product_id")
-	comreq.WriteString(" LEFT JOIN hazardstatement ON producthazardstatements.producthazardstatements_hazardstatement_id = hazardstatement.hazardstatement_id")
+	if p.GetCasNumberCmr() {
+		comreq.WriteString(" LEFT JOIN producthazardstatements ON producthazardstatements.producthazardstatements_product_id = p.product_id")
+		comreq.WriteString(" LEFT JOIN hazardstatement ON producthazardstatements.producthazardstatements_hazardstatement_id = hazardstatement.hazardstatement_id")
+	}
 	// get casnumber
 	comreq.WriteString(" JOIN casnumber ON p.casnumber = casnumber.casnumber_id")
 	// get cenumber
@@ -1483,8 +1491,8 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 		"signalword":          p.GetSignalWord(),
 	}
 
-	//log.Debug(presreq.String() + comreq.String() + postsreq.String())
-	// log.Debug(m)
+	log.Debug(presreq.String() + comreq.String() + postsreq.String())
+	log.Debug(m)
 
 	// select
 	if err = snstmt.Select(&products, m); err != nil {

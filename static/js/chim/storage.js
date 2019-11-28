@@ -567,7 +567,7 @@ function getData(params) {
 // when table is loaded
 //
 $('#table').on('load-success.bs.table refresh.bs.table', function () {
-    $("table#table").find("tr").each(function( index, b ) {
+    $("table#table").find("tr[storage_id]").each(function( index, b ) {
         hasPermission("storages", $(b).attr("storage_id"), "PUT").done(function(){
             $("#edit"+$(b).attr("storage_id")).fadeIn();
             $("#clone"+$(b).attr("storage_id")).fadeIn();

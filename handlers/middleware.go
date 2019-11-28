@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -148,16 +149,64 @@ func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 	})
 }
 
+func (env *Env) getItemEntities(personid int, item, itemid string) ([]models.Entity, error) {
+	var (
+		e         models.Entity
+		es        []models.Entity
+		err       error
+		itemidInt int
+	)
+
+	if itemidInt, err = strconv.Atoi(itemid); err != nil {
+		return nil, err
+	}
+
+	es = make([]models.Entity, 0)
+
+	switch item {
+	case "storages":
+		if e, err = env.DB.GetStorageEntity(itemidInt); err != nil {
+			return nil, err
+		}
+		es = append(es, e)
+	case "storelocations":
+		if e, err = env.DB.GetStoreLocationEntity(itemidInt); err != nil {
+			return nil, err
+		}
+		es = append(es, e)
+	case "people":
+		if es, err = env.DB.GetPersonEntities(personid, itemidInt); err != nil {
+			return nil, err
+		}
+	default:
+		return nil, fmt.Errorf("unexpecter permission item")
+	}
+
+	return es, nil
+}
+
 // AuthorizeMiddleware check that the user extracted from the JWT token by the AuthenticateMiddleware has the permissions to access the requested resource
 func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		//defer helpers.TimeTrack(time.Now(), "AuthorizeMiddleware")
+
 		var (
-			personid    int
-			personemail string
-			itemid      int
-			perm        string
+			// HasPersonPermission parameters
+			personid int    // logged person id
+			perm     string // r, w or all
+			item     string // storages, products...
+			eids     []int  // entity ids
+
+			itemid      string // the item id to be accessed: an int, -1, -2 or ""
+			itemidInt   int
+			view        string
 			permok      bool
+			personemail string
 			err         error
+			es          []models.Entity
+
+			permvalue helpers.PermValue
+			ok        bool
 		)
 
 		// extracting the logged user email from context
@@ -177,188 +226,123 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 		// extracting request variables
 		//
 		vars := mux.Vars(r)
-		view := vars["view"]
-		item := vars["item"]
-		id := vars["id"]
+		// view = v or vc or ""
+		view = vars["view"]
+		// item = products, storages...
+		item = vars["item"]
+		// id = an int or ""
+		itemid = vars["id"]
 		log.WithFields(log.Fields{
-			"id":          id,
+			"itemid":      itemid,
 			"item":        item,
 			"view":        view,
 			"personemail": personemail,
 			"personid":    personid,
 			"r.Method":    r.Method}).Debug("AuthorizeMiddleware")
 
-		//
-		// id and item translations and setup for the HasPersonPermission method, and some bypasses
-		//
-		switch item {
-		case "peoplepass", "peoplep", "bookmarks", "delete-token", "borrowings", "download", "validate", "format":
-			// everybody can change his password
-			// everybody can bookmark a product
-			// everybody can borrow a storage
-			// everybody can logout
-			// everybody can download an export
-			// everybody can validate an item
-			// everybody can format an item
+		// full access items
+		if item == "peoplepass" || item == "peoplep" || item == "bookmarks" || item == "delete-token" || item == "borrowings" || item == "download" || item == "validate" || item == "format" {
 			h.ServeHTTP(w, r)
 			return
-		case "welcomeannounce":
-			// welcome announcements are editable by admins only
-			item = "entities"
-			id = "-1"
-		case "stocks":
-			// to access stocks, one needs permission on at least one storage
-			item = "storages"
-			id = "-2"
-		case "storages":
-			if id != "-1" && id != "-2" && id != "" {
-				// storages access are per entity
-				// extracting entity id from storage
-				if itemid, err = strconv.Atoi(id); err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-				s, e := env.DB.GetStorage(itemid)
-				if e != nil {
-					http.Error(w, e.Error(), http.StatusInternalServerError)
-					return
-				}
-				id = strconv.Itoa(s.EntityID)
-			}
 		}
 
-		if id == "" {
-			itemid = -2
-		} else {
-			if itemid, err = strconv.Atoi(id); err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-		}
-
-		//
-		// perm variable setup for the HasPersonPermission method
-		//
-		switch r.Method {
-		case "GET":
-			switch view {
-			// "v": view methods
-			// "": REST get method
-			case "v", "":
-				perm = "r"
-			// views update, create
-			case "vu", "vc":
-				perm = "w"
-			}
-		case "PUT":
-			// REST update,create methods
-			switch item {
-			case "people":
-				// a user can not edit himself
-				if itemid == personid {
-					http.Error(w, "can not edit/delete yourself", http.StatusForbidden)
-					return
-				}
-			}
-
-			perm = "w"
-		case "POST":
-			switch item {
-			case "storages":
-				if id != "-1" && id != "-2" && id != "" {
-					// checking that the connected person
-					// can "w" "storages" in the entity of the storage's
-					// store location
-					var (
-						s models.Storage
-						e error
-					)
-					if e = r.ParseForm(); err != nil {
-						http.Error(w, e.Error(), http.StatusInternalServerError)
-					}
-					if e = global.Decoder.Decode(&s, r.PostForm); err != nil {
-						http.Error(w, e.Error(), http.StatusInternalServerError)
-					}
-					if s.StoreLocation, e = env.DB.GetStoreLocation(int(s.StoreLocationID.Int64)); err != nil {
-						http.Error(w, e.Error(), http.StatusInternalServerError)
-					}
-					itemid = s.StoreLocation.EntityID
-				}
-			}
-			perm = "w"
-		case "DELETE":
-			// REST delete method
-			switch item {
-			case "people":
-				// a user can not delete himself
-				if itemid == personid {
-					http.Error(w, "can not edit/delete yourself", http.StatusForbidden)
-					return
-				}
-				// we can not delete a manager
-				m, e := env.DB.IsPersonManager(itemid)
-				if e != nil {
-					http.Error(w, e.Error(), http.StatusInternalServerError)
-					return
-				}
-				if m {
-					http.Error(w, "can not delete a manager", http.StatusForbidden)
-					return
-				}
-			case "storelocations":
-				// we can not delete a non empty store location
-				m, e := env.DB.IsStoreLocationEmpty(itemid)
-				if e != nil {
-					http.Error(w, e.Error(), http.StatusInternalServerError)
-					return
-				}
-				if !m {
-					http.Error(w, "can not delete a non empty store location", http.StatusBadRequest)
-					return
-				}
-			case "products":
-				c, e := env.DB.CountProductStorages(itemid)
-				if e != nil {
-					http.Error(w, e.Error(), http.StatusInternalServerError)
-					return
-				}
-				if c != 0 {
-					http.Error(w, "can not delete a product with storages", http.StatusBadRequest)
-					return
-				}
-			case "entities":
-				if r.Method == "DELETE" {
-					m, e1 := env.DB.IsEntityEmpty(itemid)
-					n, e2 := env.DB.HasEntityNoStorelocation(itemid)
-					if e1 != nil {
-						http.Error(w, e1.Error(), http.StatusInternalServerError)
-						return
-					}
-					if e2 != nil {
-						http.Error(w, e2.Error(), http.StatusInternalServerError)
-						return
-					}
-					if !m {
-						http.Error(w, "can not delete a non empty entity", http.StatusBadRequest)
-						return
-					}
-					if !n {
-						http.Error(w, "can not delete an entity with store locations", http.StatusBadRequest)
-						return
-					}
-				}
-			}
-
-			perm = "w"
+		// building the PermKey
+		permkey := helpers.PermKey{View: view, Item: item, Verb: r.Method}
+		log.WithFields(log.Fields{"permkey": permkey}).Debug("AuthorizeMiddleware")
+		switch itemid {
+		case "-1":
+			permkey.Id = "-1"
+		case "-2":
+			permkey.Id = "-2"
+		case "":
+			permkey.Id = ""
 		default:
-			log.Debug("unsupported http verb")
-			http.Error(w, "unsupported http verb", http.StatusBadRequest)
+			permkey.Id = "id"
+		}
+
+		// getting the permission definition in the PermMatrix
+		if permvalue, ok = helpers.PermMatrix[permkey]; !ok {
+			log.Error("key not found in PermMatrix")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		log.WithFields(log.Fields{"permvalue": permvalue}).Debug("AuthorizeMiddleware")
+
+		// table translation
+		if permvalue.Item != "" {
+			item = permvalue.Item
+		}
+		if permvalue.Id != "" {
+			itemid = permvalue.Id
+		}
+
+		// building the HasPersonPermission method parameters
+		switch permvalue.Type {
+		case "r":
+			perm = "r"
+			// itemid is -1 -2 or and int
+			if itemidInt, err = strconv.Atoi(itemid); err != nil {
+				log.WithFields(log.Fields{"err": err.Error()}).Debug("AuthorizeMiddleware")
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+			eids = []int{itemidInt}
+		case "w":
+			perm = "w"
+			// itemid is -1 -2 or and int
+			if itemidInt, err = strconv.Atoi(itemid); err != nil {
+				log.WithFields(log.Fields{"err": err.Error()}).Debug("AuthorizeMiddleware")
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+			eids = []int{itemidInt}
+		case "rall":
+			perm = "r"
+			eids = []int{-1}
+		case "wall":
+			perm = "w"
+			eids = []int{-1}
+		case "rany":
+			perm = "r"
+			eids = []int{-2}
+		case "wany":
+			perm = "w"
+			eids = []int{-2}
+		case "rent":
+			perm = "r"
+			// itemid is an int
+			// item is storages, storelocations or people (after table translation)
+			if es, err = env.getItemEntities(personid, item, itemid); err != nil {
+				log.WithFields(log.Fields{"err": err.Error()}).Debug("AuthorizeMiddleware")
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+			for _, e := range es {
+				eids = append(eids, e.EntityID)
+			}
+		case "went":
+			perm = "w"
+			// itemid is an int
+			// item is storages, storelocations or people (after table translation)
+			if es, err = env.getItemEntities(personid, item, itemid); err != nil {
+				log.WithFields(log.Fields{"err": err.Error()}).Debug("AuthorizeMiddleware")
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+			for _, e := range es {
+				eids = append(eids, e.EntityID)
+			}
+		default:
+			log.WithFields(log.Fields{"err": err.Error()}).Debug("AuthorizeMiddleware")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// developper check
+		if len(eids) == 0 {
+			log.Error("eids empty")
+			http.Error(w, "eids empty", http.StatusInternalServerError)
 			return
 		}
 
 		// allow/deny access
-		if permok, err = env.DB.HasPersonPermission(personid, perm, item, itemid); err != nil {
-			log.WithFields(log.Fields{"unauthorized": err.Error()}).Debug("AuthorizeMiddleware")
+		if permok, err = env.DB.HasPersonPermission(personid, perm, item, eids); err != nil {
+			log.WithFields(log.Fields{"err": err.Error()}).Debug("AuthorizeMiddleware")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
