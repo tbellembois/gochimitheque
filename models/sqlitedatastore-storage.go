@@ -864,7 +864,7 @@ func (db *SQLiteDataStore) CreateStorage(s Storage) (int, error) {
 	for k, v := range m {
 		col = append(col, k)
 
-		switch t := v.(type) {
+		switch v.(type) {
 		case int:
 			val = append(val, v.(int))
 		case string:
@@ -876,7 +876,7 @@ func (db *SQLiteDataStore) CreateStorage(s Storage) (int, error) {
 		case float64:
 			val = append(val, v.(float64))
 		default:
-			panic(fmt.Sprintf("unknown type: %T", t))
+			val = append(val, v)
 		}
 	}
 
