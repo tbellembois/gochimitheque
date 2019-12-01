@@ -279,12 +279,12 @@ function queryParams(params) {
         })
     }           
     if (storage_barecode != null) {
-        $("input#storage_barecode").val(storage_barecode)
-        $('input#storage_barecode').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank blink'></span>");
+        $("input#s_storage_barecode").val(storage_barecode)
+        $('input#s_storage_barecode').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank blink'></span>");
     }
     if (custom_name_part_of != null) {
-        $("input#custom_name_part_of").val(custom_name_part_of)
-        $('input#custom_name_part_of').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank blink'></span>");
+        $("input#s_custom_name_part_of").val(custom_name_part_of)
+        $('input#s_custom_name_part_of').after("<span style='position: absolute; left: -5px; color: orange;' class='mdi mdi-checkbox-blank blink'></span>");
     }
     if (signalword != null) {
         $("#advancedsearch").collapse('show');
@@ -463,10 +463,10 @@ function queryParams(params) {
 
     // non select2 fields
     if ($('#s_storage_barecode').val() != "") {
-        params["storage_barecode"] = $('#s_storage_barecode').val();
+        params["storage_barecode"] = storage_barecode;
     }
     if ($('#s_custom_name_part_of').val() != "") {
-        params["custom_name_part_of"] = $('#s_custom_name_part_of').val();
+        params["custom_name_part_of"] = custom_name_part_of;
     }
     if ($('#s_casnumber_cmr:checked').length > 0) {
         params["casnumber_cmr"] = true;
