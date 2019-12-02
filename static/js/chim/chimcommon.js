@@ -314,3 +314,23 @@ function search() {
     var $table = $('#table');
     $table.bootstrapTable('refresh', {query: query});
 }
+
+function closeQR() {
+    $("div#video").html("");
+    window.qrScanner.destroy();
+    window.qrScanner = null;
+}
+
+function scanQRdone(result) {
+    closeQR();
+    window.location.href = result;
+}
+
+function scanQR() {   
+    $("div#video").append("<video width='640' id='qr-video' muted playsinline></video>");
+    const video = document.getElementById('qr-video');
+    window.qrScanner = new window.QrScanner(video, result => scanQRdone(result));  
+    $("div#video").append("<button type='button' onclick='closeQR()' class='btn btn-link'><span class='mdi mdi-close-box mdi-24px iconlabel'>" + global.t("close", container.PersonLanguage) + "</span></button>");
+
+    window.qrScanner.start();
+}

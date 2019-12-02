@@ -23,6 +23,9 @@ func (env *Env) AppMiddleware(h models.AppHandlerFunc) http.Handler {
 		if e := h(w, r); e != nil {
 			if e.Error != nil {
 				log.Error(e.Message + "-" + e.Error.Error())
+				if e.Code == http.StatusInternalServerError {
+					global.InternalServerErrorLog.WriteString(e.Message + "-" + e.Error.Error() + "\n")
+				}
 			}
 			http.Error(w, e.Message, e.Code)
 		}
@@ -263,7 +266,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 		// getting the permission definition in the PermMatrix
 		if permvalue, ok = helpers.PermMatrix[permkey]; !ok {
 			log.Error("key not found in PermMatrix")
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, "key not found in PermMatrix", http.StatusInternalServerError)
 		}
 		log.WithFields(log.Fields{"permvalue": permvalue}).Debug("AuthorizeMiddleware")
 
@@ -328,8 +331,8 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 				eids = append(eids, e.EntityID)
 			}
 		default:
-			log.WithFields(log.Fields{"err": err.Error()}).Debug("AuthorizeMiddleware")
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Error("perm type not found:" + permvalue.Type)
+			http.Error(w, "perm type not found:"+permvalue.Type, http.StatusInternalServerError)
 			return
 		}
 

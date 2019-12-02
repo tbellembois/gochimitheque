@@ -5,6 +5,7 @@ import (
 	"database/sql/driver"
 	"errors"
 	"math/rand"
+	"os"
 	"reflect"
 	"time"
 
@@ -73,6 +74,8 @@ var (
 	MailServerUseTLS bool
 	// MailServerTLSSkipVerify bypass the SMTP TLS verification
 	MailServerTLSSkipVerify bool
+	// InternalServerErrorLog error log file
+	InternalServerErrorLog *os.File
 	// Bundle is the i18n configuration bundle
 	Bundle *i18n.Bundle
 	// Localizer is the i18n translator

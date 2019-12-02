@@ -740,7 +740,7 @@ func (db *SQLiteDataStore) GenerateAndUpdateStorageBarecode(s *Storage) error {
 	// qrcode
 	//
 	qr := global.ProxyURL + global.ProxyPath + "v/storages?storage=" + strconv.FormatInt(s.StorageID.Int64, 10)
-	if png, err = qrcode.Encode(qr, qrcode.Medium, 128); err != nil {
+	if png, err = qrcode.Encode(qr, qrcode.Medium, 512); err != nil {
 		return err
 	}
 	sqlr = `UPDATE storage 
@@ -1047,6 +1047,57 @@ func (db *SQLiteDataStore) UpdateStorage(s Storage) error {
 	if _, err = tx.Exec(sqlr, sqla...); err != nil {
 		tx.Rollback()
 		return err
+	}
+
+	// committing changes
+	if err = tx.Commit(); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return nil
+}
+
+// UpdateAllQRCodes updates the storages QRCodes
+func (db *SQLiteDataStore) UpdateAllQRCodes() error {
+
+	var (
+		err  error
+		tx   *sqlx.Tx
+		sts  []Storage
+		png  []byte
+		sqlr string
+	)
+
+	// retrieving storages
+	if err = db.Select(&sts, ` SELECT storage_id
+        FROM storage`); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// beginning new transaction
+	if tx, err = db.Beginx(); err != nil {
+		return err
+	}
+
+	for _, s := range sts {
+
+		// generating qrcode
+		newqrcode := global.ProxyURL + global.ProxyPath + "v/storages?storage=" + strconv.FormatInt(s.StorageID.Int64, 10)
+		log.Debug("  " + strconv.FormatInt(s.StorageID.Int64, 10) + " " + newqrcode)
+
+		if png, err = qrcode.Encode(newqrcode, qrcode.Medium, 512); err != nil {
+			return err
+		}
+		sqlr = `UPDATE storage
+				SET storage_qrcode = ?
+				WHERE storage_id = ?`
+		if _, err = tx.Exec(sqlr, png, s.StorageID); err != nil {
+			log.Error("error updating storage qrcode")
+			tx.Rollback()
+			return err
+		}
 	}
 
 	// committing changes

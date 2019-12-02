@@ -13,6 +13,10 @@ type PermValue struct {
 }
 
 var PermMatrix = map[PermKey]PermValue{
+	// application root
+	PermKey{View: "", Item: "", Verb: "GET", Id: ""}: PermValue{Type: "r", Item: "products", Id: "-2"},
+
+	// products
 	PermKey{View: "v", Item: "products", Verb: "GET", Id: "id"}:  PermValue{Type: "r"},
 	PermKey{View: "vc", Item: "products", Verb: "GET", Id: "id"}: PermValue{Type: "w"},
 	PermKey{View: "", Item: "products", Verb: "GET", Id: "id"}:   PermValue{Type: "r"},

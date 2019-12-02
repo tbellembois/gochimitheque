@@ -33,3 +33,6 @@ rice-box.go
 # generated jade
 jade/
 !jade/funcs.go
+
+# error log
+*.log

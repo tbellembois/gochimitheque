@@ -105,6 +105,7 @@ You need configure the systemd script with the following parameters:
 - `-enablepublicproductsendpoint`: enable public products endpoint - default = `false`
 - `-admins`: comma separated list of administrators emails that must be present in the database
 - `-resetadminpassword`: reset the `admin@chimitheque.fr` admin password to `chimitheque`
+- `-updateqrcode`: regenerate the storages QR codes
 - `-logfile`: output log file - by default logs are sent to stdout
 - `-debug`: debug mode, do not enable in production
 

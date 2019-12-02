@@ -42,7 +42,10 @@ html
                             a(href=c.ProxyPath + "v/products?bookmark=true").nav-link
                                 span.mdi.mdi-bookmark.mdi-36px.iconlabel
                                     = T("menu_bookmark", 1) 
-
+                        li.nav-item#menu_scan_qrcode.collapse
+                            a(onclick="scanQR();").nav-link
+                                span.mdi.mdi-qrcode-scan.mdi-36px.iconlabel
+                                    = T("menu_scanqr", 1) 
                         li.nav-item#menu_create_product.collapse
                             a(href=c.ProxyPath + "vc/products").nav-link
                                 span.mdi.mdi-tag.mdi-36px.iconlabel
@@ -104,6 +107,8 @@ html
                                 span.mdi.mdi-logout.mdi-36px.iconlabel
                                         = T("menu_logout", 1 )
 
+            div#video
+
             block CONTENT
             include footer
 
@@ -160,13 +165,14 @@ html
 
                 // showing menu items given the connected person permissions
                 hasPermission("products", "-2", "GET").done(function(){
+                    $("#menu_scan_qrcode").show();
                     $("#menu_list_products").show();
                     $("#menu_list_bookmarks").show();
                     localStorage.setItem("products:-2:GET", true);
                 }).fail(function(){
                     localStorage.setItem("products:-2:GET", false);
                 })
-                hasPermission("products", "-2", "POST").done(function(){
+                hasPermission("products", "", "POST").done(function(){
                     $("#menu_create_product").show();
                     localStorage.setItem("products::POST", true);
                 }).fail(function(){
@@ -178,7 +184,7 @@ html
                 }).fail(function(){
                     localStorage.setItem("entities:-2:GET", false);
                 })
-                hasPermission("entities", "-1", "POST").done(function(){
+                hasPermission("entities", "", "POST").done(function(){
                     $("#menu_create_entity").show();
                     localStorage.setItem("entities::POST", true);
                 }).fail(function(){
@@ -196,7 +202,7 @@ html
                 }).fail(function(){
                     localStorage.setItem("storages:-2:GET", false);
                 })
-                hasPermission("storages", "-2", "POST").done(function(){
+                hasPermission("storages", "", "POST").done(function(){
                     $("#menu_create_storelocation").show();
                     localStorage.setItem("storages::POST", true);
                 }).fail(function(){
@@ -208,7 +214,7 @@ html
                 }).fail(function(){
                     localStorage.setItem("people:-2:GET", false);
                 })
-                hasPermission("people", "-2", "POST").done(function(){
+                hasPermission("people", "", "POST").done(function(){
                     $("#menu_create_person").show();
                     localStorage.setItem("people::POST", true);
                 }).fail(function(){
@@ -269,9 +275,17 @@ html
         script(src=c.ProxyPath + "js/chim/chimcommon.js" )
         script(src=c.ProxyPath + "js/chim/bootstraptable-common.js" )
         script(src=c.ProxyPath + "js/chim/login.js" )
-        
+                
         script.
             // change trumbowyg icons path
             $.trumbowyg.svgPath = '/img/trumbowyg_icons.svg';
+
+        script(type="module").
+            import QrScanner from '/js/qr-scanner.min.js';
+            QrScanner.WORKER_PATH = '/js/qr-scanner-worker.min.js';
+            //const video = document.getElementById('qr-video');
+            window.QrScanner = QrScanner;
+            //qrScanner = new window.QrScanner(video, result => doQR(qrScanner, result));
+            //qrScanner.start();
 
         block CONTENTJS

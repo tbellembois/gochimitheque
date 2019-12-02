@@ -33,8 +33,8 @@ var (
 	// BuildID is compile-time variable
 	BuildID string
 	// starting flags
-	listenport, proxyurl, proxypath, mailServerAddress, mailServerPort, mailServerSender, admins, logfile, importv1from, importfrom          *string
-	useproxy, mailServerUseTLS, mailServerTLSSkipVerify, enableAutoUpgrade, enablePublicProductsEndpoint, resetAdminPassword, debug, version *bool
+	listenport, proxyurl, proxypath, mailServerAddress, mailServerPort, mailServerSender, admins, logfile, importv1from, importfrom                        *string
+	useproxy, mailServerUseTLS, mailServerTLSSkipVerify, enableAutoUpgrade, enablePublicProductsEndpoint, resetAdminPassword, updateQRCode, debug, version *bool
 )
 
 func preupgrade(tempBinaryPath string) error {
@@ -73,6 +73,7 @@ func init() {
 	logfile = flag.String("logfile", "", "log to the given file (optional)")
 	debug = flag.Bool("debug", false, "debug (verbose log), default is error")
 	resetAdminPassword = flag.Bool("resetadminpassword", false, "reset the admin password to `chimitheque`")
+	updateQRCode = flag.Bool("updateqrcode", false, "regenerate storages QR codes")
 	version = flag.Bool("version", false, "display application version")
 	importv1from = flag.String("importv1from", "", "full path of the directory containing the Chimithèque v1 CSV to import")
 	importfrom = flag.String("importfrom", "", "base URL of the external Chimithèque instance (running with -enablepublicproductsendpoint) to import products from")
@@ -96,6 +97,7 @@ func prog(state overseer.State) {
 	// setting the log level
 	if *debug {
 		log.SetLevel(log.DebugLevel)
+		log.SetReportCaller(true)
 	} else {
 		log.SetLevel(log.InfoLevel)
 	}
@@ -108,6 +110,13 @@ func prog(state overseer.State) {
 			log.SetOutput(logf)
 		}
 	}
+	defer logf.Close()
+
+	// internal server error log file
+	if global.InternalServerErrorLog, err = os.OpenFile("errors.log", os.O_WRONLY|os.O_CREATE, 0755); err != nil {
+		log.Fatal(err)
+	}
+	defer global.InternalServerErrorLog.Close()
 
 	// global variables init
 	global.BuildID = BuildID
@@ -166,6 +175,15 @@ func prog(state overseer.State) {
 		}
 		a.PersonPassword = "chimitheque"
 		err = datastore.UpdatePersonPassword(a)
+		if err != nil {
+			log.Error("an error occured: " + err.Error())
+			os.Exit(1)
+		}
+		os.Exit(0)
+	}
+	if *updateQRCode {
+		log.Info("- updating storages QR codes")
+		err := datastore.UpdateAllQRCodes()
 		if err != nil {
 			log.Error("an error occured: " + err.Error())
 			os.Exit(1)

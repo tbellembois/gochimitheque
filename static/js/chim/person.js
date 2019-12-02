@@ -88,7 +88,7 @@ $( document ).ready(function() {
 
             var $dropdown = $rendered.find('.select2-dropdown');
 
-            $dropdown.prepend($selectNone);
+            //$dropdown.prepend($selectNone);
             $dropdown.prepend($selectAll);
 
             $selectAll.on('click', function (e) {
@@ -171,6 +171,7 @@ $( document ).ready(function() {
         // preventing unselecting entity if the person is one its manager
         manageentities = $("input.manageentities")
         $.each(manageentities, function( index, e ) {
+            console.log($(e).val())
             if ($(e).val() == entityid) {
                 ismanager = true;
             }
@@ -387,7 +388,7 @@ function operateEditView(e, value, row, index) {
            newOption.addClass("manageentities");
            newOption.attr("type", "hidden");
            newOption.val(managedentitydata[i].entity_id);
-           $('form#person-update').append(newOption);
+           $('form#person').append(newOption);
         }
 
         // populating the entities select2

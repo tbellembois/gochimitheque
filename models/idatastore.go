@@ -87,6 +87,7 @@ type Datastore interface {
 	IsStorageBorrowing(b Borrowing) (bool, error)
 	CreateStorageBorrowing(b Borrowing) error
 	DeleteStorageBorrowing(b Borrowing) error
+	UpdateAllQRCodes() error
 
 	// store locations
 	GetStoreLocations(helpers.DbselectparamStoreLocation) ([]StoreLocation, int, error)

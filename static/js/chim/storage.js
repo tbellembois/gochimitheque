@@ -686,9 +686,11 @@ function detailFormatter(index, row) {
     html.push("<div class='col-sm-3'>")
     
         if ( row["storage_qrcode"] != null ) {
-            html.push("<img src='data:image/png;base64," + row["storage_qrcode"] + "'>")
+            html.push("<a onclick='$(\"#qr" + row["storage_id"]["Int64"] + "\").modal()'><img height='128' width='128' src='data:image/png;base64," + row["storage_qrcode"] + "'></a>")
         }
     
+        html.push('<div class="modal" id="qr' + row["storage_id"]["Int64"]  + '"><img src="data:image/png;base64,' + row["storage_qrcode"] + '"></div>')
+
     html.push("</div>")
     
     html.push("<div class='col-sm-9'>")

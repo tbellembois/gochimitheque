@@ -152,6 +152,8 @@ var LOCALES_EN = []byte(`
 	one = "home"
 [menu_bookmark]
 	one = "my bookmarks"
+[menu_scanqr]
+	one = "scan a QR code"
 [menu_borrow]
 	one = "my borrowed products"
 [menu_create_productcard]

@@ -2231,7 +2231,7 @@ func (db *SQLiteDataStore) ImportV1(dir string) error {
 		newqrcode := global.ProxyURL + global.ProxyPath + "v/storages?storage=" + strconv.FormatInt(s.StorageID.Int64, 10)
 		log.Debug("  " + strconv.FormatInt(s.StorageID.Int64, 10) + " " + newqrcode)
 
-		if png, err = qrcode.Encode(newqrcode, qrcode.Medium, 128); err != nil {
+		if png, err = qrcode.Encode(newqrcode, qrcode.Medium, 512); err != nil {
 			return err
 		}
 		sqlr = `UPDATE storage
