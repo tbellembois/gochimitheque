@@ -6,12 +6,11 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/tbellembois/gochimitheque/jade"
-
 	"github.com/gorilla/mux"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/helpers"
+	"github.com/tbellembois/gochimitheque/jade"
 	"github.com/tbellembois/gochimitheque/models"
 )
 
@@ -45,7 +44,7 @@ func (env *Env) VCreateStoreLocationHandler(w http.ResponseWriter, r *http.Reque
 
 // GetStoreLocationsHandler returns a json list of the store locations matching the search criteria
 func (env *Env) GetStoreLocationsHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
-	log.Debug("GetStoreLocationsHandler")
+	global.Log.Debug("GetStoreLocationsHandler")
 
 	var (
 		err   error
@@ -101,7 +100,7 @@ func (env *Env) GetStoreLocationHandler(w http.ResponseWriter, r *http.Request) 
 			Message: "error getting the store location",
 		}
 	}
-	log.WithFields(log.Fields{"storelocation": storelocation}).Debug("GetStoreLocationHandler")
+	global.Log.WithFields(logrus.Fields{"storelocation": storelocation}).Debug("GetStoreLocationHandler")
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
@@ -111,7 +110,7 @@ func (env *Env) GetStoreLocationHandler(w http.ResponseWriter, r *http.Request) 
 
 // CreateStoreLocationHandler creates the store location from the request form
 func (env *Env) CreateStoreLocationHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
-	log.Debug("CreateStoreLocationHandler")
+	global.Log.Debug("CreateStoreLocationHandler")
 	var (
 		sl  models.StoreLocation
 		err error
@@ -145,7 +144,7 @@ func (env *Env) CreateStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 			StoreLocationName: sql.NullString{Valid: true, String: slname},
 		}
 	}
-	log.WithFields(log.Fields{"sl": sl}).Debug("CreateStoreLocationHandler")
+	global.Log.WithFields(logrus.Fields{"sl": sl}).Debug("CreateStoreLocationHandler")
 
 	if id, err = env.DB.CreateStoreLocation(sl); err != nil {
 		return &helpers.AppError{
@@ -196,7 +195,7 @@ func (env *Env) UpdateStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 			StoreLocationName: sql.NullString{Valid: true, String: slname},
 		}
 	}
-	log.WithFields(log.Fields{"sl": sl}).Debug("UpdateStoreLocationHandler")
+	global.Log.WithFields(logrus.Fields{"sl": sl}).Debug("UpdateStoreLocationHandler")
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
 		return &helpers.AppError{
@@ -217,7 +216,7 @@ func (env *Env) UpdateStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 	updatedsl.StoreLocationCanStore = sl.StoreLocationCanStore
 	updatedsl.StoreLocation = sl.StoreLocation
 	updatedsl.Entity = sl.Entity
-	log.WithFields(log.Fields{"updatedsl": updatedsl}).Debug("UpdateStoreLocationHandler")
+	global.Log.WithFields(logrus.Fields{"updatedsl": updatedsl}).Debug("UpdateStoreLocationHandler")
 
 	if err := env.DB.UpdateStoreLocation(updatedsl); err != nil {
 		return &helpers.AppError{

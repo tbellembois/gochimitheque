@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	
 	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/helpers"
 )
@@ -375,7 +375,7 @@ func ProductsToCSV(prs []Product) string {
 	// create a temp file
 	tmpFile, err := ioutil.TempFile(os.TempDir(), "chimitheque-")
 	if err != nil {
-		log.Error("cannot create temporary file", err)
+		global.Log.Error("cannot create temporary file", err)
 	}
 	// creates a csv writer that uses the io buffer
 	csvwr := csv.NewWriter(tmpFile)
@@ -417,7 +417,7 @@ func StoragesToCSV(sts []Storage) string {
 	// create a temp file
 	tmpFile, err := ioutil.TempFile(os.TempDir(), "chimitheque-")
 	if err != nil {
-		log.Error("cannot create temporary file", err)
+		global.Log.Error("cannot create temporary file", err)
 	}
 	// creates a csv writer that uses the io buffer
 	csvwr := csv.NewWriter(tmpFile)

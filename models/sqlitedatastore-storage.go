@@ -10,7 +10,7 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	qrcode "github.com/skip2/go-qrcode"
 	"github.com/tbellembois/gochimitheque/constants"
 	"github.com/tbellembois/gochimitheque/global"
@@ -106,7 +106,7 @@ func (db *SQLiteDataStore) GetStoragesUnits(p helpers.Dbselectparam) ([]Unit, in
 		return nil, 0, err
 	}
 
-	log.WithFields(log.Fields{"units": units}).Debug("GetStoragesUnits")
+	global.Log.WithFields(logrus.Fields{"units": units}).Debug("GetStoragesUnits")
 	return units, count, nil
 }
 
@@ -174,7 +174,7 @@ func (db *SQLiteDataStore) GetStoragesSuppliers(p helpers.Dbselectparam) ([]Supp
 		}
 	}
 
-	log.WithFields(log.Fields{"suppliers": suppliers}).Debug("GetStoragesSuppliers")
+	global.Log.WithFields(logrus.Fields{"suppliers": suppliers}).Debug("GetStoragesSuppliers")
 	return suppliers, count, nil
 }
 
@@ -191,7 +191,7 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 		err                                       error
 		isadmin                                   bool
 	)
-	log.WithFields(log.Fields{"p": p}).Debug("GetStorages")
+	global.Log.WithFields(logrus.Fields{"p": p}).Debug("GetStorages")
 
 	if strings.HasPrefix(p.GetOrderBy(), "storage_") {
 		p.SetOrderBy("s." + p.GetOrderBy())
@@ -415,7 +415,7 @@ func (db *SQLiteDataStore) GetStorages(p helpers.DbselectparamStorage) ([]Storag
 	//
 	for i, st := range storages {
 		// getting the total storage count
-		log.Debug(st)
+		global.Log.Debug(st)
 		reqhc.Reset()
 		reqhc.WriteString("SELECT count(DISTINCT storage_id) from storage WHERE storage.storage = ?")
 		if err = db.Get(&storages[i].StorageHC, reqhc.String(), st.StorageID); err != nil {
@@ -437,7 +437,7 @@ func (db *SQLiteDataStore) GetOtherStorages(p helpers.DbselectparamStorage) ([]E
 		snstmt                             *sqlx.NamedStmt
 		err                                error
 	)
-	log.WithFields(log.Fields{"p": p}).Debug("GetOtherStorages")
+	global.Log.WithFields(logrus.Fields{"p": p}).Debug("GetOtherStorages")
 
 	// pre request: select or count
 	precreq.WriteString(" SELECT count(DISTINCT e.entity_id)")
@@ -512,7 +512,7 @@ func (db *SQLiteDataStore) GetStorage(id int) (Storage, error) {
 		sqlr    string
 		err     error
 	)
-	log.WithFields(log.Fields{"id": id}).Debug("GetStorage")
+	global.Log.WithFields(logrus.Fields{"id": id}).Debug("GetStorage")
 
 	sqlr = `SELECT storage.storage_id,
 	storage.storage_entrydate,
@@ -555,7 +555,7 @@ func (db *SQLiteDataStore) GetStorage(id int) (Storage, error) {
 	if err = db.Get(&storage, sqlr, id); err != nil {
 		return Storage{}, err
 	}
-	log.WithFields(log.Fields{"ID": id, "storage": storage}).Debug("GetStorage")
+	global.Log.WithFields(logrus.Fields{"ID": id, "storage": storage}).Debug("GetStorage")
 	return storage, nil
 }
 
@@ -577,7 +577,7 @@ func (db *SQLiteDataStore) GetStorageEntity(id int) (Entity, error) {
 	if err = db.Get(&entity, sqlr, id); err != nil {
 		return Entity{}, err
 	}
-	log.WithFields(log.Fields{"ID": id, "entity": entity}).Debug("GetStorageEntity")
+	global.Log.WithFields(logrus.Fields{"ID": id, "entity": entity}).Debug("GetStorageEntity")
 	return entity, nil
 }
 
@@ -657,7 +657,7 @@ func (db *SQLiteDataStore) GenerateAndUpdateStorageBarecode(s *Storage) error {
 		iminor   int
 		barecode string
 	)
-	log.WithFields(log.Fields{"s": s}).Debug("GenerateAndUpdateStorageBarecode")
+	global.Log.WithFields(logrus.Fields{"s": s}).Debug("GenerateAndUpdateStorageBarecode")
 
 	//
 	// prefix
@@ -694,7 +694,7 @@ func (db *SQLiteDataStore) GenerateAndUpdateStorageBarecode(s *Storage) error {
 	if err = db.Get(&lastbc, sqlr, s.ProductID, s.EntityID); err != nil && err != sql.ErrNoRows {
 		return err
 	}
-	log.WithFields(log.Fields{"lastbc": lastbc}).Debug("GenerateAndUpdateStorageBarecode")
+	global.Log.WithFields(logrus.Fields{"lastbc": lastbc}).Debug("GenerateAndUpdateStorageBarecode")
 
 	// regex to extract the major from a barecode
 	majorr := regexp.MustCompile("^[a-zA-Z]{0,1}(?P<groupone>[0-9]+)\\.(?P<grouptwo>[0-9]+)$")
@@ -717,7 +717,7 @@ func (db *SQLiteDataStore) GenerateAndUpdateStorageBarecode(s *Storage) error {
 		major = strconv.Itoa(s.ProductID)
 		minor = "0"
 	}
-	log.WithFields(log.Fields{"major": major, "minor": minor}).Debug("GenerateAndUpdateStorageBarecode")
+	global.Log.WithFields(logrus.Fields{"major": major, "minor": minor}).Debug("GenerateAndUpdateStorageBarecode")
 
 	if iminor, err = strconv.Atoi(minor); err != nil {
 		return err
@@ -725,7 +725,7 @@ func (db *SQLiteDataStore) GenerateAndUpdateStorageBarecode(s *Storage) error {
 	iminor++
 	minor = strconv.Itoa(iminor)
 	barecode = prefix + major + "." + minor
-	log.WithFields(log.Fields{"barecode": barecode}).Debug("GenerateAndUpdateStorageBarecode")
+	global.Log.WithFields(logrus.Fields{"barecode": barecode}).Debug("GenerateAndUpdateStorageBarecode")
 
 	// sqlr := `UPDATE storage
 	// SET storage_barecode = '` + prefix + `' || storage.product || '.' || (select count(*) from storage join storelocation on storage.storelocation = storelocation.storelocation_id join entity on storelocation.entity = entity.entity_id where storage.product = ? and entity_id = ?)
@@ -787,7 +787,7 @@ func (db *SQLiteDataStore) CreateStorage(s Storage) (int, error) {
 		s.Supplier.SupplierID = sql.NullInt64{Valid: true, Int64: lastid}
 	}
 	if err != nil {
-		log.Error("supplier error - " + err.Error())
+		global.Log.Error("supplier error - " + err.Error())
 		tx.Rollback()
 		return 0, err
 	}
@@ -887,8 +887,8 @@ func (db *SQLiteDataStore) CreateStorage(s Storage) (int, error) {
 	}
 
 	if res, err = tx.Exec(sqlr, sqla...); err != nil {
-		log.Error("storage error - " + err.Error())
-		log.Error("sql:" + sqlr)
+		global.Log.Error("storage error - " + err.Error())
+		global.Log.Error("sql:" + sqlr)
 		tx.Rollback()
 		return 0, err
 	}
@@ -905,7 +905,7 @@ func (db *SQLiteDataStore) CreateStorage(s Storage) (int, error) {
 		return 0, err
 	}
 	s.StorageID = sql.NullInt64{Valid: true, Int64: lastid}
-	log.WithFields(log.Fields{"s": s}).Debug("CreateStorage")
+	global.Log.WithFields(logrus.Fields{"s": s}).Debug("CreateStorage")
 
 	return int(s.StorageID.Int64), nil
 }
@@ -987,7 +987,7 @@ func (db *SQLiteDataStore) UpdateStorage(s Storage) error {
 		s.Supplier.SupplierID = sql.NullInt64{Valid: true, Int64: lastid}
 	}
 	if err != nil {
-		log.Error("supplier error - " + err.Error())
+		global.Log.Error("supplier error - " + err.Error())
 		tx.Rollback()
 		return err
 	}
@@ -1085,7 +1085,7 @@ func (db *SQLiteDataStore) UpdateAllQRCodes() error {
 
 		// generating qrcode
 		newqrcode := global.ProxyURL + global.ProxyPath + "v/storages?storage=" + strconv.FormatInt(s.StorageID.Int64, 10)
-		log.Debug("  " + strconv.FormatInt(s.StorageID.Int64, 10) + " " + newqrcode)
+		global.Log.Debug("  " + strconv.FormatInt(s.StorageID.Int64, 10) + " " + newqrcode)
 
 		if png, err = qrcode.Encode(newqrcode, qrcode.Medium, 512); err != nil {
 			return err
@@ -1094,7 +1094,7 @@ func (db *SQLiteDataStore) UpdateAllQRCodes() error {
 				SET storage_qrcode = ?
 				WHERE storage_id = ?`
 		if _, err = tx.Exec(sqlr, png, s.StorageID); err != nil {
-			log.Error("error updating storage qrcode")
+			global.Log.Error("error updating storage qrcode")
 			tx.Rollback()
 			return err
 		}

@@ -10,8 +10,9 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/constants"
+	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/helpers"
 )
 
@@ -119,7 +120,7 @@ func (db *SQLiteDataStore) GetProductsCasNumbers(p helpers.Dbselectparam) ([]Cas
 		}
 	}
 
-	log.WithFields(log.Fields{"casnumbers": casnumbers}).Debug("GetProductsCasNumbers")
+	global.Log.WithFields(logrus.Fields{"casnumbers": casnumbers}).Debug("GetProductsCasNumbers")
 	return casnumbers, count, nil
 }
 
@@ -187,7 +188,7 @@ func (db *SQLiteDataStore) GetProductsCeNumbers(p helpers.Dbselectparam) ([]CeNu
 		}
 	}
 
-	log.WithFields(log.Fields{"cenumbers": cenumbers}).Debug("GetProductsCeNumbers")
+	global.Log.WithFields(logrus.Fields{"cenumbers": cenumbers}).Debug("GetProductsCeNumbers")
 	return cenumbers, count, nil
 }
 
@@ -199,7 +200,7 @@ func (db *SQLiteDataStore) GetProductsCeNumberByLabel(label string) (CeNumber, e
 		sqlr string
 		err  error
 	)
-	log.WithFields(log.Fields{"label": label}).Debug("GetProductsCeNumberByLabel")
+	global.Log.WithFields(logrus.Fields{"label": label}).Debug("GetProductsCeNumberByLabel")
 
 	sqlr = `SELECT cenumber.cenumber_id, cenumber.cenumber_label
 	FROM cenumber
@@ -207,7 +208,7 @@ func (db *SQLiteDataStore) GetProductsCeNumberByLabel(label string) (CeNumber, e
 	if err = db.Get(&ce, sqlr, label); err != nil {
 		return CeNumber{}, err
 	}
-	log.WithFields(log.Fields{"label": label, "ce": ce}).Debug("GetProductsCeNumberByLabel")
+	global.Log.WithFields(logrus.Fields{"label": label, "ce": ce}).Debug("GetProductsCeNumberByLabel")
 	return ce, nil
 }
 
@@ -275,7 +276,7 @@ func (db *SQLiteDataStore) GetProductsEmpiricalFormulas(p helpers.Dbselectparam)
 		}
 	}
 
-	log.WithFields(log.Fields{"eformulas": eformulas}).Debug("GetProductsEmpiricalFormulas")
+	global.Log.WithFields(logrus.Fields{"eformulas": eformulas}).Debug("GetProductsEmpiricalFormulas")
 	return eformulas, count, nil
 }
 
@@ -287,7 +288,7 @@ func (db *SQLiteDataStore) GetProductsEmpiricalFormulaByLabel(label string) (Emp
 		sqlr string
 		err  error
 	)
-	log.WithFields(log.Fields{"label": label}).Debug("GetProductsEmpiricalFormulaByLabel")
+	global.Log.WithFields(logrus.Fields{"label": label}).Debug("GetProductsEmpiricalFormulaByLabel")
 
 	sqlr = `SELECT empiricalformula.empiricalformula_id, empiricalformula.empiricalformula_label
 	FROM empiricalformula
@@ -295,7 +296,7 @@ func (db *SQLiteDataStore) GetProductsEmpiricalFormulaByLabel(label string) (Emp
 	if err = db.Get(&ef, sqlr, label); err != nil {
 		return EmpiricalFormula{}, err
 	}
-	log.WithFields(log.Fields{"label": label, "ef": ef}).Debug("GetProductsEmpiricalFormulaByLabel")
+	global.Log.WithFields(logrus.Fields{"label": label, "ef": ef}).Debug("GetProductsEmpiricalFormulaByLabel")
 	return ef, nil
 }
 
@@ -363,7 +364,7 @@ func (db *SQLiteDataStore) GetProductsLinearFormulas(p helpers.Dbselectparam) ([
 		}
 	}
 
-	log.WithFields(log.Fields{"lformulas": lformulas}).Debug("GetProductsLinearFormulas")
+	global.Log.WithFields(logrus.Fields{"lformulas": lformulas}).Debug("GetProductsLinearFormulas")
 	return lformulas, count, nil
 }
 
@@ -375,7 +376,7 @@ func (db *SQLiteDataStore) GetProductsLinearFormulaByLabel(label string) (Linear
 		sqlr string
 		err  error
 	)
-	log.WithFields(log.Fields{"label": label}).Debug("GetProductsLinearFormulaByLabel")
+	global.Log.WithFields(logrus.Fields{"label": label}).Debug("GetProductsLinearFormulaByLabel")
 
 	sqlr = `SELECT linearformula.linearformula_id, linearformula.linearformula_label
 	FROM linearformula
@@ -383,7 +384,7 @@ func (db *SQLiteDataStore) GetProductsLinearFormulaByLabel(label string) (Linear
 	if err = db.Get(&lf, sqlr, label); err != nil {
 		return LinearFormula{}, err
 	}
-	log.WithFields(log.Fields{"label": label, "lf": lf}).Debug("GetProductsLinearFormulaByLabel")
+	global.Log.WithFields(logrus.Fields{"label": label, "lf": lf}).Debug("GetProductsLinearFormulaByLabel")
 	return lf, nil
 }
 
@@ -451,7 +452,7 @@ func (db *SQLiteDataStore) GetProductsClassOfCompounds(p helpers.Dbselectparam) 
 		}
 	}
 
-	log.WithFields(log.Fields{"classofcompounds": classofcompounds}).Debug("GetProductsClassOfCompounds")
+	global.Log.WithFields(logrus.Fields{"classofcompounds": classofcompounds}).Debug("GetProductsClassOfCompounds")
 	return classofcompounds, count, nil
 }
 
@@ -463,7 +464,7 @@ func (db *SQLiteDataStore) GetProductsClassOfCompoundByLabel(label string) (Clas
 		sqlr string
 		err  error
 	)
-	log.WithFields(log.Fields{"label": label}).Debug("GetProductsClassOfCompoundByLabel")
+	global.Log.WithFields(logrus.Fields{"label": label}).Debug("GetProductsClassOfCompoundByLabel")
 
 	sqlr = `SELECT classofcompound.classofcompound_id, classofcompound.classofcompound_label
 	FROM classofcompound
@@ -471,7 +472,7 @@ func (db *SQLiteDataStore) GetProductsClassOfCompoundByLabel(label string) (Clas
 	if err = db.Get(&coc, sqlr, strings.ToUpper(label)); err != nil {
 		return ClassOfCompound{}, err
 	}
-	log.WithFields(log.Fields{"label": label, "coc": coc}).Debug("GetProductsClassOfCompoundByLabel")
+	global.Log.WithFields(logrus.Fields{"label": label, "coc": coc}).Debug("GetProductsClassOfCompoundByLabel")
 	return coc, nil
 }
 
@@ -483,7 +484,7 @@ func (db *SQLiteDataStore) GetProductsName(id int) (Name, error) {
 		sqlr string
 		err  error
 	)
-	log.WithFields(log.Fields{"id": id}).Debug("GetProductsName")
+	global.Log.WithFields(logrus.Fields{"id": id}).Debug("GetProductsName")
 
 	sqlr = `SELECT name.name_id, name.name_label
 	FROM name
@@ -491,7 +492,7 @@ func (db *SQLiteDataStore) GetProductsName(id int) (Name, error) {
 	if err = db.Get(&name, sqlr, id); err != nil {
 		return Name{}, err
 	}
-	log.WithFields(log.Fields{"ID": id, "name": name}).Debug("GetProductsName")
+	global.Log.WithFields(logrus.Fields{"ID": id, "name": name}).Debug("GetProductsName")
 	return name, nil
 }
 
@@ -503,7 +504,7 @@ func (db *SQLiteDataStore) GetProductsNameByLabel(label string) (Name, error) {
 		sqlr string
 		err  error
 	)
-	log.WithFields(log.Fields{"label": label}).Debug("GetProductsNameByLabel")
+	global.Log.WithFields(logrus.Fields{"label": label}).Debug("GetProductsNameByLabel")
 
 	sqlr = `SELECT name.name_id, name.name_label
 	FROM name
@@ -511,7 +512,7 @@ func (db *SQLiteDataStore) GetProductsNameByLabel(label string) (Name, error) {
 	if err = db.Get(&name, sqlr, strings.ToUpper(label)); err != nil {
 		return Name{}, err
 	}
-	log.WithFields(log.Fields{"label": label, "name": name}).Debug("GetProductsNameByLabel")
+	global.Log.WithFields(logrus.Fields{"label": label, "name": name}).Debug("GetProductsNameByLabel")
 	return name, nil
 }
 
@@ -523,7 +524,7 @@ func (db *SQLiteDataStore) GetProductsEmpiricalFormula(id int) (EmpiricalFormula
 		sqlr string
 		err  error
 	)
-	log.WithFields(log.Fields{"id": id}).Debug("GetProductsEmpiricalFormula")
+	global.Log.WithFields(logrus.Fields{"id": id}).Debug("GetProductsEmpiricalFormula")
 
 	sqlr = `SELECT empiricalformula.empiricalformula_id, empiricalformula.empiricalformula_label
 	FROM empiricalformula
@@ -531,7 +532,7 @@ func (db *SQLiteDataStore) GetProductsEmpiricalFormula(id int) (EmpiricalFormula
 	if err = db.Get(&ef, sqlr, id); err != nil {
 		return EmpiricalFormula{}, err
 	}
-	log.WithFields(log.Fields{"ID": id, "ef": ef}).Debug("GetProductsEmpiricalFormula")
+	global.Log.WithFields(logrus.Fields{"ID": id, "ef": ef}).Debug("GetProductsEmpiricalFormula")
 	return ef, nil
 }
 
@@ -543,7 +544,7 @@ func (db *SQLiteDataStore) GetProductsCasNumber(id int) (CasNumber, error) {
 		sqlr string
 		err  error
 	)
-	log.WithFields(log.Fields{"id": id}).Debug("GetProductsCasNumber")
+	global.Log.WithFields(logrus.Fields{"id": id}).Debug("GetProductsCasNumber")
 
 	sqlr = `SELECT casnumber.casnumber_id, casnumber.casnumber_label
 	FROM casnumber
@@ -551,7 +552,7 @@ func (db *SQLiteDataStore) GetProductsCasNumber(id int) (CasNumber, error) {
 	if err = db.Get(&cas, sqlr, id); err != nil {
 		return CasNumber{}, err
 	}
-	log.WithFields(log.Fields{"ID": id, "cas": cas}).Debug("GetProductsCasNumber")
+	global.Log.WithFields(logrus.Fields{"ID": id, "cas": cas}).Debug("GetProductsCasNumber")
 	return cas, nil
 }
 
@@ -563,7 +564,7 @@ func (db *SQLiteDataStore) GetProductsCasNumberByLabel(label string) (CasNumber,
 		sqlr string
 		err  error
 	)
-	log.WithFields(log.Fields{"label": label}).Debug("GetProductsCasNumberByLabel")
+	global.Log.WithFields(logrus.Fields{"label": label}).Debug("GetProductsCasNumberByLabel")
 
 	sqlr = `SELECT casnumber.casnumber_id, casnumber.casnumber_label
 	FROM casnumber
@@ -571,7 +572,7 @@ func (db *SQLiteDataStore) GetProductsCasNumberByLabel(label string) (CasNumber,
 	if err = db.Get(&cas, sqlr, label); err != nil {
 		return CasNumber{}, err
 	}
-	log.WithFields(log.Fields{"label": label, "cas": cas}).Debug("GetProductsCasNumberByLabel")
+	global.Log.WithFields(logrus.Fields{"label": label, "cas": cas}).Debug("GetProductsCasNumberByLabel")
 	return cas, nil
 }
 
@@ -583,7 +584,7 @@ func (db *SQLiteDataStore) GetProductsSignalWord(id int) (SignalWord, error) {
 		sqlr       string
 		err        error
 	)
-	log.WithFields(log.Fields{"id": id}).Debug("GetProductsSignalWord")
+	global.Log.WithFields(logrus.Fields{"id": id}).Debug("GetProductsSignalWord")
 
 	sqlr = `SELECT signalword.signalword_id, signalword.signalword_label
 	FROM signalword
@@ -591,7 +592,7 @@ func (db *SQLiteDataStore) GetProductsSignalWord(id int) (SignalWord, error) {
 	if err = db.Get(&signalword, sqlr, id); err != nil {
 		return SignalWord{}, err
 	}
-	log.WithFields(log.Fields{"ID": id, "signalword": signalword}).Debug("GetProductsSignalWord")
+	global.Log.WithFields(logrus.Fields{"ID": id, "signalword": signalword}).Debug("GetProductsSignalWord")
 	return signalword, nil
 }
 
@@ -603,7 +604,7 @@ func (db *SQLiteDataStore) GetProductsSignalWordByLabel(label string) (SignalWor
 		sqlr string
 		err  error
 	)
-	log.WithFields(log.Fields{"label": label}).Debug("GetProductsSignalWordByLabel")
+	global.Log.WithFields(logrus.Fields{"label": label}).Debug("GetProductsSignalWordByLabel")
 
 	sqlr = `SELECT signalword.signalword_id, signalword.signalword_label
 	FROM signalword
@@ -611,7 +612,7 @@ func (db *SQLiteDataStore) GetProductsSignalWordByLabel(label string) (SignalWor
 	if err = db.Get(&sw, sqlr, label); err != nil {
 		return SignalWord{}, err
 	}
-	log.WithFields(log.Fields{"label": label, "sw": sw}).Debug("GetProductsSignalWordByLabel")
+	global.Log.WithFields(logrus.Fields{"label": label, "sw": sw}).Debug("GetProductsSignalWordByLabel")
 	return sw, nil
 }
 
@@ -623,7 +624,7 @@ func (db *SQLiteDataStore) GetProductsHazardStatement(id int) (HazardStatement, 
 		sqlr string
 		err  error
 	)
-	log.WithFields(log.Fields{"id": id}).Debug("GetProductsHazardStatement")
+	global.Log.WithFields(logrus.Fields{"id": id}).Debug("GetProductsHazardStatement")
 
 	sqlr = `SELECT hazardstatement.hazardstatement_id, hazardstatement.hazardstatement_label, hazardstatement.hazardstatement_reference
 	FROM hazardstatement
@@ -631,7 +632,7 @@ func (db *SQLiteDataStore) GetProductsHazardStatement(id int) (HazardStatement, 
 	if err = db.Get(&hs, sqlr, id); err != nil {
 		return HazardStatement{}, err
 	}
-	log.WithFields(log.Fields{"ID": id, "hs": hs}).Debug("GetProductsHazardStatement")
+	global.Log.WithFields(logrus.Fields{"ID": id, "hs": hs}).Debug("GetProductsHazardStatement")
 	return hs, nil
 }
 
@@ -643,7 +644,7 @@ func (db *SQLiteDataStore) GetProductsPrecautionaryStatement(id int) (Precaution
 		sqlr string
 		err  error
 	)
-	log.WithFields(log.Fields{"id": id}).Debug("GetProductsPrecautionaryStatement")
+	global.Log.WithFields(logrus.Fields{"id": id}).Debug("GetProductsPrecautionaryStatement")
 
 	sqlr = `SELECT precautionarystatement.precautionarystatement_id, precautionarystatement.precautionarystatement_label, precautionarystatement.precautionarystatement_reference
 	FROM precautionarystatement
@@ -651,7 +652,7 @@ func (db *SQLiteDataStore) GetProductsPrecautionaryStatement(id int) (Precaution
 	if err = db.Get(&ps, sqlr, id); err != nil {
 		return PrecautionaryStatement{}, err
 	}
-	log.WithFields(log.Fields{"ID": id, "ps": ps}).Debug("GetProductsPrecautionaryStatement")
+	global.Log.WithFields(logrus.Fields{"ID": id, "ps": ps}).Debug("GetProductsPrecautionaryStatement")
 	return ps, nil
 }
 
@@ -663,7 +664,7 @@ func (db *SQLiteDataStore) GetProductsSymbol(id int) (Symbol, error) {
 		sqlr   string
 		err    error
 	)
-	log.WithFields(log.Fields{"id": id}).Debug("GetProductsSymbol")
+	global.Log.WithFields(logrus.Fields{"id": id}).Debug("GetProductsSymbol")
 
 	sqlr = `SELECT symbol.symbol_id, symbol.symbol_label, symbol.symbol_image
 	FROM symbol
@@ -671,7 +672,7 @@ func (db *SQLiteDataStore) GetProductsSymbol(id int) (Symbol, error) {
 	if err = db.Get(&symbol, sqlr, id); err != nil {
 		return Symbol{}, err
 	}
-	log.WithFields(log.Fields{"ID": id, "symbol": symbol}).Debug("GetProductsSymbol")
+	global.Log.WithFields(logrus.Fields{"ID": id, "symbol": symbol}).Debug("GetProductsSymbol")
 	return symbol, nil
 }
 
@@ -683,7 +684,7 @@ func (db *SQLiteDataStore) GetProductsSymbolByLabel(label string) (Symbol, error
 		sqlr   string
 		err    error
 	)
-	log.WithFields(log.Fields{"label": label}).Debug("GetProductsSymbolByLabel")
+	global.Log.WithFields(logrus.Fields{"label": label}).Debug("GetProductsSymbolByLabel")
 
 	sqlr = `SELECT symbol.symbol_id, symbol.symbol_label
 	FROM symbol
@@ -691,7 +692,7 @@ func (db *SQLiteDataStore) GetProductsSymbolByLabel(label string) (Symbol, error
 	if err = db.Get(&symbol, sqlr, label); err != nil {
 		return Symbol{}, err
 	}
-	log.WithFields(log.Fields{"label": label, "symbol": symbol}).Debug("GetProductsSymbolByLabel")
+	global.Log.WithFields(logrus.Fields{"label": label, "symbol": symbol}).Debug("GetProductsSymbolByLabel")
 	return symbol, nil
 }
 
@@ -763,7 +764,7 @@ func (db *SQLiteDataStore) GetProductsNames(p helpers.Dbselectparam) ([]Name, in
 		}
 	}
 
-	log.WithFields(log.Fields{"names": names}).Debug("GetProductsNames")
+	global.Log.WithFields(logrus.Fields{"names": names}).Debug("GetProductsNames")
 	return names, count, nil
 }
 
@@ -815,7 +816,7 @@ func (db *SQLiteDataStore) GetProductsSymbols(p helpers.Dbselectparam) ([]Symbol
 		return nil, 0, err
 	}
 
-	log.WithFields(log.Fields{"symbols": symbols}).Debug("GetProductsSymbols")
+	global.Log.WithFields(logrus.Fields{"symbols": symbols}).Debug("GetProductsSymbols")
 	return symbols, count, nil
 }
 
@@ -884,7 +885,7 @@ func (db *SQLiteDataStore) GetProductsHazardStatements(p helpers.Dbselectparam) 
 		return nil, 0, err
 	}
 
-	log.WithFields(log.Fields{"hazardstatements": hazardstatements}).Debug("GetProductsHazardStatements")
+	global.Log.WithFields(logrus.Fields{"hazardstatements": hazardstatements}).Debug("GetProductsHazardStatements")
 	return hazardstatements, count, nil
 }
 
@@ -953,7 +954,7 @@ func (db *SQLiteDataStore) GetProductsPrecautionaryStatements(p helpers.Dbselect
 		return nil, 0, err
 	}
 
-	log.WithFields(log.Fields{"precautionarystatements": precautionarystatements}).Debug("GetProductsPrecautionaryStatements")
+	global.Log.WithFields(logrus.Fields{"precautionarystatements": precautionarystatements}).Debug("GetProductsPrecautionaryStatements")
 	return precautionarystatements, count, nil
 }
 
@@ -1021,7 +1022,7 @@ func (db *SQLiteDataStore) GetProductsPhysicalStates(p helpers.Dbselectparam) ([
 		}
 	}
 
-	log.WithFields(log.Fields{"physicalstates": physicalstates}).Debug("GetProductsPhysicalStates")
+	global.Log.WithFields(logrus.Fields{"physicalstates": physicalstates}).Debug("GetProductsPhysicalStates")
 	return physicalstates, count, nil
 }
 
@@ -1033,7 +1034,7 @@ func (db *SQLiteDataStore) GetProductsPhysicalStateByLabel(label string) (Physic
 		sqlr string
 		err  error
 	)
-	log.WithFields(log.Fields{"label": label}).Debug("GetProductsPhysicalStateByLabel")
+	global.Log.WithFields(logrus.Fields{"label": label}).Debug("GetProductsPhysicalStateByLabel")
 
 	sqlr = `SELECT physicalstate.physicalstate_id, physicalstate.physicalstate_label
 	FROM physicalstate
@@ -1041,7 +1042,7 @@ func (db *SQLiteDataStore) GetProductsPhysicalStateByLabel(label string) (Physic
 	if err = db.Get(&ps, sqlr, label); err != nil {
 		return PhysicalState{}, err
 	}
-	log.WithFields(log.Fields{"label": label, "ps": ps}).Debug("GetProductsPhysicalStateByLabel")
+	global.Log.WithFields(logrus.Fields{"label": label, "ps": ps}).Debug("GetProductsPhysicalStateByLabel")
 	return ps, nil
 }
 
@@ -1093,7 +1094,7 @@ func (db *SQLiteDataStore) GetProductsSignalWords(p helpers.Dbselectparam) ([]Si
 		return nil, 0, err
 	}
 
-	log.WithFields(log.Fields{"signalwords": signalwords}).Debug("GetProductsSignalWords")
+	global.Log.WithFields(logrus.Fields{"signalwords": signalwords}).Debug("GetProductsSignalWords")
 	return signalwords, count, nil
 }
 
@@ -1278,7 +1279,7 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 		isadmin                                                bool
 		wg                                                     sync.WaitGroup
 	)
-	log.WithFields(log.Fields{"p": p}).Debug("GetProducts")
+	global.Log.WithFields(logrus.Fields{"p": p}).Debug("GetProducts")
 
 	// is the user an admin?
 	if isadmin, err = db.IsPersonAdmin(p.GetLoggedPersonID()); err != nil {
@@ -1289,7 +1290,7 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 	if rperm, err = db.HasPersonPermission(p.GetLoggedPersonID(), "r", "rproducts", []int{-1}); err != nil {
 		return nil, 0, err
 	}
-	log.WithFields(log.Fields{"rperm": rperm}).Debug("GetProducts")
+	global.Log.WithFields(logrus.Fields{"rperm": rperm}).Debug("GetProducts")
 
 	// pre request: select or count
 	precreq.WriteString(" SELECT count(DISTINCT p.product_id)")
@@ -1491,8 +1492,8 @@ func (db *SQLiteDataStore) GetProducts(p helpers.DbselectparamProduct) ([]Produc
 		"signalword":          p.GetSignalWord(),
 	}
 
-	log.Debug(presreq.String() + comreq.String() + postsreq.String())
-	log.Debug(m)
+	global.Log.Debug(presreq.String() + comreq.String() + postsreq.String())
+	global.Log.Debug(m)
 
 	// select
 	if err = snstmt.Select(&products, m); err != nil {
@@ -1674,7 +1675,7 @@ func (db *SQLiteDataStore) CountProductStorages(id int) (int, error) {
 		return 0, err
 	}
 
-	log.WithFields(log.Fields{"count": count}).Debug("CountProductStorages")
+	global.Log.WithFields(logrus.Fields{"count": count}).Debug("CountProductStorages")
 	return count, nil
 }
 
@@ -1781,7 +1782,7 @@ func (db *SQLiteDataStore) GetProduct(id int) (Product, error) {
 		return product, err
 	}
 
-	log.WithFields(log.Fields{"id": id, "product": product}).Debug("GetProduct")
+	global.Log.WithFields(logrus.Fields{"id": id, "product": product}).Debug("GetProduct")
 	return product, nil
 }
 
@@ -1791,7 +1792,7 @@ func (db *SQLiteDataStore) DeleteProduct(id int) error {
 		sqlr string
 		err  error
 	)
-	log.WithFields(log.Fields{"id": id}).Debug("DeleteProduct")
+	global.Log.WithFields(logrus.Fields{"id": id}).Debug("DeleteProduct")
 	// deleting symbols
 	sqlr = `DELETE FROM productsymbols WHERE productsymbols.productsymbols_product_id = (?)`
 	if _, err = db.Exec(sqlr, id); err != nil {
@@ -1849,7 +1850,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 
 	// if CasNumberID = -1 then it is a new cas
 	if p.CasNumber.CasNumberID == -1 {
-		log.Debug("new casnumber " + p.CasNumberLabel)
+		global.Log.Debug("new casnumber " + p.CasNumberLabel)
 		sqlr = `INSERT INTO casnumber (casnumber_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.CasNumberLabel); err != nil {
 			tx.Rollback()
@@ -1865,7 +1866,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	}
 	// if CeNumberID = -1 then it is a new ce
 	if v, err := p.CeNumber.CeNumberID.Value(); p.CeNumber.CeNumberID.Valid && err == nil && v.(int64) == -1 {
-		log.Debug("new cenumber " + p.CeNumberLabel.String)
+		global.Log.Debug("new cenumber " + p.CeNumberLabel.String)
 		sqlr = `INSERT INTO cenumber (cenumber_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.CeNumberLabel.String); err != nil {
 			tx.Rollback()
@@ -1880,13 +1881,13 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 		p.CeNumber.CeNumberID = sql.NullInt64{Valid: true, Int64: lastid}
 	}
 	if err != nil {
-		log.Error("cenumber error - " + err.Error())
+		global.Log.Error("cenumber error - " + err.Error())
 		tx.Rollback()
 		return 0, err
 	}
 	// if NameID = -1 then it is a new name
 	if p.Name.NameID == -1 {
-		log.Debug("new name " + p.NameLabel)
+		global.Log.Debug("new name " + p.NameLabel)
 		sqlr = `INSERT INTO name (name_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, strings.ToUpper(p.NameLabel)); err != nil {
 			tx.Rollback()
@@ -1902,7 +1903,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	}
 	for i, syn := range p.Synonyms {
 		if syn.NameID == -1 {
-			log.Debug("new name(syn) " + syn.NameLabel)
+			global.Log.Debug("new name(syn) " + syn.NameLabel)
 			sqlr = `INSERT INTO name (name_label) VALUES (?)`
 			if res, err = tx.Exec(sqlr, strings.ToUpper(syn.NameLabel)); err != nil {
 				tx.Rollback()
@@ -1919,7 +1920,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	// if ClassOfCompoundID = -1 then it is a new class of compounds
 	for i, coc := range p.ClassOfCompound {
 		if coc.ClassOfCompoundID == -1 {
-			log.Debug("new classofcompound " + coc.ClassOfCompoundLabel)
+			global.Log.Debug("new classofcompound " + coc.ClassOfCompoundLabel)
 			sqlr = `INSERT INTO classofcompound (classofcompound_label) VALUES (?)`
 			if res, err = tx.Exec(sqlr, strings.ToUpper(coc.ClassOfCompoundLabel)); err != nil {
 				tx.Rollback()
@@ -1935,7 +1936,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	}
 	// if EmpiricalFormulaID = -1 then it is a new empirical formula
 	if p.EmpiricalFormula.EmpiricalFormulaID == -1 {
-		log.Debug("new empiricalformula " + p.EmpiricalFormulaLabel)
+		global.Log.Debug("new empiricalformula " + p.EmpiricalFormulaLabel)
 		sqlr = `INSERT INTO empiricalformula (empiricalformula_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.EmpiricalFormulaLabel); err != nil {
 			tx.Rollback()
@@ -1951,7 +1952,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	}
 	// if LinearFormulaID = -1 then it is a new linear formula
 	if v, err := p.LinearFormula.LinearFormulaID.Value(); p.LinearFormula.LinearFormulaID.Valid && err == nil && v.(int64) == -1 {
-		log.Debug("new linearformula " + p.LinearFormulaLabel.String)
+		global.Log.Debug("new linearformula " + p.LinearFormulaLabel.String)
 		sqlr = `INSERT INTO linearformula (linearformula_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.LinearFormulaLabel.String); err != nil {
 			tx.Rollback()
@@ -1967,7 +1968,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	}
 	// if PhysicalStateID = -1 then it is a new physical state
 	if v, err := p.PhysicalState.PhysicalStateID.Value(); p.PhysicalState.PhysicalStateID.Valid && err == nil && v.(int64) == -1 {
-		log.Debug("new physicalstate " + p.PhysicalStateLabel.String)
+		global.Log.Debug("new physicalstate " + p.PhysicalStateLabel.String)
 		sqlr = `INSERT INTO physicalstate (physicalstate_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.PhysicalStateLabel.String); err != nil {
 			tx.Rollback()
@@ -2050,12 +2051,12 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 		return 0, err
 	}
 
-	//log.Debug(sqlr)
-	//log.Debug(sqla)
+	//global.Log.Debug(sqlr)
+	//global.Log.Debug(sqla)
 
 	if res, err = tx.Exec(sqlr, sqla...); err != nil {
-		log.Error("product error - " + err.Error())
-		log.Error("sql:" + sqlr)
+		global.Log.Error("product error - " + err.Error())
+		global.Log.Error("sql:" + sqlr)
 		tx.Rollback()
 		return 0, err
 	}
@@ -2066,13 +2067,13 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 		return 0, err
 	}
 	p.ProductID = int(lastid)
-	log.WithFields(log.Fields{"p": p}).Debug("CreateProduct")
+	global.Log.WithFields(logrus.Fields{"p": p}).Debug("CreateProduct")
 
 	// adding symbols
 	for _, sym := range p.Symbols {
 		sqlr = `INSERT INTO productsymbols (productsymbols_product_id, productsymbols_symbol_id) VALUES (?,?)`
 		if res, err = tx.Exec(sqlr, p.ProductID, sym.SymbolID); err != nil {
-			log.Error("productsymbols error - " + err.Error())
+			global.Log.Error("productsymbols error - " + err.Error())
 			tx.Rollback()
 			return 0, err
 		}
@@ -2082,7 +2083,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	for _, coc := range p.ClassOfCompound {
 		sqlr = `INSERT INTO productclassofcompound (productclassofcompound_product_id, productclassofcompound_classofcompound_id) VALUES (?,?)`
 		if res, err = tx.Exec(sqlr, p.ProductID, coc.ClassOfCompoundID); err != nil {
-			log.Error("productclassofcompound error - " + err.Error())
+			global.Log.Error("productclassofcompound error - " + err.Error())
 			tx.Rollback()
 			return 0, err
 		}
@@ -2091,7 +2092,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	for _, hs := range p.HazardStatements {
 		sqlr = `INSERT INTO producthazardstatements (producthazardstatements_product_id, producthazardstatements_hazardstatement_id) VALUES (?,?)`
 		if res, err = tx.Exec(sqlr, p.ProductID, hs.HazardStatementID); err != nil {
-			log.Error("producthazardstatements error - " + err.Error())
+			global.Log.Error("producthazardstatements error - " + err.Error())
 			tx.Rollback()
 			return 0, err
 		}
@@ -2100,7 +2101,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	for _, ps := range p.PrecautionaryStatements {
 		sqlr = `INSERT INTO productprecautionarystatements (productprecautionarystatements_product_id, productprecautionarystatements_precautionarystatement_id) VALUES (?,?)`
 		if res, err = tx.Exec(sqlr, p.ProductID, ps.PrecautionaryStatementID); err != nil {
-			log.Error("productprecautionarystatements error - " + err.Error())
+			global.Log.Error("productprecautionarystatements error - " + err.Error())
 			tx.Rollback()
 			return 0, err
 		}
@@ -2109,7 +2110,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	for _, syn := range p.Synonyms {
 		sqlr = `INSERT INTO productsynonyms (productsynonyms_product_id, productsynonyms_name_id) VALUES (?,?)`
 		if res, err = tx.Exec(sqlr, p.ProductID, syn.NameID); err != nil {
-			log.Error("productsynonyms error - " + err.Error())
+			global.Log.Error("productsynonyms error - " + err.Error())
 			tx.Rollback()
 			return 0, err
 		}
@@ -2142,7 +2143,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 
 	// if CasNumberID = -1 then it is a new cas
 	if p.CasNumber.CasNumberID == -1 {
-		log.Debug("new casnumber " + p.CasNumberLabel)
+		global.Log.Debug("new casnumber " + p.CasNumberLabel)
 		sqlr = `INSERT INTO casnumber (casnumber_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.CasNumberLabel); err != nil {
 			tx.Rollback()
@@ -2158,7 +2159,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	}
 	// if CeNumberID = -1 then it is a new ce
 	if v, err := p.CeNumber.CeNumberID.Value(); p.CeNumber.CeNumberID.Valid && err == nil && v.(int64) == -1 {
-		log.Debug("new cenumber " + p.CeNumberLabel.String)
+		global.Log.Debug("new cenumber " + p.CeNumberLabel.String)
 		sqlr = `INSERT INTO cenumber (cenumber_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.CeNumberLabel.String); err != nil {
 			tx.Rollback()
@@ -2173,13 +2174,13 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 		p.CeNumber.CeNumberID = sql.NullInt64{Valid: true, Int64: lastid}
 	}
 	if err != nil {
-		log.Error("cenumber error - " + err.Error())
+		global.Log.Error("cenumber error - " + err.Error())
 		tx.Rollback()
 		return err
 	}
 	// if NameID = -1 then it is a new name
 	if p.Name.NameID == -1 {
-		log.Debug("new name " + p.NameLabel)
+		global.Log.Debug("new name " + p.NameLabel)
 		sqlr = `INSERT INTO name (name_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, strings.ToUpper(p.NameLabel)); err != nil {
 			tx.Rollback()
@@ -2195,7 +2196,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	}
 	for i, syn := range p.Synonyms {
 		if syn.NameID == -1 {
-			log.Debug("new name(syn) " + syn.NameLabel)
+			global.Log.Debug("new name(syn) " + syn.NameLabel)
 			sqlr = `INSERT INTO name (name_label) VALUES (?)`
 			if res, err = tx.Exec(sqlr, strings.ToUpper(syn.NameLabel)); err != nil {
 				tx.Rollback()
@@ -2212,7 +2213,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	// if ClassOfCompoundID = -1 then it is a new class of compounds
 	for i, coc := range p.ClassOfCompound {
 		if coc.ClassOfCompoundID == -1 {
-			log.Debug("new classofcompound " + coc.ClassOfCompoundLabel)
+			global.Log.Debug("new classofcompound " + coc.ClassOfCompoundLabel)
 			sqlr = `INSERT INTO classofcompound (classofcompound_label) VALUES (?)`
 			if res, err = tx.Exec(sqlr, strings.ToUpper(coc.ClassOfCompoundLabel)); err != nil {
 				tx.Rollback()
@@ -2228,7 +2229,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	}
 	// if EmpiricalFormulaID = -1 then it is a new empirical formula
 	if p.EmpiricalFormula.EmpiricalFormulaID == -1 {
-		log.Debug("new empiricalformula " + p.EmpiricalFormulaLabel)
+		global.Log.Debug("new empiricalformula " + p.EmpiricalFormulaLabel)
 		sqlr = `INSERT INTO empiricalformula (p.EmpiricalFormulaLabel) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.EmpiricalFormulaLabel); err != nil {
 			tx.Rollback()
@@ -2244,7 +2245,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	}
 	// if LinearFormulaID = -1 then it is a new linear formula
 	if v, err := p.LinearFormula.LinearFormulaID.Value(); p.LinearFormula.LinearFormulaID.Valid && err == nil && v.(int64) == -1 {
-		log.Debug("new linearformula " + p.LinearFormulaLabel.String)
+		global.Log.Debug("new linearformula " + p.LinearFormulaLabel.String)
 		sqlr = `INSERT INTO linearformula (linearformula_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.LinearFormulaLabel.String); err != nil {
 			tx.Rollback()
@@ -2260,7 +2261,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	}
 	// if PhysicalStateID = -1 then it is a new physical state
 	if v, err := p.PhysicalState.PhysicalStateID.Value(); p.PhysicalState.PhysicalStateID.Valid && err == nil && v.(int64) == -1 {
-		log.Debug("new physicalstate " + p.PhysicalStateLabel.String)
+		global.Log.Debug("new physicalstate " + p.PhysicalStateLabel.String)
 		sqlr = `INSERT INTO physicalstate (physicalstate_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.PhysicalStateLabel.String); err != nil {
 			tx.Rollback()
@@ -2330,7 +2331,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 		return err
 	}
 
-	//log.Debug(ubuilder.ToSql())
+	//global.Log.Debug(ubuilder.ToSql())
 
 	// deleting symbols
 	sqlr = `DELETE FROM productsymbols WHERE productsymbols.productsymbols_product_id = (?)`
@@ -2372,7 +2373,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	for _, coc := range p.ClassOfCompound {
 		sqlr = `INSERT INTO productclassofcompound (productclassofcompound_product_id, productclassofcompound_classofcompound_id) VALUES (?,?)`
 		if res, err = tx.Exec(sqlr, p.ProductID, coc.ClassOfCompoundID); err != nil {
-			log.Error("productclassofcompound error - " + err.Error())
+			global.Log.Error("productclassofcompound error - " + err.Error())
 			tx.Rollback()
 			return err
 		}
@@ -2388,7 +2389,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	for _, hs := range p.HazardStatements {
 		sqlr = `INSERT INTO producthazardstatements (producthazardstatements_product_id, producthazardstatements_hazardstatement_id) VALUES (?,?)`
 		if res, err = tx.Exec(sqlr, p.ProductID, hs.HazardStatementID); err != nil {
-			log.Error("producthazardstatements error - " + err.Error())
+			global.Log.Error("producthazardstatements error - " + err.Error())
 			tx.Rollback()
 			return err
 		}
@@ -2404,7 +2405,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	for _, ps := range p.PrecautionaryStatements {
 		sqlr = `INSERT INTO productprecautionarystatements (productprecautionarystatements_product_id, productprecautionarystatements_precautionarystatement_id) VALUES (?,?)`
 		if res, err = tx.Exec(sqlr, p.ProductID, ps.PrecautionaryStatementID); err != nil {
-			log.Error("productprecautionarystatements error - " + err.Error())
+			global.Log.Error("productprecautionarystatements error - " + err.Error())
 			tx.Rollback()
 			return err
 		}

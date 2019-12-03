@@ -11,7 +11,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/helpers"
 	"github.com/tbellembois/gochimitheque/models"
@@ -22,9 +22,9 @@ func (env *Env) AppMiddleware(h models.AppHandlerFunc) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if e := h(w, r); e != nil {
 			if e.Error != nil {
-				log.Error(e.Message + "-" + e.Error.Error())
+				global.Log.Error(e.Message + "-" + e.Error.Error())
 				if e.Code == http.StatusInternalServerError {
-					global.InternalServerErrorLog.WriteString(e.Message + "-" + e.Error.Error() + "\n")
+					global.LogInternal.Error(e.Message + "-" + e.Error.Error())
 				}
 			}
 			http.Error(w, e.Message, e.Code)
@@ -91,13 +91,13 @@ func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 		//reqToken := r.Header.Get("Authorization")
 		// extracting the token string from cookie
 		if reqToken, err = r.Cookie("token"); err != nil {
-			log.Debug("token not found in cookies")
+			global.Log.Debug("token not found in cookies")
 			//http.Error(w, "token not found in cookies, please log in", http.StatusUnauthorized)
 			http.Redirect(w, r, global.ApplicationFullURL+"login", 307)
 			return
 		}
 		if !tre.MatchString(reqToken.String()) {
-			log.Debug("token has an invalid format")
+			global.Log.Debug("token has an invalid format")
 			http.Error(w, "token has an invalid format", http.StatusUnauthorized)
 			return
 		}
@@ -118,14 +118,14 @@ func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 			// then the email claim
 			if cemail, ok := claims["email"]; !ok {
-				log.Debug("email not found in claims")
+				global.Log.Debug("email not found in claims")
 				http.Error(w, "email not found in claims", http.StatusBadRequest)
 				return
 			} else {
 				email = cemail.(string)
 			}
 		} else {
-			log.Debug("can not extract claims")
+			global.Log.Debug("can not extract claims")
 			http.Error(w, "can not extract claims", http.StatusBadRequest)
 			return
 		}
@@ -235,7 +235,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 		item = vars["item"]
 		// id = an int or ""
 		itemid = vars["id"]
-		log.WithFields(log.Fields{
+		global.Log.WithFields(logrus.Fields{
 			"itemid":      itemid,
 			"item":        item,
 			"view":        view,
@@ -251,7 +251,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 
 		// building the PermKey
 		permkey := helpers.PermKey{View: view, Item: item, Verb: r.Method}
-		log.WithFields(log.Fields{"permkey": permkey}).Debug("AuthorizeMiddleware")
+		global.Log.WithFields(logrus.Fields{"permkey": permkey}).Debug("AuthorizeMiddleware")
 		switch itemid {
 		case "-1":
 			permkey.Id = "-1"
@@ -265,10 +265,10 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 
 		// getting the permission definition in the PermMatrix
 		if permvalue, ok = helpers.PermMatrix[permkey]; !ok {
-			log.Error("key not found in PermMatrix")
+			global.Log.Error("key not found in PermMatrix")
 			http.Error(w, "key not found in PermMatrix", http.StatusInternalServerError)
 		}
-		log.WithFields(log.Fields{"permvalue": permvalue}).Debug("AuthorizeMiddleware")
+		global.Log.WithFields(logrus.Fields{"permvalue": permvalue}).Debug("AuthorizeMiddleware")
 
 		// table translation
 		if permvalue.Item != "" {
@@ -284,7 +284,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			perm = "r"
 			// itemid is -1 -2 or and int
 			if itemidInt, err = strconv.Atoi(itemid); err != nil {
-				log.WithFields(log.Fields{"err": err.Error()}).Debug("AuthorizeMiddleware")
+				global.Log.WithFields(logrus.Fields{"err": err.Error()}).Debug("AuthorizeMiddleware")
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
 			eids = []int{itemidInt}
@@ -292,7 +292,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			perm = "w"
 			// itemid is -1 -2 or and int
 			if itemidInt, err = strconv.Atoi(itemid); err != nil {
-				log.WithFields(log.Fields{"err": err.Error()}).Debug("AuthorizeMiddleware")
+				global.Log.WithFields(logrus.Fields{"err": err.Error()}).Debug("AuthorizeMiddleware")
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
 			eids = []int{itemidInt}
@@ -313,7 +313,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			// itemid is an int
 			// item is storages, storelocations or people (after table translation)
 			if es, err = env.getItemEntities(personid, item, itemid); err != nil {
-				log.WithFields(log.Fields{"err": err.Error()}).Debug("AuthorizeMiddleware")
+				global.Log.WithFields(logrus.Fields{"err": err.Error()}).Debug("AuthorizeMiddleware")
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
 			for _, e := range es {
@@ -324,33 +324,33 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			// itemid is an int
 			// item is storages, storelocations or people (after table translation)
 			if es, err = env.getItemEntities(personid, item, itemid); err != nil {
-				log.WithFields(log.Fields{"err": err.Error()}).Debug("AuthorizeMiddleware")
+				global.Log.WithFields(logrus.Fields{"err": err.Error()}).Debug("AuthorizeMiddleware")
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
 			for _, e := range es {
 				eids = append(eids, e.EntityID)
 			}
 		default:
-			log.Error("perm type not found:" + permvalue.Type)
+			global.Log.Error("perm type not found:" + permvalue.Type)
 			http.Error(w, "perm type not found:"+permvalue.Type, http.StatusInternalServerError)
 			return
 		}
 
 		// developper check
 		if len(eids) == 0 {
-			log.Error("eids empty")
+			global.Log.Error("eids empty")
 			http.Error(w, "eids empty", http.StatusInternalServerError)
 			return
 		}
 
 		// allow/deny access
 		if permok, err = env.DB.HasPersonPermission(personid, perm, item, eids); err != nil {
-			log.WithFields(log.Fields{"err": err.Error()}).Debug("AuthorizeMiddleware")
+			global.Log.WithFields(logrus.Fields{"err": err.Error()}).Debug("AuthorizeMiddleware")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		if !permok {
-			log.WithFields(log.Fields{"unauthorized": "!permok"}).Debug("AuthorizeMiddleware")
+			global.Log.WithFields(logrus.Fields{"unauthorized": "!permok"}).Debug("AuthorizeMiddleware")
 			if r.RequestURI == global.ProxyPath || r.RequestURI == "" {
 				// redirect on login page for the root of the application
 				http.Redirect(w, r, global.ApplicationFullURL+"login", 307)

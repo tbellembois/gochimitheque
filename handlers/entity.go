@@ -5,12 +5,11 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/tbellembois/gochimitheque/jade"
-
 	"github.com/gorilla/mux"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/helpers"
+	"github.com/tbellembois/gochimitheque/jade"
 	"github.com/tbellembois/gochimitheque/models"
 )
 
@@ -44,7 +43,7 @@ func (env *Env) VCreateEntityHandler(w http.ResponseWriter, r *http.Request) *he
 
 // GetEntitiesHandler returns a json list of the entities matching the search criteria
 func (env *Env) GetEntitiesHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
-	log.Debug("GetEntitiesHandler")
+	global.Log.Debug("GetEntitiesHandler")
 
 	var (
 		err      error
@@ -138,7 +137,7 @@ func (env *Env) GetEntityHandler(w http.ResponseWriter, r *http.Request) *helper
 			Message: "error getting the entity",
 		}
 	}
-	log.WithFields(log.Fields{"entity": entity}).Debug("GetEntityHandler")
+	global.Log.WithFields(logrus.Fields{"entity": entity}).Debug("GetEntityHandler")
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
@@ -169,7 +168,7 @@ func (env *Env) GetEntityPeopleHandler(w http.ResponseWriter, r *http.Request) *
 			Message: "error getting the entity people",
 		}
 	}
-	log.WithFields(log.Fields{"people": people}).Debug("GetEntityPeopleHandler")
+	global.Log.WithFields(logrus.Fields{"people": people}).Debug("GetEntityPeopleHandler")
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
@@ -195,7 +194,7 @@ func (env *Env) CreateEntityHandler(w http.ResponseWriter, r *http.Request) *hel
 			Message: "form decoding error",
 			Code:    http.StatusBadRequest}
 	}
-	log.WithFields(log.Fields{"e": e}).Debug("CreateEntityHandler")
+	global.Log.WithFields(logrus.Fields{"e": e}).Debug("CreateEntityHandler")
 
 	if _, err := env.DB.CreateEntity(e); err != nil {
 		return &helpers.AppError{
@@ -230,7 +229,7 @@ func (env *Env) UpdateEntityHandler(w http.ResponseWriter, r *http.Request) *hel
 			Message: "form decoding error",
 			Code:    http.StatusBadRequest}
 	}
-	log.WithFields(log.Fields{"e": e}).Debug("UpdateEntityHandler")
+	global.Log.WithFields(logrus.Fields{"e": e}).Debug("UpdateEntityHandler")
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
 		return &helpers.AppError{
@@ -248,7 +247,7 @@ func (env *Env) UpdateEntityHandler(w http.ResponseWriter, r *http.Request) *hel
 	updatede.EntityName = e.EntityName
 	updatede.EntityDescription = e.EntityDescription
 	updatede.Managers = e.Managers
-	log.WithFields(log.Fields{"updatede": updatede}).Debug("UpdateEntityHandler")
+	global.Log.WithFields(logrus.Fields{"updatede": updatede}).Debug("UpdateEntityHandler")
 
 	if err = env.DB.UpdateEntity(updatede); err != nil {
 		return &helpers.AppError{
@@ -277,7 +276,7 @@ func (env *Env) DeleteEntityHandler(w http.ResponseWriter, r *http.Request) *hel
 			Message: "id atoi conversion",
 			Code:    http.StatusInternalServerError}
 	}
-	log.WithFields(log.Fields{"id": id}).Debug("DeleteEntityHandler")
+	global.Log.WithFields(logrus.Fields{"id": id}).Debug("DeleteEntityHandler")
 
 	if err := env.DB.DeleteEntity(id); err != nil {
 		return &helpers.AppError{

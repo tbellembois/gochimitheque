@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"text/template"
 
 	"regexp"
 
+	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/locales"
 )
 
@@ -59,7 +59,7 @@ func main() {
 	// opening output file
 	f, err := os.Create("static/templates/localejs.jade")
 	if err != nil {
-		log.Fatal(err)
+		global.Log.Fatal(err)
 	}
 	defer f.Close()
 

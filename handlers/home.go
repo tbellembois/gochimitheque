@@ -1,15 +1,14 @@
 package handlers
 
 import (
-	"net/http"
 	"encoding/json"
+	"net/http"
 
+	"github.com/sirupsen/logrus"
+	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/helpers"
 	"github.com/tbellembois/gochimitheque/jade"
 	"github.com/tbellembois/gochimitheque/models"
-	"github.com/tbellembois/gochimitheque/global"
-
-	log "github.com/sirupsen/logrus"
 )
 
 /*
@@ -50,7 +49,7 @@ func (env *Env) GetWelcomeAnnounceHandler(w http.ResponseWriter, r *http.Request
 			Message: "error getting the welcome announce",
 		}
 	}
-	log.WithFields(log.Fields{"wa": wa}).Debug("GetWelcomeAnnounceHandler")
+	global.Log.WithFields(logrus.Fields{"wa": wa}).Debug("GetWelcomeAnnounceHandler")
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
@@ -61,8 +60,8 @@ func (env *Env) GetWelcomeAnnounceHandler(w http.ResponseWriter, r *http.Request
 // UpdateWelcomeAnnounceHandler updates the entity from the request form
 func (env *Env) UpdateWelcomeAnnounceHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
 	var (
-		err         error
-		wa models.WelcomeAnnounce
+		err error
+		wa  models.WelcomeAnnounce
 	)
 	if err := r.ParseForm(); err != nil {
 		return &helpers.AppError{
@@ -76,7 +75,7 @@ func (env *Env) UpdateWelcomeAnnounceHandler(w http.ResponseWriter, r *http.Requ
 			Message: "form decoding error",
 			Code:    http.StatusBadRequest}
 	}
-	log.WithFields(log.Fields{"wa": wa}).Debug("UpdateWelcomeAnnounceHandler")
+	global.Log.WithFields(logrus.Fields{"wa": wa}).Debug("UpdateWelcomeAnnounceHandler")
 
 	if err = env.DB.UpdateWelcomeAnnounce(wa); err != nil {
 		return &helpers.AppError{

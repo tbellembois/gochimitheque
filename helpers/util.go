@@ -8,7 +8,7 @@ import (
 	"io"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/tbellembois/gochimitheque/global"
 )
 
 // TimeTrack displays the run time of the function "name"
@@ -17,7 +17,7 @@ import (
 // at the begining of the function to track
 func TimeTrack(start time.Time, name string) {
 	elapsed := time.Since(start)
-	log.Printf("%s took %s", name, elapsed)
+	global.Log.Debug("%s took %s", name, elapsed)
 }
 
 // GetPasswordHash return password hash for the login,
@@ -37,12 +37,12 @@ func CSVToMap(reader io.Reader) []map[string]string {
 	var header []string
 	for {
 		record, err := r.Read()
-		log.Debug(fmt.Sprintf("record: %s", record))
+		global.Log.Debug(fmt.Sprintf("record: %s", record))
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
-			log.Fatal(err)
+			global.Log.Fatal(err)
 		}
 		if header == nil {
 			header = record

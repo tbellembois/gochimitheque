@@ -7,12 +7,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/tbellembois/gochimitheque/jade"
-
 	"github.com/gorilla/mux"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/helpers"
+	"github.com/tbellembois/gochimitheque/jade"
 	"github.com/tbellembois/gochimitheque/models"
 )
 
@@ -117,7 +116,7 @@ func (env *Env) ToogleStorageBorrowingHandler(w http.ResponseWriter, r *http.Req
 
 // GetStoragesUnitsHandler returns a json list of the units matching the search criteria
 func (env *Env) GetStoragesUnitsHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
-	log.Debug("GetStoragesUnitsHandler")
+	global.Log.Debug("GetStoragesUnitsHandler")
 
 	var (
 		err  error
@@ -152,7 +151,7 @@ func (env *Env) GetStoragesUnitsHandler(w http.ResponseWriter, r *http.Request) 
 
 // GetStoragesSuppliersHandler returns a json list of the suppliers matching the search criteria
 func (env *Env) GetStoragesSuppliersHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
-	log.Debug("GetStoragesSuppliersHandler")
+	global.Log.Debug("GetStoragesSuppliersHandler")
 
 	var (
 		err  error
@@ -188,7 +187,7 @@ func (env *Env) GetStoragesSuppliersHandler(w http.ResponseWriter, r *http.Reque
 // GetOtherStoragesHandler returns a json list of the storages matching the search criteria
 // in other entities with no storage details
 func (env *Env) GetOtherStoragesHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
-	log.Debug("GetOtherStoragesHandler")
+	global.Log.Debug("GetOtherStoragesHandler")
 
 	var (
 		err      error
@@ -226,7 +225,7 @@ func (env *Env) GetOtherStoragesHandler(w http.ResponseWriter, r *http.Request) 
 
 // GetStoragesHandler returns a json list of the storages matching the search criteria
 func (env *Env) GetStoragesHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
-	log.Debug("GetStoragesHandler")
+	global.Log.Debug("GetStoragesHandler")
 
 	var (
 		err      error
@@ -293,7 +292,7 @@ func (env *Env) GetStorageHandler(w http.ResponseWriter, r *http.Request) *helpe
 			Message: "error getting the storage",
 		}
 	}
-	log.WithFields(log.Fields{"storage": storage}).Debug("GetStorageHandler")
+	global.Log.WithFields(logrus.Fields{"storage": storage}).Debug("GetStorageHandler")
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
@@ -325,7 +324,7 @@ func (env *Env) UpdateStorageHandler(w http.ResponseWriter, r *http.Request) *he
 			Message: "form decoding error",
 			Code:    http.StatusBadRequest}
 	}
-	log.WithFields(log.Fields{"s": s}).Debug("UpdateStorageHandler")
+	global.Log.WithFields(logrus.Fields{"s": s}).Debug("UpdateStorageHandler")
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
 		return &helpers.AppError{
@@ -349,7 +348,7 @@ func (env *Env) UpdateStorageHandler(w http.ResponseWriter, r *http.Request) *he
 	updateds.StorageReference = s.StorageReference
 	updateds.StorageBatchNumber = s.StorageBatchNumber
 	updateds.StorageToDestroy = s.StorageToDestroy
-	log.WithFields(log.Fields{"updateds": updateds}).Debug("UpdateStorageHandler")
+	global.Log.WithFields(logrus.Fields{"updateds": updateds}).Debug("UpdateStorageHandler")
 
 	if err := env.DB.UpdateStorage(updateds); err != nil {
 		return &helpers.AppError{
@@ -423,7 +422,7 @@ func (env *Env) RestoreStorageHandler(w http.ResponseWriter, r *http.Request) *h
 
 // CreateStorageHandler creates the storage from the request form
 func (env *Env) CreateStorageHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
-	log.Debug("CreateStorageHandler")
+	global.Log.Debug("CreateStorageHandler")
 	var (
 		s   models.Storage
 		err error
@@ -458,7 +457,7 @@ func (env *Env) CreateStorageHandler(w http.ResponseWriter, r *http.Request) *he
 	s.StorageCreationDate = time.Now()
 	s.StorageModificationDate = time.Now()
 	s.PersonID = c.PersonID
-	log.WithFields(log.Fields{"s": s}).Debug("CreateStorageHandler")
+	global.Log.WithFields(logrus.Fields{"s": s}).Debug("CreateStorageHandler")
 
 	for i := 1; i <= s.StorageNbItem; i++ {
 		if id, err = env.DB.CreateStorage(s); err != nil {
@@ -468,7 +467,7 @@ func (env *Env) CreateStorageHandler(w http.ResponseWriter, r *http.Request) *he
 				Code:    http.StatusInternalServerError}
 		}
 		// generating barecode if not specified
-		if (s.StorageBarecode.String == ""){
+		if s.StorageBarecode.String == "" {
 			s.StorageID = sql.NullInt64{Valid: true, Int64: int64(id)}
 			if err = env.DB.GenerateAndUpdateStorageBarecode(&s); err != nil {
 				return &helpers.AppError{

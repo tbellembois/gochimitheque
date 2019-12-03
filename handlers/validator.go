@@ -5,11 +5,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/nicksnyder/go-i18n/v2/i18n"
-	"github.com/tbellembois/gochimitheque/global"
-
 	"github.com/gorilla/mux"
-	log "github.com/sirupsen/logrus"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"github.com/sirupsen/logrus"
+	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/helpers"
 	"github.com/tbellembois/gochimitheque/models"
 	"github.com/tbellembois/gochimitheque/utils"
@@ -81,7 +80,7 @@ func (env *Env) ValidatePersonEmailHandler(w http.ResponseWriter, r *http.Reques
 		res = (person.PersonID != people[0].PersonID)
 	}
 
-	log.WithFields(log.Fields{"vars": vars, "res": res}).Debug("ValidatePersonEmailHandler")
+	global.Log.WithFields(logrus.Fields{"vars": vars, "res": res}).Debug("ValidatePersonEmailHandler")
 	if res {
 		resp = global.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "person_emailexist_validate", PluralCount: 1})
 	} else {
@@ -160,7 +159,7 @@ func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request
 		res = (entity.EntityID != entities[0].EntityID)
 	}
 
-	log.WithFields(log.Fields{"vars": vars, "res": res}).Debug("ValidateEntityNameHandler")
+	global.Log.WithFields(logrus.Fields{"vars": vars, "res": res}).Debug("ValidateEntityNameHandler")
 	if res {
 		resp = global.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "entity_nameexist_validate", PluralCount: 1})
 	} else {

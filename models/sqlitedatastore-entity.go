@@ -9,8 +9,10 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
-	log "github.com/sirupsen/logrus"
+
+	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/constants"
+	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/helpers"
 )
 
@@ -34,18 +36,18 @@ func (db *SQLiteDataStore) ComputeStockStorelocation(p Product, s *StoreLocation
 
 	// getting current s stock
 	if err = db.Get(&nullc, sqlr, s.StoreLocationID.Int64, p.ProductID, u.UnitID.Int64, u.UnitID.Int64); err != nil {
-		log.WithFields(log.Fields{"err": err.Error()}).Error("ComputeStockStorelocation")
+		global.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("ComputeStockStorelocation")
 		return 0
 	}
 	if nullc.Valid {
 		c = nullc.Float64
 		t = nullc.Float64
 	}
-	log.WithFields(log.Fields{"p": p, "s": s, "u": u, "c": c}).Debug("ComputeStockStorelocation")
+	global.Log.WithFields(logrus.Fields{"p": p, "s": s, "u": u, "c": c}).Debug("ComputeStockStorelocation")
 
 	// getting s children
 	if sdbchildren, err = db.GetStoreLocationChildren(int(s.StoreLocationID.Int64)); err != nil {
-		log.WithFields(log.Fields{"err": err.Error()}).Error("ComputeStockStorelocation")
+		global.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("ComputeStockStorelocation")
 		return 0
 	}
 
@@ -102,18 +104,18 @@ func (db *SQLiteDataStore) ComputeStockStorelocationNoUnit(p Product, s *StoreLo
 
 	// getting current s stock
 	if err = db.Get(&nullc, sqlr, s.StoreLocationID.Int64, p.ProductID); err != nil {
-		log.WithFields(log.Fields{"err": err.Error()}).Error("ComputeStockStorelocationNoUnit")
+		global.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("ComputeStockStorelocationNoUnit")
 		return 0
 	}
 	if nullc.Valid {
 		c = nullc.Float64
 		t = nullc.Float64
 	}
-	log.WithFields(log.Fields{"p": p, "s": s, "c": c}).Debug("ComputeStockStorelocationNoUnit")
+	global.Log.WithFields(logrus.Fields{"p": p, "s": s, "c": c}).Debug("ComputeStockStorelocationNoUnit")
 
 	// getting s children
 	if sdbchildren, err = db.GetStoreLocationChildren(int(s.StoreLocationID.Int64)); err != nil {
-		log.WithFields(log.Fields{"err": err.Error()}).Error("ComputeStockStorelocationNoUnit")
+		global.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("ComputeStockStorelocationNoUnit")
 		return 0
 	}
 
@@ -165,7 +167,7 @@ func (db *SQLiteDataStore) ComputeStockEntity(p Product, r *http.Request) []Stor
 	// getting the entities (GetEntities returns only entities the connected user can see)
 	h, _ := helpers.NewdbselectparamEntity(r, nil)
 	if entities, _, err = db.GetEntities(h); err != nil {
-		log.WithFields(log.Fields{"err": err.Error()}).Error("ComputeStockEntity")
+		global.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("ComputeStockEntity")
 		return []StoreLocation{}
 	}
 	for _, e := range entities {
@@ -176,7 +178,7 @@ func (db *SQLiteDataStore) ComputeStockEntity(p Product, r *http.Request) []Stor
 	sqlr := `SELECT unit.unit_id, unit.unit_label FROM unit
 	WHERE unit.unit IS NULL`
 	if err = db.Select(&units, sqlr); err != nil {
-		log.WithFields(log.Fields{"err": err.Error()}).Error("ComputeStockEntity")
+		global.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("ComputeStockEntity")
 		return []StoreLocation{}
 	}
 
@@ -185,7 +187,7 @@ func (db *SQLiteDataStore) ComputeStockEntity(p Product, r *http.Request) []Stor
 	FROM storelocation
 	WHERE storelocation.storelocation IS NULL AND storelocation.entity IN (?)`, eids)
 	if err = db.Select(&storelocations, q, args...); err != nil {
-		log.WithFields(log.Fields{"err": err.Error()}).Error("ComputeStockEntity")
+		global.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("ComputeStockEntity")
 		return []StoreLocation{}
 	}
 
@@ -214,7 +216,7 @@ func (db *SQLiteDataStore) GetEntities(p helpers.DbselectparamEntity) ([]Entity,
 		snstmt                                  *sqlx.NamedStmt
 		err                                     error
 	)
-	log.WithFields(log.Fields{"p": p}).Debug("GetEntities")
+	global.Log.WithFields(logrus.Fields{"p": p}).Debug("GetEntities")
 
 	precreq.WriteString(" SELECT count(DISTINCT e.entity_id)")
 	presreq.WriteString(" SELECT e.entity_id, e.entity_name, e.entity_description")
@@ -309,7 +311,7 @@ func (db *SQLiteDataStore) GetEntities(p helpers.DbselectparamEntity) ([]Entity,
 		}
 	}
 
-	log.WithFields(log.Fields{"entities": entities, "count": count}).Debug("GetEntities")
+	global.Log.WithFields(logrus.Fields{"entities": entities, "count": count}).Debug("GetEntities")
 	return entities, count, nil
 }
 
@@ -320,7 +322,7 @@ func (db *SQLiteDataStore) GetEntity(id int) (Entity, error) {
 		sqlr   string
 		err    error
 	)
-	log.WithFields(log.Fields{"id": id}).Debug("GetEntity")
+	global.Log.WithFields(logrus.Fields{"id": id}).Debug("GetEntity")
 
 	sqlr = `SELECT e.entity_id, e.entity_name, e.entity_description
 	FROM entity AS e
@@ -328,7 +330,7 @@ func (db *SQLiteDataStore) GetEntity(id int) (Entity, error) {
 	if err = db.Get(&entity, sqlr, id); err != nil {
 		return Entity{}, err
 	}
-	log.WithFields(log.Fields{"ID": id, "entity": entity}).Debug("GetEntity")
+	global.Log.WithFields(logrus.Fields{"ID": id, "entity": entity}).Debug("GetEntity")
 	return entity, nil
 }
 
@@ -346,7 +348,7 @@ func (db *SQLiteDataStore) GetEntityPeople(id int) ([]Person, error) {
 	if err = db.Select(&people, sqlr, id); err != nil {
 		return []Person{}, err
 	}
-	log.WithFields(log.Fields{"ID": id, "people": people}).Debug("GetEntityPeople")
+	global.Log.WithFields(logrus.Fields{"ID": id, "people": people}).Debug("GetEntityPeople")
 	return people, nil
 }
 
@@ -443,7 +445,7 @@ func (db *SQLiteDataStore) UpdateEntity(e Entity) error {
 		tx       *sql.Tx
 		err      error
 	)
-	log.WithFields(log.Fields{"e": e}).Debug("UpdateEntity")
+	global.Log.WithFields(logrus.Fields{"e": e}).Debug("UpdateEntity")
 
 	// beginning transaction
 	if tx, err = db.Begin(); err != nil {
@@ -541,7 +543,7 @@ func (db *SQLiteDataStore) IsEntityEmpty(id int) (bool, error) {
 	if err = db.Get(&count, sqlr, id); err != nil {
 		return false, err
 	}
-	log.WithFields(log.Fields{"id": id, "count": count}).Debug("IsEntityEmpty")
+	global.Log.WithFields(logrus.Fields{"id": id, "count": count}).Debug("IsEntityEmpty")
 	if count == 0 {
 		res = true
 	} else {
@@ -563,7 +565,7 @@ func (db *SQLiteDataStore) HasEntityNoStorelocation(id int) (bool, error) {
 	if err = db.Get(&count, sqlr, id); err != nil {
 		return false, err
 	}
-	log.WithFields(log.Fields{"id": id, "count": count}).Debug("HasEntityNoStorelocation")
+	global.Log.WithFields(logrus.Fields{"id": id, "count": count}).Debug("HasEntityNoStorelocation")
 	if count == 0 {
 		res = true
 	} else {

@@ -23,7 +23,7 @@ import (
 	"github.com/jpillora/overseer"
 	"github.com/jpillora/overseer/fetcher"
 	"github.com/justinas/alice"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/handlers"
 	"github.com/tbellembois/gochimitheque/models"
@@ -83,10 +83,10 @@ func init() {
 func prog(state overseer.State) {
 
 	var (
-		err       error
-		logf      *os.File
-		dbname    = "./storage.db"
-		datastore models.Datastore
+		err         error
+		logf, logif *os.File
+		dbname      = "./storage.db"
+		datastore   models.Datastore
 	)
 
 	if *version {
@@ -94,29 +94,35 @@ func prog(state overseer.State) {
 		os.Exit(0)
 	}
 
+	// setting up logger
+	global.Log = logrus.New()
+	global.LogInternal = logrus.New()
+
 	// setting the log level
 	if *debug {
-		log.SetLevel(log.DebugLevel)
-		log.SetReportCaller(true)
+		global.Log.SetLevel(logrus.DebugLevel)
 	} else {
-		log.SetLevel(log.InfoLevel)
+		global.Log.SetLevel(logrus.InfoLevel)
 	}
 
 	// logging to file if logfile parameter specified
 	if *logfile != "" {
 		if logf, err = os.OpenFile(*logfile, os.O_WRONLY|os.O_CREATE, 0755); err != nil {
-			log.Fatal(err)
+			global.Log.Fatal(err)
 		} else {
-			log.SetOutput(logf)
+			global.Log.SetOutput(logf)
 		}
 	}
 	defer logf.Close()
 
 	// internal server error log file
-	if global.InternalServerErrorLog, err = os.OpenFile("errors.log", os.O_WRONLY|os.O_CREATE, 0755); err != nil {
-		log.Fatal(err)
+	if logif, err = os.OpenFile("errors.log", os.O_WRONLY|os.O_CREATE, 0755); err != nil {
+		global.Log.Fatal(err)
+	} else {
+		global.LogInternal.SetOutput(logif)
+		global.LogInternal.SetReportCaller(true)
 	}
-	defer global.InternalServerErrorLog.Close()
+	defer logif.Close()
 
 	// global variables init
 	global.BuildID = BuildID
@@ -124,7 +130,7 @@ func prog(state overseer.State) {
 	global.ProxyURL = *proxyurl
 	if *useproxy {
 		if *proxyurl == "" {
-			log.Error("proxyurl parameter required")
+			global.Log.Error("proxyurl parameter required")
 			os.Exit(1)
 		}
 		global.ApplicationFullURL = *proxyurl + *proxypath
@@ -136,56 +142,56 @@ func prog(state overseer.State) {
 	global.MailServerPort = *mailServerPort
 	global.MailServerUseTLS = *mailServerUseTLS
 	global.MailServerTLSSkipVerify = *mailServerTLSSkipVerify
-	log.Info("- application version: " + global.BuildID)
-	log.Info("- application endpoint: " + global.ApplicationFullURL)
+	global.Log.Info("- application version: " + global.BuildID)
+	global.Log.Info("- application endpoint: " + global.ApplicationFullURL)
 
 	// database initialization
-	log.Info("- opening database connection to " + dbname)
+	global.Log.Info("- opening database connection to " + dbname)
 	if datastore, err = models.NewSQLiteDBstore(dbname); err != nil {
-		log.Fatal(err)
+		global.Log.Fatal(err)
 	}
-	log.Info("- creating database if needed")
+	global.Log.Info("- creating database if needed")
 	if err = datastore.CreateDatabase(); err != nil {
-		log.Fatal(err)
+		global.Log.Fatal(err)
 	}
 	if *importv1from != "" {
-		log.Info("- import from Chimithèque v1 csv into database")
+		global.Log.Info("- import from Chimithèque v1 csv into database")
 		err := datastore.ImportV1(*importv1from)
 		if err != nil {
-			log.Error("an error occured: " + err.Error())
+			global.Log.Error("an error occured: " + err.Error())
 			os.Exit(1)
 		}
 		os.Exit(0)
 	}
 	if *importfrom != "" {
-		log.Info("- import from URL into database")
+		global.Log.Info("- import from URL into database")
 		err := datastore.Import(*importfrom)
 		if err != nil {
-			log.Error("an error occured: " + err.Error())
+			global.Log.Error("an error occured: " + err.Error())
 			os.Exit(1)
 		}
 		os.Exit(0)
 	}
 	if *resetAdminPassword {
-		log.Info("- reseting admin password to `chimitheque`")
+		global.Log.Info("- reseting admin password to `chimitheque`")
 		a, err := datastore.GetPersonByEmail("admin@chimitheque.fr")
 		if err != nil {
-			log.Error("an error occured: " + err.Error())
+			global.Log.Error("an error occured: " + err.Error())
 			os.Exit(1)
 		}
 		a.PersonPassword = "chimitheque"
 		err = datastore.UpdatePersonPassword(a)
 		if err != nil {
-			log.Error("an error occured: " + err.Error())
+			global.Log.Error("an error occured: " + err.Error())
 			os.Exit(1)
 		}
 		os.Exit(0)
 	}
 	if *updateQRCode {
-		log.Info("- updating storages QR codes")
+		global.Log.Info("- updating storages QR codes")
 		err := datastore.UpdateAllQRCodes()
 		if err != nil {
-			log.Error("an error occured: " + err.Error())
+			global.Log.Error("an error occured: " + err.Error())
 			os.Exit(1)
 		}
 		os.Exit(0)
@@ -202,33 +208,33 @@ func prog(state overseer.State) {
 		currentAdmins = strings.Split(*admins, ",")
 	}
 	if formerAdmins, err = datastore.GetAdmins(); err != nil {
-		log.Fatal(err)
+		global.Log.Fatal(err)
 	}
 	// cleaning former admins
 	for _, fa := range formerAdmins {
 		isStillAdmin = false
-		log.Info("former admin: " + fa.PersonEmail)
+		global.Log.Info("former admin: " + fa.PersonEmail)
 		for _, ca := range currentAdmins {
 			if ca == fa.PersonEmail {
 				isStillAdmin = true
 			}
 		}
 		if !isStillAdmin {
-			log.Info(fa.PersonEmail + " is not an admin anymore, removing permissions")
+			global.Log.Info(fa.PersonEmail + " is not an admin anymore, removing permissions")
 			if err = datastore.UnsetPersonAdmin(fa.PersonID); err != nil {
-				log.Fatal(err)
+				global.Log.Fatal(err)
 			}
 		}
 	}
 	// setting up new ones
 	if len(currentAdmins) > 0 {
 		for _, ca := range currentAdmins {
-			log.Info("additional admin: " + ca)
+			global.Log.Info("additional admin: " + ca)
 			if p, err = datastore.GetPersonByEmail(ca); err != nil {
 				if err == sql.ErrNoRows {
-					log.Fatal("user " + ca + " not found in database")
+					global.Log.Fatal("user " + ca + " not found in database")
 				} else {
-					log.Fatal(err)
+					global.Log.Fatal(err)
 				}
 			}
 
@@ -450,8 +456,8 @@ func prog(state overseer.State) {
 
 	http.Handle("/", r)
 
-	log.Info("- application running")
+	global.Log.Info("- application running")
 	if err = http.Serve(state.Listener, nil); err != nil {
-		log.Error("error running the server, do not worry probably a graceful restart " + err.Error())
+		global.Log.Error("error running the server, do not worry probably a graceful restart " + err.Error())
 	}
 }

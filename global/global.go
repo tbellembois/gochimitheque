@@ -5,13 +5,13 @@ import (
 	"database/sql/driver"
 	"errors"
 	"math/rand"
-	"os"
 	"reflect"
 	"time"
 
 	"github.com/BurntSushi/toml"
 	"github.com/gorilla/schema"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/locales"
 	"golang.org/x/text/language"
 )
@@ -47,6 +47,10 @@ func (nt *NullTime) UnmarshalText(text []byte) (err error) {
 }
 
 var (
+	// Log is the general application logger
+	Log *logrus.Logger
+	// LogInternal is the application logger used to log fatal errors
+	LogInternal *logrus.Logger
 	// TokenSignKey is the JWT token signing key
 	TokenSignKey []byte
 	// Decoder is the form<>struct gorilla decoder
@@ -74,8 +78,6 @@ var (
 	MailServerUseTLS bool
 	// MailServerTLSSkipVerify bypass the SMTP TLS verification
 	MailServerTLSSkipVerify bool
-	// InternalServerErrorLog error log file
-	InternalServerErrorLog *os.File
 	// Bundle is the i18n configuration bundle
 	Bundle *i18n.Bundle
 	// Localizer is the i18n translator
@@ -160,6 +162,7 @@ func ConvertSQLNullFloat64(value string) reflect.Value {
 	return reflect.ValueOf(v)
 }
 
+// GenSymmetricKey generates a key for the JWT encryption
 // https://github.com/northbright/Notes/blob/master/jwt/generate_hmac_secret_key_for_jwt.md
 func GenSymmetricKey(bits int) (k []byte, err error) {
 	if bits <= 0 || bits%8 != 0 {

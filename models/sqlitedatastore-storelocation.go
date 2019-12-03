@@ -7,12 +7,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/jmoiron/sqlx"
-
 	sq "github.com/Masterminds/squirrel"
+	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/constants"
+	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/helpers"
 )
 
@@ -25,7 +25,7 @@ func (db *SQLiteDataStore) buildFullPath(s StoreLocation, tx *sqlx.Tx) string {
 		err error
 	)
 
-	log.WithFields(log.Fields{"s": s}).Debug("buildFullPath")
+	global.Log.WithFields(logrus.Fields{"s": s}).Debug("buildFullPath")
 
 	// getting the parent
 	if s.StoreLocation != nil && s.StoreLocation.StoreLocationID.Valid {
@@ -38,7 +38,7 @@ func (db *SQLiteDataStore) buildFullPath(s StoreLocation, tx *sqlx.Tx) string {
 		WHERE s.storelocation_id = ?`
 		r := tx.QueryRowx(sqlr, s.StoreLocation.StoreLocationID.Int64)
 		if err = r.StructScan(&pp); err != nil {
-			log.Error(err)
+			global.Log.Error(err)
 			return ""
 		}
 
@@ -60,7 +60,7 @@ func (db *SQLiteDataStore) GetStoreLocations(p helpers.DbselectparamStoreLocatio
 		snstmt                             *sqlx.NamedStmt
 		err                                error
 	)
-	log.WithFields(log.Fields{"p": p}).Debug("GetStoreLocations")
+	global.Log.WithFields(logrus.Fields{"p": p}).Debug("GetStoreLocations")
 
 	precreq.WriteString(" SELECT count(DISTINCT s.storelocation_id)")
 	presreq.WriteString(` SELECT s.storelocation_id AS "storelocation_id", 
@@ -123,8 +123,8 @@ func (db *SQLiteDataStore) GetStoreLocations(p helpers.DbselectparamStoreLocatio
 		"entity":                 p.GetEntity(),
 		"permission":             p.GetPermission(),
 	}
-	//log.Debug(presreq.String() + comreq.String() + postsreq.String())
-	//log.Debug(m)
+	//global.Log.Debug(presreq.String() + comreq.String() + postsreq.String())
+	//global.Log.Debug(m)
 
 	// select
 	if err = snstmt.Select(&storelocations, m); err != nil {
@@ -144,7 +144,7 @@ func (db *SQLiteDataStore) GetStoreLocation(id int) (StoreLocation, error) {
 		sqlr          string
 		err           error
 	)
-	log.WithFields(log.Fields{"id": id}).Debug("GetStoreLocation")
+	global.Log.WithFields(logrus.Fields{"id": id}).Debug("GetStoreLocation")
 
 	sqlr = `SELECT s.storelocation_id, s.storelocation_name, s.storelocation_canstore, s.storelocation_color, s.storelocation_fullpath,
 	storelocation.storelocation_id AS "storelocation.storelocation_id",
@@ -159,7 +159,7 @@ func (db *SQLiteDataStore) GetStoreLocation(id int) (StoreLocation, error) {
 		return StoreLocation{}, err
 	}
 
-	log.WithFields(log.Fields{"ID": id, "storelocation": storelocation}).Debug("GetStoreLocation")
+	global.Log.WithFields(logrus.Fields{"ID": id, "storelocation": storelocation}).Debug("GetStoreLocation")
 	return storelocation, nil
 }
 
@@ -184,7 +184,7 @@ func (db *SQLiteDataStore) GetStoreLocationChildren(id int) ([]StoreLocation, er
 		return []StoreLocation{}, err
 	}
 
-	log.WithFields(log.Fields{"id": id, "storelocations": storelocations}).Debug("GetStoreLocationChildren")
+	global.Log.WithFields(logrus.Fields{"id": id, "storelocations": storelocations}).Debug("GetStoreLocationChildren")
 	return storelocations, nil
 }
 
@@ -205,7 +205,7 @@ func (db *SQLiteDataStore) GetStoreLocationEntity(id int) (Entity, error) {
 	if err = db.Get(&entity, sqlr, id); err != nil {
 		return Entity{}, err
 	}
-	log.WithFields(log.Fields{"ID": id, "entity": entity}).Debug("GetStoreLocationEntity")
+	global.Log.WithFields(logrus.Fields{"ID": id, "entity": entity}).Debug("GetStoreLocationEntity")
 	return entity, nil
 }
 
@@ -400,7 +400,7 @@ func (db *SQLiteDataStore) IsStoreLocationEmpty(id int) (bool, error) {
 	if err = db.Get(&count, sqlr, id); err != nil {
 		return false, err
 	}
-	log.WithFields(log.Fields{"id": id, "count": count}).Debug("IsStoreLocationEmpty")
+	global.Log.WithFields(logrus.Fields{"id": id, "count": count}).Debug("IsStoreLocationEmpty")
 	if count == 0 {
 		res = true
 	} else {

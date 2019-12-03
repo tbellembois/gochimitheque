@@ -23,7 +23,7 @@ func main() {
 		if error == io.EOF {
 			break
 		} else if error != nil {
-			log.Fatal(error)
+			global.Log.Fatal(error)
 		}
 		fmt.Println("----")
 		fmt.Println(line[0])

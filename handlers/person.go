@@ -6,16 +6,14 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/nicksnyder/go-i18n/v2/i18n"
-	"github.com/tbellembois/gochimitheque/utils"
-
-	"github.com/tbellembois/gochimitheque/jade"
-
 	"github.com/gorilla/mux"
-	log "github.com/sirupsen/logrus"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/helpers"
+	"github.com/tbellembois/gochimitheque/jade"
 	"github.com/tbellembois/gochimitheque/models"
+	"github.com/tbellembois/gochimitheque/utils"
 )
 
 /*
@@ -58,7 +56,7 @@ func (env *Env) VGetPeopleHandler(w http.ResponseWriter, r *http.Request) *helpe
 
 // GetPeopleHandler returns a json list of the people matching the search criteria
 func (env *Env) GetPeopleHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
-	log.Debug("GetPeopleHandler")
+	global.Log.Debug("GetPeopleHandler")
 
 	var (
 		err  error
@@ -107,7 +105,7 @@ func (env *Env) GetPersonHandler(w http.ResponseWriter, r *http.Request) *helper
 	}
 
 	person, _ := env.DB.GetPerson(id)
-	log.WithFields(log.Fields{"person": person}).Debug("GetPersonHandler")
+	global.Log.WithFields(logrus.Fields{"person": person}).Debug("GetPersonHandler")
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
@@ -225,7 +223,7 @@ func (env *Env) CreatePersonHandler(w http.ResponseWriter, r *http.Request) *hel
 			Message: "form decoding error",
 			Code:    http.StatusBadRequest}
 	}
-	log.WithFields(log.Fields{"p": p}).Debug("CreatePersonHandler")
+	global.Log.WithFields(logrus.Fields{"p": p}).Debug("CreatePersonHandler")
 
 	// generating a random password
 	// the user will have to get a new password
@@ -242,7 +240,7 @@ func (env *Env) CreatePersonHandler(w http.ResponseWriter, r *http.Request) *hel
 	// sending the new mail
 	msgbody := fmt.Sprintf(global.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "createperson_mailbody", PluralCount: 1}), global.ApplicationFullURL+"login", p.PersonEmail)
 	msgsubject := global.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "createperson_mailsubject", PluralCount: 1})
-	if err = sendMail(p.PersonEmail, msgsubject, msgbody); err != nil {
+	if err = utils.SendMail(p.PersonEmail, msgsubject, msgbody); err != nil {
 		return &helpers.AppError{
 			Code:    http.StatusInternalServerError,
 			Error:   err,
@@ -274,14 +272,14 @@ func (env *Env) UpdatePersonpHandler(w http.ResponseWriter, r *http.Request) *he
 			Message: "form decoding error",
 			Code:    http.StatusBadRequest}
 	}
-	log.WithFields(log.Fields{"p": p}).Debug("UpdatePersonpHandler")
+	global.Log.WithFields(logrus.Fields{"p": p}).Debug("UpdatePersonpHandler")
 
 	// retrieving the logged user id from request context
 	c := helpers.ContainerFromRequestContext(r)
 
 	updatedp, _ := env.DB.GetPerson(c.PersonID)
 	updatedp.PersonPassword = p.PersonPassword
-	log.WithFields(log.Fields{"updatedp": updatedp}).Debug("UpdatePersonpHandler")
+	global.Log.WithFields(logrus.Fields{"updatedp": updatedp}).Debug("UpdatePersonpHandler")
 
 	if err = env.DB.UpdatePersonPassword(updatedp); err != nil {
 		return &helpers.AppError{
@@ -317,7 +315,7 @@ func (env *Env) UpdatePersonHandler(w http.ResponseWriter, r *http.Request) *hel
 			Message: "form decoding error",
 			Code:    http.StatusBadRequest}
 	}
-	log.WithFields(log.Fields{"p": p}).Debug("UpdatePersonHandler")
+	global.Log.WithFields(logrus.Fields{"p": p}).Debug("UpdatePersonHandler")
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
 		return &helpers.AppError{
@@ -343,7 +341,7 @@ func (env *Env) UpdatePersonHandler(w http.ResponseWriter, r *http.Request) *hel
 			Message: "error getting entities managers",
 			Code:    http.StatusInternalServerError}
 	}
-	log.WithFields(log.Fields{"es": es}).Debug("UpdatePersonHandler")
+	global.Log.WithFields(logrus.Fields{"es": es}).Debug("UpdatePersonHandler")
 
 	// for the managed entities setting up the permissions
 	if len(es) != 0 {
@@ -363,8 +361,8 @@ func (env *Env) UpdatePersonHandler(w http.ResponseWriter, r *http.Request) *hel
 			updatedp.Permissions[i].PermissionEntityID = -1
 		}
 	}
-	log.WithFields(log.Fields{"updatedp": updatedp}).Debug("UpdatePersonHandler")
-	log.WithFields(log.Fields{"updatedp.Permissions": updatedp.Permissions}).Debug("UpdatePersonHandler")
+	global.Log.WithFields(logrus.Fields{"updatedp": updatedp}).Debug("UpdatePersonHandler")
+	global.Log.WithFields(logrus.Fields{"updatedp.Permissions": updatedp.Permissions}).Debug("UpdatePersonHandler")
 
 	if err = env.DB.UpdatePerson(updatedp); err != nil {
 		return &helpers.AppError{
@@ -375,7 +373,7 @@ func (env *Env) UpdatePersonHandler(w http.ResponseWriter, r *http.Request) *hel
 
 	// hidden feature
 	if p.PersonPassword != "" {
-		log.Debug("hidden feature person password set")
+		global.Log.Debug("hidden feature person password set")
 		env.DB.UpdatePersonPassword(p)
 	}
 

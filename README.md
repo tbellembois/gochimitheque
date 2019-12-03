@@ -1,4 +1,5 @@
 - [Chimithèque](#chimith%c3%a8que)
+- [Web browser compatibility](#web-browser-compatibility)
 - [Download](#download)
 - [Quick start](#quick-start)
 - [Production installation](#production-installation)
@@ -33,6 +34,11 @@ Main goals:
 - *cost/ecology*: share products to avoid waste
 
 ![screenshot](screenshot.png)
+
+# Web browser compatibility
+
+Chimithèque does NOT work with Microsoft Internet Explorer.  
+It was tested successfully with Firefox and Chrome/Chromium.
 
 # Download
 

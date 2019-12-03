@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"testing"
 
-	log "github.com/sirupsen/logrus"
+	
 	"github.com/tbellembois/gochimitheque/models"
 )
 
@@ -16,7 +16,7 @@ var (
 
 func init() {
 	if datastore, err = models.NewSQLiteDBstore(dbname); err != nil {
-		log.Fatal(err)
+		global.Log.Fatal(err)
 	}
 }
 

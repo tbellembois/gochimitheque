@@ -2,28 +2,25 @@ package handlers
 
 import (
 	"bytes"
-	"crypto/tls"
 	"database/sql"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
-	"net/smtp"
 	"strconv"
 	"time"
-
-	"github.com/tbellembois/gochimitheque/jade"
 
 	"github.com/dchest/passwordreset"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/steambap/captcha"
 	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/helpers"
+	"github.com/tbellembois/gochimitheque/jade"
 	"github.com/tbellembois/gochimitheque/models"
+	"github.com/tbellembois/gochimitheque/utils"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -44,88 +41,6 @@ func (env *Env) VLoginHandler(w http.ResponseWriter, r *http.Request) *helpers.A
 /*
 	REST handlers
 */
-
-// sendMail send a mail
-func sendMail(to string, subject string, body string) error {
-
-	var (
-		e         error
-		tlsconfig *tls.Config
-		tlsconn   *tls.Conn
-		client    *smtp.Client
-		smtpw     io.WriteCloser
-		n         int64
-		message   string
-	)
-
-	// build message
-	message += fmt.Sprintf("From: %s\r\n", global.MailServerSender)
-	message += fmt.Sprintf("To: %s\r\n", to)
-	message += fmt.Sprintf("Date: %s\r\n", time.Now().Format(time.RFC1123Z))
-	message += fmt.Sprintf("Subject: %s\r\n", subject)
-	message += "\r\n" + body
-
-	log.WithFields(log.Fields{
-		"global.MailServerAddress":       global.MailServerAddress,
-		"global.MailServerPort":          global.MailServerPort,
-		"global.MailServerSender":        global.MailServerSender,
-		"global.MailServerUseTLS":        global.MailServerUseTLS,
-		"global.MailServerTLSSkipVerify": global.MailServerTLSSkipVerify,
-		"subject":                        subject,
-		"to":                             to}).Debug("sendMail")
-
-	if global.MailServerUseTLS {
-		// tls
-		tlsconfig = &tls.Config{
-			InsecureSkipVerify: global.MailServerTLSSkipVerify,
-			ServerName:         global.MailServerAddress,
-		}
-		if tlsconn, e = tls.Dial("tcp", global.MailServerAddress+":"+global.MailServerPort, tlsconfig); e != nil {
-			log.Error("dial :" + e.Error())
-			return e
-		}
-		defer tlsconn.Close()
-		if client, e = smtp.NewClient(tlsconn, global.MailServerAddress); e != nil {
-			log.Error("tls client :" + e.Error())
-			return e
-		}
-	} else {
-		if client, e = smtp.Dial(global.MailServerAddress + ":" + global.MailServerPort); e != nil {
-			log.Error("smtp client :" + e.Error())
-			return e
-		}
-	}
-	defer client.Close()
-
-	// to && from
-	if e = client.Mail(global.MailServerSender); e != nil {
-		log.Error("from :" + e.Error())
-		return e
-	}
-	if e = client.Rcpt(to); e != nil {
-		log.Error("to :" + e.Error())
-		return e
-	}
-	// data
-	if smtpw, e = client.Data(); e != nil {
-		log.Error("data :" + e.Error())
-		return e
-	}
-	defer smtpw.Close()
-
-	// send message
-	buf := bytes.NewBufferString(message)
-	if n, e = buf.WriteTo(smtpw); e != nil {
-		log.Error("send :" + e.Error())
-		return e
-	}
-	log.WithFields(log.Fields{"n": n}).Debug("sendMail")
-
-	// send quit command
-	client.Quit()
-
-	return nil
-}
 
 // CaptchaHandler returns a captcha image with an uuid
 func (env *Env) CaptchaHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
@@ -149,7 +64,7 @@ func (env *Env) CaptchaHandler(w http.ResponseWriter, r *http.Request) *helpers.
 	}); e != nil {
 		return &helpers.AppError{
 			Code:    http.StatusInternalServerError,
-			Message: "captcha creation error",
+			Message: e.Error(),
 		}
 	}
 
@@ -157,7 +72,7 @@ func (env *Env) CaptchaHandler(w http.ResponseWriter, r *http.Request) *helpers.
 	if re.UID, e = env.DB.InsertCaptcha(data); e != nil {
 		return &helpers.AppError{
 			Code:    http.StatusInternalServerError,
-			Message: "captcha database insert error",
+			Message: e.Error(),
 		}
 	}
 
@@ -225,7 +140,7 @@ func (env *Env) ResetHandler(w http.ResponseWriter, r *http.Request) *helpers.Ap
 	// sending the new mail
 	msgbody := fmt.Sprintf(global.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "resetpassword_mailbody1", PluralCount: 1}), p.PersonPassword)
 	msgsubject := global.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "resetpassword_mailsubject1", PluralCount: 1})
-	if err = sendMail(login, msgsubject, msgbody); err != nil {
+	if err = utils.SendMail(login, msgsubject, msgbody); err != nil {
 		return &helpers.AppError{
 			Code:    http.StatusInternalServerError,
 			Error:   err,
@@ -268,7 +183,7 @@ func (env *Env) ResetPasswordHandler(w http.ResponseWriter, r *http.Request) *he
 			Message: "error decoding form",
 		}
 	}
-	log.WithFields(log.Fields{
+	global.Log.WithFields(logrus.Fields{
 		"person.PersonEmail": person.PersonEmail,
 		"person.CaptchaUID":  person.CaptchaUID,
 		"person.CaptchaText": person.CaptchaText}).Debug("ResetPasswordHandler")
@@ -281,7 +196,7 @@ func (env *Env) ResetPasswordHandler(w http.ResponseWriter, r *http.Request) *he
 			Message: "error validating captcha",
 		}
 	}
-	log.WithFields(log.Fields{"v": v}).Debug("ResetPasswordHandler")
+	global.Log.WithFields(logrus.Fields{"v": v}).Debug("ResetPasswordHandler")
 	if !v {
 		return &helpers.AppError{
 			Code:    http.StatusBadRequest,
@@ -322,7 +237,7 @@ func (env *Env) ResetPasswordHandler(w http.ResponseWriter, r *http.Request) *he
 	msgsubject := global.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "resetpassword_mailsubject2", PluralCount: 1})
 
 	// sending the reinitialisation email
-	if e = sendMail(person.PersonEmail, msgsubject, msgbody); e != nil {
+	if e = utils.SendMail(person.PersonEmail, msgsubject, msgbody); e != nil {
 		return &helpers.AppError{
 			Code:    http.StatusInternalServerError,
 			Error:   e,
@@ -337,7 +252,7 @@ func (env *Env) ResetPasswordHandler(w http.ResponseWriter, r *http.Request) *he
 
 // DeleteTokenHandler actually reset the token cookie
 func (env *Env) DeleteTokenHandler(w http.ResponseWriter, r *http.Request) *helpers.AppError {
-	log.Debug("DeleteTokenHandler")
+	global.Log.Debug("DeleteTokenHandler")
 	ctoken := http.Cookie{
 		Name:  "token",
 		Value: "",
@@ -381,7 +296,7 @@ func (env *Env) GetTokenHandler(w http.ResponseWriter, r *http.Request) *helpers
 			Message: "error decoding form",
 		}
 	}
-	log.WithFields(log.Fields{"form person": person}).Debug("GetTokenHandler")
+	global.Log.WithFields(logrus.Fields{"form person": person}).Debug("GetTokenHandler")
 
 	// authenticating the person
 	if p, e = env.DB.GetPersonByEmail(person.PersonEmail); e != nil {
@@ -398,7 +313,7 @@ func (env *Env) GetTokenHandler(w http.ResponseWriter, r *http.Request) *helpers
 			Message: "error getting user",
 		}
 	}
-	log.WithFields(log.Fields{"db p": p}).Debug("GetTokenHandler")
+	global.Log.WithFields(logrus.Fields{"db p": p}).Debug("GetTokenHandler")
 
 	if e = bcrypt.CompareHashAndPassword([]byte(p.PersonPassword), []byte(person.PersonPassword)); e != nil {
 		return &helpers.AppError{

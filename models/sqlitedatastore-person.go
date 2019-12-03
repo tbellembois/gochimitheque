@@ -11,9 +11,11 @@ import (
 	"github.com/jmoiron/sqlx"
 
 	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
-	log "github.com/sirupsen/logrus"
+
+	"github.com/sirupsen/logrus"
 	"github.com/steambap/captcha"
 	"github.com/tbellembois/gochimitheque/constants"
+	"github.com/tbellembois/gochimitheque/global"
 	"github.com/tbellembois/gochimitheque/helpers"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -31,7 +33,7 @@ func (db *SQLiteDataStore) ValidateCaptcha(token string, text string) (bool, err
 	if e = db.Get(&i, sqlr, token, text); e != nil && e != sql.ErrNoRows {
 		return false, e
 	}
-	log.WithFields(log.Fields{"token": token, "text": text, "i": i}).Debug("ValidateCaptcha")
+	global.Log.WithFields(logrus.Fields{"token": token, "text": text, "i": i}).Debug("ValidateCaptcha")
 
 	return i > 0, nil
 }
@@ -74,7 +76,7 @@ func (db *SQLiteDataStore) GetPeople(p helpers.DbselectparamPerson) ([]Person, i
 		snstmt                             *sqlx.NamedStmt
 		err                                error
 	)
-	log.WithFields(log.Fields{"p": p}).Debug("GetPeople")
+	global.Log.WithFields(logrus.Fields{"p": p}).Debug("GetPeople")
 
 	// is the logged user an admin?
 	if isadmin, err = db.IsPersonAdmin(p.GetLoggedPersonID()); err != nil {
@@ -144,7 +146,7 @@ func (db *SQLiteDataStore) GetPeople(p helpers.DbselectparamPerson) ([]Person, i
 		return nil, 0, err
 	}
 
-	log.WithFields(log.Fields{"people": people, "count": count}).Debug("GetPeople")
+	global.Log.WithFields(logrus.Fields{"people": people, "count": count}).Debug("GetPeople")
 	return people, count, nil
 }
 
@@ -192,7 +194,7 @@ func (db *SQLiteDataStore) GetPersonPermissions(id int) ([]Permission, error) {
 	if err = db.Select(&ps, sqlr, id); err != nil {
 		return nil, err
 	}
-	log.WithFields(log.Fields{"personID": id, "ps": ps}).Debug("GetPersonPermissions")
+	global.Log.WithFields(logrus.Fields{"personID": id, "ps": ps}).Debug("GetPersonPermissions")
 	return ps, nil
 }
 
@@ -211,7 +213,7 @@ func (db *SQLiteDataStore) GetPersonManageEntities(id int) ([]Entity, error) {
 	if err = db.Select(&es, sqlr, id); err != nil {
 		return nil, err
 	}
-	log.WithFields(log.Fields{"personID": id, "es": es}).Debug("GetPersonManageEntities")
+	global.Log.WithFields(logrus.Fields{"personID": id, "es": es}).Debug("GetPersonManageEntities")
 	return es, nil
 }
 
@@ -224,7 +226,7 @@ func (db *SQLiteDataStore) GetPersonEntities(LoggedPersonID int, id int) ([]Enti
 		sstmt    *sqlx.NamedStmt
 		err      error
 	)
-	log.WithFields(log.Fields{"LoggedPersonID": LoggedPersonID, "id": id}).Debug("GetPersonEntities")
+	global.Log.WithFields(logrus.Fields{"LoggedPersonID": LoggedPersonID, "id": id}).Debug("GetPersonEntities")
 
 	// is the logged user an admin?
 	if isadmin, err = db.IsPersonAdmin(LoggedPersonID); err != nil {
@@ -256,13 +258,13 @@ func (db *SQLiteDataStore) GetPersonEntities(LoggedPersonID int, id int) ([]Enti
 	// building argument map
 	m := map[string]interface{}{
 		"personid": id}
-	// log.Debug(sqlr)
-	// log.Debug(m)
+	// global.Log.Debug(sqlr)
+	// global.Log.Debug(m)
 
 	if err = sstmt.Select(&entities, m); err != nil {
 		return nil, err
 	}
-	log.WithFields(log.Fields{"entities": entities}).Debug("GetPersonEntities")
+	global.Log.WithFields(logrus.Fields{"entities": entities}).Debug("GetPersonEntities")
 	return entities, nil
 }
 
@@ -287,7 +289,7 @@ func (db *SQLiteDataStore) DoesPersonBelongsTo(id int, entities []Entity) (bool,
 	if err = db.Get(&count, sqlr, id, eids); err != nil {
 		return false, err
 	}
-	log.WithFields(log.Fields{"personID": id, "count": count}).Debug("DoesPersonBelongsTo")
+	global.Log.WithFields(logrus.Fields{"personID": id, "count": count}).Debug("DoesPersonBelongsTo")
 	return count > 0, nil
 }
 
@@ -304,7 +306,7 @@ func (db *SQLiteDataStore) HasPersonPermission(personid int, perm string, item s
 		isadmin bool
 	)
 
-	log.WithFields(log.Fields{
+	global.Log.WithFields(logrus.Fields{
 		"id":   personid,
 		"perm": perm,
 		"item": item,
@@ -334,8 +336,8 @@ func (db *SQLiteDataStore) HasPersonPermission(personid int, perm string, item s
 		(person = ? AND permission_perm_name = ? AND permission_item_name = "all")  OR
 		(person = ? AND permission_perm_name = ? AND permission_item_name = ?)`
 
-		log.Debug(fmt.Sprintf("sqlr:%s", sqlr))
-		log.Debug(fmt.Sprintf("id:%d item:%s perm:%s", personid, item, perm))
+		global.Log.Debug(fmt.Sprintf("sqlr:%s", sqlr))
+		global.Log.Debug(fmt.Sprintf("id:%d item:%s perm:%s", personid, item, perm))
 
 		if err = db.Get(&count, sqlr, personid, personid, item, personid, perm, personid, perm, item); err != nil {
 			switch {
@@ -361,8 +363,8 @@ func (db *SQLiteDataStore) HasPersonPermission(personid int, perm string, item s
 			return false, err
 		}
 
-		log.Debug(fmt.Sprintf("sqlr:%s", sqlr))
-		log.Debug(fmt.Sprintf("id:%d item:%s perm:%s", personid, item, perm))
+		global.Log.Debug(fmt.Sprintf("sqlr:%s", sqlr))
+		global.Log.Debug(fmt.Sprintf("id:%d item:%s perm:%s", personid, item, perm))
 
 		if err = db.Get(&count, sqlr, sqlargs...); err != nil {
 			switch {
@@ -396,8 +398,8 @@ func (db *SQLiteDataStore) HasPersonPermission(personid int, perm string, item s
 			return false, err
 		}
 
-		log.Debug(fmt.Sprintf("sqlr:%s", sqlr))
-		log.Debug(fmt.Sprintf("id:%d item:%s perm:%s eids:%s", personid, item, perm, eids))
+		global.Log.Debug(fmt.Sprintf("sqlr:%s", sqlr))
+		global.Log.Debug(fmt.Sprintf("id:%d item:%s perm:%s eids:%s", personid, item, perm, eids))
 
 		if err = db.Get(&count, sqlr, sqlargs...); err != nil {
 			switch {
@@ -409,7 +411,7 @@ func (db *SQLiteDataStore) HasPersonPermission(personid int, perm string, item s
 		}
 	}
 
-	log.WithFields(log.Fields{"count": count}).Debug("HasPersonPermission")
+	global.Log.WithFields(logrus.Fields{"count": count}).Debug("HasPersonPermission")
 	if count == 0 {
 		res = false
 	} else {
@@ -663,7 +665,7 @@ func (db *SQLiteDataStore) IsPersonAdmin(id int) (bool, error) {
 	if err = db.Get(&count, sqlr, id); err != nil {
 		return false, err
 	}
-	log.WithFields(log.Fields{"id": id, "count": count}).Debug("IsPersonAdmin")
+	global.Log.WithFields(logrus.Fields{"id": id, "count": count}).Debug("IsPersonAdmin")
 	if count == 0 {
 		res = false
 	} else {
@@ -721,7 +723,7 @@ func (db *SQLiteDataStore) IsPersonManager(id int) (bool, error) {
 	if err = db.Get(&count, sqlr, id); err != nil {
 		return false, err
 	}
-	log.WithFields(log.Fields{"id": id, "count": count}).Debug("IsPersonManager")
+	global.Log.WithFields(logrus.Fields{"id": id, "count": count}).Debug("IsPersonManager")
 	if count == 0 {
 		res = false
 	} else {
@@ -735,7 +737,7 @@ func (db *SQLiteDataStore) insertPermissions(p Person, tx *sql.Tx) error {
 		sqlr string
 		err  error
 	)
-	log.WithFields(log.Fields{"p.Permissions": p.Permissions}).Debug("insertPermissions")
+	global.Log.WithFields(logrus.Fields{"p.Permissions": p.Permissions}).Debug("insertPermissions")
 
 	// inserting person permissions
 	for _, perm := range p.Permissions {
