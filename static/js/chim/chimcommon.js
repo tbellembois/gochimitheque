@@ -329,8 +329,16 @@ function scanQRdone(result) {
 function scanQR() {   
     $("div#video").append("<video width='640' id='qr-video' muted playsinline></video>");
     const video = document.getElementById('qr-video');
-    window.qrScanner = new window.QrScanner(video, result => scanQRdone(result));  
-    $("div#video").append("<button type='button' onclick='closeQR()' class='btn btn-link'><span class='mdi mdi-close-box mdi-24px iconlabel'>" + global.t("close", container.PersonLanguage) + "</span></button>");
+    window.qrScanner = new window.QrScanner(video, result => scanQRdone(result));
 
-    window.qrScanner.start();
+    QrScanner.hasCamera().then(hasCamera => {
+        if (hasCamera) {
+            $("div#video").append("<button type='button' onclick='closeQR()' class='btn btn-link'><span class='mdi mdi-close-box mdi-24px iconlabel'>" + global.t("close", container.PersonLanguage) + "</span></button>");
+            window.qrScanner.start();
+        } else {
+            alert(global.t("nocamera", container.PersonLanguage));
+            closeQR();
+        }
+    });    
+    
 }

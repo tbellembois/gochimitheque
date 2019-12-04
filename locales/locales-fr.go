@@ -16,6 +16,8 @@ var LOCALES_FR = []byte(`
 	one = "sélectionner tout"
 [none]
 	one = "aucun"
+[nocamera]
+	one = "pas de caméra détectée"
 
 [edit]
 	one = "editer"
