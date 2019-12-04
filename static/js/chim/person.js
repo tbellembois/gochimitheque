@@ -171,7 +171,6 @@ $( document ).ready(function() {
         // preventing unselecting entity if the person is one its manager
         manageentities = $("input.manageentities")
         $.each(manageentities, function( index, e ) {
-            console.log($(e).val())
             if ($(e).val() == entityid) {
                 ismanager = true;
             }
@@ -415,16 +414,13 @@ function operateEditView(e, value, row, index) {
             global.populatePermissionWidget(permissiondata);
         }
 
-        // disabling or enabling the widgets
-        // if ($(e.target).hasClass("view")) {
-        //     $("#viewedit-collapse").find("input").prop("disabled", true);
-        //     $("#viewedit-collapse").find("select").prop("disabled", true);
-        //     $("#viewedit-collapse").find("button#save").hide();
-        // } else {
-        //     $("#viewedit-collapse").find("input").prop("disabled", false);
-        //     $("#viewedit-collapse").find("select").prop("disabled", false);
-        //     $("#viewedit-collapse").find("button#save").show();
-        // }
+        // hiding product permission form for managers
+        if ($("input.manageentities").length > 0) {
+            $("div#permissionsproducts").removeClass();
+            $("div#permissionsrproducts").removeClass();
+            $("div#permissionsproducts").hide();
+            $("div#permissionsrproducts").hide();
+        }
 
         // finally collapsing the view
         $('#viewedit-collapse').collapse('show');
