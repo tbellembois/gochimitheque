@@ -1,0 +1,21 @@
+extends ../base.jade
+block CONTENT
+    :go:func
+        Entitycreate(c ViewContainer)
+
+    +titleicon("store", "entity_create_title")
+
+    form#entity
+        .form-group.row
+            +inputtext("entity_name_table_header", "entity_name")
+        .form-group.row
+            +inputtext("entity_description_table_header", "entity_description")
+        .form-group.row
+            +selectmultiple("entity_manager_table_header", "managers")
+
+    button#save.btn.btn-link(type='button', onclick='gjsEntity.saveEntity()')
+        span.mdi.mdi-content-save.mdi-24px.iconlabel
+            = T("save", 1)
+
+block CONTENTJS
+    //script(src="../js/chim/entity.js")

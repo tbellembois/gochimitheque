@@ -1,0 +1,22 @@
+extends ../base.jade
+block CONTENT
+    :go:func
+        Personpupdate(c ViewContainer)
+    form#personp
+        .row.d-flex.flex-row.justify-content-center
+            div
+                span.mdi.mdi-36px.mdi-lock-reset
+        .form-group.row
+            div.col.col-sm-4.offset-sm-4
+                +inputpassword("password", "person_password")
+        .form-group.row
+            div.col.col-sm-4.offset-sm-4
+                +inputpassword("confirm_password", "person_passwordagain")
+        .row.d-flex.flex-row.justify-content-center
+            div
+                button.btn.btn-link(type='button', onclick='savePersonp()')
+                    span.mdi.mdi-content-save.mdi-24px.iconlabel
+                        = T("save", 1)
+
+block CONTENTJS
+	script(src="../js/chim/person.js")

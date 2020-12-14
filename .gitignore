@@ -1,0 +1,10 @@
+*.log
+
+storage.*
+
+rice-box.go
+
+gjs-common.js*
+
+static/jade/*
+!static/jade/funcs.go

@@ -1,0 +1,36 @@
+extends ../base.jade
+block CONTENT
+    :go:func
+        About(c ViewContainer)
+
+    div.mx-auto(style="width: 40%").mt-sm-4
+        span.iconlabel project leader: 
+        span Delphine Pitrat (delphine.pitrat@ens-lyon.fr)
+    div.mx-auto(style="width: 40%").mt-sm-4
+        span.iconlabel project site: 
+        span 
+            a(href="https://github.com/tbellembois/gochimitheque")
+                span.mdi.mdi-github-circle &nbsp;https://github.com/tbellembois/gochimitheque
+    div.mx-auto(style="width: 40%").mt-sm-4
+        span.iconlabel support: 
+        span 
+            a(href="https://github.com/tbellembois/gochimitheque")
+                span.mdi.mdi-github-circle &nbsp;https://github.com/tbellembois/gochimitheque/issues
+    div.mx-auto(style="width: 40%").mt-sm-4
+        span.iconlabel license:&nbsp;
+        span 
+            a(href="https://raw.githubusercontent.com/tbellembois/gochimitheque/master/LICENSE") Open Source - GNU GENERAL PUBLIC LICENSE V3
+    div.mx-auto(style="width: 40%").mt-sm-4
+        span.iconlabel version:&nbsp;
+        span#appversion 
+    div.row.mt-sm-4
+        .col-sm-4
+            img(src=c.ProxyPath + "img/logo_ens.png", alt="ens_logo" title="Ecole Normale Supérieure de Lyon")
+        .col-sm-4
+            img(src=c.ProxyPath + "img/logo_uca.jpg", alt="uca_logo" title="Université Clermont Auvergne")
+        .col-sm-4
+            img(src=c.ProxyPath + "img/logo_go.png", alt="go_logo" title="Golang language")
+            
+block CONTENTJS
+    script.
+        document.getElementById("appversion").innerHTML = buildID;

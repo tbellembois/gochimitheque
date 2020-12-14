@@ -1,0 +1,43 @@
+version: '3.7'
+services:
+    nginx:
+        container_name: nginx
+        image: nginx:1.19
+        restart: unless-stopped
+        ports:
+            - 443:443
+            - 80:80
+        volumes:
+            - /data/docker-nginx/nginx-auth/certs:/etc/nginx/certs
+            - /data/docker-nginx/nginx-templates:/etc/nginx/templates
+        networks:
+            - chimitheque
+    chimitheque:
+        container_name: chimitheque
+        image: tbellembois/gochimitheque
+        restart: unless-stopped
+        environment:
+            - CHIMITHEQUE_PROXYURL=http://127.0.0.1
+        #     - CHIMITHEQUE_PROXYURL=https://chimitheque.foo.com
+        #     - CHIMITHEQUE_PROXYPATH=/chimitheque
+        #     - CHIMITHEQUE_MAILSERVERADDRESS=smtp.foo.com
+        #     - CHIMITHEQUE_MAILSERVERPORT=467
+        #     - CHIMITHEQUE_MAILSERVERSENDER=noreply@foo.com
+        #     - CHIMITHEQUE_MAILSERVERUSETLS=true
+        #     - CHIMITHEQUE_MAILSERVERUSETLS=true
+        #     - CHIMITHEQUE_ENABLEPUBLICPRODUCTSENDPOINT=true
+        #     - CHIMITHEQUE_ADMINS=admin@foo.com,bar@foo.com
+        #     - CHIMITHEQUE_DEBUG=true
+        #     - CHIMITHEQUE_LOGFILE=/var/log/chimitheque.log
+        #
+        #     - CHIMITHEQUE_RESETADMINPASSWORD=true
+        #     - CHIMITHEQUE_UPDATEQRCODE=true
+        #     - CHIMITHEQUE_MAILTEST=john.do@foo.com
+        #     - CHIMITHEQUE_IMPORTV1FROM=/data/csv
+        #     - CHIMITHEQUE_IMPORTFROM=https://chimitheque.ens-lyon.fr
+        volumes:
+            - /data/docker-chimitheque/chimitheque-db:/data
+        networks:
+            - chimitheque
+networks:
+    chimitheque:

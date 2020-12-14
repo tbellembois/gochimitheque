@@ -1,0 +1,51 @@
+extends ../base.jade
+block CONTENT
+    :go:func
+        Entityindex(c ViewContainer)
+    #accordion
+        #list-collapse.collapse.show(data-parent='#accordion')
+            header.row
+                .col-sm-12
+                    table#table(data-toggle='table', 
+                                data-striped='true', 
+                                data-search='true', 
+                                data-side-pagination='server', 
+                                data-page-list="[10, 20, 50, 100]",
+                                data-pagination='true', 
+                                data-ajax='gjsEntity.getData', 
+                                data-sort-name='entity_name')
+                        thead
+                            tr
+                                //th(data-field='entity_id') ID
+                                th(data-field='entity_name' data-sortable='true')
+                                    = T("entity_name_table_header", 1)
+                                th(data-field='entity_description')
+                                    = T("entity_description_table_header", 1)
+                                th(data-field='managers' data-formatter='gjsEntity.managersFormatter')
+                                    = T("entity_manager_table_header", 1)
+                                th(data-field='operate', data-formatter='gjsEntity.operateFormatter', data-events='operateEvents')
+
+        #edit-collapse.collapse(data-parent='#accordion')
+
+            +titleicon(iconitem="store" label="entity_update_title")
+
+            form#entity
+                input#index(type='hidden', name='index', value='')
+                input#entity_id(type='hidden', name='entity_id', value='')
+
+                .form-group.row
+                    +inputtext("entity_name_table_header", "entity_name")
+                .form-group.row
+                    +inputtext("entity_description_table_header", "entity_description")
+                .form-group.row
+                    +selectmultiple("entity_manager_table_header", "managers")
+
+            button#save.btn.btn-link(type='button', onclick='gjsEntity.saveEntity()')
+                span.mdi.mdi-content-save.mdi-24px.iconlabel
+                    = T("save", 1)
+            button.btn.btn-link(type='button', onclick='gjsUtils.closeEdit();')
+                span.mdi.mdi-close-box.mdi-24px.iconlabel
+                    = T("close", 1)
+
+block CONTENTJS
+    //script(src="../js/chim/entity.js")

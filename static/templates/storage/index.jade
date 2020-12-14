@@ -1,0 +1,222 @@
+extends ../base.jade
+block CONTENT
+    :go:func
+        Storageindex(c ViewContainer)
+
+    #search.row.pt-sm-5.pb-sm-2.pl-sm-2.pr-sm-2.mt-sm-2.mb-sm-2.ml-sm-5.mr-sm-5.bg-light.border.rounded.collapse.show
+
+        +inputhidden(name="s_entity" value="")
+        +inputhidden(name="s_product" value="")
+        +inputhidden(name="s_history" value="")
+        +inputhidden(name="s_storage" value="")
+        +inputhidden(name="s_storage_archive" value="")
+        +inputhidden(name="s_bookmark" value="")
+
+        .col
+            .row
+                .col-sm-6
+                    +inputtextcompact("s_custom_name_part_of", "s_custom_name_part_of")
+                .col-sm-6
+                    +selectcompact("s_casnumber", "s_casnumber")
+                .col-sm-6
+                    +selectcompact("s_empiricalformula", "s_empiricalformula")
+                .col-sm-6
+                    +inputtextcompact("s_storage_barecode", "s_storage_barecode")
+            .row.collapse#advancedsearch
+                .col-sm-12
+                    hr
+                    .form-row
+                        .col-sm-6
+                            +selecticon("s_storelocation", "docker")
+                        .col-sm-6
+                            +selectcompact("s_name", "s_name")
+                    .form-row
+                        .form-group.col-sm-6
+                            +selectcompact("s_signalword", "s_signalword")
+                        .form-group.col-sm-6
+                            +selectmultiplecompact("s_symbols", "s_symbols")
+                    .form-row
+                        .form-group.col-sm-6
+                            +selectmultiplecompact("s_hazardstatements", "s_hazardstatements")
+                        .form-group.col-sm-6
+                            +selectmultiplecompact("s_precautionarystatements", "s_precautionarystatements")
+                    .form-row
+                        .form-group.col-sm-4
+                            +checkbox("s_casnumber_cmr", "s_casnumber_cmr")
+                        .form-group.col-sm-4
+                            +checkbox("s_borrowing", "s_borrowing")
+                        .form-group.col-sm-4
+                            +checkbox("s_storage_to_destroy", "s_storage_to_destroy")
+            .row
+                .col.col-sm-9
+                    button#clearsearch.btn.btn-link.mr-sm-2(type="button" onclick="clearsearch();")
+                        span.mdi.mdi-broom.mdi-24px.iconlabel
+                            = T("clearsearch_text", 1) 
+
+                    button#search.btn.btn-lg.btn-link.mr-sm-2(type="button" onclick="search();")
+                        span.mdi.mdi-magnify.mdi-24px.iconlabel
+                            = T("search_text", 1) 
+                .col.col-sm-3
+                    button.btn.btn-link(data-toggle="collapse" href="#advancedsearch" aria-expanded="false")
+                        span.mdi.mdi-magnify-plus-outline.mdi-24px.iconlabel
+                            = T("advancedsearch_text", 1) 
+
+    .row
+        .col-sm-12
+            #filter-item
+
+    #toolbar.btn-group(role="group")
+        button.btn.btn-link#switchview(type="button" onclick="switchProductStorageView()")
+            span.mdi.mdi-tag.mdi-24px.iconlabel
+                = T("switchproductview_text", 1) 
+        button.btn.btn-link#export(type="button" onclick="exportAll()")
+            span.mdi.mdi-content-save.mdi-24px.iconlabel
+                = T("export_text", 1) 
+        button#s_storage_archive_button.btn.btn-link(type="button" data-toggle="button" aria-pressed="true" autocomplete="off")
+            span.mdi.mdi-delete.mdi-24px.iconlabel
+                = T("showdeleted_text", 1) 
+        #button-store
+        #button-stock
+
+    #stock.modal.fade(role="dialog" tabindex="-1" aria-labelledby="stockLabel" aria-hidden="true")
+        .modal-dialog.modal-lg(role="document")
+            .modal-content
+                .modal-body#stock-body
+                    span.mdi.mdi-36px.mdi-spin.mdi-autorenew
+                .modal-footer
+                    button.btn.btn-link(type="button" data-dismiss="modal")
+                        span.mdi.mdi-close-box.mdi-24px.iconlabel
+                            = T("close", 1)
+
+    #exportlink.modal.fade(role="dialog" tabindex="-1" aria-labelledby="exportlinkLabel" aria-hidden="true")
+        .modal-dialog.modal-sm(role="document")
+            .modal-content
+                .modal-body#exportlink-body.mx-auto
+                .modal-footer
+                    button.btn.btn-link(type="button" data-dismiss="modal")
+                        span.mdi.mdi-close-box.mdi-24px.iconlabel
+                            = T("close", 1)
+
+    #borrow.modal.fade(role="dialog" tabindex="-1" aria-labelledby="borrowLabel" aria-hidden="true")
+        .modal-dialog.modal-lg(role="document")
+            .modal-content
+                .modal-body#borrow-body
+                    form#borrowing
+                        input#bstorage_id(type='hidden', name='bstorage_id', value='')
+                        .form-group.row
+                            .form-group.col-sm-auto
+                                span.badge.badge-pill.badge-danger &nbsp;
+                            .form-group.col-sm-11
+                                +select("storage_borrower_title", "borrower")
+                        .form-group.row
+                            .col-sm-12
+                                +inputtextarea("storage_comment_title", "borrowing_comment")
+                .modal-footer
+                    button.btn.btn-link(type="button" onclick='saveBorrowing()')
+                        span.mdi.mdi-content-save.mdi-24px.iconlabel
+                            = T("save", 1)
+                    button.btn.btn-link(type="button" data-dismiss="modal")
+                        span.mdi.mdi-close-box.mdi-24px.iconlabel
+                            = T("close", 1)
+
+    #accordion
+        #list-collapse.collapse.show(data-parent='#accordion')
+            //- header.row
+            //-     .col-sm-12
+            table#table(data-toggle='table'
+                        data-striped='true'
+                        data-search='false'
+                        data-pagination-v-align='both'
+                        data-toolbar="#toolbar"
+                        data-side-pagination='server'
+                        data-page-list="[5, 10, 20, 50, 100]"
+                        data-pagination='true'
+                        data-ajax='getData'
+                        data-query-params='queryParams'
+                        data-sort-name='name.name_label'
+                        data-detail-view="true"
+                        data-detail-formatter="detailFormatter"
+                        data-classes="table table-hover"
+                        data-row-attributes="rowAttributes")
+                thead
+                    tr
+                        //th(data-field='storage_id' data-formatter='storage_idFormatter' data-sortable='true') ID
+                        //th(data-field='storage_modificationdate' data-formatter='dateFormatter' data-sortable='true') modification date
+                        th(data-field='product.name.name_label' data-formatter='storage_productFormatter' data-sortable='true')
+                            = T("storage_product_table_header", 1)
+                        th(data-field='storelocation.storelocation_fullpath' data-sortable='true' data-formatter='storelocation_fullpathFormatter')
+                            = T("storage_storelocation_table_header", 1)
+                        th(data-field='storage_quantity' data-formatter='storage_quantityFormatter')
+                            = T("storage_quantity_table_header", 1)
+                        th.th-storage-barecode(data-field='storage_barecode' data-formatter='storage_barecodeFormatter' data-sortable='true')
+                            = T("storage_barecode_table_header", 1)
+                        th.th-storage-operate(data-field='operate', data-formatter='operateFormatter', data-events='operateEvents') 
+
+        #edit-collapse.collapse(data-parent='#accordion')
+
+            +titleicon(iconitem="forklift" label="storage_update_title")
+
+            .row
+                .d-flex.justify-content-center
+                    #filter-product
+
+            form#storage
+                input#index(type='hidden', name='index', value='')
+                input#storage_id(type='hidden', name='storage_id', value='')
+
+                input#exactMatchSupplier(type="hidden")
+
+                .form-group.row
+                    .form-group.col-sm-12
+                        +selectrequired("storage_storelocation_title", "storelocation")
+                .form-group.row
+                    .col-sm-6
+                        +inputnumber("storage_quantity_title", "storage_quantity", "any", "1", "10000000", "")
+                    .col-sm-6
+                        +select("unit_label_title", "unit_quantity") 
+
+                // bio
+                .form-group.row
+                    .col-sm-6
+                        +inputnumber("storage_concentration_title", "storage_concentration", "any", "1", "10000000", "")
+                    .col-sm-6
+                        +select("unit_label_title", "unit_concentration")
+                        
+                .form-group.row
+                    .col-sm-12
+                        +select("supplier_label_title", "supplier")
+                .form-group.row
+                    .col-sm-3
+                        +inputdate("storage_entrydate_title", "storage_entrydate")
+                    .col-sm-3
+                        +inputdate("storage_exitdate_title", "storage_exitdate")
+                    .col-sm-3
+                        +inputdate("storage_openingdate_title", "storage_openingdate")
+                    .col-sm-3
+                        +inputdate("storage_expirationdate_title", "storage_expirationdate")
+                .form-group.row
+                    .col-sm-6
+                        +inputtext("storage_reference_title", "storage_reference")
+                    .col-sm-6
+                        +inputtext("storage_batchnumber_title", "storage_batchnumber")
+                .form-group.row
+                    .col-sm-12
+                        +inputtext("storage_barecode_title", "storage_barecode")
+                .form-group.row
+                    .col-sm-12
+                        +inputtext("storage_comment_title", "storage_comment")  
+                .form-group.row
+                    .col-sm-12
+                        +checkbox("storage_todestroy_title", "storage_todestroy")
+
+            button#save.btn.btn-link(type='button', onclick='saveStorage()')
+                span.mdi.mdi-content-save.mdi-24px.iconlabel
+                    = T("save", 1)
+            button.btn.btn-link(type='button', onclick='closeEdit();')
+                span.mdi.mdi-close-box.mdi-24px.iconlabel
+                    = T("close", 1)
+
+block CONTENTJS
+    script(src="../js/chim/product_storage.js")
+    script(src="../js/chim/storage.js")
+

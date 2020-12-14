@@ -1,0 +1,117 @@
+mixin title(label)
+    .card.bg-dark.text-center.w-25.mx-auto.mt-md-5.mb-md-5
+        .card-body
+            h5.card-title.text-light
+                = T(label, 1)
+
+mixin titleicon(iconitem, label)
+    .mt-sm-2.mb-sm-2
+        .row
+            .col.d-flex.justify-content-center
+                span(class='mdi-'+ iconitem +' mdi mdi-24px')&nbsp;
+                    = T(label, 1)
+
+mixin checkbox(label,name)
+    .form-check
+        input.form-check-input(type='checkbox' id=name)
+        label.form-check-label(for=name)
+            = T(label, 1)
+
+mixin checkboxicon(title,name,icon)
+    .form-check
+        input.form-check-input(type='checkbox' id=name title=T(title, 1))
+        label.form-check-label(for=name)
+            span(class='mdi mdi-36px ' + icon title=T(title, 1))
+
+mixin select(label,name)
+    label(for=name)
+        = T(label, 1)
+    select.form-control(style='width: 100% !important;' id=name name=name)
+
+mixin selectrequired(label,name)
+    span.badge.badge-pill.badge-danger(id=name)  &nbsp;
+    label(for=name)
+        = T(label, 1)
+    select.form-control(style='width: 100% !important;' id=name name=name)
+
+mixin selecticon(name,icon)
+    .form-group.row
+        label.col-sm-4.col-form-label-sm(for=name)
+            span(class="mdi-" + icon + " mdi mdi-36px")
+        .col-sm-8
+            select(style='width: 100% !important;' id=name name=name)
+
+mixin selectcompact(label,name)
+    .form-group.row
+        label.col-sm-4.col-form-label-sm(for=name)
+            = T(label, 1)
+        .col-sm-8
+            select.form-control(style='width: 100% !important;' id=name name=name)
+
+mixin selectmultiplecompact(label,name)
+    .form-group.row
+        label.col-sm-4.col-form-label-sm(for=name)
+            = T(label, 1)
+        .col-sm-8
+            select.form-control(style='width: 100% !important;' id=name name=name multiple='multiple')
+
+mixin selectmultiple(label,name)
+    label(for=name)
+        = T(label, 1)
+    select.form-control(style='width: 100% !important;' id=name name=name multiple='multiple')
+
+mixin selectmultiplerequired(label,name)
+    span.badge.badge-pill.badge-danger  &nbsp;
+    label(for=name)
+        = T(label, 1)
+    select.form-control(style='width: 100% !important;' id=name name=name multiple='multiple')
+   
+mixin inputtext(label,name)
+    label(for=name)
+        = T(label, 1)
+    input.form-control(type='text' id=name name=name title=name)
+
+mixin inputtextrequired(label,name)
+    span.badge.badge-pill.badge-danger  &nbsp;
+    label(for=name)
+        = T(label, 1)
+    input.form-control(type='text' id=name name=name title=name)
+
+mixin inputfile(label,name)
+    label(for=name)
+        = T(label, 1)
+    input.form-control(type='file' id=name name=name title=name)
+
+mixin inputpassword(label,name)
+    label(for=name)
+        = T(label, 1)
+    input.form-control(type='password' id=name name=name title=name)
+
+mixin inputtextcompact(label,name)
+    .form-group.row
+        label.col-sm-4.col-form-label-sm(for=name)
+            = T(label, 1)
+        .col-sm-8
+            input.form-control(type='text' id=name name=name title=name)
+
+mixin inputdate(label,name)
+    label(for=name)
+        = T(label, 1)
+    input.form-control(type='date' id=name name=name title=name)
+
+mixin inputnumber(label,name,step,min,max,value)
+    label(for=name)
+        = T(label, 1)
+    input.form-control(type='number' id=name name=name title=name step=step min=min max=max value=value)
+
+mixin inputhidden(name, value)
+    input(id='hidden_'+ name type='hidden' name=name value=value)
+
+mixin inputtextarea(label, name)
+    label(for=name)
+        = T(label, 1)
+    textarea.form-control(type='text' id=name name=name title=name)
+
+mixin inputcomment(label)
+    span.blockquote-footer.mdi.mdi-subdirectory-arrow-right.pl-sm-3
+        = T(label, 1)

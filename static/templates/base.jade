@@ -1,0 +1,176 @@
+include mixins
+html
+    head
+        include head
+
+        link(href=c.ProxyPath + "css/animate.min.css",  rel="stylesheet" )
+        link(href=c.ProxyPath + "css/bootstrap-colorpicker.min.css",  rel="stylesheet" )
+        link(href=c.ProxyPath + "css/bootstrap-table.min.css",  rel="stylesheet" )
+        link(href=c.ProxyPath + "css/bootstrap-toggle.min.css",  rel="stylesheet" )
+        link(href=c.ProxyPath + "css/bootstrap.min.css",  rel="stylesheet" )
+        link(href=c.ProxyPath + "css/chimitheque.css",  rel="stylesheet" )
+        link(href=c.ProxyPath + "css/fontawesome.all.min.css",  rel="stylesheet" )
+        link(href=c.ProxyPath + "css/materialdesignicons.min.css",  rel="stylesheet" )
+        link(href=c.ProxyPath + "css/select2.min.css",  rel="stylesheet" )
+        link(href=c.ProxyPath + "css/trumbowyg.min.css",  rel="stylesheet" )
+        link(href=c.ProxyPath + "css/trumbowyg.colors.min.css",  rel="stylesheet" )
+        
+        link(rel="shortcut icon" href=c.ProxyPath + "img/favicon.ico" type="image/x-icon")
+        link(rel="icon" href=c.ProxyPath + "img/favicon.ico" type="image/x-icon")
+
+        script(src=c.ProxyPath + "js/jquery.min.js")
+        script(src=c.ProxyPath + "js/popper.min.js" )
+        script(src=c.ProxyPath + "js/bootstrap.min.js" )
+    body
+        div#message
+        div.container
+            include header
+            span.text-right#logged.blockquote-footer
+
+            nav.navbar.navbar-expand-lg.navbar-light.border-bottom
+                a.navbar-brand(href=c.ProxyPath + "v/products")
+                    img(src=c.ProxyPath + "img/logo_chimitheque_small.png", alt="chimitheque_logo", title="Chimithèque")
+                button.navbar-toggler(
+                                    type="button"
+                                    data-toggle="collapse" 
+                                    data-target="#navbarSupportedContent" 
+                                    aria-controls="navbarSupportedContent" 
+                                    aria-expanded="false" 
+                                    aria-label="Toggle navigation")
+                    span.navbar-toggler-icon
+
+                div.collapse.navbar-collapse#navbarSupportedContent
+                    ul.navbar-nav.mr-auto
+                        li.nav-item#menu_list_bookmarks.collapse
+                            a(href=c.ProxyPath + "v/products?bookmark=true").nav-link
+                                span.mdi.mdi-bookmark.mdi-36px.iconlabel
+                                    = T("menu_bookmark", 1) 
+                        li.nav-item#menu_scan_qrcode.collapse
+                            a(onclick="scanQR();").nav-link
+                                span.mdi.mdi-qrcode-scan.mdi-36px.iconlabel
+                                    = T("menu_scanqr", 1) 
+                        li.nav-item#menu_create_product.collapse
+                            a(href=c.ProxyPath + "vc/products").nav-link
+                                span.mdi.mdi-tag.mdi-36px.iconlabel
+                                    = T("menu_create_productcard", 1)
+                        li.nav-item.dropdown#menu_entities.collapse
+                            a(href="#", title="manage entities").nav-link.dropdown-toggle#navbarDropdown(
+                                role="button" 
+                                data-toggle="dropdown" 
+                                aria-haspopup="true" 
+                                aria-expanded="false")
+                                span.mdi.mdi-store.mdi-36px.iconlabel
+                                    = T("menu_entity", 1)
+                            div.dropdown-menu(aria-labelledby="navbarDropdown")
+                                a(href=c.ProxyPath + "v/entities", title="list").dropdown-item
+                                    = T("list", 1)
+                                a#menu_create_entity.collapse(href=c.ProxyPath + "vc/entities", title="create").dropdown-item
+                                    = T("create", 1)
+
+                        li.nav-item.dropdown#menu_storelocations.collapse
+                            a(href="#", title="manage storelocations").nav-link.dropdown-toggle#navbarDropdown(
+                                role="button" 
+                                data-toggle="dropdown" 
+                                aria-haspopup="true" 
+                                aria-expanded="false")
+                                span.mdi.mdi-docker.mdi-36px.iconlabel
+                                    = T("menu_storelocation", 1)
+                            div.dropdown-menu(aria-labelledby="navbarDropdown")
+                                a(href=c.ProxyPath + "v/storelocations", title="list").dropdown-item
+                                    = T("list", 1)
+                                a#menu_create_storelocation.collapse(href=c.ProxyPath + "vc/storelocations", title="create").dropdown-item
+                                    = T("create", 1)
+
+                        li.nav-item.dropdown#menu_people.collapse
+                            a(href="#", title="manage people").nav-link.dropdown-toggle#navbarDropdown(
+                                role="button" 
+                                data-toggle="dropdown" 
+                                aria-haspopup="true" 
+                                aria-expanded="false")
+                                span.mdi.mdi-account-group.mdi-36px.iconlabel
+                                    = T("menu_people", 1)
+                            div.dropdown-menu(aria-labelledby="navbarDropdown")
+                                a(href=c.ProxyPath + "v/people", title="list").dropdown-item
+                                    = T("list", 1)
+                                a#menu_create_person.collapse(href=c.ProxyPath + "vc/people", title="create").dropdown-item
+                                    = T("create", 1)
+
+                        li.nav-item.dropdown#menu_account
+                            a(href="#", title="my account").nav-link.dropdown-toggle#navbarDropdown(
+                                role="button" 
+                                data-toggle="dropdown" 
+                                aria-haspopup="true" 
+                                aria-expanded="false")
+                                span.mdi.mdi-account.mdi-36px.iconlabel
+                                    = T("menu_account", 1)
+                            div.dropdown-menu(aria-labelledby="navbarDropdown")
+                                a.dropdown-item(title= "change password" href=c.ProxyPath + "vu/peoplepass")
+                                    span.mdi.mdi-shield-lock-outline.mdi-36px.iconlabel
+                                            = T("menu_password", 1)
+                                a#menu_update_welcomeannounce.dropdown-item(title= "welcome announce" href=c.ProxyPath + "v/welcomeannounce").collapse
+                                    span.mdi.mdi-information-outline.mdi-36px.iconlabel
+                                            = T("menu_welcomeannounce", 1)
+                                a.dropdown-item(title= "logout" onclick="localStorage.clear();" href=c.ProxyPath+"delete-token")
+                                    span.mdi.mdi-logout.mdi-36px.iconlabel
+                                            = T("menu_logout", 1 )
+                                a.dropdown-item(title= "about" href=c.ProxyPath+"about")
+                                    span.mdi.mdi-information.mdi-36px.iconlabel
+                                            = T("menu_about", 1 )
+
+            div#video
+
+            block CONTENT
+            include footer
+
+        include foot
+        include localejs
+        
+        -
+            json, _ := json.Marshal(c)
+
+            var out string
+            for key, value := range c.URLValues {
+	            out += fmt.Sprintf("URLValues.set(%s, %s)\n", key, value)
+            }
+        
+        script.           
+            //
+            // global variables init
+            //
+
+            // query parameters saved - used for the storages<>products views switch
+            var lastQueryParams;
+
+            // proxy path
+            var proxyPath = "!{ c.ProxyPath }";
+            
+            // version
+            var buildID = "!{ c.BuildID }";
+            
+            // disable cache
+            var disableCache = "!{ c.DisableCache }";
+
+            // request context
+            var container = !{fmt.Sprintf("%s", json)};
+
+            // url parameters
+            var URLValues = new Map();
+
+            // initializing query parameters map
+            !{out}
+
+        script(src=c.ProxyPath + "js/bootstrap-table.min.js" )
+        script(src=c.ProxyPath + "js/bootstrap-colorpicker.min.js" )                      
+        script(src=c.ProxyPath + "js/jquery.formautofill.min.js" )
+        script(src=c.ProxyPath + "js/jquery.validate.min.js" )
+        script(src=c.ProxyPath + "js/jquery.validate.additional-methods.min.js" )
+        script(src=c.ProxyPath + "js/select2.full.min.js" )
+        script(src=c.ProxyPath + "js/JSmol.lite.nojq.js" )
+        script(src=c.ProxyPath + "js/chim/gjs-common.js" )
+        script(src=c.ProxyPath + "js/chim/chimcommon.js" )
+        script(src=c.ProxyPath + "js/chim/bootstraptable-common.js" )
+        script(src=c.ProxyPath + "js/chim/login.js" )
+        script(src=c.ProxyPath + "js/chim/base.js" )
+        script(type="module" src=c.ProxyPath + "js/chim/scanner.js" )
+
+        block CONTENTJS

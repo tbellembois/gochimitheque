@@ -1,0 +1,12 @@
+[Unit]
+Description=Chimitheque
+After=network.target
+
+[Service]
+ExecStart=/usr/local/chimitheque/gochimitheque -proxy https://chimitheque.foo.org 
+WorkingDirectory=/usr/local/chimitheque
+User=chimitheque
+Group=chimitheque
+
+[Install]
+WantedBy=multi-user.target
