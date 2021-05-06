@@ -61,6 +61,8 @@ npm install select2
 npm install --save-dev @fortawesome/fontawesome-free
 npm install @mdi/font
 npm install animate.css --save
+npm install print-js --save
+npm install pako
 
 rsync -av ./node_modules/bootstrap/dist/js/bootstrap.min.js ./static/js/
 rsync -av ./node_modules/bootstrap/dist/js/bootstrap.min.js.map ./static/js/
@@ -73,6 +75,8 @@ rsync -av ./node_modules/jquery-validation/dist/additional-methods.min.js  ./sta
 rsync -av ./node_modules/@popperjs/core/dist/umd/popper.min.js ./static/js/
 rsync -av ./node_modules/@popperjs/core/dist/umd/popper.min.js.map ./static/js/
 rsync -av ./node_modules/select2/dist/js/select2.full.min.js ./static/js/
+rsync -av ./node_modules/print-js/dist/print.js ./static/js/
+rsync -av ./node_modules/pako/dist/pako.min.js ./static/js/
 
 rsync -av ./node_modules/bootstrap/dist/css/bootstrap.min.css ./static/css/
 rsync -av ./node_modules/bootstrap/dist/css/bootstrap.min.css.map ./static/css/
@@ -86,7 +90,8 @@ rsync -av ./node_modules/@mdi/font/css/materialdesignicons.min.css.map ./static/
 rsync -av ./node_modules/@mdi/font/fonts/* ./static/fonts/
 rsync -av ./node_modules/select2/dist/css/select2.min.css ./static/css/
 rsync -av ./node_modules/animate.css/animate.min.css ./static/css/
-
+rsync -av ./node_modules/print-js/dist/print.css  ./static/css/
+rsync -av ./node_modules/print-js/dist/print.map ./static/css/
 ## windows cross compilation (officially not supported)
 
 ### windows 10

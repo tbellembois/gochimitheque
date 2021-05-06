@@ -1,43 +1,29 @@
 @font-face {
-    font-family: 'economicaregular';
-    src: url('../fonts/economica-regular-webfont.woff2') format('woff2'),
-         url('../fonts/economica-regular-webfont.woff') format('woff');
+    font-family: 'ibm';
+    src: url('../fonts/IBMPlexSans-Regular.woff2') format('woff2'),
+         url('../fonts/IBMPlexSans-Regular.woff') format('woff');
     font-weight: normal;
     font-style: normal;
 }
-/* table {
-    overflow-x: auto;
-    overflow-y: hidden;
-} */
+@font-face {
+    font-family: 'opensans';
+    src: url('../fonts/OpenSans-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+body {
+    font-family: opensans;
+}
 .bootstrap-table .fixed-table-container .fixed-table-body, .bootstrap-table .fixed-table-container {
     border: none;
     overflow-y: hidden;
 	height: auto !important;
 }
-.iconlabel, #filter-item {
-    font-family: economicaregular;
+.iconlabel {
+    font-family: ibm;
+    font-size: 14px;
 }
-#filter-item {
-    font-size: 1.5em;
-}
-@keyframes blinker {
-    from {opacity: 1.0;}
-    to {opacity: 0.0;}
-}
-@-webkit-keyframes blinker {
-    from {opacity: 1.0;}
-    to {opacity: 0.0;}
-}
-.blink{
-    text-decoration: blink;
-    -webkit-animation-name: blinker;
-    -webkit-animation-duration: 0.6s;
-    -webkit-animation-iteration-count:infinite;
-    -webkit-animation-timing-function:ease-in-out;
-    -webkit-animation-direction: alternate;
-    animation-name: blinker;
-    animation-duration: 0.6s;
-    animation-iteration-count:infinite;
-    animation-timing-function:ease-in-out;
-    animation-direction: alternate;
+.verticaltext {
+    writing-mode: vertical-rl;
+    text-orientation: sideways;
 }

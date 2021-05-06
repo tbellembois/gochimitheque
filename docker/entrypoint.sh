@@ -72,7 +72,7 @@ then
 fi
 if [ ! -z "$CHIMITHEQUE_MAILTEST" ]
 then
-      mailTest="-mailtest"
+      mailTest="-mailtest $CHIMITHEQUE_MAILTEST"
 fi
 if [ ! -z "$CHIMITHEQUE_IMPORTV1FROM" ]
 then

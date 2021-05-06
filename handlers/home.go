@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/sirupsen/logrus"
-	"github.com/tbellembois/gochimitheque/globals"
+	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
 	"github.com/tbellembois/gochimitheque/static/jade"
 	"gopkg.in/russross/blackfriday.v2"
@@ -60,7 +60,7 @@ func (env *Env) GetWelcomeAnnounceHandler(w http.ResponseWriter, r *http.Request
 			Message: "error getting the welcome announce",
 		}
 	}
-	globals.Log.WithFields(logrus.Fields{"wa": wa}).Debug("GetWelcomeAnnounceHandler")
+	logger.Log.WithFields(logrus.Fields{"wa": wa}).Debug("GetWelcomeAnnounceHandler")
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
@@ -79,19 +79,26 @@ func (env *Env) UpdateWelcomeAnnounceHandler(w http.ResponseWriter, r *http.Requ
 		err error
 		wa  models.WelcomeAnnounce
 	)
-	if err = r.ParseForm(); err != nil {
+
+	if err = json.NewDecoder(r.Body).Decode(&wa); err != nil {
 		return &models.AppError{
 			Error:   err,
-			Message: "form parsing error",
-			Code:    http.StatusBadRequest}
+			Message: "JSON decoding error",
+			Code:    http.StatusInternalServerError}
 	}
-	if err = globals.Decoder.Decode(&wa, r.PostForm); err != nil {
-		return &models.AppError{
-			Error:   err,
-			Message: "form decoding error",
-			Code:    http.StatusBadRequest}
-	}
-	globals.Log.WithFields(logrus.Fields{"wa": wa}).Debug("UpdateWelcomeAnnounceHandler")
+	// if err = r.ParseForm(); err != nil {
+	// 	return &models.AppError{
+	// 		Error:   err,
+	// 		Message: "form parsing error",
+	// 		Code:    http.StatusBadRequest}
+	// }
+	// if err = globals.Decoder.Decode(&wa, r.PostForm); err != nil {
+	// 	return &models.AppError{
+	// 		Error:   err,
+	// 		Message: "form decoding error",
+	// 		Code:    http.StatusBadRequest}
+	// }
+	logger.Log.WithFields(logrus.Fields{"wa": wa}).Debug("UpdateWelcomeAnnounceHandler")
 
 	if err = env.DB.UpdateWelcomeAnnounce(wa); err != nil {
 		return &models.AppError{

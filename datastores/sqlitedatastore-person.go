@@ -3,645 +3,1140 @@ package datastores
 import (
 	"database/sql"
 	"strings"
-	"time"
 
-	"encoding/hex"
-
+	"github.com/doug-martin/goqu/v9"
+	_ "github.com/doug-martin/goqu/v9/dialect/sqlite3"
 	"github.com/jmoiron/sqlx"
-	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
-	"github.com/sirupsen/logrus"
 	"github.com/steambap/captcha"
-	"github.com/tbellembois/gochimitheque/globals"
+	"github.com/tbellembois/gochimitheque/logger"
 	. "github.com/tbellembois/gochimitheque/models"
-	"github.com/tbellembois/gochimitheque/utils"
 	"golang.org/x/crypto/bcrypt"
 )
 
-// ValidateCaptcha validate the text entered for the user with the given token
+// ValidateCaptcha validate the text entered with the given token.
 func (db *SQLiteDataStore) ValidateCaptcha(token string, text string) (bool, error) {
 
 	var (
-		e error
-		i int
+		err   error
+		sqlr  string
+		args  []interface{}
+		count int
 	)
 
-	sqlr := `SELECT count(*) FROM captcha 
-	WHERE captcha_token = ? AND captcha_text = ?`
-	if e = db.Get(&i, sqlr, token, text); e != nil && e != sql.ErrNoRows {
-		return false, e
-	}
-	globals.Log.WithFields(logrus.Fields{"token": token, "text": text, "i": i}).Debug("ValidateCaptcha")
+	dialect := goqu.Dialect("sqlite3")
+	tableCaptcha := goqu.T("captcha")
 
-	return i > 0, nil
+	sQuery := dialect.From(tableCaptcha).Select(
+		goqu.COUNT("*"),
+	).Where(
+		goqu.I("captcha_token").Eq(token),
+		goqu.I("captcha_text").Eq(text),
+	)
+
+	if sqlr, args, err = sQuery.ToSQL(); err != nil {
+		logger.Log.Error(err)
+		return false, err
+	}
+
+	if err = db.Get(&count, sqlr, args...); err != nil {
+		return false, err
+	}
+
+	return count != 0, nil
+
 }
 
-// InsertCaptcha generate and stores a unique captcha with a token
-// to be validated by a user, and returns the token
-func (db *SQLiteDataStore) InsertCaptcha(data *captcha.Data) (string, error) {
+// InsertCaptcha generates and stores a unique captcha with a token
+// to be validated by a user, and returns the token.
+func (db *SQLiteDataStore) InsertCaptcha(token string, data *captcha.Data) (err error) {
 
 	var (
-		e     error
-		uuid  []byte
-		suuid string
+		sqlr string
+		args []interface{}
 	)
 
-	// generating uuid for the captcha
-	if uuid, e = utils.GetPasswordHash(time.Now().Format("20060102150405")); e != nil {
-		return "", e
-	}
-	suuid = hex.EncodeToString(uuid)
+	dialect := goqu.Dialect("sqlite3")
+	tableCaptcha := goqu.T("captcha")
 
-	// saving
-	sqlr := `INSERT INTO captcha (captcha_token, captcha_text) 
-	VALUES (?, ?)`
-	if _, e = db.Exec(sqlr, suuid, data.Text); e != nil {
-		return "", e
+	if sqlr, args, err = dialect.Insert(tableCaptcha).Rows(
+		goqu.Record{
+			"captcha_token": token,
+			"captcha_text":  data.Text,
+		},
+	).ToSQL(); err != nil {
+		return
 	}
 
-	return suuid, nil
+	if _, err = db.Exec(sqlr, args...); err != nil {
+		return
+	}
+
+	return
+
 }
 
-// GetPeople returns the people matching the search criteria
-// order, offset and limit are passed to the sql request
+// GetPeople select the people matching p
+// and visible by the connected user.
 func (db *SQLiteDataStore) GetPeople(p DbselectparamPerson) ([]Person, int, error) {
-	var (
-		people                             []Person
-		isadmin                            bool
-		count                              int
-		precreq, presreq, comreq, postsreq strings.Builder
-		cnstmt                             *sqlx.NamedStmt
-		snstmt                             *sqlx.NamedStmt
-		err                                error
-	)
-	globals.Log.WithFields(logrus.Fields{"p": p}).Debug("GetPeople")
 
-	// is the logged user an admin?
+	var err error
+
+	dialect := goqu.Dialect("sqlite3")
+	tablePerson := goqu.T("person")
+	tableEntity := goqu.T("entity")
+
+	// Build orderby/order clause.
+	orderByClause := p.GetOrderBy()
+	orderClause := goqu.I(orderByClause).Asc()
+	if strings.ToLower(p.GetOrder()) == "desc" {
+		orderClause = goqu.I(orderByClause).Desc()
+	}
+
+	// Is the logged user an admin?
+	// We need to handle admins to see people with no entities.
+	var isadmin bool
 	if isadmin, err = db.IsPersonAdmin(p.GetLoggedPersonID()); err != nil {
 		return nil, 0, err
 	}
 
-	// returning all people for admins
-	// we need to handle admins
-	// to see people with no entities
-	precreq.WriteString("SELECT count(DISTINCT p.person_id)")
-	presreq.WriteString("SELECT p.person_id, p.person_email")
-	comreq.WriteString(" FROM person AS p, entity AS e")
+	// Build join clause.
+	var joinClause *goqu.SelectDataset
 	if p.GetEntity() != -1 {
-		comreq.WriteString(" JOIN personentities ON personentities.personentities_person_id = p.person_id")
-		comreq.WriteString(" JOIN entity ON personentities.personentities_entity_id = :entity")
+
+		joinClause = dialect.From(tablePerson.As("p"), tableEntity.As("e")).Join(
+			goqu.T("personentities"),
+			goqu.On(
+				goqu.Ex{
+					"personentities.personentities_person_id": goqu.I("p.person_id"),
+				},
+			),
+		).Join(
+			goqu.T("entity"),
+			goqu.On(
+				goqu.Ex{
+					"personentities.personentities_entity_id": p.GetEntity(),
+				},
+			),
+		)
+
 	} else if !isadmin {
-		comreq.WriteString(" JOIN personentities ON personentities.personentities_person_id = p.person_id")
-		comreq.WriteString(" JOIN entity ON personentities.personentities_entity_id = e.entity_id")
-	}
-	if !isadmin {
-		comreq.WriteString(` JOIN permission AS perm ON
-		perm.person = :personid and (perm.permission_item_name in ("all", "people")) and (perm.permission_perm_name in ("all", "r", "w")) and (perm.permission_entity_id in (-1, e.entity_id))
-		`)
-	}
-	comreq.WriteString(" WHERE p.person_email LIKE :search")
-	postsreq.WriteString(" GROUP BY p.person_id")
-	postsreq.WriteString(" ORDER BY " + p.GetOrderBy() + " " + p.GetOrder())
 
-	// limit
-	if p.GetLimit() != ^uint64(0) {
-		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
+		joinClause = dialect.From(tablePerson.As("p"), tableEntity.As("e")).Join(
+			goqu.T("personentities"),
+			goqu.On(
+				goqu.Ex{
+					"personentities.personentities_person_id": goqu.I("p.person_id"),
+				},
+			),
+		).Join(
+			goqu.T("entity"),
+			goqu.On(
+				goqu.Ex{
+					"personentities.personentities_entity_id": goqu.I("e.entity_id"),
+				},
+			),
+		).Join(
+			goqu.T("permission").As("perm"),
+			goqu.On(
+				goqu.Ex{
+					"perm.person":               p.GetLoggedPersonID(),
+					"perm.permission_item_name": []string{"all", "people"},
+					"perm.permission_perm_name": []string{"all", "r", "w"},
+					"perm.permission_entity_id": []interface{}{-1, goqu.I("e.entity_id")},
+				},
+			),
+		)
+
+	} else {
+
+		joinClause = dialect.From(tablePerson.As("p"), tableEntity.As("e"))
+
 	}
 
-	// building count and select statements
-	if cnstmt, err = db.PrepareNamed(precreq.String() + comreq.String()); err != nil {
+	joinClause = joinClause.Where(
+		goqu.I("p.person_email").Like(p.GetSearch()),
+	)
+
+	// Building final count.
+	var (
+		countSql  string
+		countArgs []interface{}
+	)
+	if countSql, countArgs, err = joinClause.Select(
+		goqu.COUNT(goqu.I("p.person_id").Distinct()),
+	).ToSQL(); err != nil {
 		return nil, 0, err
 	}
-	if snstmt, err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); err != nil {
+
+	// Building final select.
+	var (
+		selectSql  string
+		selectArgs []interface{}
+	)
+	if selectSql, selectArgs, err = joinClause.Select(
+		goqu.I("p.person_id"),
+		goqu.I("p.person_email"),
+	).GroupBy(goqu.I("p.person_id")).Order(orderClause).Limit(uint(p.GetLimit())).Offset(uint(p.GetOffset())).ToSQL(); err != nil {
 		return nil, 0, err
 	}
 
-	// building argument map
-	m := map[string]interface{}{
-		"entity":   p.GetEntity(),
-		"search":   p.GetSearch(),
-		"personid": p.GetLoggedPersonID(),
-		"order":    p.GetOrder(),
-		"limit":    p.GetLimit(),
-		"offset":   p.GetOffset(),
-	}
+	var (
+		people []Person
+		count  int
+	)
 
-	// select
-	if err = snstmt.Select(&people, m); err != nil {
-		return nil, 0, err
-	}
-	// count
-	if err = cnstmt.Get(&count, m); err != nil {
+	if err = db.Select(&people, selectSql, selectArgs...); err != nil {
 		return nil, 0, err
 	}
 
-	globals.Log.WithFields(logrus.Fields{"people": people, "count": count}).Debug("GetPeople")
+	if err = db.Get(&count, countSql, countArgs...); err != nil {
+		return nil, 0, err
+	}
+
 	return people, count, nil
+
 }
 
-// GetPerson returns the person with id "id"
+// GetPerson select the person by id.
 func (db *SQLiteDataStore) GetPerson(id int) (Person, error) {
-	var (
-		person Person
-		sqlr   string
-		err    error
+
+	dialect := goqu.Dialect("sqlite3")
+	tablePerson := goqu.T("person")
+
+	sQuery := dialect.From(tablePerson).Where(
+		goqu.I("person_id").Eq(id),
+	).Select(
+		goqu.I("person_id"),
+		goqu.I("person_email"),
+		goqu.I("person_password"),
 	)
 
-	sqlr = "SELECT person_id, person_email, person_password FROM person WHERE person_id = ?"
-	if err = db.Get(&person, sqlr, id); err != nil {
+	var (
+		err    error
+		sqlr   string
+		args   []interface{}
+		person Person
+	)
+
+	if sqlr, args, err = sQuery.ToSQL(); err != nil {
+		logger.Log.Error(err)
 		return Person{}, err
 	}
+
+	if err = db.Get(&person, sqlr, args...); err != nil {
+		return Person{}, err
+	}
+
 	return person, nil
+
 }
 
-// GetPersonByEmail returns the person with email "email"
+// GetPersonByEmail select the person by email.
 func (db *SQLiteDataStore) GetPersonByEmail(email string) (Person, error) {
-	var (
-		person Person
-		sqlr   string
-		err    error
+
+	dialect := goqu.Dialect("sqlite3")
+	tablePerson := goqu.T("person")
+
+	sQuery := dialect.From(tablePerson).Where(
+		goqu.I("person_email").Eq(email),
+	).Select(
+		goqu.I("person_id"),
+		goqu.I("person_email"),
+		goqu.I("person_password"),
 	)
 
-	sqlr = "SELECT person_id, person_email, person_password FROM person WHERE person_email = ?"
-	if err = db.Get(&person, sqlr, email); err != nil {
+	var (
+		err    error
+		sqlr   string
+		args   []interface{}
+		person Person
+	)
+
+	if sqlr, args, err = sQuery.ToSQL(); err != nil {
+		logger.Log.Error(err)
 		return Person{}, err
 	}
+
+	if err = db.Get(&person, sqlr, args...); err != nil {
+		return Person{}, err
+	}
+
 	return person, nil
+
 }
 
-// GetPersonPermissions returns the person (with id "id") permissions
+// GetPersonPermissions return person permissions.
 func (db *SQLiteDataStore) GetPersonPermissions(id int) ([]Permission, error) {
-	var (
-		ps   []Permission
-		sqlr string
-		err  error
+
+	dialect := goqu.Dialect("sqlite3")
+	tablePermission := goqu.T("permission")
+
+	sQuery := dialect.From(tablePermission).Where(
+		goqu.I("person").Eq(id),
+	).Select(
+		goqu.I("permission_id"),
+		goqu.I("permission_perm_name"),
+		goqu.I("permission_item_name"),
+		goqu.I("permission_entity_id"),
 	)
 
-	sqlr = `SELECT permission_id, permission_perm_name, permission_item_name, permission_entity_id 
-	FROM permission
-	WHERE person = ?`
-	if err = db.Select(&ps, sqlr, id); err != nil {
+	var (
+		err         error
+		sqlr        string
+		args        []interface{}
+		permissions []Permission
+	)
+
+	if sqlr, args, err = sQuery.ToSQL(); err != nil {
+		logger.Log.Error(err)
 		return nil, err
 	}
-	globals.Log.WithFields(logrus.Fields{"personID": id, "ps": ps}).Debug("GetPersonPermissions")
-	return ps, nil
+
+	if err = db.Select(&permissions, sqlr, args...); err != nil {
+		return nil, err
+	}
+
+	return permissions, nil
+
 }
 
-// GetPersonManageEntities returns the entities the person (with id "id") if manager of
+// GetPersonManageEntities returns the entities the person if manager of.
 func (db *SQLiteDataStore) GetPersonManageEntities(id int) ([]Entity, error) {
-	var (
-		es   []Entity
-		sqlr string
-		err  error
+
+	dialect := goqu.Dialect("sqlite3")
+	tableEntity := goqu.T("entity")
+
+	sQuery := dialect.From(tableEntity).LeftJoin(
+		goqu.T("entitypeople"),
+		goqu.On(goqu.Ex{"entitypeople.entitypeople_entity_id": goqu.I("entity.entity_id")}),
+	).Where(
+		goqu.I("entitypeople.entitypeople_person_id").Eq(id),
+	).Select(
+		goqu.I("entity_id"),
+		goqu.I("entity_name"),
+		goqu.I("entity_description"),
 	)
 
-	sqlr = `SELECT entity_id, entity_name, entity_description 
-	FROM entity
-	LEFT JOIN entitypeople ON entitypeople.entitypeople_entity_id = entity.entity_id
-	WHERE entitypeople.entitypeople_person_id = ?`
-	if err = db.Select(&es, sqlr, id); err != nil {
-		return nil, err
-	}
-	globals.Log.WithFields(logrus.Fields{"personID": id, "es": es}).Debug("GetPersonManageEntities")
-	return es, nil
-}
-
-// GetPersonEntities returns the person (with id "id") entities
-func (db *SQLiteDataStore) GetPersonEntities(LoggedPersonID int, id int) ([]Entity, error) {
 	var (
-		entities []Entity
-		isadmin  bool
-		sqlr     strings.Builder
-		sstmt    *sqlx.NamedStmt
 		err      error
+		sqlr     string
+		args     []interface{}
+		entities []Entity
 	)
-	globals.Log.WithFields(logrus.Fields{"LoggedPersonID": LoggedPersonID, "id": id}).Debug("GetPersonEntities")
 
-	// is the logged user an admin?
-	if isadmin, err = db.IsPersonAdmin(LoggedPersonID); err != nil {
+	if sqlr, args, err = sQuery.ToSQL(); err != nil {
+		logger.Log.Error(err)
 		return nil, err
 	}
 
-	sqlr.WriteString("SELECT e.entity_id, e.entity_name, e.entity_description")
-	sqlr.WriteString(" FROM entity AS e, person AS p, personentities as pe")
-	if !isadmin {
-		sqlr.WriteString(` JOIN permission AS perm ON
-		(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
-		(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
-		(perm.person = :personid and perm.permission_item_name = "all" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
-		(perm.person = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = e.entity_id) OR
-		(perm.person = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "all" and perm.permission_entity_id = -1) OR
-		(perm.person = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = -1) OR
-		(perm.person = :personid and perm.permission_item_name = "entities" and perm.permission_perm_name = "r" and perm.permission_entity_id = e.entity_id)
-		`)
-	}
-	sqlr.WriteString(" WHERE pe.personentities_person_id = :personid AND e.entity_id == pe.personentities_entity_id")
-	sqlr.WriteString(" GROUP BY e.entity_id")
-	sqlr.WriteString(" ORDER BY e.entity_name ASC")
-
-	// building select statement
-	if sstmt, err = db.PrepareNamed(sqlr.String()); err != nil {
+	if err = db.Select(&entities, sqlr, args...); err != nil {
 		return nil, err
 	}
 
-	// building argument map
-	m := map[string]interface{}{
-		"personid": id}
-	// globals.Log.Debug(sqlr)
-	// globals.Log.Debug(m)
-
-	if err = sstmt.Select(&entities, m); err != nil && err != sql.ErrNoRows {
-		return nil, err
-	}
-	globals.Log.WithFields(logrus.Fields{"entities": entities}).Debug("GetPersonEntities")
 	return entities, nil
+
 }
 
-// DoesPersonBelongsTo returns true if the person (with id "id") belongs to the entities
-func (db *SQLiteDataStore) DoesPersonBelongsTo(id int, entities []Entity) (bool, error) {
+// GetPeople select the person entities
+// and visible by the connected user.
+func (db *SQLiteDataStore) GetPersonEntities(loggedPersonID int, personId int) ([]Entity, error) {
+
+	var err error
+
+	dialect := goqu.Dialect("sqlite3")
+	tablePerson := goqu.T("person")
+	tableEntity := goqu.T("entity")
+	tablePersonentities := goqu.T("personentities")
+
+	// Is the logged user an admin?
+	var isadmin bool
+	if isadmin, err = db.IsPersonAdmin(loggedPersonID); err != nil {
+		return nil, err
+	}
+
+	// Build join clause.
+	var joinClause *goqu.SelectDataset
+	if !isadmin {
+
+		joinClause = dialect.From(
+			tableEntity.As("e"),
+			tablePerson.As("p"),
+			tablePersonentities.As("pe"),
+		).Join(
+			goqu.T("permission").As("perm"),
+			goqu.On(
+				goqu.Or(
+					goqu.And(
+						goqu.I("perm.person").Eq(personId),
+						goqu.I("perm.permission_item_name").Eq("all"),
+						goqu.I("perm.permission_perm_name").Eq("all"),
+						goqu.I("perm.permission_entity_id").Eq(goqu.I("e.entity_id")),
+					),
+					goqu.And(
+						goqu.I("perm.person").Eq(personId),
+						goqu.I("perm.permission_item_name").Eq("all"),
+						goqu.I("perm.permission_perm_name").Eq("all"),
+						goqu.I("perm.permission_entity_id").Eq(-1),
+					),
+					goqu.And(
+						goqu.I("perm.person").Eq(personId),
+						goqu.I("perm.permission_item_name").Eq("all"),
+						goqu.I("perm.permission_perm_name").Eq("r"),
+						goqu.I("perm.permission_entity_id").Eq(-1),
+					),
+					goqu.And(
+						goqu.I("perm.person").Eq(personId),
+						goqu.I("perm.permission_item_name").Eq("entities"),
+						goqu.I("perm.permission_perm_name").Eq("all"),
+						goqu.I("perm.permission_entity_id").Eq(goqu.I("e.entity_id")),
+					),
+					goqu.And(
+						goqu.I("perm.person").Eq(personId),
+						goqu.I("perm.permission_item_name").Eq("entities"),
+						goqu.I("perm.permission_perm_name").Eq("all"),
+						goqu.I("perm.permission_entity_id").Eq(-1),
+					),
+					goqu.And(
+						goqu.I("perm.person").Eq(personId),
+						goqu.I("perm.permission_item_name").Eq("entities"),
+						goqu.I("perm.permission_perm_name").Eq("r"),
+						goqu.I("perm.permission_entity_id").Eq(-1),
+					),
+					goqu.And(
+						goqu.I("perm.person").Eq(personId),
+						goqu.I("perm.permission_item_name").Eq("entities"),
+						goqu.I("perm.permission_perm_name").Eq("r"),
+						goqu.I("perm.permission_entity_id").Eq(goqu.I("e.entity_id")),
+					),
+				),
+			),
+		)
+
+	} else {
+
+		joinClause = dialect.From(
+			tableEntity.As("e"),
+			tablePerson.As("p"),
+			tablePersonentities.As("pe"),
+		)
+
+	}
+
+	joinClause = joinClause.Where(
+		goqu.Ex{
+			"pe.personentities_person_id": personId,
+			"e.entity_id":                 goqu.I("pe.personentities_entity_id"),
+		},
+	).GroupBy(goqu.I("e.entity_id")).Order(goqu.I("e.entity_name").Asc())
+
 	var (
-		sqlr    string
-		sqlargs []interface{}
-		count   int
-		err     error
+		sqlr     string
+		args     []interface{}
+		entities []Entity
 	)
-	globals.Log.WithFields(logrus.Fields{"id": id, "entities": entities}).Debug("DoesPersonBelongsTo")
 
-	// extracting entities ids
-	var eids []int
+	if sqlr, args, err = joinClause.Select(
+		goqu.I("e.entity_id"),
+		goqu.I("e.entity_name"),
+		goqu.I("e.entity_description"),
+	).ToSQL(); err != nil {
+		logger.Log.Error(err)
+		return nil, err
+	}
+
+	if err = db.Select(&entities, sqlr, args...); err != nil {
+		return nil, err
+	}
+
+	return entities, nil
+
+}
+
+// DoesPersonBelongsTo returns true if the person belongs to the entities.
+func (db *SQLiteDataStore) DoesPersonBelongsTo(id int, entities []Entity) (bool, error) {
+
+	var (
+		err   error
+		sqlr  string
+		args  []interface{}
+		count int
+	)
+
+	dialect := goqu.Dialect("sqlite3")
+	tablePersonentities := goqu.T("personentities")
+
+	var entityIds []int
 	for _, i := range entities {
-		eids = append(eids, i.EntityID)
+		entityIds = append(entityIds, i.EntityID)
 	}
-	globals.Log.WithFields(logrus.Fields{"eids": eids}).Debug("DoesPersonBelongsTo")
 
-	if sqlr, sqlargs, err = sqlx.In(`SELECT count(*) 
-	FROM personentities 
-	WHERE personentities_person_id = ? 
-	AND personentities_entity_id IN (?)`, id, eids); err != nil {
+	sQuery := dialect.From(tablePersonentities).Select(
+		goqu.COUNT("*"),
+	).Where(
+		goqu.Ex{
+			"personentities_person_id": id,
+			"personentities_entity_id": entityIds,
+		},
+	)
+
+	if sqlr, args, err = sQuery.ToSQL(); err != nil {
+		logger.Log.Error(err)
 		return false, err
 	}
-	if err = db.Get(&count, sqlr, sqlargs...); err != nil {
+
+	if err = db.Get(&count, sqlr, args...); err != nil {
 		return false, err
 	}
-	globals.Log.WithFields(logrus.Fields{"personID": id, "count": count}).Debug("DoesPersonBelongsTo")
-	return count > 0, nil
+
+	return count != 0, nil
+
 }
 
 // DeletePerson deletes the person with id "id"
-func (db *SQLiteDataStore) DeletePerson(id int) error {
+func (db *SQLiteDataStore) DeletePerson(id int) (err error) {
+
 	var (
-		sqlr  string
-		err   error
-		admin Person
+		sqlr string
+		args []interface{}
+		tx   *sqlx.Tx
 	)
-	// getting the admin
+
+	dialect := goqu.Dialect("sqlite3")
+	tablePerson := goqu.T("person")
+	tableStorage := goqu.T("storage")
+	tableProduct := goqu.T("product")
+
+	if tx, err = db.Beginx(); err != nil {
+		return
+	}
+
+	defer func() {
+		if err != nil {
+			logger.Log.Error(err)
+			if rbErr := tx.Rollback(); rbErr != nil {
+				logger.Log.Error(rbErr)
+				err = rbErr
+				return
+			}
+			return
+		}
+		err = tx.Commit()
+	}()
+
+	// Getting the admin.
+	var admin Person
 	if admin, err = db.GetPersonByEmail("admin@chimitheque.fr"); err != nil {
 		return err
 	}
 
-	// updating storage ownership to admin
-	sqlr = `UPDATE storage SET person = ? WHERE person = ?`
-	if _, err = db.Exec(sqlr, admin.PersonID, id); err != nil {
-		return err
+	// Updating storage ownership to admin.
+	if sqlr, args, err = dialect.Update(tableStorage).Set(
+		goqu.Record{
+			"person": admin.PersonID,
+		},
+	).Where(
+		goqu.I("person").Eq(id),
+	).ToSQL(); err != nil {
+		logger.Log.Errorf("prepare update storage ownership: %s", err)
+		return
 	}
 
-	// updating product ownership to admin
-	sqlr = `UPDATE product SET person = ? WHERE person = ?`
-	if _, err = db.Exec(sqlr, admin.PersonID, id); err != nil {
-		return err
+	if _, err = tx.Exec(sqlr, args...); err != nil {
+		logger.Log.Errorf("update storage ownership: %s", err)
+		return
 	}
 
-	sqlr = `DELETE FROM personentities 
-	WHERE personentities_person_id = ?`
-	if _, err = db.Exec(sqlr, id); err != nil {
-		return err
+	// Updating product ownership to admin.
+	if sqlr, args, err = dialect.Update(tableProduct).Set(
+		goqu.Record{
+			"person": admin.PersonID,
+		},
+	).Where(
+		goqu.I("person").Eq(id),
+	).ToSQL(); err != nil {
+		logger.Log.Errorf("prepare update product ownership: %s", err)
+		return
 	}
 
-	// remove manager
-	// normally not used as we can not delete a manager
-	sqlr = `DELETE FROM entitypeople 
-	WHERE entitypeople_person_id = ?`
-	if _, err = db.Exec(sqlr, id); err != nil {
-		return err
+	if _, err = tx.Exec(sqlr, args...); err != nil {
+		logger.Log.Errorf("update product ownership: %s", err)
+		return
 	}
 
-	sqlr = `DELETE FROM permission 
-	WHERE person = ?`
-	if _, err = db.Exec(sqlr, id); err != nil {
-		return err
+	// Deleting entity membership.
+	if sqlr, args, err = dialect.From(goqu.T("personentities")).Where(
+		goqu.I("personentities_person_id").Eq(id),
+	).Delete().ToSQL(); err != nil {
+		logger.Log.Errorf("prepare delete entity membership: %s", err)
+		return
 	}
 
-	sqlr = `DELETE FROM borrowing 
-	WHERE borrower = ?`
-	if _, err = db.Exec(sqlr, id); err != nil {
-		return err
+	if _, err = tx.Exec(sqlr, args...); err != nil {
+		logger.Log.Errorf("delete entity membership: %s", err)
+		return
 	}
 
-	sqlr = `DELETE FROM person 
-	WHERE person_id = ?`
-	if _, err = db.Exec(sqlr, id); err != nil {
-		return err
+	// Remove manager.
+	// Should not be used as we can not delete a manager.
+	if sqlr, args, err = dialect.From(goqu.T("entitypeople")).Where(
+		goqu.I("entitypeople_person_id").Eq(id),
+	).Delete().ToSQL(); err != nil {
+		logger.Log.Errorf("prepare remove manager: %s", err)
+		return
 	}
-	return nil
+
+	if _, err = tx.Exec(sqlr, args...); err != nil {
+		logger.Log.Errorf("remove manager: %s", err)
+		return
+	}
+
+	// Remove permissions.
+	if sqlr, args, err = dialect.From(goqu.T("permission")).Where(
+		goqu.I("person").Eq(id),
+	).Delete().ToSQL(); err != nil {
+		logger.Log.Errorf("prepare remove permissions: %s", err)
+		return
+	}
+
+	if _, err = tx.Exec(sqlr, args...); err != nil {
+		logger.Log.Errorf("remove permissions: %s", err)
+		return
+	}
+
+	// Remove borrowings.
+	if sqlr, args, err = dialect.From(goqu.T("borrowing")).Where(
+		goqu.I("borrower").Eq(id),
+	).Delete().ToSQL(); err != nil {
+		logger.Log.Errorf("prepare remove borrowings: %s", err)
+		return
+	}
+
+	if _, err = tx.Exec(sqlr, args...); err != nil {
+		logger.Log.Errorf("remove borrowings: %s", err)
+		return
+	}
+
+	// Remove bookmarks.
+	if sqlr, args, err = dialect.From(goqu.T("bookmark")).Where(
+		goqu.I("person").Eq(id),
+	).Delete().ToSQL(); err != nil {
+		logger.Log.Errorf("prepare remove bookmarks: %s", err)
+		return
+	}
+
+	if _, err = tx.Exec(sqlr, args...); err != nil {
+		logger.Log.Errorf("remove bookmarks: %s", err)
+		return
+	}
+
+	// Remove person.
+	if sqlr, args, err = dialect.From(tablePerson).Where(
+		goqu.I("person_id").Eq(id),
+	).Delete().ToSQL(); err != nil {
+		logger.Log.Errorf("prepare delete person: %s", err)
+		return
+	}
+
+	if _, err = tx.Exec(sqlr, args...); err != nil {
+		logger.Log.Errorf("delete person: %s", err)
+		return
+	}
+
+	return
+
 }
 
 // CreatePerson creates the given person
-func (db *SQLiteDataStore) CreatePerson(p Person) (int, error) {
+func (db *SQLiteDataStore) CreatePerson(p Person) (lastInsertId int64, err error) {
+
 	var (
-		sqlr   string
-		res    sql.Result
-		tx     *sql.Tx
-		lastid int64
-		err    error
+		sqlr string
+		args []interface{}
+		res  sql.Result
+		tx   *sqlx.Tx
 	)
-	globals.Log.WithFields(logrus.Fields{"p": p}).Debug("CreatePerson")
 
-	// beginning transaction
-	if tx, err = db.Begin(); err != nil {
+	dialect := goqu.Dialect("sqlite3")
+	tablePerson := goqu.T("person")
+
+	if tx, err = db.Beginx(); err != nil {
 		return 0, err
 	}
 
-	// inserting person
-	sqlr = `INSERT INTO person(person_email, person_password) VALUES (?, ?)`
-	if res, err = tx.Exec(sqlr, p.PersonEmail, p.PersonPassword); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return 0, errr
-		}
-		return 0, err
-	}
-
-	// getting the last inserted id
-	if lastid, err = res.LastInsertId(); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return 0, errr
-		}
-		return 0, err
-	}
-	p.PersonID = int(lastid)
-
-	// inserting entities
-	for _, e := range p.Entities {
-		sqlr = `INSERT INTO personentities(personentities_person_id, personentities_entity_id) 
-			VALUES (?, ?)`
-		if _, err = tx.Exec(sqlr, p.PersonID, e.EntityID); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return 0, err
+	defer func() {
+		if err != nil {
+			logger.Log.Error(err)
+			if rbErr := tx.Rollback(); rbErr != nil {
+				logger.Log.Error(rbErr)
+				err = rbErr
+				return
 			}
-			return 0, err
+			return
 		}
-		sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id)  
-		VALUES (?, ?, ?, ?)`
-		if _, err = tx.Exec(sqlr, p.PersonID, "r", "entities", e.EntityID); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return 0, err
-			}
-			return 0, err
-		}
+		err = tx.Commit()
+	}()
+
+	iQuery := dialect.Insert(tablePerson).Rows(
+		goqu.Record{
+			"person_email":    p.PersonEmail,
+			"person_password": p.PersonPassword,
+		},
+	)
+
+	if sqlr, args, err = iQuery.ToSQL(); err != nil {
+		return
 	}
 
-	// inserting permissions
+	if res, err = tx.Exec(sqlr, args...); err != nil {
+		return
+	}
+
+	if lastInsertId, err = res.LastInsertId(); err != nil {
+		return
+	}
+	p.PersonID = int(lastInsertId)
+
+	// Inserting entity membership.
+	for _, entity := range p.Entities {
+
+		if sqlr, args, err = dialect.Insert(goqu.T("personentities")).Rows(
+			goqu.Record{
+				"personentities_person_id": p.PersonID,
+				"personentities_entity_id": entity.EntityID,
+			},
+		).ToSQL(); err != nil {
+			return
+		}
+
+		if _, err = tx.Exec(sqlr, args...); err != nil {
+			return
+		}
+
+		if sqlr, args, err = dialect.Insert(goqu.T("permission")).Rows(
+			goqu.Record{
+				"person":               p.PersonID,
+				"permission_perm_name": "r",
+				"permission_item_name": "entities",
+				"permission_entity_id": entity.EntityID,
+			},
+		).ToSQL(); err != nil {
+			return
+		}
+
+		if _, err = tx.Exec(sqlr, args...); err != nil {
+			return
+		}
+
+	}
+
+	// Inserting permissions.
 	if err = db.insertPermissions(p, tx); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return 0, errr
-		}
-		return 0, err
+		return
 	}
 
-	// committing changes
-	if err = tx.Commit(); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return 0, errr
-		}
-		return 0, err
-	}
+	return
 
-	return p.PersonID, nil
 }
 
 // UpdatePersonPassword updates the given person password.
 func (db *SQLiteDataStore) UpdatePersonPassword(p Person) error {
+
 	var (
-		sqlr  string
 		err   error
+		sqlr  string
+		args  []interface{}
 		hpass []byte
 	)
 
-	// hashing the password
 	if hpass, err = bcrypt.GenerateFromPassword([]byte(p.PersonPassword), bcrypt.DefaultCost); err != nil {
 		return err
 	}
 
-	// updating person
-	sqlr = `UPDATE person SET person_password = ?
-	WHERE person_id = ?`
-	if _, err = db.Exec(sqlr, hpass, p.PersonID); err != nil {
+	dialect := goqu.Dialect("sqlite3")
+	tablePerson := goqu.T("person")
+
+	if sqlr, args, err = dialect.Update(tablePerson).Set(
+		goqu.Record{
+			"person_password": hpass,
+		},
+	).Where(
+		goqu.I("person_id").Eq(p.PersonID),
+	).ToSQL(); err != nil {
+		logger.Log.Error(err)
 		return err
 	}
+
+	if _, err = db.Exec(sqlr, args...); err != nil {
+		return err
+	}
+
 	return nil
+
 }
 
 // UpdatePerson updates the given person.
 // The password is not updated.
-func (db *SQLiteDataStore) UpdatePerson(p Person) error {
+func (db *SQLiteDataStore) UpdatePerson(p Person) (err error) {
+
 	var (
-		tx   *sql.Tx
 		sqlr string
-		err  error
+		args []interface{}
+		tx   *sqlx.Tx
 	)
 
-	// beginning transaction
-	if tx, err = db.Begin(); err != nil {
+	dialect := goqu.Dialect("sqlite3")
+	tablePerson := goqu.T("person")
+
+	if tx, err = db.Beginx(); err != nil {
 		return err
 	}
 
-	// updating person
-	sqlr = `UPDATE person SET person_email = ?
-	WHERE person_id = ?`
-	if _, err = tx.Exec(sqlr, p.PersonEmail, p.PersonID); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return errr
-		}
-		return err
-	}
-
-	// lazily deleting former entities
-	sqlr = `DELETE FROM personentities 
-	WHERE personentities_person_id = ?`
-	if _, err = tx.Exec(sqlr, p.PersonID); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return errr
-		}
-		return err
-	}
-
-	// lazily deleting former permissions
-	sqlr = `DELETE FROM permission 
-		WHERE person = ?`
-	if _, err = tx.Exec(sqlr, p.PersonID); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return errr
-		}
-		return err
-	}
-
-	// updating person entities
-	for _, e := range p.Entities {
-		sqlr = `INSERT INTO personentities(personentities_person_id, personentities_entity_id) 
-		VALUES (?, ?)`
-		if _, err = tx.Exec(sqlr, p.PersonID, e.EntityID); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return err
+	defer func() {
+		if err != nil {
+			logger.Log.Error(err)
+			if rbErr := tx.Rollback(); rbErr != nil {
+				logger.Log.Error(rbErr)
+				err = rbErr
+				return
 			}
-			return err
+			return
 		}
-		sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id)  
-		VALUES (?, ?, ?, ?)`
-		if _, err = tx.Exec(sqlr, p.PersonID, "r", "entities", e.EntityID); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return err
-			}
-			return err
-		}
+		err = tx.Commit()
+	}()
+
+	if sqlr, args, err = dialect.Update(tablePerson).Set(
+		goqu.Record{
+			"person_email": p.PersonEmail,
+		},
+	).Where(
+		goqu.I("person_id").Eq(p.PersonID),
+	).ToSQL(); err != nil {
+		logger.Log.Error(err)
+		return
 	}
 
-	// inserting permissions
+	if _, err = tx.Exec(sqlr, args...); err != nil {
+		return
+	}
+
+	// Lazily deleting former entities.
+	if sqlr, args, err = dialect.From(goqu.T("personentities")).Where(
+		goqu.I("personentities_person_id").Eq(p.PersonID),
+	).Delete().ToSQL(); err != nil {
+		logger.Log.Error(err)
+		return
+	}
+
+	if _, err = tx.Exec(sqlr, args...); err != nil {
+		return
+	}
+
+	// Lazily deleting former permissions.
+	if sqlr, args, err = dialect.From(goqu.T("permission")).Where(
+		goqu.I("person").Eq(p.PersonID),
+	).Delete().ToSQL(); err != nil {
+		logger.Log.Error(err)
+		return
+	}
+
+	if _, err = tx.Exec(sqlr, args...); err != nil {
+		return
+	}
+
+	// Updating person entities.
+	for _, entity := range p.Entities {
+
+		if sqlr, args, err = dialect.Insert(goqu.T("personentities")).Rows(
+			goqu.Record{
+				"personentities_person_id": p.PersonID,
+				"personentities_entity_id": entity.EntityID,
+			},
+		).ToSQL(); err != nil {
+			return
+		}
+
+		if _, err = tx.Exec(sqlr, args...); err != nil {
+			return
+		}
+
+		if sqlr, args, err = dialect.Insert(goqu.T("permission")).Rows(
+			goqu.Record{
+				"person":               p.PersonID,
+				"permission_perm_name": "r",
+				"permission_item_name": "entities",
+				"permission_entity_id": entity.EntityID,
+			},
+		).ToSQL(); err != nil {
+			return
+		}
+
+		if _, err = tx.Exec(sqlr, args...); err != nil {
+			return
+		}
+
+	}
+
+	// Inserting permissions.
 	if err = db.insertPermissions(p, tx); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return errr
-		}
-		return err
+		return
 	}
 
-	// committing changes
-	if err = tx.Commit(); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return errr
-		}
-		return err
-	}
+	return
 
-	return nil
 }
 
-// GetAdmins returns the administrators
+// GetAdmins returns the administrators.
 func (db *SQLiteDataStore) GetAdmins() ([]Person, error) {
-	var (
-		people []Person
-		sqlr   string
-		err    error
+
+	dialect := goqu.Dialect("sqlite3")
+	tablePerson := goqu.T("person")
+
+	sQuery := dialect.From(tablePerson).Join(
+		goqu.T("permission"),
+		goqu.On(goqu.Ex{
+			"permission.person":               goqu.I("person_id"),
+			"permission.permission_perm_name": "all",
+			"permission.permission_item_name": "all",
+			"permission_entity_id":            -1,
+		},
+		),
+	).Where(
+		goqu.I("person_email").Neq("admin@chimitheque.fr"),
+	).Select(
+		goqu.I("person_id"),
+		goqu.I("person_email"),
 	)
-	sqlr = `SELECT person_id, person_email from person 
-	JOIN permission ON 
-	permission.person = person_id AND
-	permission.permission_perm_name = "all" AND
-	permission.permission_item_name = "all" AND
-	permission_entity_id = -1 WHERE NOT
-	person_email = "admin@chimitheque.fr"`
-	if err = db.Select(&people, sqlr); err != nil {
+
+	var (
+		err    error
+		sqlr   string
+		args   []interface{}
+		people []Person
+	)
+
+	if sqlr, args, err = sQuery.ToSQL(); err != nil {
+		logger.Log.Error(err)
 		return nil, err
 	}
+
+	if err = db.Select(&people, sqlr, args...); err != nil {
+		return nil, err
+	}
+
 	return people, nil
+
 }
 
-// IsPersonAdmin returns true is the person with id "id" is an admin
-func (db *SQLiteDataStore) IsPersonAdmin(id int) (bool, error) {
+// HasPersonReadRestrictedProductPermission returns true if the person
+// can read restricted products.
+func (db *SQLiteDataStore) HasPersonReadRestrictedProductPermission(id int) (bool, error) {
+
 	var (
-		res   bool
-		count int
-		sqlr  string
 		err   error
+		sqlr  string
+		args  []interface{}
+		count int
 	)
-	sqlr = `SELECT count(*) from permission WHERE 
-	permission.person = ? AND
-	permission.permission_perm_name = "all" AND
-	permission.permission_item_name = "all" AND
-	permission_entity_id = -1`
-	if err = db.Get(&count, sqlr, id); err != nil {
+
+	dialect := goqu.Dialect("sqlite3")
+	tablePermission := goqu.T("permission")
+
+	sQuery := dialect.From(tablePermission).Select(
+		goqu.COUNT("*"),
+	).Where(
+		goqu.And(
+			goqu.I("permission.person").Eq(id),
+			goqu.Or(
+				goqu.And(
+					goqu.I("permission.permission_perm_name").Eq("all"),
+					goqu.I("permission.permission_item_name").Eq("all"),
+					goqu.I("permission_entity_id").Eq(-1),
+				),
+				goqu.I("permission.permission_item_name").Eq("rproducts"),
+			),
+		),
+	)
+
+	if sqlr, args, err = sQuery.ToSQL(); err != nil {
+		logger.Log.Error(err)
 		return false, err
 	}
-	globals.Log.WithFields(logrus.Fields{"id": id, "count": count}).Debug("IsPersonAdmin")
-	if count == 0 {
-		res = false
-	} else {
-		res = true
+
+	if err = db.Get(&count, sqlr, args...); err != nil {
+		return false, err
 	}
-	return res, nil
+
+	return count != 0, nil
+
 }
 
-// UnsetPersonAdmin unset the person with id "id" the admin permissions
+// IsPersonAdmin returns true is the person is an admin.
+func (db *SQLiteDataStore) IsPersonAdmin(id int) (bool, error) {
+
+	var (
+		err   error
+		sqlr  string
+		args  []interface{}
+		count int
+	)
+
+	dialect := goqu.Dialect("sqlite3")
+	tablePermission := goqu.T("permission")
+
+	sQuery := dialect.From(tablePermission).Select(
+		goqu.COUNT("*"),
+	).Where(
+		goqu.And(
+			goqu.And(
+				goqu.I("permission.person").Eq(id),
+				goqu.I("permission.permission_perm_name").Eq("all"),
+				goqu.I("permission.permission_item_name").Eq("all"),
+				goqu.I("permission_entity_id").Eq(-1),
+			),
+		),
+	)
+
+	if sqlr, args, err = sQuery.ToSQL(); err != nil {
+		logger.Log.Error(err)
+		return false, err
+	}
+
+	if err = db.Get(&count, sqlr, args...); err != nil {
+		return false, err
+	}
+
+	return count != 0, nil
+
+}
+
+// UnsetPersonAdmin unset the person admin permissions.
 func (db *SQLiteDataStore) UnsetPersonAdmin(id int) error {
+
+	dialect := goqu.Dialect("sqlite3")
+	tablePermission := goqu.T("permission")
+
+	dQuery := dialect.From(tablePermission).Where(
+		goqu.And(
+			goqu.I("person").Eq(id),
+			goqu.I("permission_perm_name").Eq("all"),
+			goqu.I("permission_item_name").Eq("all"),
+			goqu.I("permission_entity_id").Eq(-1),
+		),
+	).Delete()
+
 	var (
-		sqlr string
 		err  error
+		sqlr string
+		args []interface{}
 	)
 
-	sqlr = `DELETE FROM permission WHERE person = ? AND permission_perm_name = ? AND permission_item_name = ? AND permission_entity_id = ?`
-	if _, err = db.Exec(sqlr, id, "all", "all", "-1"); err != nil {
+	if sqlr, args, err = dQuery.ToSQL(); err != nil {
+		logger.Log.Error(err)
 		return err
 	}
+
+	if _, err = db.Exec(sqlr, args...); err != nil {
+		return err
+	}
+
 	return nil
+
 }
 
-// SetPersonAdmin set the person with id "id" an admin
+// SetPersonAdmin set the person an admin.
 func (db *SQLiteDataStore) SetPersonAdmin(id int) error {
+
 	var (
-		isAdmin bool
-		sqlr    string
-		err     error
+		err  error
+		sqlr string
+		args []interface{}
 	)
 
-	if isAdmin, err = db.IsPersonAdmin(id); err != nil {
-		return err
-	}
-	if isAdmin {
+	dialect := goqu.Dialect("sqlite3")
+	tablePermission := goqu.T("permission")
+
+	if sqlr, args, err = dialect.Insert(tablePermission).Rows(
+		goqu.Record{
+			"person":               id,
+			"permission_perm_name": "all",
+			"permission_item_name": "all",
+			"permission_entity_id": -1,
+		},
+	).OnConflict(goqu.DoNothing()).ToSQL(); err != nil {
 		return nil
 	}
 
-	sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id) 
-	VALUES (?, ?, ?, ?)`
-	if _, err = db.Exec(sqlr, id, "all", "all", "-1"); err != nil {
+	if _, err = db.Exec(sqlr, args...); err != nil {
 		return err
 	}
+
 	return nil
+
 }
 
-// IsPersonManager returns true is the person with id "id" is a manager
+// IsPersonManager returns true is the person is a manager.
 func (db *SQLiteDataStore) IsPersonManager(id int) (bool, error) {
+
 	var (
-		res   bool
-		count int
-		sqlr  string
 		err   error
+		sqlr  string
+		args  []interface{}
+		count int
 	)
-	sqlr = "SELECT count(*) from entitypeople WHERE entitypeople.entitypeople_person_id = ?"
-	if err = db.Get(&count, sqlr, id); err != nil {
+
+	dialect := goqu.Dialect("sqlite3")
+	tableEntitypeople := goqu.T("entitypeople")
+
+	sQuery := dialect.From(tableEntitypeople).Select(
+		goqu.COUNT("*"),
+	).Where(
+		goqu.I("entitypeople.entitypeople_person_id").Eq(id),
+	)
+
+	if sqlr, args, err = sQuery.ToSQL(); err != nil {
+		logger.Log.Error(err)
 		return false, err
 	}
-	globals.Log.WithFields(logrus.Fields{"id": id, "count": count}).Debug("IsPersonManager")
-	if count == 0 {
-		res = false
-	} else {
-		res = true
+
+	if err = db.Get(&count, sqlr, args...); err != nil {
+		return false, err
 	}
-	return res, nil
+
+	return count != 0, nil
+
 }
 
-func (db *SQLiteDataStore) insertPermissions(p Person, tx *sql.Tx) error {
+func (db *SQLiteDataStore) insertPermissions(p Person, tx *sqlx.Tx) error {
+
 	var (
 		sqlr string
+		args []interface{}
 		err  error
 	)
-	globals.Log.WithFields(logrus.Fields{"p.Permissions": p.Permissions}).Debug("insertPermissions")
 
-	// inserting person permissions
+	dialect := goqu.Dialect("sqlite3")
+	tablePermission := goqu.T("permission")
+
 	for _, perm := range p.Permissions {
-		sqlr = `INSERT INTO permission(person, permission_perm_name, permission_item_name, permission_entity_id) 
-		VALUES (?, ?, ?, ?)`
-		if _, err = tx.Exec(sqlr, p.PersonID, perm.PermissionPermName, perm.PermissionItemName, perm.PermissionEntityID); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return errr
-			}
+
+		iQuery := dialect.Insert(tablePermission).Rows(
+			goqu.Record{
+				"person":               p.PersonID,
+				"permission_perm_name": perm.PermissionPermName,
+				"permission_item_name": perm.PermissionItemName,
+				"permission_entity_id": perm.PermissionEntityID,
+			},
+		)
+
+		if sqlr, args, err = iQuery.ToSQL(); err != nil {
 			return err
 		}
+
+		if _, err = tx.Exec(sqlr, args...); err != nil {
+			return err
+		}
+
 	}
+
 	return nil
 }

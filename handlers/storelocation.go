@@ -8,7 +8,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
-	"github.com/tbellembois/gochimitheque/globals"
+	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
 	"github.com/tbellembois/gochimitheque/static/jade"
 )
@@ -43,7 +43,7 @@ func (env *Env) VCreateStoreLocationHandler(w http.ResponseWriter, r *http.Reque
 
 // GetStoreLocationsHandler returns a json list of the store locations matching the search criteria
 func (env *Env) GetStoreLocationsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetStoreLocationsHandler")
+	logger.Log.Debug("GetStoreLocationsHandler")
 
 	var (
 		err   error
@@ -104,7 +104,7 @@ func (env *Env) GetStoreLocationHandler(w http.ResponseWriter, r *http.Request) 
 			Message: "error getting the store location",
 		}
 	}
-	globals.Log.WithFields(logrus.Fields{"storelocation": storelocation}).Debug("GetStoreLocationHandler")
+	logger.Log.WithFields(logrus.Fields{"storelocation": storelocation}).Debug("GetStoreLocationHandler")
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
@@ -119,41 +119,21 @@ func (env *Env) GetStoreLocationHandler(w http.ResponseWriter, r *http.Request) 
 
 // CreateStoreLocationHandler creates the store location from the request form
 func (env *Env) CreateStoreLocationHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("CreateStoreLocationHandler")
+	logger.Log.Debug("CreateStoreLocationHandler")
 	var (
 		sl  models.StoreLocation
 		err error
-		id  int
+		id  int64
 	)
-	if err := r.ParseForm(); err != nil {
+
+	if err = json.NewDecoder(r.Body).Decode(&sl); err != nil {
 		return &models.AppError{
 			Error:   err,
-			Message: "form parsing error",
-			Code:    http.StatusBadRequest}
+			Message: "JSON decoding error",
+			Code:    http.StatusInternalServerError}
 	}
 
-	if err := globals.Decoder.Decode(&sl, r.PostForm); err != nil {
-		return &models.AppError{
-			Error:   err,
-			Message: "form decoding error",
-			Code:    http.StatusBadRequest}
-	}
-	// processing storelocation not processed by Decode
-	if r.FormValue("storelocation.storelocation.storelocation_id") != "" {
-		var slid int
-		slname := r.FormValue("storelocation.storelocation.storelocation_name")
-		if slid, err = strconv.Atoi(r.FormValue("storelocation.storelocation.storelocation_id")); err != nil {
-			return &models.AppError{
-				Error:   err,
-				Message: "slid atoi conversion",
-				Code:    http.StatusInternalServerError}
-		}
-		sl.StoreLocation = &models.StoreLocation{
-			StoreLocationID:   sql.NullInt64{Valid: true, Int64: int64(slid)},
-			StoreLocationName: sql.NullString{Valid: true, String: slname},
-		}
-	}
-	globals.Log.WithFields(logrus.Fields{"sl": sl}).Debug("CreateStoreLocationHandler")
+	logger.Log.WithFields(logrus.Fields{"sl": sl}).Debug("CreateStoreLocationHandler")
 
 	if id, err = env.DB.CreateStoreLocation(sl); err != nil {
 		return &models.AppError{
@@ -161,7 +141,7 @@ func (env *Env) CreateStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 			Message: "create store location error",
 			Code:    http.StatusInternalServerError}
 	}
-	sl.StoreLocationID = sql.NullInt64{Valid: true, Int64: int64(id)}
+	sl.StoreLocationID = sql.NullInt64{Valid: true, Int64: id}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
@@ -182,34 +162,42 @@ func (env *Env) UpdateStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 		err error
 		sl  models.StoreLocation
 	)
-	if err := r.ParseForm(); err != nil {
+
+	if err = json.NewDecoder(r.Body).Decode(&sl); err != nil {
 		return &models.AppError{
 			Error:   err,
-			Message: "form parsing error",
-			Code:    http.StatusBadRequest}
+			Message: "JSON decoding error",
+			Code:    http.StatusInternalServerError}
 	}
-	if err := globals.Decoder.Decode(&sl, r.PostForm); err != nil {
-		return &models.AppError{
-			Error:   err,
-			Message: "form decoding error",
-			Code:    http.StatusBadRequest}
-	}
-	// processing storelocation not processed by Decode
-	if r.FormValue("storelocation.storelocation.storelocation_id") != "" {
-		var slid int
-		slname := r.FormValue("storelocation.storelocation.storelocation_name")
-		if slid, err = strconv.Atoi(r.FormValue("storelocation.storelocation.storelocation_id")); err != nil {
-			return &models.AppError{
-				Error:   err,
-				Message: "slid atoi conversion",
-				Code:    http.StatusInternalServerError}
-		}
-		sl.StoreLocation = &models.StoreLocation{
-			StoreLocationID:   sql.NullInt64{Valid: true, Int64: int64(slid)},
-			StoreLocationName: sql.NullString{Valid: true, String: slname},
-		}
-	}
-	globals.Log.WithFields(logrus.Fields{"sl": sl}).Debug("UpdateStoreLocationHandler")
+
+	// if err := r.ParseForm(); err != nil {
+	// 	return &models.AppError{
+	// 		Error:   err,
+	// 		Message: "form parsing error",
+	// 		Code:    http.StatusBadRequest}
+	// }
+	// if err := globals.Decoder.Decode(&sl, r.PostForm); err != nil {
+	// 	return &models.AppError{
+	// 		Error:   err,
+	// 		Message: "form decoding error",
+	// 		Code:    http.StatusBadRequest}
+	// }
+	// // processing storelocation not processed by Decode
+	// if r.FormValue("storelocation.storelocation.storelocation_id") != "" {
+	// 	var slid int
+	// 	slname := r.FormValue("storelocation.storelocation.storelocation_name")
+	// 	if slid, err = strconv.Atoi(r.FormValue("storelocation.storelocation.storelocation_id")); err != nil {
+	// 		return &models.AppError{
+	// 			Error:   err,
+	// 			Message: "slid atoi conversion",
+	// 			Code:    http.StatusInternalServerError}
+	// 	}
+	// 	sl.StoreLocation = &models.StoreLocation{
+	// 		StoreLocationID:   sql.NullInt64{Valid: true, Int64: int64(slid)},
+	// 		StoreLocationName: sql.NullString{Valid: true, String: slname},
+	// 	}
+	// }
+	logger.Log.WithFields(logrus.Fields{"sl": sl}).Debug("UpdateStoreLocationHandler")
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
 		return &models.AppError{
@@ -230,7 +218,7 @@ func (env *Env) UpdateStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 	updatedsl.StoreLocationCanStore = sl.StoreLocationCanStore
 	updatedsl.StoreLocation = sl.StoreLocation
 	updatedsl.Entity = sl.Entity
-	globals.Log.WithFields(logrus.Fields{"updatedsl": updatedsl}).Debug("UpdateStoreLocationHandler")
+	logger.Log.WithFields(logrus.Fields{"updatedsl": updatedsl}).Debug("UpdateStoreLocationHandler")
 
 	if err := env.DB.UpdateStoreLocation(updatedsl); err != nil {
 		return &models.AppError{

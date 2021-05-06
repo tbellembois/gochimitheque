@@ -94,36 +94,31 @@ type Datastore interface {
 	DeleteStorage(id int) error
 	ArchiveStorage(id int) error
 	RestoreStorage(id int) error
-	CreateStorage(s Storage) (int, error)
+	CreateStorage(s Storage, itemNumber int) (int, error)
 	UpdateStorage(s Storage) error
-	GenerateAndUpdateStorageBarecode(s *Storage) error
-	IsStorageBorrowing(b Borrowing) (bool, error)
-	CreateStorageBorrowing(b Borrowing) error
-	DeleteStorageBorrowing(b Borrowing) error
+	ToogleStorageBorrowing(s Storage) error
 	UpdateAllQRCodes() error
 
 	// store locations
 	GetStoreLocations(DbselectparamStoreLocation) ([]StoreLocation, int, error)
 	GetStoreLocation(id int) (StoreLocation, error)
 	GetStoreLocationChildren(id int) ([]StoreLocation, error)
-	GetStoreLocationEntity(id int) (Entity, error)
 	DeleteStoreLocation(id int) error
-	CreateStoreLocation(s StoreLocation) (int, error)
+	CreateStoreLocation(s StoreLocation) (int64, error)
 	UpdateStoreLocation(s StoreLocation) error
-	IsStoreLocationEmpty(id int) (bool, error)
-	ComputeStockStorelocation(p Product, s *StoreLocation, u Unit) float64
+	HasStorelocationStorage(id int) (bool, error)
 
 	// entities
 	ComputeStockEntity(p Product, r *http.Request) []StoreLocation
 
 	GetEntities(DbselectparamEntity) ([]Entity, int, error)
 	GetEntity(id int) (Entity, error)
-	GetEntityPeople(id int) ([]Person, error)
+	GetEntityManager(id int) ([]Person, error)
 	DeleteEntity(id int) error
-	CreateEntity(e Entity) (int, error)
+	CreateEntity(e Entity) (int64, error)
 	UpdateEntity(e Entity) error
-	IsEntityEmpty(id int) (bool, error)
-	HasEntityNoStorelocation(id int) (bool, error)
+	HasEntityMember(id int) (bool, error)
+	HasEntityStorelocation(id int) (bool, error)
 
 	// people
 	GetPeople(DbselectparamPerson) ([]Person, int, error)
@@ -133,7 +128,7 @@ type Datastore interface {
 	GetPersonEntities(loggedpersonID int, id int) ([]Entity, error)
 	GetPersonManageEntities(id int) ([]Entity, error)
 	DoesPersonBelongsTo(id int, entities []Entity) (bool, error)
-	CreatePerson(p Person) (int, error)
+	CreatePerson(p Person) (int64, error)
 	UpdatePerson(p Person) error
 	UpdatePersonPassword(p Person) error
 	DeletePerson(id int) error
@@ -142,8 +137,9 @@ type Datastore interface {
 	UnsetPersonAdmin(id int) error
 	SetPersonAdmin(id int) error
 	IsPersonManager(id int) (bool, error)
+	HasPersonReadRestrictedProductPermission(id int) (bool, error)
 
 	// captcha
-	InsertCaptcha(*captcha.Data) (string, error)
+	InsertCaptcha(string, *captcha.Data) error
 	ValidateCaptcha(token string, text string) (bool, error)
 }

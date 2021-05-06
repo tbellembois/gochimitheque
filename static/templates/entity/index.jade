@@ -1,4 +1,5 @@
-extends ../base.jade
+
+include ../mixins
 block CONTENT
     :go:func
         Entityindex(c ViewContainer)
@@ -6,13 +7,13 @@ block CONTENT
         #list-collapse.collapse.show(data-parent='#accordion')
             header.row
                 .col-sm-12
-                    table#table(data-toggle='table', 
+                    table#Entity_table(data-toggle='table', 
                                 data-striped='true', 
                                 data-search='true', 
                                 data-side-pagination='server', 
                                 data-page-list="[10, 20, 50, 100]",
                                 data-pagination='true', 
-                                data-ajax='gjsEntity.getData', 
+                                data-ajax='Entity_getTableData',
                                 data-sort-name='entity_name')
                         thead
                             tr
@@ -21,31 +22,50 @@ block CONTENT
                                     = T("entity_name_table_header", 1)
                                 th(data-field='entity_description')
                                     = T("entity_description_table_header", 1)
-                                th(data-field='managers' data-formatter='gjsEntity.managersFormatter')
+                                th(data-field='managers' data-formatter='Entity_managersFormatter')
                                     = T("entity_manager_table_header", 1)
-                                th(data-field='operate', data-formatter='gjsEntity.operateFormatter', data-events='operateEvents')
+                                th(data-field='operate', data-formatter='Entity_operateFormatter', data-events='operateEvents')
 
         #edit-collapse.collapse(data-parent='#accordion')
 
             +titleicon(iconitem="store" label="entity_update_title")
 
-            form#entity
-                input#index(type='hidden', name='index', value='')
-                input#entity_id(type='hidden', name='entity_id', value='')
+            .card.mx-auto.w-50
+                .card-body
+                    form#entity
+                        input#index(type='hidden', name='index', value='')
+                        input#entity_id(type='hidden', name='entity_id', value='')
 
-                .form-group.row
-                    +inputtext("entity_name_table_header", "entity_name")
-                .form-group.row
-                    +inputtext("entity_description_table_header", "entity_description")
-                .form-group.row
-                    +selectmultiple("entity_manager_table_header", "managers")
+                        .form-group.row
+                            .form-group.col-sm-12
+                                +inputtext(name="entity_name", label="entity_name_table_header")
+                        .form-group.row
+                            .form-group.col-sm-12
+                                +inputtext(name="entity_description", label="entity_description_table_header")
+                        .form-group.row
+                            .form-group.col-sm-12
+                                +inputselect(name="managers", label="entity_manager_table_header", ismultiple=true)
 
-            button#save.btn.btn-link(type='button', onclick='gjsEntity.saveEntity()')
-                span.mdi.mdi-content-save.mdi-24px.iconlabel
-                    = T("save", 1)
-            button.btn.btn-link(type='button', onclick='gjsUtils.closeEdit();')
-                span.mdi.mdi-close-box.mdi-24px.iconlabel
-                    = T("close", 1)
+                    button#save.btn.btn-primary.float-right(type='button', onclick='Entity_saveEntity()')
+                        span.mdi.mdi-content-save.mdi-24px.iconlabel
+                            = T("save", 1)
+                    button.btn.btn-secondary.float-left(type='button', onclick='Utils_closeEdit();')
+                        span.mdi.mdi-close-box.mdi-24px.iconlabel
+                            = T("close", 1)
 
 block CONTENTJS
-    //script(src="../js/chim/entity.js")
+    script.
+        window.operateEvents = {
+            "click .storelocations": function (e, value, row, index) {
+                Entity_operateEventsStorelocations(e, value, row, index)
+            },
+            "click .members": function (e, value, row, index) {
+                Entity_operateEventsMembers(e, value, row, index)
+            },
+            "click .edit": function (e, value, row, index) {
+                Entity_operateEventsEdit(e, value, row, index)
+            },
+            "click .delete": function (e, value, row, index) {
+                Entity_operateEventsDelete(e, value, row, index)
+            }
+        }

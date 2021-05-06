@@ -1,0 +1,120 @@
+include mixins
+
+:go:func
+    Search(c ViewContainer)
+
+.border.rounded.mb-sm-2.p-sm-3.mx-auto.w-75
+
+    .row.mb-sm-2
+        .col-sm-4
+            input#searchshowchem(checked="checked" type="checkbox" value="chem")
+            label.form-check-label(for="searchshowchem")
+                span.mdi.mdi-atom.mdi-24px.iconlabel(title=T("chemical_product", 1 ))
+                    =T("chemical_product", 1 )
+        .col-sm-4
+            input#searchshowbio(checked="checked" type="checkbox" value="bio")
+            label.form-check-label(for="searchshowbio")
+                span.mdi.mdi-dna.mdi-24px.iconlabel(title=T("biological_product", 1 ))
+                    =T("biological_product", 1 )
+        .col-sm-4
+            input#searchshowconsu(checked="checked" type="checkbox" value="consu")
+            label.form-check-label(for="searchshowconsu")
+                span.mdi.mdi-cube-scan.mdi-24px.iconlabel(title=T("consumable_product", 1 ))
+                    =T("consumable_product", 1 ) 
+
+    #search.row.collapse.show
+
+        +inputhidden(name="s_entity" value="")
+        +inputhidden(name="s_product" value="")
+        +inputhidden(name="s_history" value="")
+        +inputhidden(name="s_storage" value="")
+        +inputhidden(name="s_storage_archive" value="")
+        +inputhidden(name="s_bookmark" value="")
+
+        .col
+            .row
+                .col-sm-3
+                    +inputtext(name="s_custom_name_part_of", label="", htmltype="text", placeholder=T("s_custom_name_part_of", 1))
+                .col-sm-3
+                    +inputtext(name="s_storage_barecode", label="", htmltype="text", placeholder=T("s_storage_barecode", 1))
+                .col-sm-3
+                    +inputselect(name="s_casnumber", label="", ismultiple=false, placeholder=T("s_casnumber", 1))
+                .col-sm-3
+                    +inputselect(name="s_empiricalformula", label="", ismultiple=false, placeholder=T("s_empiricalformula", 1))
+            .row.collapse#advancedsearch
+                .col-sm-12
+                    .form-row
+                        .col-sm-6
+                            +inputselect(name="s_tags", label="s_tags")
+                        .col-sm-6
+                            +inputselect(name="s_category", label="s_category")
+                    .form-row
+                        .col-sm-6
+                            +inputselect(name="s_entity", label="s_entity")
+                        .col-sm-6
+                            +inputselect(name="s_storelocation", label="s_storelocation")
+                    .form-row
+                        .col-sm-12
+                            +inputselect(name="s_name", label="s_name")
+                    .form-row
+                        .form-group.col-sm-6
+                            +inputselect(name="s_producerref", label="producerref_label_title")
+                        .form-group.col-sm-6
+                            +inputtext(name="s_storage_batchnumber", label="storage_batchnumber_title")              
+                    .form-row
+                        .form-group.col-sm-6
+                            +inputselect(name="s_signalword", label="s_signalword")
+                        .form-group.col-sm-6
+                            +inputselect(name="s_symbols", label="s_symbols", ismultiple=true)
+                    .form-row
+                        .form-group.col-sm-6
+                            +inputselect(name="s_hazardstatements", label="s_hazardstatements", ismultiple=true)
+                        .form-group.col-sm-6
+                            +inputselect(name="s_precautionarystatements", label="s_precautionarystatements", ismultiple=true)
+                    .form-row
+                        .form-group.col-sm-4
+                            +checkbox(name="s_casnumber_cmr", label="s_casnumber_cmr")
+                        .form-group.col-sm-4
+                            +checkbox(name="s_borrowing", label="s_borrowing")
+                        .form-group.col-sm-4
+                            +checkbox(name="s_storage_to_destroy", label="s_storage_to_destroy")
+            .row.justify-content-center
+                .btn-group(role="group") 
+                    button.btn.btn-light(data-toggle="collapse" href="#advancedsearch" aria-expanded="false")
+                        span.mdi.mdi-magnify-plus-outline.mdi-24px.iconlabel
+                            = T("advancedsearch_text", 1) 
+                    button#clearsearch.btn.btn-light(type="button" onclick="Common_clearSearch();")
+                        span.mdi.mdi-filter-off-outline.mdi-24px.iconlabel
+                            = T("clearsearch_text", 1) 
+                    button#search.btn.btn-light(type="button" onclick="Common_search();")
+                        span.mdi.mdi-magnify.mdi-24px.iconlabel
+                            = T("search_text", 1)
+
+.row#actions.collapse.show(role="group")
+    .col-sm-7
+        .btn-group
+            button.btn.btn-primary#switchview.invisible(type="button" onclick="Common_SwitchProductStorage()")
+                span.mdi.mdi-cube-unfolded.mdi-24px.iconlabel
+                    = T("switchstorageview_text", 1)
+            button.btn.btn-outline-primary#export(type="button" onclick="Common_export();")
+                span.mdi.mdi-content-save.mdi-24px.iconlabel
+                    = T("export_text", 1) 
+            button#s_storage_archive_button.btn.btn-outline-primary.invisible(type="button" data-toggle="button" aria-pressed="true" autocomplete="off")
+                span.mdi.mdi-archive-outline.mdi-24px.iconlabel
+                    = T("showdeleted_text", 1) 
+            button#s_storage_stock_button.btn.btn-outline-primary.invisible(type="button" data-toggle="button" aria-pressed="true" autocomplete="off")
+                span.mdi.mdi-sigma.mdi-24px.iconlabel
+                    = T("totalstock_text", 1) 
+
+    .col-sm-5
+        //- div
+        //-     span.text-uppercase.text-primary
+        //-         = T("active_filter", 1)
+        //-     span &nbsp;
+        //-     button#clearsearch.btn.btn-outline-primary(type="button" onclick="Common_clearSearch();" title=T("clearsearch_text", 1))
+        //-         span.mdi.mdi-filter-off-outline.mdi-24px.iconlabel &nbsp;
+                    
+        div#filter-item
+
+#stock
+    

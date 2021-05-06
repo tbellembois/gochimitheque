@@ -2,10 +2,15 @@ package models
 
 import (
 	"database/sql"
-	"fmt"
+	"encoding/csv"
+	"io/ioutil"
 	"net/http"
+	"os"
 	"strconv"
+	"strings"
 	"time"
+
+	"github.com/tbellembois/gochimitheque/logger"
 )
 
 // ChimithequeContextKey is the Go request context
@@ -76,8 +81,8 @@ type Person struct {
 	PersonPassword string        `db:"person_password" json:"person_password" schema:"person_password"`
 	Permissions    []*Permission `db:"-" schema:"permissions"`
 	Entities       []*Entity     `db:"-" schema:"entities"`
-	CaptchaText    string        `db:"-" schema:"captcha_text"`
-	CaptchaUID     string        `db:"-" schema:"captcha_uid"`
+	CaptchaText    string        `db:"-" schema:"captcha_text" json:"captcha_text"`
+	CaptchaUID     string        `db:"-" schema:"captcha_uid" json:"captcha_uid"`
 }
 
 // Unit is a volume or weight unit
@@ -98,10 +103,10 @@ type Supplier struct {
 
 // SupplierRef is a product supplier reference
 type SupplierRef struct {
-	C                int    `db:"c" json:"c"` // not stored in db but db:"c" set for sqlx
-	SupplierRefID    int    `db:"supplierref_id" json:"supplierref_id" schema:"supplierref_id"`
-	SupplierRefLabel string `db:"supplierref_label" json:"supplierref_label" schema:"supplierref_label"`
-	Supplier         `db:"supplier" json:"supplier" schema:"supplier"`
+	C                int       `db:"c" json:"c"` // not stored in db but db:"c" set for sqlx
+	SupplierRefID    int       `db:"supplierref_id" json:"supplierref_id" schema:"supplierref_id"`
+	SupplierRefLabel string    `db:"supplierref_label" json:"supplierref_label" schema:"supplierref_label"`
+	Supplier         *Supplier `db:"supplier" json:"supplier" schema:"supplier"`
 }
 
 // Producer is a product producer
@@ -116,7 +121,7 @@ type ProducerRef struct {
 	C                int            `db:"c" json:"c"` // not stored in db but db:"c" set for sqlx
 	ProducerRefID    sql.NullInt64  `db:"producerref_id" json:"producerref_id" schema:"producerref_id"`
 	ProducerRefLabel sql.NullString `db:"producerref_label" json:"producerref_label" schema:"producerref_label"`
-	Producer         `db:"producer" json:"producer" schema:"producer"`
+	Producer         *Producer      `db:"producer" json:"producer" schema:"producer"`
 	// ProducerID       sql.NullInt64  `json:"producer_id" schema:"producer_id"`       // for Gorilla only
 	// ProducerLabel    sql.NullString `json:"producer_label" schema:"producer_label"` // for Gorilla only
 }
@@ -137,31 +142,35 @@ type Tag struct {
 
 // Storage is a product storage in a store location
 type Storage struct {
-	StorageID               sql.NullInt64   `db:"storage_id" json:"storage_id" schema:"storage_id"`
-	StorageCreationDate     time.Time       `db:"storage_creationdate" json:"storage_creationdate" schema:"storage_creationdate"`
-	StorageModificationDate time.Time       `db:"storage_modificationdate" json:"storage_modificationdate" schema:"storage_modificationdate"`
-	StorageEntryDate        sql.NullTime    `db:"storage_entrydate" json:"storage_entrydate" schema:"storage_entrydate"`
-	StorageExitDate         sql.NullTime    `db:"storage_exitdate" json:"storage_exitdate" schema:"storage_exitdate"`
-	StorageOpeningDate      sql.NullTime    `db:"storage_openingdate" json:"storage_openingdate" schema:"storage_openingdate"`
-	StorageExpirationDate   sql.NullTime    `db:"storage_expirationdate" json:"storage_expirationdate" schema:"storage_expirationdate"`
-	StorageComment          sql.NullString  `db:"storage_comment" json:"storage_comment" schema:"storage_comment"`
-	StorageReference        sql.NullString  `db:"storage_reference" json:"storage_reference" schema:"storage_reference"`
-	StorageBatchNumber      sql.NullString  `db:"storage_batchnumber" json:"storage_batchnumber" schema:"storage_batchnumber"`
-	StorageQuantity         sql.NullFloat64 `db:"storage_quantity" json:"storage_quantity" schema:"storage_quantity"`
-	StorageNbItem           int             `db:"-" json:"storage_nbitem" schema:"storage_nbitem"`
-	StorageBarecode         sql.NullString  `db:"storage_barecode" json:"storage_barecode" schema:"storage_barecode"`
-	StorageQRCode           []byte          `db:"storage_qrcode" json:"storage_qrcode" schema:"storage_qrcode"`
-	StorageToDestroy        sql.NullBool    `db:"storage_todestroy" json:"storage_todestroy" schema:"storage_todestroy"`
-	StorageArchive          sql.NullBool    `db:"storage_archive" json:"storage_archive" schema:"storage_archive"`
-	StorageConcentration    sql.NullInt64   `db:"storage_concentration" json:"storage_concentration" schema:"storage_concentration"`
-	Person                  `db:"person" json:"person" schema:"person"`
-	Product                 `db:"product" json:"product" schema:"product"`
-	StoreLocation           `db:"storelocation" json:"storelocation" schema:"storelocation"`
-	UnitQuantity            Unit `db:"unit_quantity" json:"unit_quantity" schema:"unit_quantity"`
-	UnitConcentration       Unit `db:"unit_concentration" json:"unit_concentration" schema:"unit_concentration"`
-	Supplier                `db:"supplier" json:"supplier" schema:"supplier"`
-	Storage                 *Storage   `db:"storage" json:"storage" schema:"storage"`       // history reference storage
-	Borrowing               *Borrowing `db:"borrowing" json:"borrowing" schema:"borrowing"` // not un db but sqlx requires the "db" entry
+	StorageID                sql.NullInt64   `db:"storage_id" json:"storage_id" schema:"storage_id"`
+	StorageCreationDate      time.Time       `db:"storage_creationdate" json:"storage_creationdate" schema:"storage_creationdate"`
+	StorageModificationDate  time.Time       `db:"storage_modificationdate" json:"storage_modificationdate" schema:"storage_modificationdate"`
+	StorageEntryDate         sql.NullTime    `db:"storage_entrydate" json:"storage_entrydate" schema:"storage_entrydate"`
+	StorageExitDate          sql.NullTime    `db:"storage_exitdate" json:"storage_exitdate" schema:"storage_exitdate"`
+	StorageOpeningDate       sql.NullTime    `db:"storage_openingdate" json:"storage_openingdate" schema:"storage_openingdate"`
+	StorageExpirationDate    sql.NullTime    `db:"storage_expirationdate" json:"storage_expirationdate" schema:"storage_expirationdate"`
+	StorageComment           sql.NullString  `db:"storage_comment" json:"storage_comment" schema:"storage_comment"`
+	StorageReference         sql.NullString  `db:"storage_reference" json:"storage_reference" schema:"storage_reference"`
+	StorageBatchNumber       sql.NullString  `db:"storage_batchnumber" json:"storage_batchnumber" schema:"storage_batchnumber"`
+	StorageQuantity          sql.NullFloat64 `db:"storage_quantity" json:"storage_quantity" schema:"storage_quantity"`
+	StorageNbItem            int             `db:"-" json:"storage_nbitem" schema:"storage_nbitem"`
+	StorageIdenticalBarecode sql.NullBool    `db:"-" json:"storage_identicalbarecode" schema:"storage_identicalbarecode"`
+	StorageBarecode          sql.NullString  `db:"storage_barecode" json:"storage_barecode" schema:"storage_barecode"`
+	StorageQRCode            []byte          `db:"storage_qrcode" json:"storage_qrcode" schema:"storage_qrcode"`
+	StorageToDestroy         sql.NullBool    `db:"storage_todestroy" json:"storage_todestroy" schema:"storage_todestroy"`
+	StorageArchive           sql.NullBool    `db:"storage_archive" json:"storage_archive" schema:"storage_archive"`
+	StorageConcentration     sql.NullInt64   `db:"storage_concentration" json:"storage_concentration" schema:"storage_concentration"`
+	StorageNumberOfUnit      sql.NullInt64   `db:"storage_number_of_unit" json:"storage_number_of_unit" schema:"storage_number_of_unit"`
+	StorageNumberOfBag       sql.NullInt64   `db:"storage_number_of_bag" json:"storage_number_of_bag" schema:"storage_number_of_bag"`
+	StorageNumberOfCarton    sql.NullInt64   `db:"storage_number_of_carton" json:"storage_number_of_carton" schema:"storage_number_of_carton"`
+	Person                   `db:"person" json:"person" schema:"person"`
+	Product                  `db:"product" json:"product" schema:"product"`
+	StoreLocation            `db:"storelocation" json:"storelocation" schema:"storelocation"`
+	UnitQuantity             Unit `db:"unit_quantity" json:"unit_quantity" schema:"unit_quantity"`
+	UnitConcentration        Unit `db:"unit_concentration" json:"unit_concentration" schema:"unit_concentration"`
+	Supplier                 `db:"supplier" json:"supplier" schema:"supplier"`
+	Storage                  *Storage   `db:"storage" json:"storage" schema:"storage"`       // history reference storage
+	Borrowing                *Borrowing `db:"borrowing" json:"borrowing" schema:"borrowing"` // not un db but sqlx requires the "db" entry
 
 	// storage history count
 	StorageHC int `db:"storage_hc" json:"storage_hc" schema:"storage_hc"` // not in db but sqlx requires the "db" entry
@@ -169,11 +178,11 @@ type Storage struct {
 
 // Borrowing represent a storage borrowing
 type Borrowing struct {
-	BorrowingID      sql.NullInt64                               `db:"borrowing_id" json:"borrowing_id" schema:"borrowing_id"`
-	BorrowingComment sql.NullString                              `db:"borrowing_comment" json:"borrowing_comment" schema:"borrowing_comment"`
-	Person           `db:"person" json:"person" schema:"person"` // logged person
-	Storage          `db:"storage" json:"storage" schema:"storage"`
-	Borrower         *Person `db:"borrower" json:"borrower" schema:"borrower"` // logged person
+	BorrowingID      sql.NullInt64  `db:"borrowing_id" json:"borrowing_id" schema:"borrowing_id"`
+	BorrowingComment sql.NullString `db:"borrowing_comment" json:"borrowing_comment" schema:"borrowing_comment"`
+	Person           *Person        `db:"person" json:"person" schema:"person"` // logged person
+	//Storage          `db:"storage" json:"storage" schema:"storage"`
+	Borrower *Person `db:"borrower" json:"borrower" schema:"borrower"` // logged person
 }
 
 // Permission represent who is able to do what on something
@@ -281,26 +290,26 @@ type Product struct {
 	ProductRestricted      sql.NullBool   `db:"product_restricted" json:"product_restricted" schema:"product_restricted"`
 	ProductRadioactive     sql.NullBool   `db:"product_radioactive" json:"product_radioactive" schema:"product_radioactive"`
 	ProductThreeDFormula   sql.NullString `db:"product_threedformula" json:"product_threedformula" schema:"product_threedformula"`
+	ProductTwoDFormula     sql.NullString `db:"product_twodformula" json:"product_twodformula" schema:"product_twodformula"`
 	ProductMolFormula      sql.NullString `db:"product_molformula" json:"product_molformula" schema:"product_molformula"`
 	ProductDisposalComment sql.NullString `db:"product_disposalcomment" json:"product_disposalcomment" schema:"product_disposalcomment"`
 	ProductRemark          sql.NullString `db:"product_remark" json:"product_remark" schema:"product_remark"`
-	// ProductExpirationDate   sql.NullTime   `db:"product_expirationdate" json:"product_expirationdate" schema:"product_expirationdate"`
-	// ProductBatchNumber sql.NullString `db:"product_batchnumber" json:"product_batchnumber" schema:"product_batchnumber"`
-	// ProductConcentration    sql.NullInt64  `db:"product_concentration" json:"product_concentration" schema:"product_concentration"`
-	ProductTemperature sql.NullInt64  `db:"product_temperature" json:"product_temperature" schema:"product_temperature"`
-	ProductSheet       sql.NullString `db:"product_sheet" json:"product_sheet" schema:"product_sheet"`
-	EmpiricalFormula   `db:"empiricalformula" json:"empiricalformula" schema:"empiricalformula"`
-	LinearFormula      `db:"linearformula" json:"linearformula" schema:"linearformula"`
-	PhysicalState      `db:"physicalstate" json:"physicalstate" schema:"physicalstate"`
-	SignalWord         `db:"signalword" json:"signalword" schema:"signalword"`
-	Person             `db:"person" json:"person" schema:"person"`
-	CasNumber          `db:"casnumber" json:"casnumber" schema:"casnumber"`
-	CeNumber           `db:"cenumber" json:"cenumber" schema:"cenumber"`
-	Name               `db:"name" json:"name" schema:"name"`
-	ProducerRef        `db:"producerref" json:"producerref" schema:"producerref"`
-	Category           `db:"category" json:"category" schema:"category"`
-	// UnitConcentration       Unit                     `db:"unit_concentration" json:"unit_concentration" schema:"unit_concentration"`
-	UnitTemperature         Unit                     `db:"unit_temperature" json:"unit_temperature" schema:"unit_temperature"`
+	ProductTemperature     sql.NullInt64  `db:"product_temperature" json:"product_temperature" schema:"product_temperature"`
+	ProductSheet           sql.NullString `db:"product_sheet" json:"product_sheet" schema:"product_sheet"`
+	ProductNumberPerCarton sql.NullInt64  `db:"product_number_per_carton" json:"product_number_per_carton" schema:"product_number_per_carton"`
+	ProductNumberPerBag    sql.NullInt64  `db:"product_number_per_bag" json:"product_number_per_bag" schema:"product_number_per_bag"`
+	EmpiricalFormula       `db:"empiricalformula" json:"empiricalformula" schema:"empiricalformula"`
+	LinearFormula          `db:"linearformula" json:"linearformula" schema:"linearformula"`
+	PhysicalState          `db:"physicalstate" json:"physicalstate" schema:"physicalstate"`
+	SignalWord             `db:"signalword" json:"signalword" schema:"signalword"`
+	Person                 `db:"person" json:"person" schema:"person"`
+	CasNumber              `db:"casnumber" json:"casnumber" schema:"casnumber"`
+	CeNumber               `db:"cenumber" json:"cenumber" schema:"cenumber"`
+	Name                   `db:"name" json:"name" schema:"name"`
+	ProducerRef            `db:"producerref" json:"producerref" schema:"producerref"`
+	Category               `db:"category" json:"category" schema:"category"`
+	UnitTemperature        Unit `db:"unit_temperature" json:"unit_temperature" schema:"unit_temperature"`
+
 	ClassOfCompound         []ClassOfCompound        `db:"-" schema:"classofcompound" json:"classofcompound"`
 	Synonyms                []Name                   `db:"-" schema:"synonyms" json:"synonyms"`
 	Symbols                 []Symbol                 `db:"-" schema:"symbols" json:"symbols"`
@@ -328,90 +337,6 @@ type Bookmark struct {
 	BookmarkID sql.NullInt64 `db:"bookmark_id" json:"bookmark_id" schema:"bookmark_id"`
 	Person     `db:"person" json:"person" schema:"person"`
 	Product    `db:"product" json:"product" schema:"product"`
-}
-
-func (p Product) String() string {
-	out := fmt.Sprintf("ProductID:%d ProductSpecificity:%s EmpiricalFormula:%+v Person:%+s CasNumber:%s CeNumber:%s Name:%v Synonyms:%v PhysicalState:%v", p.ProductID, p.ProductSpecificity.String, p.EmpiricalFormula, p.Person, p.CasNumber, p.CeNumber, p.Name, p.Synonyms, p.PhysicalState)
-	return out
-}
-
-func (s Storage) String() string {
-	return fmt.Sprintf(`StorageID:%v | 
-	StorageCreationDate:%s | 
-	StorageModificationDate:%v | 
-	StorageEntryDate:%v | 
-	StorageExitDate:%v | 
-	StorageOpeningDate:%v | 
-	StorageExpirationDate:%v | 
-	StorageComment:%v | 
-	StorageReference:%v |
-	StorageBatchNumber:%v |
-	StorageQuantity:%v |
-	StorageNbItem:%v |
-	StorageBarecode:%v |
-	StorageToDestroy:%v |
-	Product:%v |
-	StoreLocation:%v |
-	Unit:%+v |
-	Supplier:%+v |
-	`, s.StorageID,
-		s.StorageCreationDate,
-		s.StorageModificationDate,
-		s.StorageEntryDate,
-		s.StorageExitDate,
-		s.StorageOpeningDate,
-		s.StorageExpirationDate,
-		s.StorageComment,
-		s.StorageReference,
-		s.StorageBatchNumber,
-		s.StorageQuantity,
-		s.StorageNbItem,
-		s.StorageBarecode,
-		s.StorageToDestroy,
-		s.Product,
-		s.StoreLocation,
-		s.UnitQuantity,
-		s.Supplier)
-}
-
-func (p Person) String() string {
-	return fmt.Sprintf("PersonEmail: %s | PersonPassword: %s", p.PersonEmail, p.PersonPassword)
-}
-
-func (b Borrowing) String() string {
-	return fmt.Sprintf(`StorageID:%v |
-	Borrower.PersonID:%d |
-	`, b.StorageID, b.Borrower.PersonID)
-}
-
-func (s StoreLocation) String() string {
-	out := fmt.Sprintf("StoreLocationID: %d StoreLocationName: %s StoreLocationCanStore: Valid:%t Bool:%t StoreLocationColor: %s Entity: %d", s.StoreLocationID.Int64, s.StoreLocationName.String, s.StoreLocationCanStore.Valid, s.StoreLocationCanStore.Bool, s.StoreLocationColor.String, s.EntityID)
-	out += " PARENT "
-	if s.StoreLocation != nil {
-		out += fmt.Sprintf("StoreLocationID: Valid: %t Int64: %d", s.StoreLocation.StoreLocationID.Valid, s.StoreLocation.StoreLocationID.Int64)
-	} else {
-		out += "nil"
-	}
-	return out
-}
-
-func (p Permission) String() string {
-	return fmt.Sprintf("PermissionPermName: %s | PermissionItemName: %s | PermissionEntityID: %d", p.PermissionPermName, p.PermissionItemName, p.PermissionEntityID)
-}
-
-func (s Symbol) String() string {
-	return fmt.Sprintf("SymbolLabel: %s", s.SymbolLabel)
-}
-
-func (c CasNumber) String() string {
-	return fmt.Sprintf("CasNumberID: %d | CasNumberLabel: %s", c.CasNumberID.Int64, c.CasNumberLabel.String)
-}
-
-func (c CeNumber) String() string {
-	i, _ := c.CeNumberID.Value()
-	v, _ := c.CeNumberLabel.Value()
-	b := c.CeNumberID.Valid
-	return fmt.Sprintf("CeNumberID: %d | CeNumberValid: %t | CeNumberLabel: %s", i, b, v)
 }
 
 func (p Product) ProductToStringSlice() []string {
@@ -500,4 +425,101 @@ func (s Storage) StorageToStringSlice() []string {
 	ret = append(ret, strconv.FormatBool(s.StorageArchive.Bool))
 
 	return ret
+}
+
+// ProductsToCSV returns a file name of the products prs
+// exported into CSV
+func ProductsToCSV(prs []Product) string {
+
+	header := []string{"product_id",
+		"product_name",
+		"product_synonyms",
+		"product_cas",
+		"product_ce",
+		"product_specificity",
+		"empirical_formula",
+		"linear_formula",
+		"3D_formula",
+		"MSDS",
+		"class_of_compounds",
+		"physical_state",
+		"signal_word",
+		"symbols",
+		"hazard_statements",
+		"precautionary_statements",
+		"remark",
+		"disposal_comment",
+		"restricted?",
+		"radioactive?"}
+
+	// create a temp file
+	tmpFile, err := ioutil.TempFile(os.TempDir(), "chimitheque-")
+	if err != nil {
+		logger.Log.Error("cannot create temporary file", err)
+	}
+	// creates a csv writer that uses the io buffer
+	csvwr := csv.NewWriter(tmpFile)
+	// write the header
+	_ = csvwr.Write(header)
+	for _, p := range prs {
+		_ = csvwr.Write(p.ProductToStringSlice())
+	}
+
+	csvwr.Flush()
+	return strings.Split(tmpFile.Name(), "chimitheque-")[1]
+}
+
+// StoragesToCSV returns a file name of the products prs
+// exported into CSV
+func StoragesToCSV(sts []Storage) (string, error) {
+
+	var (
+		err     error
+		tmpFile *os.File
+	)
+
+	header := []string{"storage_id",
+		"product_name",
+		"product_casnumber",
+		"product_specificity",
+		"storelocation",
+		"quantity",
+		"unit",
+		"barecode",
+		"supplier",
+		"creation_date",
+		"modification_date",
+		"entry_date",
+		"exit_date",
+		"opening_date",
+		"expiration_date",
+		"comment",
+		"reference",
+		"batch_number",
+		"to_destroy?",
+		"archive?"}
+
+	// create a temp file
+	if tmpFile, err = ioutil.TempFile(os.TempDir(), "chimitheque-"); err != nil {
+		logger.Log.Error("cannot create temporary file", err)
+		return "", err
+	}
+	// creates a csv writer that uses the io buffer
+	csvwr := csv.NewWriter(tmpFile)
+	// write the header
+	if err = csvwr.Write(header); err != nil {
+		logger.Log.Error("cannot write header", err)
+		return "", err
+	}
+
+	for _, s := range sts {
+		if err = csvwr.Write(s.StorageToStringSlice()); err != nil {
+			logger.Log.Error("cannot write entry", err)
+			return "", err
+		}
+	}
+
+	csvwr.Flush()
+
+	return strings.Split(tmpFile.Name(), "chimitheque-")[1], nil
 }

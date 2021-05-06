@@ -1,68 +1,92 @@
-extends ../base.jade
+
+include ../mixins
 block CONTENT
     :go:func
         Personcreate(c ViewContainer)
         
     +titleicon(iconitem="account-group" label="person_create_title")
 
-    form#person
-        .row
-            .col-sm-6
-                +inputtext("person_email_title", "person_email")
-            .col-sm-6
-                +selectmultiple("person_entity_title", "entities")
-        
-        span permissions
-        .d-flex.form-group.row#permissionsproducts
-                .col-sm-2
-                    .iconlabel.text-right products
-                .col-sm-4
-                    .form-check.form-check-inline
-                        input.perm.permn.permnproducts#permnproducts-1(name="permproducts-1" value="none" label="_" perm_name="n" item_name="products" entity_id="-1" type="radio" disabled="disabled")
-                        label.form-check-label(for="permproducts-1").ml-sm-1.pr-sm-1.pl-sm-1.text-secondary.border.border-secondary.rounded
-                            span.mdi.mdi-close
-                    .form-check.form-check-inline
-                        input.perm.permr.permrproducts#permrproducts-1(name="permproducts-1" value="none" label="r" perm_name="r" item_name="products" entity_id="-1" type="radio" checked="checked")
-                        label.form-check-label(for="permrproducts-1").ml-sm-1.pr-sm-1.pl-sm-1.text-secondary.border.border-secondary.rounded
-                            span.mdi.mdi-eye.mdi-18px
-                    .form-check.form-check-inline
-                        input.perm.permw.permwproducts#permwproducts-1(name="permproducts-1" value="none" label="rw" perm_name="w" item_name="products" entity_id="-1" type="radio")
-                        label.form-check-label(for="permwproducts-1").ml-sm-1.pr-sm-1.pl-sm-1.text-secondary.border.border-secondary.rounded
-                            span.mdi.mdi-eye.mdi-18px
-                            span.mdi.mdi-creation.mdi-18px
-                            span.mdi.mdi-border-color.mdi-18px
-                            span.mdi.mdi-delete.mdi-18px
-        .d-flex.form-group.row#permissionsrproducts
-                .col-sm-2
-                    .iconlabel.text-right restricted products
-                .col-sm-4
-                    .form-check.form-check-inline
-                        input.perm.permn.permnrproducts#permnrproducts-1(name="permrproducts-1" value="none" label="_" perm_name="n" item_name="rproducts" entity_id="-1" type="radio" checked="checked")
-                        label.form-check-label(for="permrproducts-1").ml-sm-1.pr-sm-1.pl-sm-1.text-secondary.border.border-secondary.rounded
-                            span.mdi.mdi-close
-                    .form-check.form-check-inline
-                        input.perm.permr.permrrproducts#permrrproducts-1(name="permrproducts-1" value="none" label="r" perm_name="r" item_name="rproducts" entity_id="-1" type="radio")
-                        label.form-check-label(for="permrrproducts-1").ml-sm-1.pr-sm-1.pl-sm-1.text-secondary.border.border-secondary.rounded
-                            span.mdi.mdi-eye.mdi-18px
-                    .form-check.form-check-inline
-                        input.perm.permw.permwrproducts#permwrproducts-1(name="permrproducts-1" value="none" label="rw" perm_name="w" item_name="rproducts" entity_id="-1" type="radio")
-                        label.form-check-label(for="permwrproducts-1").ml-sm-1.pr-sm-1.pl-sm-1.text-secondary.border.border-secondary.rounded
-                            span.mdi.mdi-eye.mdi-18px
-                            span.mdi.mdi-creation.mdi-18px
-                            span.mdi.mdi-border-color.mdi-18px
-                            span.mdi.mdi-delete.mdi-18px  
-        #permissions
+    .card.mx-auto.w-75
+        .card-body
+            form#person
+                .row
+                    .col-sm-6
+                        +inputtext(name="person_email", label="person_email_title")
+                    .col-sm-6
+                        +inputselect(name="entities", label="person_entity_title", ismultiple=true)
+                .row
+                    .col-sm-6
+                    .col
+                        button#selectAllEntity.btn.btn-outline-primary(type="button" onclick="Person_selectAllEntity();")
+                            span.mdi.mdi-check-all.iconlabel
+                                = T("check_all", 1) 
+                
+                label 
+                    = T("person_permission_title", 1 )
+                .d-flex.form-group.row#permissionsproducts
+                        .col-sm-2
+                            .iconlabel.text-right
+                                = T("permission_product", 1)
+                        .col-sm-10
+                            .form-check.form-check-inline
+                                input.perm.permn.permnproducts#permnproducts-1(name="permproducts-1" value="none" label="_" perm_name="n" item_name="products" entity_id="-1" type="radio" disabled="disabled")
+                                label.form-check-label(for="permproducts-1").ml-sm-1.pr-sm-1.pl-sm-1.text-secondary.border.border-secondary.rounded(title=T("permission_none", 1 ))
+                                    span.mdi.mdi-close
+                            .form-check.form-check-inline
+                                input.perm.permr.permrproducts#permrproducts-1(name="permproducts-1" value="none" label="r" perm_name="r" item_name="products" entity_id="-1" type="radio" checked="checked")
+                                label.form-check-label(for="permrproducts-1").ml-sm-1.pr-sm-1.pl-sm-1.text-secondary.border.border-secondary.rounded(title=T("permission_read", 1 ))
+                                    span.mdi.mdi-eye.mdi-18px
+                            .form-check.form-check-inline
+                                input.perm.permw.permwproducts#permwproducts-1(name="permproducts-1" value="none" label="rw" perm_name="w" item_name="products" entity_id="-1" type="radio")
+                                label.form-check-label(for="permwproducts-1").ml-sm-1.pr-sm-1.pl-sm-1.text-secondary.border.border-secondary.rounded(title=T("permission_crud", 1 ))
+                                    span.mdi.mdi-eye.mdi-18px
+                                    span.mdi.mdi-creation.mdi-18px
+                                    span.mdi.mdi-border-color.mdi-18px
+                                    span.mdi.mdi-delete.mdi-18px
+                .d-flex.form-group.row#permissionsrproducts
+                        .col-sm-2
+                            .iconlabel.text-right
+                                = T("permission_rproduct", 1)
+                        .col-sm-10
+                            .form-check.form-check-inline
+                                input.perm.permn.permnrproducts#permnrproducts-1(name="permrproducts-1" value="none" label="_" perm_name="n" item_name="rproducts" entity_id="-1" type="radio" checked="checked")
+                                label.form-check-label(for="permrproducts-1").ml-sm-1.pr-sm-1.pl-sm-1.text-secondary.border.border-secondary.rounded(title=T("permission_none", 1 ))
+                                    span.mdi.mdi-close
+                            .form-check.form-check-inline
+                                input.perm.permr.permrrproducts#permrrproducts-1(name="permrproducts-1" value="none" label="r" perm_name="r" item_name="rproducts" entity_id="-1" type="radio")
+                                label.form-check-label(for="permrrproducts-1").ml-sm-1.pr-sm-1.pl-sm-1.text-secondary.border.border-secondary.rounded(title=T("permission_read", 1 ))
+                                    span.mdi.mdi-eye.mdi-18px
+                            .form-check.form-check-inline
+                                input.perm.permw.permwrproducts#permwrproducts-1(name="permrproducts-1" value="none" label="rw" perm_name="w" item_name="rproducts" entity_id="-1" type="radio")
+                                label.form-check-label(for="permwrproducts-1").ml-sm-1.pr-sm-1.pl-sm-1.text-secondary.border.border-secondary.rounded(title=T("permission_crud", 1 ))
+                                    span.mdi.mdi-eye.mdi-18px
+                                    span.mdi.mdi-creation.mdi-18px
+                                    span.mdi.mdi-border-color.mdi-18px
+                                    span.mdi.mdi-delete.mdi-18px
+                #selectAllPermissions.row.collapse.hide
+                    .col-sm-2
+                    .col-sm-10
+                        .form-check.form-check-inline
+                            button#selectAllEntity.btn.btn-outline-primary(type="button" onclick="$('.permnstorages').prop('checked', true);" title=T("person_select_all_none_storage", 1 ))
+                                span.mdi.mdi-check-all.iconlabel
+                        .form-check.form-check-inline
+                            button#selectAllEntity.btn.btn-outline-primary(type="button" onclick="$('.permrstorages').prop('checked', true);" title=T("person_select_all_r_storage", 1 ))
+                                span.mdi.mdi-check-all.iconlabel
+                        .form-check.form-check-inline
+                            button#selectAllEntity.btn.btn-outline-primary(type="button" onclick="$('.permwstorages').prop('checked', true);" title=T("person_select_all_rw_storage", 1 ))
+                                span.mdi.mdi-check-all.iconlabel
 
-        .blockquote-footer
-            span.mdi.mdi-close.mdi-18px no permission
-            span.mdi.mdi-eye.mdi-18px view
-            span.mdi.mdi-creation.mdi-18px create
-            span.mdi.mdi-border-color.mdi-18px update
-            span.mdi.mdi-delete.mdi-18px delete
+                #permissions
 
-    button.btn.btn-link(type='button', onclick='savePerson()')
-        span.mdi.mdi-content-save.mdi-24px.iconlabel
-            = T("save", 1)
+                //- .blockquote-footer
+                //-     span.mdi.mdi-close.mdi-18px no permission
+                //-     span.mdi.mdi-eye.mdi-18px view
+                //-     span.mdi.mdi-creation.mdi-18px create
+                //-     span.mdi.mdi-border-color.mdi-18px update
+                //-     span.mdi.mdi-delete.mdi-18px delete
+
+            button.btn.btn-primary.float-right(type='button', onclick='Person_savePerson()')
+                span.mdi.mdi-content-save.mdi-24px.iconlabel
+                    = T("save", 1)
 
 block CONTENTJS
-	script(src="../js/chim/person.js")

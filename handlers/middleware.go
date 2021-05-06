@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -12,7 +11,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/sirupsen/logrus"
-	"github.com/tbellembois/gochimitheque/globals"
+	"github.com/tbellembois/gochimitheque/locales"
+	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
 )
 
@@ -21,12 +21,12 @@ func (env *Env) AppMiddleware(h models.AppHandlerFunc) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if e := h(w, r); e != nil {
 			if e.Error != nil {
-				globals.Log.Error(e.Message + "-" + e.Error.Error())
+				logger.Log.Error(e.Message + "-" + e.Error.Error())
 				if e.Code == http.StatusInternalServerError {
-					globals.LogInternal.Error(e.Message + "-" + e.Error.Error())
+					logger.LogInternal.Error(e.Message + "-" + e.Error.Error())
 				}
 			}
-			http.Error(w, e.Message, e.Code)
+			http.Error(w, e.Message+"-"+e.Error.Error(), e.Code)
 		}
 	})
 }
@@ -53,16 +53,16 @@ func (env *Env) ContextMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// localization setup
 		accept := r.Header.Get("Accept-Language")
-		globals.Localizer = i18n.NewLocalizer(globals.Bundle, accept)
+		locales.Localizer = i18n.NewLocalizer(locales.Bundle, accept)
 
 		ctx := context.WithValue(
 			r.Context(),
 			models.ChimithequeContextKey("container"),
 			models.ViewContainer{
-				ProxyPath:      globals.ProxyPath,
+				ProxyPath:      env.ProxyPath,
 				PersonLanguage: accept,
-				BuildID:        globals.BuildID,
-				DisableCache:   globals.DisableCache,
+				BuildID:        env.BuildID,
+				DisableCache:   env.DisableCache,
 			},
 		)
 		h.ServeHTTP(w, r.WithContext(ctx))
@@ -94,13 +94,13 @@ func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 		//reqToken := r.Header.Get("Authorization")
 		// extracting the token string from cookie
 		if reqToken, err = r.Cookie("token"); err != nil {
-			globals.Log.Debug("token not found in cookies")
+			logger.Log.Debug("token not found in cookies")
 			//http.Error(w, "token not found in cookies, please log in", http.StatusUnauthorized)
-			http.Redirect(w, r, globals.ApplicationFullURL+"login", 307)
+			http.Redirect(w, r, env.ApplicationFullURL+"login", 307)
 			return
 		}
 		if !tre.MatchString(reqToken.String()) {
-			globals.Log.Debug("token has an invalid format")
+			logger.Log.Debug("token has an invalid format")
 			http.Error(w, "token has an invalid format", http.StatusUnauthorized)
 			return
 		}
@@ -110,7 +110,7 @@ func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 		splitToken := strings.Split(reqToken.String(), "token=")
 		reqTokenStr = splitToken[1]
 		token, err = jwt.Parse(reqTokenStr, func(token *jwt.Token) (interface{}, error) {
-			return globals.TokenSignKey, nil
+			return env.TokenSignKey, nil
 		})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusUnauthorized)
@@ -121,14 +121,14 @@ func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 		if claims, ok = token.Claims.(jwt.MapClaims); ok && token.Valid {
 			// then the email claim
 			if cemail, ok = claims["email"]; !ok {
-				globals.Log.Debug("email not found in claims")
+				logger.Log.Debug("email not found in claims")
 				http.Error(w, "email not found in claims", http.StatusBadRequest)
 				return
 			}
 			email = cemail.(string)
 
 		} else {
-			globals.Log.Debug("can not extract claims")
+			logger.Log.Debug("can not extract claims")
 			http.Error(w, "can not extract claims", http.StatusBadRequest)
 			return
 		}
@@ -153,42 +153,6 @@ func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 
 		h.ServeHTTP(w, r.WithContext(ctx))
 	})
-}
-
-func (env *Env) getItemEntities(personid int, item, itemid string) ([]models.Entity, error) {
-	var (
-		e         models.Entity
-		es        []models.Entity
-		err       error
-		itemidInt int
-	)
-
-	if itemidInt, err = strconv.Atoi(itemid); err != nil {
-		return nil, err
-	}
-
-	es = make([]models.Entity, 0)
-
-	switch item {
-	case "storages":
-		if e, err = env.DB.GetStorageEntity(itemidInt); err != nil {
-			return nil, err
-		}
-		es = append(es, e)
-	case "storelocations":
-		if e, err = env.DB.GetStoreLocationEntity(itemidInt); err != nil {
-			return nil, err
-		}
-		es = append(es, e)
-	case "people":
-		if es, err = env.DB.GetPersonEntities(personid, itemidInt); err != nil {
-			return nil, err
-		}
-	default:
-		return nil, fmt.Errorf("unexpecter permission item")
-	}
-
-	return es, nil
 }
 
 // AuthorizeMiddleware check that the user extracted from the JWT token by the AuthenticateMiddleware has the permissions to access the requested resource
@@ -244,7 +208,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 				action = "w"
 			}
 		}
-		globals.Log.WithFields(logrus.Fields{
+		logger.Log.WithFields(logrus.Fields{
 			"itemid":      itemid,
 			"item":        item,
 			"view":        view,
@@ -262,7 +226,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			case "people":
 				// itemid is an int
 				if itemidInt, err = strconv.Atoi(itemid); err != nil {
-					globals.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
+					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
@@ -274,7 +238,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 				// we can not edit an admin
 				a, e := env.DB.IsPersonAdmin(itemidInt)
 				if e != nil {
-					globals.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
+					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
 					http.Error(w, e.Error(), http.StatusInternalServerError)
 					return
 				}
@@ -289,7 +253,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			case "people":
 				// itemid is an int
 				if itemidInt, err = strconv.Atoi(itemid); err != nil {
-					globals.Log.WithFields(logrus.Fields{"err": err.Error()}).Debug("AuthorizeMiddleware")
+					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Debug("AuthorizeMiddleware")
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
@@ -301,7 +265,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 				// we can not delete a manager
 				m, e := env.DB.IsPersonManager(itemidInt)
 				if e != nil {
-					globals.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
+					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
 					http.Error(w, e.Error(), http.StatusInternalServerError)
 					return
 				}
@@ -312,7 +276,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 				// we can not delete an admin
 				a, e := env.DB.IsPersonAdmin(itemidInt)
 				if e != nil {
-					globals.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
+					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
 					http.Error(w, e.Error(), http.StatusInternalServerError)
 					return
 				}
@@ -323,14 +287,14 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			case "storelocations":
 				// itemid is an int
 				if itemidInt, err = strconv.Atoi(itemid); err != nil {
-					globals.Log.WithFields(logrus.Fields{"err": err.Error()}).Debug("AuthorizeMiddleware")
+					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Debug("AuthorizeMiddleware")
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
 				// we can not delete a non empty store location
-				m, e := env.DB.IsStoreLocationEmpty(itemidInt)
+				m, e := env.DB.HasStorelocationStorage(itemidInt)
 				if e != nil {
-					globals.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
+					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
 					http.Error(w, e.Error(), http.StatusInternalServerError)
 					return
 				}
@@ -341,13 +305,13 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			case "products":
 				// itemid is an int
 				if itemidInt, err = strconv.Atoi(itemid); err != nil {
-					globals.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
+					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 				}
 				// we can not delete a product with storages
 				c, e := env.DB.CountProductStorages(itemidInt)
 				if e != nil {
-					globals.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
+					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
 					http.Error(w, e.Error(), http.StatusInternalServerError)
 					return
 				}
@@ -359,27 +323,27 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 				if r.Method == "DELETE" {
 					// itemid is an int
 					if itemidInt, err = strconv.Atoi(itemid); err != nil {
-						globals.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
+						logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
 						http.Error(w, err.Error(), http.StatusInternalServerError)
 						return
 					}
-					m, e1 := env.DB.IsEntityEmpty(itemidInt)
-					n, e2 := env.DB.HasEntityNoStorelocation(itemidInt)
+					m, e1 := env.DB.HasEntityMember(itemidInt)
+					n, e2 := env.DB.HasEntityStorelocation(itemidInt)
 					if e1 != nil {
-						globals.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
+						logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
 						http.Error(w, e1.Error(), http.StatusUnauthorized)
 						return
 					}
 					if e2 != nil {
-						globals.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
+						logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
 						http.Error(w, e2.Error(), http.StatusUnauthorized)
 						return
 					}
-					if !m {
-						http.Error(w, "can not delete a non empty entity", http.StatusUnauthorized)
+					if m {
+						http.Error(w, "can not delete an entity with members", http.StatusUnauthorized)
 						return
 					}
-					if !n {
+					if n {
 						http.Error(w, "can not delete an entity with store locations", http.StatusUnauthorized)
 						return
 					}
@@ -388,21 +352,21 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 		}
 
 		// allow/deny access
-		globals.Log.WithFields(logrus.Fields{
+		logger.Log.WithFields(logrus.Fields{
 			"itemid":   itemid,
 			"item":     item,
 			"personid": strconv.Itoa(personid),
 			"action":   action}).Debug("AuthorizeMiddleware")
 
-		if permok, err = globals.Enforcer.Enforce(strconv.Itoa(personid), action, item, itemid); err != nil {
+		if permok, err = env.Enforcer.Enforce(strconv.Itoa(personid), action, item, itemid); err != nil {
 			http.Error(w, "enforcer error: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 		if !permok {
-			globals.Log.WithFields(logrus.Fields{"unauthorized": "!permok"}).Debug("AuthorizeMiddleware")
-			if r.RequestURI == globals.ProxyPath || r.RequestURI == "" {
+			logger.Log.WithFields(logrus.Fields{"unauthorized": "!permok"}).Debug("AuthorizeMiddleware")
+			if r.RequestURI == env.ProxyPath || r.RequestURI == "" {
 				// redirect on login page for the root of the application
-				http.Redirect(w, r, globals.ApplicationFullURL+"login", 307)
+				http.Redirect(w, r, env.ApplicationFullURL+"login", 307)
 			} else {
 				// else sending a 403
 				http.Error(w, "forbidden", http.StatusForbidden)

@@ -5,370 +5,463 @@ import (
 	"fmt"
 	"strings"
 
-	sq "github.com/Masterminds/squirrel"
+	"github.com/doug-martin/goqu/v9"
+	_ "github.com/doug-martin/goqu/v9/dialect/sqlite3"
 	"github.com/jmoiron/sqlx"
-	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
 	"github.com/sirupsen/logrus"
-	"github.com/tbellembois/gochimitheque/globals"
+	"github.com/tbellembois/gochimitheque/logger"
 	. "github.com/tbellembois/gochimitheque/models"
 )
 
-// buildFullPath builds the store location full path
-// the caller is responsible of opening and commiting the tx transaction
+// Return the store location full path.
+// The caller is responsible of opening and commiting the tx transaction.
 func (db *SQLiteDataStore) buildFullPath(s StoreLocation, tx *sqlx.Tx) string {
-	// parent
+
 	var (
-		pp  StoreLocation
-		err error
+		err    error
+		sqlr   string
+		args   []interface{}
+		parent StoreLocation
 	)
 
-	globals.Log.WithFields(logrus.Fields{"s": s}).Debug("buildFullPath")
+	logger.Log.WithFields(logrus.Fields{"s": s}).Debug("buildFullPath")
 
-	// getting the parent
+	// Recursively getting the parents.
 	if s.StoreLocation != nil && s.StoreLocation.StoreLocationID.Valid {
-		// retrieving the parent from db
-		sqlr := `SELECT s.storelocation_id, s.storelocation_name,
-		storelocation.storelocation_id AS "storelocation.storelocation_id",
-		storelocation.storelocation_name AS "storelocation.storelocation_name" 
-		FROM storelocation AS s
-		LEFT JOIN storelocation on s.storelocation = storelocation.storelocation_id
-		WHERE s.storelocation_id = ?`
-		r := tx.QueryRowx(sqlr, s.StoreLocation.StoreLocationID.Int64)
-		if err = r.StructScan(&pp); err != nil {
-			globals.Log.Error(err)
+
+		dialect := goqu.Dialect("sqlite3")
+		tableStorelocation := goqu.T("storelocation")
+
+		sQuery := dialect.From(tableStorelocation.As("s")).Select(
+			goqu.I("s.storelocation_id"),
+			goqu.I("s.storelocation_name"),
+			goqu.I("storelocation.storelocation_id").As(goqu.C("storelocation.storelocation_id")),
+			goqu.I("storelocation.storelocation_name").As(goqu.C("storelocation.storelocation_name")),
+		).LeftJoin(
+			goqu.T("storelocation"),
+			goqu.On(goqu.Ex{
+				"s.storelocation": goqu.I("storelocation.storelocation_id"),
+			}),
+		).Where(
+			goqu.I("s.storelocation_id").Eq(s.StoreLocation.StoreLocationID.Int64),
+		)
+
+		if sqlr, args, err = sQuery.ToSQL(); err != nil {
+			logger.Log.Error(err)
 			return ""
 		}
 
-		// prepending the path with the parent name
-		return db.buildFullPath(pp, tx) + "/" + s.StoreLocationName.String
+		if err = tx.Get(&parent, sqlr, args...); err != nil {
+			logger.Log.Error(err)
+			return ""
+		}
+
+		return db.buildFullPath(parent, tx) + "/" + s.StoreLocationName.String
+
 	}
 
 	return s.StoreLocationName.String
+
 }
 
-// GetStoreLocations returns the store locations matching the search criteria
-// order, offset and limit are passed to the sql request
+// GetStoreLocations select the store locations matching p
+// and visible by the connected user.
 func (db *SQLiteDataStore) GetStoreLocations(p DbselectparamStoreLocation) ([]StoreLocation, int, error) {
-	var (
-		storelocations                     []StoreLocation
-		count                              int
-		precreq, presreq, comreq, postsreq strings.Builder
-		cnstmt                             *sqlx.NamedStmt
-		snstmt                             *sqlx.NamedStmt
-		err                                error
+
+	logger.Log.WithFields(logrus.Fields{"p": p}).Debug("GetStoreLocations")
+
+	var err error
+
+	dialect := goqu.Dialect("sqlite3")
+	tableStorelocation := goqu.T("storelocation")
+
+	// Map orderby clause.
+	orderByClause := p.GetOrderBy()
+	if orderByClause == "storelocation" {
+		orderByClause = "storelocation.storelocation_id"
+	}
+
+	// Build orderby/order clause.
+	orderClause := goqu.I(orderByClause).Asc()
+	if strings.ToLower(p.GetOrder()) == "desc" {
+		orderClause = goqu.I(orderByClause).Desc()
+	}
+
+	// Build join clause.
+	joinClause := dialect.From(tableStorelocation.As("s")).Join(
+		goqu.T("entity"),
+		goqu.On(goqu.Ex{"s.entity": goqu.I("entity.entity_id")}),
+	).LeftJoin(
+		goqu.T("storelocation"),
+		goqu.On(goqu.Ex{"s.storelocation": goqu.I("storelocation.storelocation_id")}),
+	).Join(
+		goqu.T("permission").As("perm"),
+		goqu.On(
+			goqu.Ex{
+				"perm.person":               p.GetLoggedPersonID(),
+				"perm.permission_item_name": []string{"all", "storages"},
+				"perm.permission_perm_name": []string{"r", "w", "all"},
+				"perm.permission_entity_id": []interface{}{-1, goqu.I("entity.entity_id")},
+			},
+		),
 	)
-	globals.Log.WithFields(logrus.Fields{"p": p}).Debug("GetStoreLocations")
 
-	precreq.WriteString(" SELECT count(DISTINCT s.storelocation_id)")
-	presreq.WriteString(` SELECT s.storelocation_id AS "storelocation_id", 
-	s.storelocation_name AS "storelocation_name", 
-	s.storelocation_canstore, 
-	s.storelocation_color, 
-	s.storelocation_fullpath AS "storelocation_fullpath",
-	storelocation.storelocation_id AS "storelocation.storelocation_id",
-	storelocation.storelocation_name AS "storelocation.storelocation_name",
-	entity.entity_id AS "entity.entity_id", 
-	entity.entity_name AS "entity.entity_name"`)
-	comreq.WriteString(" FROM storelocation AS s")
-	comreq.WriteString(" JOIN entity ON s.entity = entity.entity_id")
-	comreq.WriteString(" LEFT JOIN storelocation on s.storelocation = storelocation.storelocation_id")
-
-	// filter by permissions
-	comreq.WriteString(` JOIN permission AS perm ON
-	perm.person = :personid and (perm.permission_item_name in ("all", "storages")) and (perm.permission_perm_name in ("all", :permission)) and (perm.permission_entity_id in (-1, entity.entity_id))
-	`)
-	comreq.WriteString(" WHERE s.storelocation_name LIKE :search")
+	// Build where AND expression.
+	whereAnd := []goqu.Expression{
+		goqu.I("s.storelocation_name").Like(p.GetSearch()),
+	}
 	if p.GetEntity() != -1 {
-		comreq.WriteString(" AND s.entity = :entity")
+		whereAnd = append(whereAnd, goqu.I("s.entity").Eq(p.GetEntity()))
 	}
 	if p.GetStoreLocationCanStore() {
-		comreq.WriteString(" AND s.storelocation_canstore = :storelocation_canstore")
-	}
-	postsreq.WriteString(" GROUP BY s.storelocation_id")
-	postsreq.WriteString(" ORDER BY " + p.GetOrderBy() + " " + p.GetOrder())
-
-	// limit
-	if p.GetLimit() != ^uint64(0) {
-		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
+		whereAnd = append(whereAnd, goqu.I("s.storelocation_canstore").Eq(p.GetStoreLocationCanStore()))
 	}
 
-	// building count and select statements
-	if cnstmt, err = db.PrepareNamed(precreq.String() + comreq.String()); err != nil {
-		return nil, 0, err
-	}
-	if snstmt, err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); err != nil {
+	joinClause = joinClause.Where(goqu.And(whereAnd...))
+
+	// Building final count.
+	var (
+		countSql  string
+		countArgs []interface{}
+	)
+	if countSql, countArgs, err = joinClause.Select(
+		goqu.COUNT(goqu.I("s.storelocation_id").Distinct()),
+	).ToSQL(); err != nil {
 		return nil, 0, err
 	}
 
-	// building argument map
-	m := map[string]interface{}{
-		"search":                 p.GetSearch(),
-		"storelocation_canstore": p.GetStoreLocationCanStore(),
-		"personid":               p.GetLoggedPersonID(),
-		"order":                  p.GetOrder(),
-		"limit":                  p.GetLimit(),
-		"offset":                 p.GetOffset(),
-		"entity":                 p.GetEntity(),
-		"permission":             p.GetPermission(),
+	// Building final select.
+	var (
+		selectSql  string
+		selectArgs []interface{}
+	)
+	if selectSql, selectArgs, err = joinClause.Select(
+		goqu.I("s.storelocation_id").As("storelocation_id"),
+		goqu.I("s.storelocation_canstore").As("storelocation_canstore"),
+		goqu.I("s.storelocation_color").As("storelocation_color"),
+		goqu.I("s.storelocation_id").As("storelocation_id"),
+		goqu.I("s.storelocation_name").As("storelocation_name"),
+		goqu.I("s.storelocation_fullpath").As("storelocation_fullpath"),
+		goqu.I("storelocation.storelocation_id").As(goqu.C("storelocation.storelocation_id")),
+		goqu.I("storelocation.storelocation_name").As(goqu.C("storelocation.storelocation_name")),
+		goqu.I("entity.entity_id").As(goqu.C("entity.entity_id")),
+		goqu.I("entity.entity_name").As(goqu.C("entity.entity_name")),
+	).GroupBy(goqu.I("s.storelocation_id")).Order(orderClause).Limit(uint(p.GetLimit())).Offset(uint(p.GetOffset())).ToSQL(); err != nil {
+		return nil, 0, err
 	}
-	//globals.Log.Debug(presreq.String() + comreq.String() + postsreq.String())
-	//globals.Log.Debug(m)
 
-	// select
-	if err = snstmt.Select(&storelocations, m); err != nil {
+	// logger.Log.Debug(selectSql)
+	// logger.Log.Debug(selectArgs)
+	// logger.Log.Debug(countSql)
+	// logger.Log.Debug(countArgs)
+
+	var (
+		storelocations []StoreLocation
+		count          int
+	)
+
+	if err = db.Select(&storelocations, selectSql, selectArgs...); err != nil {
 		return nil, 0, err
 	}
-	// count
-	if err = cnstmt.Get(&count, m); err != nil {
+
+	if err = db.Get(&count, countSql, countArgs...); err != nil {
 		return nil, 0, err
 	}
+
 	return storelocations, count, nil
+
 }
 
-// GetStoreLocation returns the store location with id "id"
+// GetStoreLocation select the store location by id.
 func (db *SQLiteDataStore) GetStoreLocation(id int) (StoreLocation, error) {
-	var (
-		storelocation StoreLocation
-		sqlr          string
-		err           error
-	)
-	globals.Log.WithFields(logrus.Fields{"id": id}).Debug("GetStoreLocation")
 
-	sqlr = `SELECT s.storelocation_id, s.storelocation_name, s.storelocation_canstore, s.storelocation_color, s.storelocation_fullpath,
-	storelocation.storelocation_id AS "storelocation.storelocation_id",
-	storelocation.storelocation_name AS "storelocation.storelocation_name",
-	entity.entity_id AS "entity.entity_id",
-	entity.entity_name AS "entity.entity_name"
-	FROM storelocation AS s
-	JOIN entity ON s.entity = entity.entity_id
-	LEFT JOIN storelocation on s.storelocation = storelocation.storelocation_id
-	WHERE s.storelocation_id = ?`
-	if err = db.Get(&storelocation, sqlr, id); err != nil {
+	logger.Log.WithFields(logrus.Fields{"id": id}).Debug("GetStoreLocation")
+
+	dialect := goqu.Dialect("sqlite3")
+	tableStorelocation := goqu.T("storelocation")
+
+	sQuery := dialect.From(tableStorelocation.As("s")).Join(
+		goqu.T("entity"),
+		goqu.On(goqu.Ex{"s.entity": goqu.I("entity.entity_id")}),
+	).LeftJoin(
+		goqu.T("storelocation"),
+		goqu.On(goqu.Ex{"s.storelocation": goqu.I("storelocation.storelocation_id")}),
+	).Where(
+		goqu.I("s.storelocation_id").Eq(id),
+	).Select(
+		goqu.I("s.storelocation_id"),
+		goqu.I("s.storelocation_name"),
+		goqu.I("s.storelocation_canstore"),
+		goqu.I("s.storelocation_color"),
+		goqu.I("s.storelocation_fullpath"),
+		goqu.I("storelocation.storelocation_id").As(goqu.C("storelocation.storelocation_id")),
+		goqu.I("storelocation.storelocation_name").As(goqu.C("storelocation.storelocation_name")),
+		goqu.I("entity.entity_id").As(goqu.C("entity.entity_id")),
+		goqu.I("entity.entity_name").As(goqu.C("entity.entity_name")),
+	)
+
+	var (
+		err           error
+		sqlr          string
+		args          []interface{}
+		storelocation StoreLocation
+	)
+
+	if sqlr, args, err = sQuery.ToSQL(); err != nil {
+		logger.Log.Error(err)
 		return StoreLocation{}, err
 	}
 
-	globals.Log.WithFields(logrus.Fields{"ID": id, "storelocation": storelocation}).Debug("GetStoreLocation")
+	if err = db.Get(&storelocation, sqlr, args...); err != nil {
+		return StoreLocation{}, err
+	}
+
+	logger.Log.WithFields(logrus.Fields{"ID": id, "storelocation": storelocation}).Debug("GetStoreLocation")
+
 	return storelocation, nil
+
 }
 
-// GetStoreLocationChildren returns the children of the store location with id "id"
+// GetStoreLocationChildren select the children store locations of parent id.
 func (db *SQLiteDataStore) GetStoreLocationChildren(id int) ([]StoreLocation, error) {
+
+	dialect := goqu.Dialect("sqlite3")
+	tableStorelocation := goqu.T("storelocation")
+
+	// Select
+	sQuery := dialect.From(tableStorelocation.As("s")).Select(
+		goqu.I("s.storelocation_id"),
+		goqu.I("s.storelocation_name"),
+		goqu.I("s.storelocation_canstore"),
+		goqu.I("s.storelocation_color"),
+		goqu.I("s.storelocation_fullpath"),
+		goqu.I("storelocation.storelocation_id").As(goqu.C("storelocation.storelocation_id")),
+		goqu.I("storelocation.storelocation_name").As(goqu.C("storelocation.storelocation_name")),
+		goqu.I("entity.entity_id").As(goqu.C("entity.entity_id")),
+		goqu.I("entity.entity_name").As(goqu.C("entity.entity_name")),
+	).Join(
+		goqu.T("entity"),
+		goqu.On(goqu.Ex{"s.entity": goqu.I("entity.entity_id")}),
+	).LeftJoin(
+		goqu.T("storelocation"),
+		goqu.On(goqu.Ex{"s.storelocation": goqu.I("storelocation.storelocation_id")}),
+	).Where(
+		goqu.I("s.storelocation").Eq(id),
+	)
+
 	var (
-		storelocations []StoreLocation
-		sqlr           string
 		err            error
+		sqlr           string
+		args           []interface{}
+		storelocations []StoreLocation
 	)
 
-	sqlr = `SELECT s.storelocation_id, s.storelocation_name, s.storelocation_canstore, s.storelocation_color, s.storelocation_fullpath,
-	storelocation.storelocation_id AS "storelocation.storelocation_id",
-	storelocation.storelocation_name AS "storelocation.storelocation_name",
-	entity.entity_id AS "entity.entity_id",
-	entity.entity_name AS "entity.entity_name"
-	FROM storelocation AS s
-	JOIN entity ON s.entity = entity.entity_id
-	LEFT JOIN storelocation on s.storelocation = storelocation.storelocation_id
-	WHERE s.storelocation = ?`
-	if err = db.Select(&storelocations, sqlr, id); err != nil {
-		return []StoreLocation{}, err
+	if sqlr, args, err = sQuery.ToSQL(); err != nil {
+		logger.Log.Error(err)
+		return nil, err
 	}
 
-	globals.Log.WithFields(logrus.Fields{"id": id, "storelocations": storelocations}).Debug("GetStoreLocationChildren")
+	if err = db.Select(&storelocations, sqlr, args...); err != nil {
+		return nil, err
+	}
+
 	return storelocations, nil
+
 }
 
-// GetStoreLocationEntity returns the entity of the store location with id "id"
-func (db *SQLiteDataStore) GetStoreLocationEntity(id int) (Entity, error) {
-	var (
-		entity Entity
-		sqlr   string
-		err    error
-	)
-	globals.Log.WithFields(logrus.Fields{"id": id}).Debug("GetStoreLocationEntity")
-
-	sqlr = `SELECT 
-	entity.entity_id AS "entity_id",
-	entity.entity_name AS "entity_name"
-	FROM storelocation AS s
-	JOIN entity ON s.entity = entity.entity_id
-	WHERE s.storelocation_id = ?`
-	if err = db.Get(&entity, sqlr, id); err != nil {
-		return Entity{}, err
-	}
-	globals.Log.WithFields(logrus.Fields{"id": id, "entity": entity}).Debug("GetStoreLocationEntity")
-	return entity, nil
-}
-
-// DeleteStoreLocation deletes the store location with id "id"
+// DeleteStoreLocation delete the store location by id.
 func (db *SQLiteDataStore) DeleteStoreLocation(id int) error {
+
+	dialect := goqu.Dialect("sqlite3")
+	tableStorelocation := goqu.T("storelocation")
+
+	dQuery := dialect.From(tableStorelocation).Where(
+		goqu.I("storelocation_id").Eq(id),
+	).Delete()
+
+	var (
+		err  error
+		sqlr string
+		args []interface{}
+	)
+
+	if sqlr, args, err = dQuery.ToSQL(); err != nil {
+		logger.Log.Error(err)
+		return err
+	}
+
+	if _, err = db.Exec(sqlr, args...); err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+// CreateStoreLocation insert s.
+func (db *SQLiteDataStore) CreateStoreLocation(s StoreLocation) (lastInsertId int64, err error) {
+
+	var (
+		tx *sqlx.Tx
+	)
+
+	logger.Log.WithFields(logrus.Fields{"s": fmt.Sprintf("%+v", s)}).Debug("CreateStoreLocation")
+
+	dialect := goqu.Dialect("sqlite3")
+	tableStorelocation := goqu.T("storelocation")
+
+	if tx, err = db.Beginx(); err != nil {
+		return 0, err
+	}
+
+	defer func() {
+		if err != nil {
+			logger.Log.Error(err)
+			if rbErr := tx.Rollback(); rbErr != nil {
+				logger.Log.Error(rbErr)
+				err = rbErr
+				return
+			}
+			return
+		}
+		err = tx.Commit()
+	}()
+
+	s.StoreLocationFullPath = db.buildFullPath(s, tx)
+
+	iQuery := dialect.Insert(tableStorelocation)
+
+	setClause := goqu.Record{
+		"storelocation_name":     s.StoreLocationName.String,
+		"entity":                 s.EntityID,
+		"storelocation_fullpath": s.StoreLocationFullPath,
+	}
+
+	if s.StoreLocationCanStore.Valid {
+		setClause["storelocation_canstore"] = s.StoreLocationCanStore.Bool
+	}
+	if s.StoreLocationColor.Valid {
+		setClause["storelocation_color"] = s.StoreLocationColor.String
+	}
+	if s.StoreLocation != nil {
+		setClause["storelocation"] = s.StoreLocation.StoreLocationID.Int64
+	}
+
+	var (
+		sqlr      string
+		args      []interface{}
+		sqlResult sql.Result
+	)
+
+	if sqlr, args, err = iQuery.Rows(setClause).ToSQL(); err != nil {
+		return
+	}
+
+	if sqlResult, err = tx.Exec(sqlr, args...); err != nil {
+		return
+	}
+
+	return sqlResult.LastInsertId()
+
+}
+
+// UpdateStoreLocation updates s.
+func (db *SQLiteDataStore) UpdateStoreLocation(s StoreLocation) (err error) {
+
+	var (
+		tx *sqlx.Tx
+	)
+
+	dialect := goqu.Dialect("sqlite3")
+	tableStorelocation := goqu.T("storelocation")
+
+	if tx, err = db.Beginx(); err != nil {
+		return
+	}
+
+	defer func() {
+		if err != nil {
+			logger.Log.Error(err)
+			if rbErr := tx.Rollback(); rbErr != nil {
+				logger.Log.Error(rbErr)
+				err = rbErr
+				return
+			}
+			return
+		}
+		err = tx.Commit()
+	}()
+
+	s.StoreLocationFullPath = db.buildFullPath(s, tx)
+
+	uQuery := dialect.Update(tableStorelocation)
+
+	setClause := goqu.Record{
+		"storelocation_name":     s.StoreLocationName.String,
+		"entity":                 s.EntityID,
+		"storelocation_fullpath": s.StoreLocationFullPath,
+	}
+
+	if s.StoreLocationCanStore.Valid {
+		setClause["storelocation_canstore"] = s.StoreLocationCanStore.Bool
+	}
+	if s.StoreLocationColor.Valid {
+		setClause["storelocation_color"] = s.StoreLocationColor.String
+	}
+	if s.StoreLocation != nil {
+		setClause["storelocation"] = s.StoreLocation.StoreLocationID.Int64
+	}
+
 	var (
 		sqlr string
-		err  error
-	)
-	sqlr = `DELETE FROM storelocation 
-	WHERE storelocation_id = ?`
-	if _, err = db.Exec(sqlr, id); err != nil {
-		return err
-	}
-	return nil
-}
-
-// CreateStoreLocation creates the given store location
-func (db *SQLiteDataStore) CreateStoreLocation(s StoreLocation) (int, error) {
-	var (
-		sqlr     string
-		res      sql.Result
-		lastid   int64
-		err      error
-		sqla     []interface{}
-		tx       *sqlx.Tx
-		ibuilder sq.InsertBuilder
+		args []interface{}
 	)
 
-	// beginning transaction
-	if tx, err = db.Beginx(); err != nil {
-		return 0, nil
+	if sqlr, args, err = uQuery.Set(
+		setClause,
+	).Where(
+		goqu.I("storelocation_id").Eq(s.StoreLocationID),
+	).ToSQL(); err != nil {
+		logger.Log.Error(err)
+		return
 	}
 
-	// building full path
-	s.StoreLocationFullPath = db.buildFullPath(s, tx)
-
-	m := make(map[string]interface{})
-	if s.StoreLocationCanStore.Valid {
-		m["storelocation_canstore"] = s.StoreLocationCanStore.Bool
-	}
-	if s.StoreLocationColor.Valid {
-		m["storelocation_color"] = s.StoreLocationColor.String
-	}
-	m["storelocation_name"] = s.StoreLocationName.String
-	if s.StoreLocation != nil {
-		m["storelocation"] = s.StoreLocation.StoreLocationID.Int64
-	}
-	m["entity"] = s.EntityID
-	m["storelocation_fullpath"] = s.StoreLocationFullPath
-
-	// building column names/values
-	col := make([]string, 0, len(m))
-	val := make([]interface{}, 0, len(m))
-	for k, v := range m {
-		col = append(col, k)
-
-		switch t := v.(type) {
-		case int:
-			val = append(val, v.(int))
-		case string:
-			val = append(val, v.(string))
-		case bool:
-			val = append(val, v.(bool))
-		default:
-			panic(fmt.Sprintf("unknown type: %T", t))
-		}
-	}
-
-	ibuilder = sq.Insert("storelocation").Columns(col...).Values(val...)
-	if sqlr, sqla, err = ibuilder.ToSql(); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return 0, errr
-		}
-		return 0, nil
-	}
-
-	if res, err = tx.Exec(sqlr, sqla...); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return 0, errr
-		}
-		return 0, nil
-	}
-
-	// committing changes
-	if err = tx.Commit(); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return 0, errr
-		}
-		return 0, nil
-	}
-
-	// getting the last inserted id
-	if lastid, err = res.LastInsertId(); err != nil {
-		return 0, nil
-	}
-
-	return int(lastid), nil
-}
-
-// UpdateStoreLocation updates the given store location
-func (db *SQLiteDataStore) UpdateStoreLocation(s StoreLocation) error {
-	var (
-		sqlr     string
-		sqla     []interface{}
-		tx       *sqlx.Tx
-		err      error
-		ubuilder sq.UpdateBuilder
-	)
-
-	// beginning new transaction
-	if tx, err = db.Beginx(); err != nil {
-		return err
-	}
-
-	// building full path
-	s.StoreLocationFullPath = db.buildFullPath(s, tx)
-
-	m := make(map[string]interface{})
-	if s.StoreLocationCanStore.Valid {
-		m["storelocation_canstore"] = s.StoreLocationCanStore.Bool
-	}
-	if s.StoreLocationColor.Valid {
-		m["storelocation_color"] = s.StoreLocationColor.String
-	}
-	m["storelocation_name"] = s.StoreLocationName.String
-	if s.StoreLocation != nil {
-		m["storelocation"] = s.StoreLocation.StoreLocationID.Int64
-	}
-	m["entity"] = s.EntityID
-	m["storelocation_fullpath"] = s.StoreLocationFullPath
-
-	ubuilder = sq.Update("storelocation").
-		SetMap(m).
-		Where(sq.Eq{"storelocation_id": s.StoreLocationID})
-	if sqlr, sqla, err = ubuilder.ToSql(); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return errr
-		}
-	}
-	if _, err = tx.Exec(sqlr, sqla...); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return errr
-		}
-	}
-
-	// committing changes
-	if err = tx.Commit(); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return errr
-		}
+	if _, err = tx.Exec(sqlr, args...); err != nil {
+		return
 	}
 
 	return nil
+
 }
 
-// IsStoreLocationEmpty returns true is the store location is empty
-func (db *SQLiteDataStore) IsStoreLocationEmpty(id int) (bool, error) {
+// HasStorelocationStorage returns true is the store location is empty.
+func (db *SQLiteDataStore) HasStorelocationStorage(id int) (bool, error) {
+
 	var (
-		res   bool
-		count int
-		sqlr  string
 		err   error
+		sqlr  string
+		args  []interface{}
+		count int
 	)
 
-	sqlr = "SELECT count(*) from storage WHERE  storelocation = ?"
-	if err = db.Get(&count, sqlr, id); err != nil {
+	dialect := goqu.Dialect("sqlite3")
+	tableStorage := goqu.T("storage")
+
+	sQuery := dialect.From(tableStorage).Select(
+		goqu.COUNT("*"),
+	).Where(
+		goqu.I("storelocation").Eq(id),
+	)
+
+	if sqlr, args, err = sQuery.ToSQL(); err != nil {
+		logger.Log.Error(err)
 		return false, err
 	}
-	globals.Log.WithFields(logrus.Fields{"id": id, "count": count}).Debug("IsStoreLocationEmpty")
-	if count == 0 {
-		res = true
-	} else {
-		res = false
+
+	if err = db.Get(&count, sqlr, args...); err != nil {
+		return false, err
 	}
-	return res, nil
+
+	return count == 0, nil
+
 }

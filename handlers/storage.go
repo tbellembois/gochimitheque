@@ -3,16 +3,16 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
-	"github.com/tbellembois/gochimitheque/globals"
+	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
 	"github.com/tbellembois/gochimitheque/static/jade"
-	"github.com/tbellembois/gochimitheque/utils"
 )
 
 /*
@@ -48,58 +48,25 @@ func (env *Env) VCreateStorageHandler(w http.ResponseWriter, r *http.Request) *m
 func (env *Env) ToogleStorageBorrowingHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 
 	var (
-		err         error
-		isborrowing bool
-		id          int
-		b           models.Borrowing
+		err error
+		s   models.Storage
 	)
-	vars := mux.Vars(r)
 
-	// parsing request form
-	if err = r.ParseForm(); err != nil {
+	if err = json.NewDecoder(r.Body).Decode(&s); err != nil {
 		return &models.AppError{
 			Error:   err,
-			Message: "form parsing error",
-			Code:    http.StatusBadRequest}
-	}
-	// decoding request form
-	if err = globals.Decoder.Decode(&b, r.PostForm); err != nil {
-		return &models.AppError{
-			Error:   err,
-			Message: "form decoding error",
-			Code:    http.StatusBadRequest}
-	}
-	// getting the storage id
-	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
-			Error:   err,
-			Message: "id atoi conversion",
+			Message: "JSON decoding error",
 			Code:    http.StatusInternalServerError}
 	}
-	b.Storage.StorageID.Int64 = int64(id)
 
 	// retrieving the logged user id from request context
 	c := models.ContainerFromRequestContext(r)
-	b.Person.PersonID = c.PersonID
-
-	if b.Borrower != nil {
-		if isborrowing, err = env.DB.IsStorageBorrowing(b); err != nil {
-			return &models.AppError{
-				Error:   err,
-				Code:    http.StatusInternalServerError,
-				Message: "error getting borrowing status",
-			}
-		}
-	} else {
-		isborrowing = true
-	}
+	s.Borrowing.Person = &models.Person{}
+	s.Borrowing.Person.PersonID = c.PersonID
 
 	// toggling the borrowing
-	if isborrowing {
-		err = env.DB.DeleteStorageBorrowing(b)
-	} else {
-		err = env.DB.CreateStorageBorrowing(b)
-	}
+	err = env.DB.ToogleStorageBorrowing(s)
+
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -110,7 +77,7 @@ func (env *Env) ToogleStorageBorrowingHandler(w http.ResponseWriter, r *http.Req
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	if err = json.NewEncoder(w).Encode(b.Storage); err != nil {
+	if err = json.NewEncoder(w).Encode(s); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
 			Message: err.Error(),
@@ -122,7 +89,7 @@ func (env *Env) ToogleStorageBorrowingHandler(w http.ResponseWriter, r *http.Req
 
 // GetStoragesUnitsHandler returns a json list of the units matching the search criteria
 func (env *Env) GetStoragesUnitsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetStoragesUnitsHandler")
+	logger.Log.Debug("GetStoragesUnitsHandler")
 
 	var (
 		err  error
@@ -162,7 +129,7 @@ func (env *Env) GetStoragesUnitsHandler(w http.ResponseWriter, r *http.Request) 
 
 // GetStoragesSuppliersHandler returns a json list of the suppliers matching the search criteria
 func (env *Env) GetStoragesSuppliersHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetStoragesSuppliersHandler")
+	logger.Log.Debug("GetStoragesSuppliersHandler")
 
 	var (
 		err  error
@@ -203,7 +170,7 @@ func (env *Env) GetStoragesSuppliersHandler(w http.ResponseWriter, r *http.Reque
 // GetOtherStoragesHandler returns a json list of the storages matching the search criteria
 // in other entities with no storage details
 func (env *Env) GetOtherStoragesHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetOtherStoragesHandler")
+	logger.Log.Debug("GetOtherStoragesHandler")
 
 	var (
 		err      error
@@ -246,7 +213,7 @@ func (env *Env) GetOtherStoragesHandler(w http.ResponseWriter, r *http.Request) 
 
 // GetStoragesHandler returns a json list of the storages matching the search criteria
 func (env *Env) GetStoragesHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetStoragesHandler")
+	logger.Log.Debug("GetStoragesHandler")
 
 	var (
 		err      error
@@ -271,7 +238,7 @@ func (env *Env) GetStoragesHandler(w http.ResponseWriter, r *http.Request) *mode
 
 	// export?
 	if _, export := r.URL.Query()["export"]; export {
-		if exportfn, err = utils.StoragesToCSV(storages); err != nil {
+		if exportfn, err = models.StoragesToCSV(storages); err != nil {
 			return &models.AppError{
 				Code:    http.StatusInternalServerError,
 				Message: err.Error(),
@@ -323,7 +290,7 @@ func (env *Env) GetStorageHandler(w http.ResponseWriter, r *http.Request) *model
 			Message: "error getting the storage",
 		}
 	}
-	globals.Log.WithFields(logrus.Fields{"storage": storage}).Debug("GetStorageHandler")
+	logger.Log.WithFields(logrus.Fields{"storage": storage}).Debug("GetStorageHandler")
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
@@ -344,23 +311,17 @@ func (env *Env) UpdateStorageHandler(w http.ResponseWriter, r *http.Request) *mo
 		err error
 		s   models.Storage
 	)
-	if err := r.ParseForm(); err != nil {
+	if err = json.NewDecoder(r.Body).Decode(&s); err != nil {
 		return &models.AppError{
 			Error:   err,
-			Message: "form parsing error",
-			Code:    http.StatusBadRequest}
+			Message: "JSON decoding error",
+			Code:    http.StatusInternalServerError}
 	}
 
 	// retrieving the logged user id from request context
 	c := models.ContainerFromRequestContext(r)
 
-	if err := globals.Decoder.Decode(&s, r.PostForm); err != nil {
-		return &models.AppError{
-			Error:   err,
-			Message: "form decoding error",
-			Code:    http.StatusBadRequest}
-	}
-	globals.Log.WithFields(logrus.Fields{"s": s}).Debug("UpdateStorageHandler")
+	logger.Log.WithFields(logrus.Fields{"s": s}).Debug("UpdateStorageHandler")
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
 		return &models.AppError{
@@ -384,7 +345,10 @@ func (env *Env) UpdateStorageHandler(w http.ResponseWriter, r *http.Request) *mo
 	updateds.StorageReference = s.StorageReference
 	updateds.StorageBatchNumber = s.StorageBatchNumber
 	updateds.StorageToDestroy = s.StorageToDestroy
-	globals.Log.WithFields(logrus.Fields{"updateds": updateds}).Debug("UpdateStorageHandler")
+	updateds.StorageNumberOfBag = s.StorageNumberOfBag
+	updateds.StorageNumberOfCarton = s.StorageNumberOfCarton
+	updateds.StorageNumberOfUnit = s.StorageNumberOfUnit
+	logger.Log.WithFields(logrus.Fields{"updateds": updateds}).Debug("UpdateStorageHandler")
 
 	if err := env.DB.UpdateStorage(updateds); err != nil {
 		return &models.AppError{
@@ -395,7 +359,7 @@ func (env *Env) UpdateStorageHandler(w http.ResponseWriter, r *http.Request) *mo
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	if err = json.NewEncoder(w).Encode(updateds); err != nil {
+	if err = json.NewEncoder(w).Encode([]models.Storage{updateds}); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
 			Message: err.Error(),
@@ -478,28 +442,21 @@ func (env *Env) RestoreStorageHandler(w http.ResponseWriter, r *http.Request) *m
 
 // CreateStorageHandler creates the storage from the request form
 func (env *Env) CreateStorageHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("CreateStorageHandler")
+	logger.Log.Debug("CreateStorageHandler")
 	var (
 		s   models.Storage
 		err error
 		id  int
 	)
-	if err := r.ParseForm(); err != nil {
+	if err = json.NewDecoder(r.Body).Decode(&s); err != nil {
 		return &models.AppError{
 			Error:   err,
-			Message: "form parsing error",
-			Code:    http.StatusBadRequest}
+			Message: "JSON decoding error",
+			Code:    http.StatusInternalServerError}
 	}
 
 	// retrieving the logged user id from request context
 	c := models.ContainerFromRequestContext(r)
-
-	if err := globals.Decoder.Decode(&s, r.PostForm); err != nil {
-		return &models.AppError{
-			Error:   err,
-			Message: "form decoding error",
-			Code:    http.StatusBadRequest}
-	}
 
 	// retrieving the full store location
 	// we need its entity id to compute the barecode
@@ -513,31 +470,30 @@ func (env *Env) CreateStorageHandler(w http.ResponseWriter, r *http.Request) *mo
 	s.StorageCreationDate = time.Now()
 	s.StorageModificationDate = time.Now()
 	s.PersonID = c.PersonID
-	globals.Log.WithFields(logrus.Fields{"s": s}).Debug("CreateStorageHandler")
+	logger.Log.WithFields(logrus.Fields{"s": fmt.Sprintf("%+v", s)}).Debug("CreateStorageHandler")
+	logger.Log.WithFields(logrus.Fields{"s.StorageNbItem": s.StorageNbItem}).Debug("CreateStorageHandler")
 
+	if s.StorageNbItem == 0 {
+		s.StorageNbItem = 1
+	}
+
+	var result []models.Storage
 	for i := 1; i <= s.StorageNbItem; i++ {
-		if id, err = env.DB.CreateStorage(s); err != nil {
+		if id, err = env.DB.CreateStorage(s, i); err != nil {
 			return &models.AppError{
 				Error:   err,
 				Message: "create storage error",
 				Code:    http.StatusInternalServerError}
 		}
-		// generating barecode if not specified
-		if s.StorageBarecode.String == "" {
-			s.StorageID = sql.NullInt64{Valid: true, Int64: int64(id)}
-			if err = env.DB.GenerateAndUpdateStorageBarecode(&s); err != nil {
-				return &models.AppError{
-					Error:   err,
-					Message: "generate storage barecode error",
-					Code:    http.StatusInternalServerError}
-			}
-		}
+		result = append(result, models.Storage{
+			StorageID: sql.NullInt64{Valid: true, Int64: int64(id)},
+		})
 	}
 	s.StorageID = sql.NullInt64{Valid: true, Int64: int64(id)}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	if err = json.NewEncoder(w).Encode(s); err != nil {
+	if err = json.NewEncoder(w).Encode(result); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
 			Message: err.Error(),

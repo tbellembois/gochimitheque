@@ -1,36 +1,40 @@
-extends ../base.jade
+
+include ../mixins
 block CONTENT
     :go:func
         About(c ViewContainer)
 
-    div.mx-auto(style="width: 40%").mt-sm-4
-        span.iconlabel project leader: 
-        span Delphine Pitrat (delphine.pitrat@ens-lyon.fr)
-    div.mx-auto(style="width: 40%").mt-sm-4
-        span.iconlabel project site: 
+    div.mx-auto(style="width: 60%").mt-sm-4
+        span.iconlabel
+            = T("project_leader", 1) 
+        span &nbsp;Delphine Pitrat (delphine.pitrat@ens-lyon.fr)
+    div.mx-auto(style="width: 60%").mt-sm-4
+        span.iconlabel
+            = T("project_site", 1) 
         span 
             a(href="https://github.com/tbellembois/gochimitheque")
                 span.mdi.mdi-github-circle &nbsp;https://github.com/tbellembois/gochimitheque
-    div.mx-auto(style="width: 40%").mt-sm-4
-        span.iconlabel support: 
+    div.mx-auto(style="width: 60%").mt-sm-4
+        span.iconlabel
+            = T("project_support", 1) 
         span 
             a(href="https://github.com/tbellembois/gochimitheque")
                 span.mdi.mdi-github-circle &nbsp;https://github.com/tbellembois/gochimitheque/issues
-    div.mx-auto(style="width: 40%").mt-sm-4
-        span.iconlabel license:&nbsp;
+    div.mx-auto(style="width: 60%").mt-sm-4
+        span.iconlabel
+            = T("project_license", 1) 
         span 
-            a(href="https://raw.githubusercontent.com/tbellembois/gochimitheque/master/LICENSE") Open Source - GNU GENERAL PUBLIC LICENSE V3
-    div.mx-auto(style="width: 40%").mt-sm-4
-        span.iconlabel version:&nbsp;
-        span#appversion 
-    div.row.mt-sm-4
-        .col-sm-4
-            img(src=c.ProxyPath + "img/logo_ens.png", alt="ens_logo" title="Ecole Normale Supérieure de Lyon")
-        .col-sm-4
-            img(src=c.ProxyPath + "img/logo_uca.jpg", alt="uca_logo" title="Université Clermont Auvergne")
-        .col-sm-4
-            img(src=c.ProxyPath + "img/logo_go.png", alt="go_logo" title="Golang language")
+            a(href="https://raw.githubusercontent.com/tbellembois/gochimitheque/master/LICENSE") &nbsp;Open Source - GNU GENERAL PUBLIC LICENSE V3
+    div.mx-auto(style="width: 60%").mt-sm-4
+        span.iconlabel
+            = T("logo_information1", 1) 
+        a(title="mon-aloevera [at] hotmail [dot] com")
+            b Katia Varet.
+    div.mx-auto(style="width: 60%").mt-sm-4
+        span.iconlabel
+            = T("project_version", 1) 
+        span#appversion
             
 block CONTENTJS
     script.
-        document.getElementById("appversion").innerHTML = buildID;
+        document.getElementById("appversion").innerHTML = "&nbsp;" + c.BuildID;

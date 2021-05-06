@@ -10,9 +10,8 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
-	_ "github.com/mattn/go-sqlite3" // register sqlite3 driver
 	"github.com/sirupsen/logrus"
-	"github.com/tbellembois/gochimitheque/globals"
+	"github.com/tbellembois/gochimitheque/logger"
 	. "github.com/tbellembois/gochimitheque/models"
 )
 
@@ -61,18 +60,23 @@ func (db *SQLiteDataStore) GetProductsCasNumbers(p Dbselectparam) ([]CasNumber, 
 	var (
 		casnumbers                         []CasNumber
 		count                              int
+		exactSearch                        string
 		precreq, presreq, comreq, postsreq strings.Builder
 		cnstmt                             *sqlx.NamedStmt
 		snstmt                             *sqlx.NamedStmt
 		err                                error
 	)
 
+	exactSearch = p.GetSearch()
+	exactSearch = strings.TrimPrefix(exactSearch, "%")
+	exactSearch = strings.TrimSuffix(exactSearch, "%")
+
 	precreq.WriteString(" SELECT count(DISTINCT casnumber.casnumber_id)")
 	presreq.WriteString(" SELECT casnumber_id, casnumber_label")
 
 	comreq.WriteString(" FROM casnumber")
 	comreq.WriteString(" WHERE casnumber_label LIKE :search")
-	postsreq.WriteString(" ORDER BY casnumber_label  " + p.GetOrder())
+	postsreq.WriteString(" ORDER BY INSTR(casnumber_label, \"" + exactSearch + "\") ASC, casnumber_label ASC")
 
 	// limit
 	if p.GetLimit() != ^uint64(0) {
@@ -90,7 +94,6 @@ func (db *SQLiteDataStore) GetProductsCasNumbers(p Dbselectparam) ([]CasNumber, 
 	// building argument map
 	m := map[string]interface{}{
 		"search": p.GetSearch(),
-
 		"limit":  p.GetLimit(),
 		"offset": p.GetOffset(),
 	}
@@ -105,12 +108,11 @@ func (db *SQLiteDataStore) GetProductsCasNumbers(p Dbselectparam) ([]CasNumber, 
 	}
 
 	// setting the C attribute for formula matching exactly the search
-	s := p.GetSearch()
-	s = strings.TrimPrefix(s, "%")
-	s = strings.TrimSuffix(s, "%")
 	var casn CasNumber
 
-	r := db.QueryRowx(`SELECT casnumber_id, casnumber_label FROM casnumber WHERE casnumber_label == ?`, s)
+	r := db.QueryRowx(`SELECT casnumber_id, casnumber_label 
+	FROM casnumber 
+	WHERE casnumber_label == ?`, exactSearch)
 	if err = r.StructScan(&casn); err != nil && err != sql.ErrNoRows {
 		return nil, 0, err
 	}
@@ -120,7 +122,7 @@ func (db *SQLiteDataStore) GetProductsCasNumbers(p Dbselectparam) ([]CasNumber, 
 		}
 	}
 
-	globals.Log.WithFields(logrus.Fields{"casnumbers": casnumbers}).Debug("GetProductsCasNumbers")
+	logger.Log.WithFields(logrus.Fields{"casnumbers": casnumbers}).Debug("GetProductsCasNumbers")
 	return casnumbers, count, nil
 }
 
@@ -129,18 +131,23 @@ func (db *SQLiteDataStore) GetProductsCeNumbers(p Dbselectparam) ([]CeNumber, in
 	var (
 		cenumbers                          []CeNumber
 		count                              int
+		exactSearch                        string
 		precreq, presreq, comreq, postsreq strings.Builder
 		cnstmt                             *sqlx.NamedStmt
 		snstmt                             *sqlx.NamedStmt
 		err                                error
 	)
 
+	exactSearch = p.GetSearch()
+	exactSearch = strings.TrimPrefix(exactSearch, "%")
+	exactSearch = strings.TrimSuffix(exactSearch, "%")
+
 	precreq.WriteString(" SELECT count(DISTINCT cenumber.cenumber_id)")
 	presreq.WriteString(" SELECT cenumber_id, cenumber_label")
 
 	comreq.WriteString(" FROM cenumber")
 	comreq.WriteString(" WHERE cenumber_label LIKE :search")
-	postsreq.WriteString(" ORDER BY cenumber_label  " + p.GetOrder())
+	postsreq.WriteString(" ORDER BY INSTR(cenumber_label, \"" + exactSearch + "\") ASC, cenumber_label ASC")
 
 	// limit
 	if p.GetLimit() != ^uint64(0) {
@@ -172,12 +179,9 @@ func (db *SQLiteDataStore) GetProductsCeNumbers(p Dbselectparam) ([]CeNumber, in
 	}
 
 	// setting the C attribute for formula matching exactly the search
-	s := p.GetSearch()
-	s = strings.TrimPrefix(s, "%")
-	s = strings.TrimSuffix(s, "%")
 	var cen CeNumber
 
-	r := db.QueryRowx(`SELECT cenumber_id, cenumber_label FROM cenumber WHERE cenumber_label == ?`, s)
+	r := db.QueryRowx(`SELECT cenumber_id, cenumber_label FROM cenumber WHERE cenumber_label == ?`, exactSearch)
 	if err = r.StructScan(&cen); err != nil && err != sql.ErrNoRows {
 		return nil, 0, err
 	}
@@ -187,7 +191,7 @@ func (db *SQLiteDataStore) GetProductsCeNumbers(p Dbselectparam) ([]CeNumber, in
 		}
 	}
 
-	globals.Log.WithFields(logrus.Fields{"cenumbers": cenumbers}).Debug("GetProductsCeNumbers")
+	logger.Log.WithFields(logrus.Fields{"cenumbers": cenumbers}).Debug("GetProductsCeNumbers")
 	return cenumbers, count, nil
 }
 
@@ -199,15 +203,16 @@ func (db *SQLiteDataStore) GetProductsCeNumberByLabel(label string) (CeNumber, e
 		sqlr string
 		err  error
 	)
-	globals.Log.WithFields(logrus.Fields{"label": label}).Debug("GetProductsCeNumberByLabel")
+	logger.Log.WithFields(logrus.Fields{"label": label}).Debug("GetProductsCeNumberByLabel")
 
 	sqlr = `SELECT cenumber.cenumber_id, cenumber.cenumber_label
 	FROM cenumber
-	WHERE cenumber_label = ?`
+	WHERE cenumber_label = ?
+	ORDER BY cenumber.cenumber_label`
 	if err = db.Get(&ce, sqlr, label); err != nil {
 		return CeNumber{}, err
 	}
-	globals.Log.WithFields(logrus.Fields{"label": label, "ce": ce}).Debug("GetProductsCeNumberByLabel")
+	logger.Log.WithFields(logrus.Fields{"label": label, "ce": ce}).Debug("GetProductsCeNumberByLabel")
 	return ce, nil
 }
 
@@ -216,18 +221,23 @@ func (db *SQLiteDataStore) GetProductsEmpiricalFormulas(p Dbselectparam) ([]Empi
 	var (
 		eformulas                          []EmpiricalFormula
 		count                              int
+		exactSearch                        string
 		precreq, presreq, comreq, postsreq strings.Builder
 		cnstmt                             *sqlx.NamedStmt
 		snstmt                             *sqlx.NamedStmt
 		err                                error
 	)
 
+	exactSearch = p.GetSearch()
+	exactSearch = strings.TrimPrefix(exactSearch, "%")
+	exactSearch = strings.TrimSuffix(exactSearch, "%")
+
 	precreq.WriteString(" SELECT count(DISTINCT empiricalformula.empiricalformula_id)")
 	presreq.WriteString(" SELECT empiricalformula_id, empiricalformula_label")
 
 	comreq.WriteString(" FROM empiricalformula")
 	comreq.WriteString(" WHERE empiricalformula_label LIKE :search")
-	postsreq.WriteString(" ORDER BY empiricalformula_label  " + p.GetOrder())
+	postsreq.WriteString(" ORDER BY INSTR(empiricalformula_label, \"" + exactSearch + "\") ASC, empiricalformula_label ASC")
 
 	// limit
 	if p.GetLimit() != ^uint64(0) {
@@ -259,12 +269,9 @@ func (db *SQLiteDataStore) GetProductsEmpiricalFormulas(p Dbselectparam) ([]Empi
 	}
 
 	// setting the C attribute for formula matching exactly the search
-	s := p.GetSearch()
-	s = strings.TrimPrefix(s, "%")
-	s = strings.TrimSuffix(s, "%")
 	var ef EmpiricalFormula
 
-	r := db.QueryRowx(`SELECT empiricalformula_id, empiricalformula_label FROM empiricalformula WHERE empiricalformula_label == ?`, s)
+	r := db.QueryRowx(`SELECT empiricalformula_id, empiricalformula_label FROM empiricalformula WHERE empiricalformula_label == ?`, exactSearch)
 	if err = r.StructScan(&ef); err != nil && err != sql.ErrNoRows {
 		return nil, 0, err
 	}
@@ -274,7 +281,7 @@ func (db *SQLiteDataStore) GetProductsEmpiricalFormulas(p Dbselectparam) ([]Empi
 		}
 	}
 
-	globals.Log.WithFields(logrus.Fields{"eformulas": eformulas}).Debug("GetProductsEmpiricalFormulas")
+	logger.Log.WithFields(logrus.Fields{"eformulas": eformulas}).Debug("GetProductsEmpiricalFormulas")
 	return eformulas, count, nil
 }
 
@@ -286,15 +293,16 @@ func (db *SQLiteDataStore) GetProductsEmpiricalFormulaByLabel(label string) (Emp
 		sqlr string
 		err  error
 	)
-	globals.Log.WithFields(logrus.Fields{"label": label}).Debug("GetProductsEmpiricalFormulaByLabel")
+	logger.Log.WithFields(logrus.Fields{"label": label}).Debug("GetProductsEmpiricalFormulaByLabel")
 
 	sqlr = `SELECT empiricalformula.empiricalformula_id, empiricalformula.empiricalformula_label
 	FROM empiricalformula
-	WHERE empiricalformula.empiricalformula_label = ?`
+	WHERE empiricalformula.empiricalformula_label = ?
+	ORDER BY empiricalformula.empiricalformula_label`
 	if err = db.Get(&ef, sqlr, label); err != nil {
 		return EmpiricalFormula{}, err
 	}
-	globals.Log.WithFields(logrus.Fields{"label": label, "ef": ef}).Debug("GetProductsEmpiricalFormulaByLabel")
+	logger.Log.WithFields(logrus.Fields{"label": label, "ef": ef}).Debug("GetProductsEmpiricalFormulaByLabel")
 	return ef, nil
 }
 
@@ -303,18 +311,23 @@ func (db *SQLiteDataStore) GetProductsLinearFormulas(p Dbselectparam) ([]LinearF
 	var (
 		lformulas                          []LinearFormula
 		count                              int
+		exactSearch                        string
 		precreq, presreq, comreq, postsreq strings.Builder
 		cnstmt                             *sqlx.NamedStmt
 		snstmt                             *sqlx.NamedStmt
 		err                                error
 	)
 
+	exactSearch = p.GetSearch()
+	exactSearch = strings.TrimPrefix(exactSearch, "%")
+	exactSearch = strings.TrimSuffix(exactSearch, "%")
+
 	precreq.WriteString(" SELECT count(DISTINCT linearformula.linearformula_id)")
 	presreq.WriteString(" SELECT linearformula_id, linearformula_label")
 
 	comreq.WriteString(" FROM linearformula")
 	comreq.WriteString(" WHERE linearformula_label LIKE :search")
-	postsreq.WriteString(" ORDER BY linearformula_label  " + p.GetOrder())
+	postsreq.WriteString(" ORDER BY INSTR(linearformula_label, \"" + exactSearch + "\") ASC, linearformula_label ASC")
 
 	// limit
 	if p.GetLimit() != ^uint64(0) {
@@ -346,12 +359,9 @@ func (db *SQLiteDataStore) GetProductsLinearFormulas(p Dbselectparam) ([]LinearF
 	}
 
 	// setting the C attribute for formula matching exactly the search
-	s := p.GetSearch()
-	s = strings.TrimPrefix(s, "%")
-	s = strings.TrimSuffix(s, "%")
 	var lf LinearFormula
 
-	r := db.QueryRowx(`SELECT linearformula_id, linearformula_label FROM linearformula WHERE linearformula_label == ?`, s)
+	r := db.QueryRowx(`SELECT linearformula_id, linearformula_label FROM linearformula WHERE linearformula_label == ?`, exactSearch)
 	if err = r.StructScan(&lf); err != nil && err != sql.ErrNoRows {
 		return nil, 0, err
 	}
@@ -361,7 +371,7 @@ func (db *SQLiteDataStore) GetProductsLinearFormulas(p Dbselectparam) ([]LinearF
 		}
 	}
 
-	globals.Log.WithFields(logrus.Fields{"lformulas": lformulas}).Debug("GetProductsLinearFormulas")
+	logger.Log.WithFields(logrus.Fields{"lformulas": lformulas}).Debug("GetProductsLinearFormulas")
 	return lformulas, count, nil
 }
 
@@ -373,15 +383,16 @@ func (db *SQLiteDataStore) GetProductsLinearFormulaByLabel(label string) (Linear
 		sqlr string
 		err  error
 	)
-	globals.Log.WithFields(logrus.Fields{"label": label}).Debug("GetProductsLinearFormulaByLabel")
+	logger.Log.WithFields(logrus.Fields{"label": label}).Debug("GetProductsLinearFormulaByLabel")
 
 	sqlr = `SELECT linearformula.linearformula_id, linearformula.linearformula_label
 	FROM linearformula
-	WHERE linearformula.linearformula_label = ?`
+	WHERE linearformula.linearformula_label = ?
+	ORDER BY linearformula.linearformula_label`
 	if err = db.Get(&lf, sqlr, label); err != nil {
 		return LinearFormula{}, err
 	}
-	globals.Log.WithFields(logrus.Fields{"label": label, "lf": lf}).Debug("GetProductsLinearFormulaByLabel")
+	logger.Log.WithFields(logrus.Fields{"label": label, "lf": lf}).Debug("GetProductsLinearFormulaByLabel")
 	return lf, nil
 }
 
@@ -390,18 +401,23 @@ func (db *SQLiteDataStore) GetProductsClassOfCompounds(p Dbselectparam) ([]Class
 	var (
 		classofcompounds                   []ClassOfCompound
 		count                              int
+		exactSearch                        string
 		precreq, presreq, comreq, postsreq strings.Builder
 		cnstmt                             *sqlx.NamedStmt
 		snstmt                             *sqlx.NamedStmt
 		err                                error
 	)
 
+	exactSearch = p.GetSearch()
+	exactSearch = strings.TrimPrefix(exactSearch, "%")
+	exactSearch = strings.TrimSuffix(exactSearch, "%")
+
 	precreq.WriteString(" SELECT count(DISTINCT classofcompound.classofcompound_id)")
 	presreq.WriteString(" SELECT classofcompound_id, classofcompound_label")
 
 	comreq.WriteString(" FROM classofcompound")
 	comreq.WriteString(" WHERE classofcompound_label LIKE :search")
-	postsreq.WriteString(" ORDER BY classofcompound_label  " + p.GetOrder())
+	postsreq.WriteString(" ORDER BY INSTR(classofcompound_label, \"" + exactSearch + "\") ASC, classofcompound_label ASC")
 
 	// limit
 	if p.GetLimit() != ^uint64(0) {
@@ -433,12 +449,9 @@ func (db *SQLiteDataStore) GetProductsClassOfCompounds(p Dbselectparam) ([]Class
 	}
 
 	// setting the C attribute for formula matching exactly the search
-	s := p.GetSearch()
-	s = strings.TrimPrefix(s, "%")
-	s = strings.TrimSuffix(s, "%")
 	var coc ClassOfCompound
 
-	r := db.QueryRowx(`SELECT classofcompound_id, classofcompound_label FROM classofcompound WHERE classofcompound_label == ?`, s)
+	r := db.QueryRowx(`SELECT classofcompound_id, classofcompound_label FROM classofcompound WHERE classofcompound_label == ?`, exactSearch)
 	if err = r.StructScan(&coc); err != nil && err != sql.ErrNoRows {
 		return nil, 0, err
 	}
@@ -448,7 +461,7 @@ func (db *SQLiteDataStore) GetProductsClassOfCompounds(p Dbselectparam) ([]Class
 		}
 	}
 
-	globals.Log.WithFields(logrus.Fields{"classofcompounds": classofcompounds}).Debug("GetProductsClassOfCompounds")
+	logger.Log.WithFields(logrus.Fields{"classofcompounds": classofcompounds}).Debug("GetProductsClassOfCompounds")
 	return classofcompounds, count, nil
 }
 
@@ -460,15 +473,16 @@ func (db *SQLiteDataStore) GetProductsClassOfCompoundByLabel(label string) (Clas
 		sqlr string
 		err  error
 	)
-	globals.Log.WithFields(logrus.Fields{"label": label}).Debug("GetProductsClassOfCompoundByLabel")
+	logger.Log.WithFields(logrus.Fields{"label": label}).Debug("GetProductsClassOfCompoundByLabel")
 
 	sqlr = `SELECT classofcompound.classofcompound_id, classofcompound.classofcompound_label
 	FROM classofcompound
-	WHERE classofcompound.classofcompound_label = ?`
+	WHERE classofcompound.classofcompound_label = ?
+	ORDER BY classofcompound.classofcompound_label`
 	if err = db.Get(&coc, sqlr, strings.ToUpper(label)); err != nil {
 		return ClassOfCompound{}, err
 	}
-	globals.Log.WithFields(logrus.Fields{"label": label, "coc": coc}).Debug("GetProductsClassOfCompoundByLabel")
+	logger.Log.WithFields(logrus.Fields{"label": label, "coc": coc}).Debug("GetProductsClassOfCompoundByLabel")
 	return coc, nil
 }
 
@@ -477,11 +491,16 @@ func (db *SQLiteDataStore) GetProductsSuppliers(p Dbselectparam) ([]Supplier, in
 	var (
 		srs                                []Supplier
 		count                              int
+		exactSearch                        string
 		precreq, presreq, comreq, postsreq strings.Builder
 		cnstmt                             *sqlx.NamedStmt
 		snstmt                             *sqlx.NamedStmt
 		err                                error
 	)
+
+	exactSearch = p.GetSearch()
+	exactSearch = strings.TrimPrefix(exactSearch, "%")
+	exactSearch = strings.TrimSuffix(exactSearch, "%")
 
 	precreq.WriteString(" SELECT count(DISTINCT supplier.supplier_id)")
 	presreq.WriteString(` SELECT supplier_id, 
@@ -489,7 +508,7 @@ func (db *SQLiteDataStore) GetProductsSuppliers(p Dbselectparam) ([]Supplier, in
 
 	comreq.WriteString(" FROM supplier")
 	comreq.WriteString(" WHERE supplier_label LIKE :search")
-	postsreq.WriteString(" ORDER BY supplier_label " + p.GetOrder())
+	postsreq.WriteString(" ORDER BY INSTR(supplier_label, \"" + exactSearch + "\") ASC, supplier_label ASC")
 
 	// limit
 	if p.GetLimit() != ^uint64(0) {
@@ -521,12 +540,9 @@ func (db *SQLiteDataStore) GetProductsSuppliers(p Dbselectparam) ([]Supplier, in
 	}
 
 	// setting the C attribute for formula matching exactly the search
-	s := p.GetSearch()
-	s = strings.TrimPrefix(s, "%")
-	s = strings.TrimSuffix(s, "%")
 	var sp Supplier
 
-	r := db.QueryRowx(`SELECT supplier_id, supplier_label FROM supplier WHERE supplier_label == ?`, s)
+	r := db.QueryRowx(`SELECT supplier_id, supplier_label FROM supplier WHERE supplier_label == ?`, exactSearch)
 	if err = r.StructScan(&sp); err != nil && err != sql.ErrNoRows {
 		return nil, 0, err
 	}
@@ -536,7 +552,7 @@ func (db *SQLiteDataStore) GetProductsSuppliers(p Dbselectparam) ([]Supplier, in
 		}
 	}
 
-	globals.Log.WithFields(logrus.Fields{"srs": srs}).Debug("GetProductsSuppliers")
+	logger.Log.WithFields(logrus.Fields{"srs": srs}).Debug("GetProductsSuppliers")
 	return srs, count, nil
 }
 
@@ -545,11 +561,16 @@ func (db *SQLiteDataStore) GetProductsProducers(p Dbselectparam) ([]Producer, in
 	var (
 		prs                                []Producer
 		count                              int
+		exactSearch                        string
 		precreq, presreq, comreq, postsreq strings.Builder
 		cnstmt                             *sqlx.NamedStmt
 		snstmt                             *sqlx.NamedStmt
 		err                                error
 	)
+
+	exactSearch = p.GetSearch()
+	exactSearch = strings.TrimPrefix(exactSearch, "%")
+	exactSearch = strings.TrimSuffix(exactSearch, "%")
 
 	precreq.WriteString(" SELECT count(DISTINCT producer.producer_id)")
 	presreq.WriteString(` SELECT producer_id, 
@@ -557,7 +578,7 @@ func (db *SQLiteDataStore) GetProductsProducers(p Dbselectparam) ([]Producer, in
 
 	comreq.WriteString(" FROM producer")
 	comreq.WriteString(" WHERE producer_label LIKE :search")
-	postsreq.WriteString(" ORDER BY producer_label " + p.GetOrder())
+	postsreq.WriteString(" ORDER BY INSTR(producer_label, \"" + exactSearch + "\") ASC, producer_label ASC")
 
 	// limit
 	if p.GetLimit() != ^uint64(0) {
@@ -589,12 +610,9 @@ func (db *SQLiteDataStore) GetProductsProducers(p Dbselectparam) ([]Producer, in
 	}
 
 	// setting the C attribute for formula matching exactly the search
-	s := p.GetSearch()
-	s = strings.TrimPrefix(s, "%")
-	s = strings.TrimSuffix(s, "%")
 	var pr Producer
 
-	r := db.QueryRowx(`SELECT producer_id, producer_label FROM producer WHERE producer_label == ?`, s)
+	r := db.QueryRowx(`SELECT producer_id, producer_label FROM producer WHERE producer_label == ?`, exactSearch)
 	if err = r.StructScan(&pr); err != nil && err != sql.ErrNoRows {
 		return nil, 0, err
 	}
@@ -604,7 +622,7 @@ func (db *SQLiteDataStore) GetProductsProducers(p Dbselectparam) ([]Producer, in
 		}
 	}
 
-	globals.Log.WithFields(logrus.Fields{"prs": prs}).Debug("GetProductsProducers")
+	logger.Log.WithFields(logrus.Fields{"prs": prs}).Debug("GetProductsProducers")
 	return prs, count, nil
 }
 
@@ -613,11 +631,16 @@ func (db *SQLiteDataStore) GetProductsProducerRefs(p DbselectparamProducerRef) (
 	var (
 		prefs                              []ProducerRef
 		count                              int
+		exactSearch                        string
 		precreq, presreq, comreq, postsreq strings.Builder
 		cnstmt                             *sqlx.NamedStmt
 		snstmt                             *sqlx.NamedStmt
 		err                                error
 	)
+
+	exactSearch = p.GetSearch()
+	exactSearch = strings.TrimPrefix(exactSearch, "%")
+	exactSearch = strings.TrimSuffix(exactSearch, "%")
 
 	precreq.WriteString(" SELECT count(DISTINCT producerref.producerref_id)")
 	presreq.WriteString(` SELECT producerref_id, 
@@ -631,7 +654,7 @@ func (db *SQLiteDataStore) GetProductsProducerRefs(p DbselectparamProducerRef) (
 	if p.GetProducer() != -1 {
 		comreq.WriteString(" AND producerref.producer = :producer")
 	}
-	postsreq.WriteString(" ORDER BY producerref_label " + p.GetOrder())
+	postsreq.WriteString(" ORDER BY INSTR(producerref_label, \"" + exactSearch + "\") ASC, producerref_label ASC")
 
 	// limit
 	if p.GetLimit() != ^uint64(0) {
@@ -654,8 +677,8 @@ func (db *SQLiteDataStore) GetProductsProducerRefs(p DbselectparamProducerRef) (
 		"producer": p.GetProducer(),
 	}
 
-	globals.Log.Debug(presreq.String() + comreq.String() + postsreq.String())
-	globals.Log.Debug(m)
+	// logger.Log.Debug(presreq.String() + comreq.String() + postsreq.String())
+	// logger.Log.Debug(m)
 
 	// select
 	if err = snstmt.Select(&prefs, m); err != nil {
@@ -667,22 +690,19 @@ func (db *SQLiteDataStore) GetProductsProducerRefs(p DbselectparamProducerRef) (
 	}
 
 	// setting the C attribute for formula matching exactly the search
-	s := p.GetSearch()
-	s = strings.TrimPrefix(s, "%")
-	s = strings.TrimSuffix(s, "%")
 	var pref ProducerRef
 
-	r := db.QueryRowx(`SELECT producerref_id, producerref_label FROM producerref WHERE producerref_label == ?`, s)
+	r := db.QueryRowx(`SELECT producerref_id, producerref_label FROM producerref WHERE producerref_label == ?`, exactSearch)
 	if err = r.StructScan(&pref); err != nil && err != sql.ErrNoRows {
 		return nil, 0, err
 	}
 	for i, p := range prefs {
-		if p.ProducerID == pref.ProducerID {
+		if p.ProducerRefID == pref.ProducerRefID {
 			prefs[i].C = 1
 		}
 	}
 
-	globals.Log.WithFields(logrus.Fields{"prefs": prefs}).Debug("GetProductsProducerRefs")
+	logger.Log.WithFields(logrus.Fields{"prefs": prefs}).Debug("GetProductsProducerRefs")
 	return prefs, count, nil
 }
 
@@ -691,11 +711,16 @@ func (db *SQLiteDataStore) GetProductsSupplierRefs(p DbselectparamSupplierRef) (
 	var (
 		srefs                              []SupplierRef
 		count                              int
+		exactSearch                        string
 		precreq, presreq, comreq, postsreq strings.Builder
 		cnstmt                             *sqlx.NamedStmt
 		snstmt                             *sqlx.NamedStmt
 		err                                error
 	)
+
+	exactSearch = p.GetSearch()
+	exactSearch = strings.TrimPrefix(exactSearch, "%")
+	exactSearch = strings.TrimSuffix(exactSearch, "%")
 
 	precreq.WriteString(" SELECT count(DISTINCT supplierref.supplierref_id)")
 	presreq.WriteString(` SELECT supplierref_id, 
@@ -709,7 +734,7 @@ func (db *SQLiteDataStore) GetProductsSupplierRefs(p DbselectparamSupplierRef) (
 	if p.GetSupplier() != -1 {
 		comreq.WriteString(" AND supplierref.supplier = :supplier")
 	}
-	postsreq.WriteString(" ORDER BY supplierref_label " + p.GetOrder())
+	postsreq.WriteString(" ORDER BY INSTR(supplierref_label, \"" + exactSearch + "\") ASC, supplierref_label ASC")
 
 	// limit
 	if p.GetLimit() != ^uint64(0) {
@@ -742,22 +767,19 @@ func (db *SQLiteDataStore) GetProductsSupplierRefs(p DbselectparamSupplierRef) (
 	}
 
 	// setting the C attribute for formula matching exactly the search
-	s := p.GetSearch()
-	s = strings.TrimPrefix(s, "%")
-	s = strings.TrimSuffix(s, "%")
 	var sref SupplierRef
 
-	r := db.QueryRowx(`SELECT supplierref_id, supplierref_label FROM supplierref WHERE supplierref_label == ?`, s)
+	r := db.QueryRowx(`SELECT supplierref_id, supplierref_label FROM supplierref WHERE supplierref_label == ?`, exactSearch)
 	if err = r.StructScan(&sref); err != nil && err != sql.ErrNoRows {
 		return nil, 0, err
 	}
 	for i, s := range srefs {
-		if s.SupplierID == sref.SupplierID {
+		if s.SupplierRefID == sref.SupplierRefID {
 			srefs[i].C = 1
 		}
 	}
 
-	globals.Log.WithFields(logrus.Fields{"srefs": srefs}).Debug("GetProductsSupplierRefs")
+	logger.Log.WithFields(logrus.Fields{"srefs": srefs}).Debug("GetProductsSupplierRefs")
 	return srefs, count, nil
 }
 
@@ -766,18 +788,23 @@ func (db *SQLiteDataStore) GetProductsTags(p Dbselectparam) ([]Tag, int, error) 
 	var (
 		tags                               []Tag
 		count                              int
+		exactSearch                        string
 		precreq, presreq, comreq, postsreq strings.Builder
 		cnstmt                             *sqlx.NamedStmt
 		snstmt                             *sqlx.NamedStmt
 		err                                error
 	)
 
+	exactSearch = p.GetSearch()
+	exactSearch = strings.TrimPrefix(exactSearch, "%")
+	exactSearch = strings.TrimSuffix(exactSearch, "%")
+
 	precreq.WriteString(" SELECT count(DISTINCT tag.tag_id)")
 	presreq.WriteString(" SELECT tag_id, tag_label")
 
 	comreq.WriteString(" FROM tag")
 	comreq.WriteString(" WHERE tag_label LIKE :search")
-	postsreq.WriteString(" ORDER BY tag_label " + p.GetOrder())
+	postsreq.WriteString(" ORDER BY INSTR(tag_label, \"" + exactSearch + "\") ASC, tag_label ASC")
 
 	// limit
 	if p.GetLimit() != ^uint64(0) {
@@ -809,12 +836,9 @@ func (db *SQLiteDataStore) GetProductsTags(p Dbselectparam) ([]Tag, int, error) 
 	}
 
 	// setting the C attribute for formula matching exactly the search
-	s := p.GetSearch()
-	s = strings.TrimPrefix(s, "%")
-	s = strings.TrimSuffix(s, "%")
 	var tag Tag
 
-	r := db.QueryRowx(`SELECT tag_id, tag_label FROM tag WHERE tag_label == ?`, s)
+	r := db.QueryRowx(`SELECT tag_id, tag_label FROM tag WHERE tag_label == ?`, exactSearch)
 	if err = r.StructScan(&tag); err != nil && err != sql.ErrNoRows {
 		return nil, 0, err
 	}
@@ -824,7 +848,7 @@ func (db *SQLiteDataStore) GetProductsTags(p Dbselectparam) ([]Tag, int, error) 
 		}
 	}
 
-	globals.Log.WithFields(logrus.Fields{"tags": tags}).Debug("GetProductsTags")
+	logger.Log.WithFields(logrus.Fields{"tags": tags}).Debug("GetProductsTags")
 	return tags, count, nil
 }
 
@@ -833,18 +857,23 @@ func (db *SQLiteDataStore) GetProductsCategories(p Dbselectparam) ([]Category, i
 	var (
 		categories                         []Category
 		count                              int
+		exactSearch                        string
 		precreq, presreq, comreq, postsreq strings.Builder
 		cnstmt                             *sqlx.NamedStmt
 		snstmt                             *sqlx.NamedStmt
 		err                                error
 	)
 
+	exactSearch = p.GetSearch()
+	exactSearch = strings.TrimPrefix(exactSearch, "%")
+	exactSearch = strings.TrimSuffix(exactSearch, "%")
+
 	precreq.WriteString(" SELECT count(DISTINCT category.category_id)")
 	presreq.WriteString(" SELECT category_id, category_label")
 
 	comreq.WriteString(" FROM category")
 	comreq.WriteString(" WHERE category_label LIKE :search")
-	postsreq.WriteString(" ORDER BY category_label " + p.GetOrder())
+	postsreq.WriteString(" ORDER BY INSTR(category_label, \"" + exactSearch + "\") ASC, category_label ASC")
 
 	// limit
 	if p.GetLimit() != ^uint64(0) {
@@ -876,12 +905,9 @@ func (db *SQLiteDataStore) GetProductsCategories(p Dbselectparam) ([]Category, i
 	}
 
 	// setting the C attribute for formula matching exactly the search
-	s := p.GetSearch()
-	s = strings.TrimPrefix(s, "%")
-	s = strings.TrimSuffix(s, "%")
 	var category Category
 
-	r := db.QueryRowx(`SELECT category_id, category_label FROM category WHERE category_label == ?`, s)
+	r := db.QueryRowx(`SELECT category_id, category_label FROM category WHERE category_label == ?`, exactSearch)
 	if err = r.StructScan(&category); err != nil && err != sql.ErrNoRows {
 		return nil, 0, err
 	}
@@ -891,7 +917,7 @@ func (db *SQLiteDataStore) GetProductsCategories(p Dbselectparam) ([]Category, i
 		}
 	}
 
-	globals.Log.WithFields(logrus.Fields{"categories": categories}).Debug("GetProductsCategories")
+	logger.Log.WithFields(logrus.Fields{"categories": categories}).Debug("GetProductsCategories")
 	return categories, count, nil
 }
 
@@ -903,7 +929,7 @@ func (db *SQLiteDataStore) GetProductsName(id int) (Name, error) {
 		sqlr string
 		err  error
 	)
-	globals.Log.WithFields(logrus.Fields{"id": id}).Debug("GetProductsName")
+	logger.Log.WithFields(logrus.Fields{"id": id}).Debug("GetProductsName")
 
 	sqlr = `SELECT name.name_id, name.name_label
 	FROM name
@@ -911,7 +937,7 @@ func (db *SQLiteDataStore) GetProductsName(id int) (Name, error) {
 	if err = db.Get(&name, sqlr, id); err != nil {
 		return Name{}, err
 	}
-	globals.Log.WithFields(logrus.Fields{"ID": id, "name": name}).Debug("GetProductsName")
+	logger.Log.WithFields(logrus.Fields{"ID": id, "name": name}).Debug("GetProductsName")
 	return name, nil
 }
 
@@ -923,7 +949,7 @@ func (db *SQLiteDataStore) GetProductsNameByLabel(label string) (Name, error) {
 		sqlr string
 		err  error
 	)
-	globals.Log.WithFields(logrus.Fields{"label": label}).Debug("GetProductsNameByLabel")
+	logger.Log.WithFields(logrus.Fields{"label": label}).Debug("GetProductsNameByLabel")
 
 	sqlr = `SELECT name.name_id, name.name_label
 	FROM name
@@ -931,7 +957,7 @@ func (db *SQLiteDataStore) GetProductsNameByLabel(label string) (Name, error) {
 	if err = db.Get(&name, sqlr, strings.ToUpper(label)); err != nil {
 		return Name{}, err
 	}
-	globals.Log.WithFields(logrus.Fields{"label": label, "name": name}).Debug("GetProductsNameByLabel")
+	logger.Log.WithFields(logrus.Fields{"label": label, "name": name}).Debug("GetProductsNameByLabel")
 	return name, nil
 }
 
@@ -943,15 +969,16 @@ func (db *SQLiteDataStore) GetProductsEmpiricalFormula(id int) (EmpiricalFormula
 		sqlr string
 		err  error
 	)
-	globals.Log.WithFields(logrus.Fields{"id": id}).Debug("GetProductsEmpiricalFormula")
+	logger.Log.WithFields(logrus.Fields{"id": id}).Debug("GetProductsEmpiricalFormula")
 
 	sqlr = `SELECT empiricalformula.empiricalformula_id, empiricalformula.empiricalformula_label
 	FROM empiricalformula
-	WHERE empiricalformula_id = ?`
+	WHERE empiricalformula_id = ?
+	ORDER BY empiricalformula.empiricalformula_label`
 	if err = db.Get(&ef, sqlr, id); err != nil {
 		return EmpiricalFormula{}, err
 	}
-	globals.Log.WithFields(logrus.Fields{"ID": id, "ef": ef}).Debug("GetProductsEmpiricalFormula")
+	logger.Log.WithFields(logrus.Fields{"ID": id, "ef": ef}).Debug("GetProductsEmpiricalFormula")
 	return ef, nil
 }
 
@@ -963,7 +990,7 @@ func (db *SQLiteDataStore) GetProductsCasNumber(id int) (CasNumber, error) {
 		sqlr string
 		err  error
 	)
-	globals.Log.WithFields(logrus.Fields{"id": id}).Debug("GetProductsCasNumber")
+	logger.Log.WithFields(logrus.Fields{"id": id}).Debug("GetProductsCasNumber")
 
 	sqlr = `SELECT casnumber.casnumber_id, casnumber.casnumber_label
 	FROM casnumber
@@ -971,7 +998,7 @@ func (db *SQLiteDataStore) GetProductsCasNumber(id int) (CasNumber, error) {
 	if err = db.Get(&cas, sqlr, id); err != nil {
 		return CasNumber{}, err
 	}
-	globals.Log.WithFields(logrus.Fields{"ID": id, "cas": cas}).Debug("GetProductsCasNumber")
+	logger.Log.WithFields(logrus.Fields{"ID": id, "cas": cas}).Debug("GetProductsCasNumber")
 	return cas, nil
 }
 
@@ -983,7 +1010,7 @@ func (db *SQLiteDataStore) GetProductsCasNumberByLabel(label string) (CasNumber,
 		sqlr string
 		err  error
 	)
-	globals.Log.WithFields(logrus.Fields{"label": label}).Debug("GetProductsCasNumberByLabel")
+	logger.Log.WithFields(logrus.Fields{"label": label}).Debug("GetProductsCasNumberByLabel")
 
 	sqlr = `SELECT casnumber.casnumber_id, casnumber.casnumber_label
 	FROM casnumber
@@ -991,7 +1018,7 @@ func (db *SQLiteDataStore) GetProductsCasNumberByLabel(label string) (CasNumber,
 	if err = db.Get(&cas, sqlr, label); err != nil {
 		return CasNumber{}, err
 	}
-	globals.Log.WithFields(logrus.Fields{"label": label, "cas": cas}).Debug("GetProductsCasNumberByLabel")
+	logger.Log.WithFields(logrus.Fields{"label": label, "cas": cas}).Debug("GetProductsCasNumberByLabel")
 	return cas, nil
 }
 
@@ -1003,7 +1030,7 @@ func (db *SQLiteDataStore) GetProductsSignalWord(id int) (SignalWord, error) {
 		sqlr       string
 		err        error
 	)
-	globals.Log.WithFields(logrus.Fields{"id": id}).Debug("GetProductsSignalWord")
+	logger.Log.WithFields(logrus.Fields{"id": id}).Debug("GetProductsSignalWord")
 
 	sqlr = `SELECT signalword.signalword_id, signalword.signalword_label
 	FROM signalword
@@ -1011,7 +1038,7 @@ func (db *SQLiteDataStore) GetProductsSignalWord(id int) (SignalWord, error) {
 	if err = db.Get(&signalword, sqlr, id); err != nil {
 		return SignalWord{}, err
 	}
-	globals.Log.WithFields(logrus.Fields{"ID": id, "signalword": signalword}).Debug("GetProductsSignalWord")
+	logger.Log.WithFields(logrus.Fields{"ID": id, "signalword": signalword}).Debug("GetProductsSignalWord")
 	return signalword, nil
 }
 
@@ -1023,7 +1050,7 @@ func (db *SQLiteDataStore) GetProductsSignalWordByLabel(label string) (SignalWor
 		sqlr string
 		err  error
 	)
-	globals.Log.WithFields(logrus.Fields{"label": label}).Debug("GetProductsSignalWordByLabel")
+	logger.Log.WithFields(logrus.Fields{"label": label}).Debug("GetProductsSignalWordByLabel")
 
 	sqlr = `SELECT signalword.signalword_id, signalword.signalword_label
 	FROM signalword
@@ -1031,7 +1058,7 @@ func (db *SQLiteDataStore) GetProductsSignalWordByLabel(label string) (SignalWor
 	if err = db.Get(&sw, sqlr, label); err != nil {
 		return SignalWord{}, err
 	}
-	globals.Log.WithFields(logrus.Fields{"label": label, "sw": sw}).Debug("GetProductsSignalWordByLabel")
+	logger.Log.WithFields(logrus.Fields{"label": label, "sw": sw}).Debug("GetProductsSignalWordByLabel")
 	return sw, nil
 }
 
@@ -1043,7 +1070,7 @@ func (db *SQLiteDataStore) GetProductsHazardStatement(id int) (HazardStatement, 
 		sqlr string
 		err  error
 	)
-	globals.Log.WithFields(logrus.Fields{"id": id}).Debug("GetProductsHazardStatement")
+	logger.Log.WithFields(logrus.Fields{"id": id}).Debug("GetProductsHazardStatement")
 
 	sqlr = `SELECT hazardstatement.hazardstatement_id, hazardstatement.hazardstatement_label, hazardstatement.hazardstatement_reference
 	FROM hazardstatement
@@ -1051,7 +1078,7 @@ func (db *SQLiteDataStore) GetProductsHazardStatement(id int) (HazardStatement, 
 	if err = db.Get(&hs, sqlr, id); err != nil {
 		return HazardStatement{}, err
 	}
-	globals.Log.WithFields(logrus.Fields{"ID": id, "hs": hs}).Debug("GetProductsHazardStatement")
+	logger.Log.WithFields(logrus.Fields{"ID": id, "hs": hs}).Debug("GetProductsHazardStatement")
 	return hs, nil
 }
 
@@ -1063,7 +1090,7 @@ func (db *SQLiteDataStore) GetProductsPrecautionaryStatement(id int) (Precaution
 		sqlr string
 		err  error
 	)
-	globals.Log.WithFields(logrus.Fields{"id": id}).Debug("GetProductsPrecautionaryStatement")
+	logger.Log.WithFields(logrus.Fields{"id": id}).Debug("GetProductsPrecautionaryStatement")
 
 	sqlr = `SELECT precautionarystatement.precautionarystatement_id, precautionarystatement.precautionarystatement_label, precautionarystatement.precautionarystatement_reference
 	FROM precautionarystatement
@@ -1071,7 +1098,7 @@ func (db *SQLiteDataStore) GetProductsPrecautionaryStatement(id int) (Precaution
 	if err = db.Get(&ps, sqlr, id); err != nil {
 		return PrecautionaryStatement{}, err
 	}
-	globals.Log.WithFields(logrus.Fields{"ID": id, "ps": ps}).Debug("GetProductsPrecautionaryStatement")
+	logger.Log.WithFields(logrus.Fields{"ID": id, "ps": ps}).Debug("GetProductsPrecautionaryStatement")
 	return ps, nil
 }
 
@@ -1083,7 +1110,7 @@ func (db *SQLiteDataStore) GetProductsSymbol(id int) (Symbol, error) {
 		sqlr   string
 		err    error
 	)
-	globals.Log.WithFields(logrus.Fields{"id": id}).Debug("GetProductsSymbol")
+	logger.Log.WithFields(logrus.Fields{"id": id}).Debug("GetProductsSymbol")
 
 	sqlr = `SELECT symbol.symbol_id, symbol.symbol_label, symbol.symbol_image
 	FROM symbol
@@ -1091,7 +1118,7 @@ func (db *SQLiteDataStore) GetProductsSymbol(id int) (Symbol, error) {
 	if err = db.Get(&symbol, sqlr, id); err != nil {
 		return Symbol{}, err
 	}
-	globals.Log.WithFields(logrus.Fields{"ID": id, "symbol": symbol}).Debug("GetProductsSymbol")
+	logger.Log.WithFields(logrus.Fields{"ID": id, "symbol": symbol}).Debug("GetProductsSymbol")
 	return symbol, nil
 }
 
@@ -1103,7 +1130,7 @@ func (db *SQLiteDataStore) GetProductsSymbolByLabel(label string) (Symbol, error
 		sqlr   string
 		err    error
 	)
-	globals.Log.WithFields(logrus.Fields{"label": label}).Debug("GetProductsSymbolByLabel")
+	logger.Log.WithFields(logrus.Fields{"label": label}).Debug("GetProductsSymbolByLabel")
 
 	sqlr = `SELECT symbol.symbol_id, symbol.symbol_label
 	FROM symbol
@@ -1111,7 +1138,7 @@ func (db *SQLiteDataStore) GetProductsSymbolByLabel(label string) (Symbol, error
 	if err = db.Get(&symbol, sqlr, label); err != nil {
 		return Symbol{}, err
 	}
-	globals.Log.WithFields(logrus.Fields{"label": label, "symbol": symbol}).Debug("GetProductsSymbolByLabel")
+	logger.Log.WithFields(logrus.Fields{"label": label, "symbol": symbol}).Debug("GetProductsSymbolByLabel")
 	return symbol, nil
 }
 
@@ -1120,21 +1147,23 @@ func (db *SQLiteDataStore) GetProductsNames(p Dbselectparam) ([]Name, int, error
 	var (
 		names                              []Name
 		count                              int
+		exactSearch                        string
 		precreq, presreq, comreq, postsreq strings.Builder
 		cnstmt                             *sqlx.NamedStmt
 		snstmt                             *sqlx.NamedStmt
 		err                                error
 	)
 
-	//select * from name WHERE name_label like "test%" OR name_label like "%test%" order by
-	//case when name_label like "test%" then 0 else 1 end
+	exactSearch = p.GetSearch()
+	exactSearch = strings.TrimPrefix(exactSearch, "%")
+	exactSearch = strings.TrimSuffix(exactSearch, "%")
 
 	precreq.WriteString(" SELECT count(DISTINCT name.name_id)")
 	presreq.WriteString(" SELECT name_id, name_label")
 
 	comreq.WriteString(" FROM name")
-	comreq.WriteString(" WHERE name_label LIKE :search OR name_label like :searchbegin")
-	postsreq.WriteString(" ORDER BY case when name_label like :searchbegin then 0 else 1 end " + p.GetOrder())
+	comreq.WriteString(" WHERE name_label LIKE upper(:search)")
+	postsreq.WriteString(" ORDER BY INSTR(name_label, upper(\"" + exactSearch + "\")) ASC, name_label ASC")
 
 	// limit
 	if p.GetLimit() != ^uint64(0) {
@@ -1151,11 +1180,10 @@ func (db *SQLiteDataStore) GetProductsNames(p Dbselectparam) ([]Name, int, error
 
 	// building argument map
 	m := map[string]interface{}{
-		"search":      p.GetSearch(),
-		"searchbegin": strings.TrimPrefix(p.GetSearch(), "%"),
-		"order":       p.GetOrder(),
-		"limit":       p.GetLimit(),
-		"offset":      p.GetOffset(),
+		"search": p.GetSearch(),
+		"order":  p.GetOrder(),
+		"limit":  p.GetLimit(),
+		"offset": p.GetOffset(),
 	}
 
 	// select
@@ -1168,12 +1196,9 @@ func (db *SQLiteDataStore) GetProductsNames(p Dbselectparam) ([]Name, int, error
 	}
 
 	// setting the C attribute for formula matching exactly the search
-	s := p.GetSearch()
-	s = strings.TrimPrefix(s, "%")
-	s = strings.TrimSuffix(s, "%")
 	var name Name
 
-	r := db.QueryRowx(`SELECT name_id, name_label FROM name WHERE name_label == ?`, s)
+	r := db.QueryRowx(`SELECT name_id, name_label FROM name WHERE name_label == ?`, exactSearch)
 	if err = r.StructScan(&name); err != nil && err != sql.ErrNoRows {
 		return nil, 0, err
 	}
@@ -1183,7 +1208,7 @@ func (db *SQLiteDataStore) GetProductsNames(p Dbselectparam) ([]Name, int, error
 		}
 	}
 
-	globals.Log.WithFields(logrus.Fields{"names": names}).Debug("GetProductsNames")
+	logger.Log.WithFields(logrus.Fields{"names": names}).Debug("GetProductsNames")
 	return names, count, nil
 }
 
@@ -1203,7 +1228,7 @@ func (db *SQLiteDataStore) GetProductsSymbols(p Dbselectparam) ([]Symbol, int, e
 
 	comreq.WriteString(" FROM symbol")
 	comreq.WriteString(" WHERE symbol_label LIKE :search")
-	postsreq.WriteString(" ORDER BY symbol_label  " + p.GetOrder())
+	postsreq.WriteString(" ORDER BY symbol_label " + p.GetOrder())
 
 	// limit
 	if p.GetLimit() != ^uint64(0) {
@@ -1235,7 +1260,7 @@ func (db *SQLiteDataStore) GetProductsSymbols(p Dbselectparam) ([]Symbol, int, e
 		return nil, 0, err
 	}
 
-	globals.Log.WithFields(logrus.Fields{"symbols": symbols}).Debug("GetProductsSymbols")
+	logger.Log.WithFields(logrus.Fields{"symbols": symbols}).Debug("GetProductsSymbols")
 	return symbols, count, nil
 }
 
@@ -1248,7 +1273,8 @@ func (db *SQLiteDataStore) GetProductsHazardStatementByReference(r string) (Haza
 
 	sqlr := `SELECT hazardstatement_id, hazardstatement_label, hazardstatement_reference
 	FROM hazardstatement
-	WHERE hazardstatement_reference = ?`
+	WHERE hazardstatement_reference = ?
+	ORDER BY hazardstatement_reference`
 	if err = db.Get(&hs, sqlr, r); err != nil {
 		return HazardStatement{}, err
 	}
@@ -1272,7 +1298,7 @@ func (db *SQLiteDataStore) GetProductsHazardStatements(p Dbselectparam) ([]Hazar
 
 	comreq.WriteString(" FROM hazardstatement")
 	comreq.WriteString(" WHERE hazardstatement_reference LIKE :search")
-	postsreq.WriteString(" ORDER BY hazardstatement_label  " + p.GetOrder())
+	postsreq.WriteString(" ORDER BY hazardstatement_reference  " + p.GetOrder())
 
 	// limit
 	if p.GetLimit() != ^uint64(0) {
@@ -1290,7 +1316,6 @@ func (db *SQLiteDataStore) GetProductsHazardStatements(p Dbselectparam) ([]Hazar
 	// building argument map
 	m := map[string]interface{}{
 		"search": p.GetSearch(),
-
 		"limit":  p.GetLimit(),
 		"offset": p.GetOffset(),
 	}
@@ -1304,7 +1329,7 @@ func (db *SQLiteDataStore) GetProductsHazardStatements(p Dbselectparam) ([]Hazar
 		return nil, 0, err
 	}
 
-	globals.Log.WithFields(logrus.Fields{"hazardstatements": hazardstatements}).Debug("GetProductsHazardStatements")
+	logger.Log.WithFields(logrus.Fields{"hazardstatements": hazardstatements}).Debug("GetProductsHazardStatements")
 	return hazardstatements, count, nil
 }
 
@@ -1317,7 +1342,8 @@ func (db *SQLiteDataStore) GetProductsPrecautionaryStatementByReference(r string
 
 	sqlr := `SELECT precautionarystatement_id, precautionarystatement_label, precautionarystatement_reference
 	FROM precautionarystatement
-	WHERE precautionarystatement_reference = ?`
+	WHERE precautionarystatement_reference = ?
+	ORDER BY precautionarystatement_reference`
 	if err = db.Get(&ps, sqlr, r); err != nil {
 		return PrecautionaryStatement{}, err
 	}
@@ -1341,7 +1367,7 @@ func (db *SQLiteDataStore) GetProductsPrecautionaryStatements(p Dbselectparam) (
 
 	comreq.WriteString(" FROM precautionarystatement")
 	comreq.WriteString(" WHERE precautionarystatement_reference LIKE :search")
-	postsreq.WriteString(" ORDER BY precautionarystatement_label  " + p.GetOrder())
+	postsreq.WriteString(" ORDER BY precautionarystatement_reference  " + p.GetOrder())
 
 	// limit
 	if p.GetLimit() != ^uint64(0) {
@@ -1359,7 +1385,6 @@ func (db *SQLiteDataStore) GetProductsPrecautionaryStatements(p Dbselectparam) (
 	// building argument map
 	m := map[string]interface{}{
 		"search": p.GetSearch(),
-
 		"limit":  p.GetLimit(),
 		"offset": p.GetOffset(),
 	}
@@ -1373,7 +1398,7 @@ func (db *SQLiteDataStore) GetProductsPrecautionaryStatements(p Dbselectparam) (
 		return nil, 0, err
 	}
 
-	globals.Log.WithFields(logrus.Fields{"precautionarystatements": precautionarystatements}).Debug("GetProductsPrecautionaryStatements")
+	logger.Log.WithFields(logrus.Fields{"precautionarystatements": precautionarystatements}).Debug("GetProductsPrecautionaryStatements")
 	return precautionarystatements, count, nil
 }
 
@@ -1382,18 +1407,23 @@ func (db *SQLiteDataStore) GetProductsPhysicalStates(p Dbselectparam) ([]Physica
 	var (
 		physicalstates                     []PhysicalState
 		count                              int
+		exactSearch                        string
 		precreq, presreq, comreq, postsreq strings.Builder
 		cnstmt                             *sqlx.NamedStmt
 		snstmt                             *sqlx.NamedStmt
 		err                                error
 	)
 
+	exactSearch = p.GetSearch()
+	exactSearch = strings.TrimPrefix(exactSearch, "%")
+	exactSearch = strings.TrimSuffix(exactSearch, "%")
+
 	precreq.WriteString(" SELECT count(DISTINCT physicalstate.physicalstate_id)")
 	presreq.WriteString(" SELECT physicalstate_id, physicalstate_label")
 
 	comreq.WriteString(" FROM physicalstate")
 	comreq.WriteString(" WHERE physicalstate_label LIKE :search")
-	postsreq.WriteString(" ORDER BY physicalstate_label  " + p.GetOrder())
+	postsreq.WriteString(" ORDER BY INSTR(physicalstate_label, \"" + exactSearch + ")\") ASC, physicalstate_label ASC")
 
 	// limit
 	if p.GetLimit() != ^uint64(0) {
@@ -1411,7 +1441,6 @@ func (db *SQLiteDataStore) GetProductsPhysicalStates(p Dbselectparam) ([]Physica
 	// building argument map
 	m := map[string]interface{}{
 		"search": p.GetSearch(),
-
 		"limit":  p.GetLimit(),
 		"offset": p.GetOffset(),
 	}
@@ -1426,12 +1455,9 @@ func (db *SQLiteDataStore) GetProductsPhysicalStates(p Dbselectparam) ([]Physica
 	}
 
 	// setting the C attribute for physical states matching exactly the search
-	s := p.GetSearch()
-	s = strings.TrimPrefix(s, "%")
-	s = strings.TrimSuffix(s, "%")
 	var ps PhysicalState
 
-	r := db.QueryRowx(`SELECT physicalstate_id, physicalstate_label FROM physicalstate WHERE physicalstate_label == ?`, s)
+	r := db.QueryRowx(`SELECT physicalstate_id, physicalstate_label FROM physicalstate WHERE physicalstate_label == ?`, exactSearch)
 	if err = r.StructScan(&ps); err != nil && err != sql.ErrNoRows {
 		return nil, 0, err
 	}
@@ -1441,7 +1467,7 @@ func (db *SQLiteDataStore) GetProductsPhysicalStates(p Dbselectparam) ([]Physica
 		}
 	}
 
-	globals.Log.WithFields(logrus.Fields{"physicalstates": physicalstates}).Debug("GetProductsPhysicalStates")
+	logger.Log.WithFields(logrus.Fields{"physicalstates": physicalstates}).Debug("GetProductsPhysicalStates")
 	return physicalstates, count, nil
 }
 
@@ -1453,15 +1479,16 @@ func (db *SQLiteDataStore) GetProductsPhysicalStateByLabel(label string) (Physic
 		sqlr string
 		err  error
 	)
-	globals.Log.WithFields(logrus.Fields{"label": label}).Debug("GetProductsPhysicalStateByLabel")
+	logger.Log.WithFields(logrus.Fields{"label": label}).Debug("GetProductsPhysicalStateByLabel")
 
 	sqlr = `SELECT physicalstate.physicalstate_id, physicalstate.physicalstate_label
 	FROM physicalstate
-	WHERE physicalstate.physicalstate_label = ?`
+	WHERE physicalstate.physicalstate_label = ?
+	ORDER BY physicalstate.physicalstate_label`
 	if err = db.Get(&ps, sqlr, label); err != nil {
 		return PhysicalState{}, err
 	}
-	globals.Log.WithFields(logrus.Fields{"label": label, "ps": ps}).Debug("GetProductsPhysicalStateByLabel")
+	logger.Log.WithFields(logrus.Fields{"label": label, "ps": ps}).Debug("GetProductsPhysicalStateByLabel")
 	return ps, nil
 }
 
@@ -1513,7 +1540,7 @@ func (db *SQLiteDataStore) GetProductsSignalWords(p Dbselectparam) ([]SignalWord
 		return nil, 0, err
 	}
 
-	globals.Log.WithFields(logrus.Fields{"signalwords": signalwords}).Debug("GetProductsSignalWords")
+	logger.Log.WithFields(logrus.Fields{"signalwords": signalwords}).Debug("GetProductsSignalWords")
 	return signalwords, count, nil
 }
 
@@ -1536,6 +1563,7 @@ func (db *SQLiteDataStore) GetExposedProducts() ([]Product, int, error) {
 	p.product_restricted,
 	p.product_radioactive,
 	p.product_threedformula,
+	p.product_twodformula,
 	p.product_molformula,
 	p.product_disposalcomment,
 	p.product_remark,
@@ -1688,20 +1716,24 @@ func (db *SQLiteDataStore) GetProducts(p DbselectparamProduct) ([]Product, int, 
 	//defer TimeTrack(time.Now(), "GetProducts")
 
 	var (
-		products                                                       []Product
-		count                                                          int
-		reqsc, reqasc, reqtsc, req, precreq, presreq, comreq, postsreq strings.Builder
-		cnstmt                                                         *sqlx.NamedStmt
-		snstmt                                                         *sqlx.NamedStmt
-		err                                                            error
-		rperm                                                          bool
-		isadmin                                                        bool
-		wg                                                             sync.WaitGroup
+		products                           []Product
+		count                              int
+		precreq, presreq, comreq, postsreq strings.Builder
+		cnstmt                             *sqlx.NamedStmt
+		snstmt                             *sqlx.NamedStmt
+		err                                error
+		rperm                              bool
+		isadmin                            bool
+		wg                                 sync.WaitGroup
 	)
-	globals.Log.WithFields(logrus.Fields{"p": p}).Debug("GetProducts")
+	logger.Log.WithFields(logrus.Fields{"p": p}).Debug("GetProducts")
 
 	// is the user an admin?
 	if isadmin, err = db.IsPersonAdmin(p.GetLoggedPersonID()); err != nil {
+		return nil, 0, err
+	}
+	// has the person rproducts permission?
+	if rperm, err = db.HasPersonReadRestrictedProductPermission(p.GetLoggedPersonID()); err != nil {
 		return nil, 0, err
 	}
 
@@ -1713,11 +1745,14 @@ func (db *SQLiteDataStore) GetProducts(p DbselectparamProduct) ([]Product, int, 
 	p.product_restricted,
 	p.product_radioactive,
 	p.product_threedformula,
+	p.product_twodformula,
 	p.product_molformula,
 	p.product_disposalcomment,
 	p.product_remark,
 	p.product_sheet,
 	p.product_temperature,
+	p.product_number_per_carton,
+	p.product_number_per_bag,
 	linearformula.linearformula_id AS "linearformula.linearformula_id",
 	linearformula.linearformula_label AS "linearformula.linearformula_label",
 	empiricalformula.empiricalformula_id AS "empiricalformula.empiricalformula_id",
@@ -1753,23 +1788,29 @@ func (db *SQLiteDataStore) GetProducts(p DbselectparamProduct) ([]Product, int, 
 
 	// common parts
 	comreq.WriteString(" FROM product as p")
-	// get name
-	comreq.WriteString(" JOIN name ON p.name = name.name_id")
-	// get category
-	comreq.WriteString(" LEFT JOIN category ON p.category = category.category_id")
-	// get unit_concentration
-	//comreq.WriteString(" LEFT JOIN unit uc ON p.unit_concentration = uc.unit_id")
-	// get unit_temperature
-	comreq.WriteString(" LEFT JOIN unit ut ON p.unit_temperature = ut.unit_id")
-	// get producerref
-	comreq.WriteString(" LEFT JOIN producerref ON p.producerref = producerref.producerref_id")
-	// get producer
-	comreq.WriteString(" LEFT JOIN producer ON producerref.producer = producer.producer_id")
-	// get hazardstatement GROUP_CONCAT for CMR detection
+	// CMR
 	if p.GetCasNumberCmr() {
 		comreq.WriteString(" LEFT JOIN producthazardstatements ON producthazardstatements.producthazardstatements_product_id = p.product_id")
 		comreq.WriteString(" LEFT JOIN hazardstatement ON producthazardstatements.producthazardstatements_hazardstatement_id = hazardstatement.hazardstatement_id")
 	}
+	// get name
+	comreq.WriteString(" JOIN name ON p.name = name.name_id")
+	// get category
+	if p.GetCategory() != -1 {
+		comreq.WriteString(" JOIN category ON p.category = :category")
+	} else {
+		comreq.WriteString(" LEFT JOIN category ON p.category = category.category_id")
+	}
+	// get unit_temperature
+	comreq.WriteString(" LEFT JOIN unit ut ON p.unit_temperature = ut.unit_id")
+	// get producerref
+	if p.GetProducerRef() != -1 {
+		comreq.WriteString(" JOIN producerref ON p.producerref = :producerref")
+	} else {
+		comreq.WriteString(" LEFT JOIN producerref ON p.producerref = producerref.producerref_id")
+	}
+	// get producer
+	comreq.WriteString(" LEFT JOIN producer ON producerref.producer = producer.producer_id")
 	// get casnumber
 	comreq.WriteString(" LEFT JOIN casnumber ON p.casnumber = casnumber.casnumber_id")
 	// get cenumber
@@ -1812,17 +1853,23 @@ func (db *SQLiteDataStore) GetProducts(p DbselectparamProduct) ([]Product, int, 
 	if len(p.GetPrecautionaryStatements()) != 0 {
 		comreq.WriteString(" JOIN productprecautionarystatements AS pps ON pps.productprecautionarystatements_product_id = p.product_id")
 	}
+	// get tags
+	if len(p.GetTags()) != 0 {
+		comreq.WriteString(" JOIN producttags AS ptags ON ptags.producttags_product_id = p.product_id")
+	}
 
 	// filter by permissions
-	comreq.WriteString(` JOIN permission AS perm, entity as e ON
-	perm.person = :personid and (perm.permission_item_name in ("all", "products")) and (perm.permission_perm_name in ("all", "r", "w")) and (perm.permission_entity_id in (-1, e.entity_id))
+	comreq.WriteString(` JOIN permission AS perm ON
+	perm.person = :personid and 
+	(perm.permission_item_name in ("all", "products")) and 
+	(perm.permission_perm_name in ("all", "r", "w"))
 	`)
 	comreq.WriteString(" WHERE 1")
 	if p.GetStorageToDestroy() {
 		comreq.WriteString(" AND storage.storage_todestroy = true")
 	}
 	if p.GetCasNumberCmr() {
-		comreq.WriteString(" AND (casnumber.casnumber_cmr IS NOT NULL OR hazardstatement_cmr IS NOT NULL)")
+		comreq.WriteString(" AND (casnumber.casnumber_cmr IS NOT NULL OR (hazardstatement_cmr IS NOT NULL AND hazardstatement_cmr != ''))")
 	}
 	if p.GetProduct() != -1 {
 		comreq.WriteString(" AND p.product_id = :product")
@@ -1849,6 +1896,9 @@ func (db *SQLiteDataStore) GetProducts(p DbselectparamProduct) ([]Product, int, 
 	}
 	if p.GetStorageBarecode() != "" {
 		comreq.WriteString(" AND storage.storage_barecode LIKE :storage_barecode")
+	}
+	if p.GetStorageBatchNumber() != "" {
+		comreq.WriteString(" AND storage.storage_batchnumber LIKE :storage_batchnumber")
 	}
 	if p.GetCustomNamePartOf() != "" {
 		comreq.WriteString(" AND name.name_label LIKE :custom_name_part_of")
@@ -1880,6 +1930,16 @@ func (db *SQLiteDataStore) GetProducts(p DbselectparamProduct) ([]Product, int, 
 		comreq.WriteString("-1")
 		comreq.WriteString(" )")
 	}
+	if len(p.GetTags()) != 0 {
+		comreq.WriteString(" AND ptags.producttags_tag_id IN (")
+		for _, t := range p.GetTags() {
+			comreq.WriteString(fmt.Sprintf("%d,", t))
+		}
+		// to complete the last comma
+		comreq.WriteString("-1")
+		comreq.WriteString(" )")
+	}
+
 	if p.GetSignalWord() != -1 {
 		comreq.WriteString(" AND signalword.signalword_id = :signalword")
 	}
@@ -1887,6 +1947,25 @@ func (db *SQLiteDataStore) GetProducts(p DbselectparamProduct) ([]Product, int, 
 	// filter restricted product
 	if !rperm {
 		comreq.WriteString(" AND p.product_restricted = false")
+	}
+
+	// show bio/chem/consu
+	if !p.GetShowChem() && !p.GetShowBio() && p.GetShowConsu() {
+		comreq.WriteString(" AND (product_number_per_carton IS NOT NULL AND product_number_per_carton != 0)")
+	} else if !p.GetShowChem() && p.GetShowBio() && !p.GetShowConsu() {
+		comreq.WriteString(" AND producerref IS NOT NULL")
+		comreq.WriteString(" AND (product_number_per_carton IS NULL OR product_number_per_carton == 0)")
+	} else if !p.GetShowChem() && p.GetShowBio() && p.GetShowConsu() {
+		comreq.WriteString(" AND ((product_number_per_carton IS NOT NULL AND product_number_per_carton != 0)")
+		comreq.WriteString(" OR producerref IS NOT NULL)")
+	} else if p.GetShowChem() && !p.GetShowBio() && !p.GetShowConsu() {
+		comreq.WriteString(" AND producerref IS NULL")
+		comreq.WriteString(" AND (product_number_per_carton IS NULL OR product_number_per_carton == 0)")
+	} else if p.GetShowChem() && !p.GetShowBio() && p.GetShowConsu() {
+		comreq.WriteString(" AND (producerref IS NULL")
+		comreq.WriteString(" OR (product_number_per_carton IS NOT NULL AND product_number_per_carton != 0))")
+	} else if p.GetShowChem() && p.GetShowBio() && !p.GetShowConsu() {
+		comreq.WriteString(" AND (product_number_per_carton IS NULL OR product_number_per_carton == 0)")
 	}
 
 	// post select request
@@ -1921,12 +2000,15 @@ func (db *SQLiteDataStore) GetProducts(p DbselectparamProduct) ([]Product, int, 
 		"empiricalformula":    p.GetEmpiricalFormula(),
 		"product_specificity": p.GetProductSpecificity(),
 		"storage_barecode":    p.GetStorageBarecode(),
+		"storage_batchnumber": p.GetStorageBatchNumber(),
 		"custom_name_part_of": "%" + p.GetCustomNamePartOf() + "%",
 		"signalword":          p.GetSignalWord(),
+		"producerref":         p.GetProducerRef(),
+		"category":            p.GetCategory(),
 	}
 
-	// globals.Log.Debug(presreq.String() + comreq.String() + postsreq.String())
-	// globals.Log.Debug(m)
+	logger.Log.Debug(presreq.String() + comreq.String() + postsreq.String())
+	logger.Log.Debug(m)
 
 	// select
 	if err = snstmt.Select(&products, m); err != nil {
@@ -1946,9 +2028,21 @@ func (db *SQLiteDataStore) GetProducts(p DbselectparamProduct) ([]Product, int, 
 		for i, pr := range products {
 			// note: do not modify p but products[i] instead
 			m := r.FindAllStringSubmatch(pr.ProductSL.String, -1)
-			// lazily adding only the first match
+
 			if len(m) > 0 {
-				products[i].ProductSL.String = m[0][1]
+				differentSL := false
+				mBackup := m[0][1]
+				for i := range m {
+					if (m[i][1]) != mBackup {
+						differentSL = true
+						break
+					}
+				}
+				if !differentSL {
+					products[i].ProductSL.String = m[0][1]
+				} else {
+					products[i].ProductSL.String = ""
+				}
 			} else {
 				products[i].ProductSL.String = ""
 			}
@@ -1961,19 +2055,22 @@ func (db *SQLiteDataStore) GetProducts(p DbselectparamProduct) ([]Product, int, 
 	//
 	wg.Add(1)
 	go func() {
+
+		var reqSupplierref strings.Builder
+
 		for i, pr := range products {
 			// note: do not modify p but products[i] instead
-			req.Reset()
-			req.WriteString(`SELECT supplierref_id, 
+			reqSupplierref.Reset()
+			reqSupplierref.WriteString(`SELECT supplierref_id, 
 			supplierref_label,
 			supplier.supplier_id AS "supplier.supplier_id",
 			supplier.supplier_label AS "supplier.supplier_label"
 			FROM supplierref`)
-			req.WriteString(" JOIN productsupplierrefs ON productsupplierrefs.productsupplierrefs_supplierref_id = supplierref.supplierref_id AND productsupplierrefs.productsupplierrefs_product_id = ?")
-			req.WriteString(" JOIN supplier ON supplierref.supplier = supplier.supplier_id")
+			reqSupplierref.WriteString(" JOIN productsupplierrefs ON productsupplierrefs.productsupplierrefs_supplierref_id = supplierref.supplierref_id AND productsupplierrefs.productsupplierrefs_product_id = ?")
+			reqSupplierref.WriteString(" JOIN supplier ON supplierref.supplier = supplier.supplier_id")
 
-			if err = db.Select(&products[i].SupplierRefs, req.String(), pr.ProductID); err != nil {
-				globals.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts")
+			if err = db.Select(&products[i].SupplierRefs, reqSupplierref.String(), pr.ProductID); err != nil {
+				logger.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts:goroutine:supplierref")
 			}
 		}
 		wg.Done()
@@ -1984,16 +2081,19 @@ func (db *SQLiteDataStore) GetProducts(p DbselectparamProduct) ([]Product, int, 
 	//
 	wg.Add(1)
 	go func() {
+
+		var reqTags strings.Builder
+
 		for i, pr := range products {
 			// note: do not modify p but products[i] instead
-			req.Reset()
-			req.WriteString("SELECT tag_id, tag_label FROM tag")
-			req.WriteString(" JOIN producttags ON producttags.producttags_tag_id = tag.tag_id")
-			req.WriteString(" JOIN product ON producttags.producttags_product_id = product.product_id")
-			req.WriteString(" WHERE product.product_id = ?")
+			reqTags.Reset()
+			reqTags.WriteString("SELECT tag_id, tag_label FROM tag")
+			reqTags.WriteString(" JOIN producttags ON producttags.producttags_tag_id = tag.tag_id")
+			reqTags.WriteString(" JOIN product ON producttags.producttags_product_id = product.product_id")
+			reqTags.WriteString(" WHERE product.product_id = ?")
 
-			if err = db.Select(&products[i].Tags, req.String(), pr.ProductID); err != nil {
-				globals.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts")
+			if err = db.Select(&products[i].Tags, reqTags.String(), pr.ProductID); err != nil {
+				logger.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts:goroutine:tags")
 			}
 		}
 		wg.Done()
@@ -2004,16 +2104,19 @@ func (db *SQLiteDataStore) GetProducts(p DbselectparamProduct) ([]Product, int, 
 	//
 	wg.Add(1)
 	go func() {
+
+		var reqSymbols strings.Builder
+
 		for i, pr := range products {
 			// note: do not modify p but products[i] instead
-			req.Reset()
-			req.WriteString("SELECT symbol_id, symbol_label, symbol_image FROM symbol")
-			req.WriteString(" JOIN productsymbols ON productsymbols.productsymbols_symbol_id = symbol.symbol_id")
-			req.WriteString(" JOIN product ON productsymbols.productsymbols_product_id = product.product_id")
-			req.WriteString(" WHERE product.product_id = ?")
+			reqSymbols.Reset()
+			reqSymbols.WriteString("SELECT symbol_id, symbol_label, symbol_image FROM symbol")
+			reqSymbols.WriteString(" JOIN productsymbols ON productsymbols.productsymbols_symbol_id = symbol.symbol_id")
+			reqSymbols.WriteString(" JOIN product ON productsymbols.productsymbols_product_id = product.product_id")
+			reqSymbols.WriteString(" WHERE product.product_id = ?")
 
-			if err = db.Select(&products[i].Symbols, req.String(), pr.ProductID); err != nil {
-				globals.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts")
+			if err = db.Select(&products[i].Symbols, reqSymbols.String(), pr.ProductID); err != nil {
+				logger.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts:goroutine:symbols")
 			}
 		}
 		wg.Done()
@@ -2024,16 +2127,19 @@ func (db *SQLiteDataStore) GetProducts(p DbselectparamProduct) ([]Product, int, 
 	//
 	wg.Add(1)
 	go func() {
+
+		var reqCoc strings.Builder
+
 		for i, pr := range products {
 			// note: do not modify p but products[i] instead
-			req.Reset()
-			req.WriteString("SELECT classofcompound_id, classofcompound_label FROM classofcompound")
-			req.WriteString(" JOIN productclassofcompound ON productclassofcompound.productclassofcompound_classofcompound_id = classofcompound.classofcompound_id")
-			req.WriteString(" JOIN product ON productclassofcompound.productclassofcompound_product_id = product.product_id")
-			req.WriteString(" WHERE product.product_id = ?")
+			reqCoc.Reset()
+			reqCoc.WriteString("SELECT classofcompound_id, classofcompound_label FROM classofcompound")
+			reqCoc.WriteString(" JOIN productclassofcompound ON productclassofcompound.productclassofcompound_classofcompound_id = classofcompound.classofcompound_id")
+			reqCoc.WriteString(" JOIN product ON productclassofcompound.productclassofcompound_product_id = product.product_id")
+			reqCoc.WriteString(" WHERE product.product_id = ?")
 
-			if err = db.Select(&products[i].ClassOfCompound, req.String(), pr.ProductID); err != nil {
-				globals.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts")
+			if err = db.Select(&products[i].ClassOfCompound, reqCoc.String(), pr.ProductID); err != nil {
+				logger.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts:goroutine:coc")
 			}
 		}
 		wg.Done()
@@ -2044,16 +2150,19 @@ func (db *SQLiteDataStore) GetProducts(p DbselectparamProduct) ([]Product, int, 
 	//
 	wg.Add(1)
 	go func() {
+
+		var reqSynonyms strings.Builder
+
 		for i, pr := range products {
 			// note: do not modify p but products[i] instead
-			req.Reset()
-			req.WriteString("SELECT name_id, name_label FROM name")
-			req.WriteString(" JOIN productsynonyms ON productsynonyms.productsynonyms_name_id = name.name_id")
-			req.WriteString(" JOIN product ON productsynonyms.productsynonyms_product_id = product.product_id")
-			req.WriteString(" WHERE product.product_id = ?")
+			reqSynonyms.Reset()
+			reqSynonyms.WriteString("SELECT name_id, name_label FROM name")
+			reqSynonyms.WriteString(" JOIN productsynonyms ON productsynonyms.productsynonyms_name_id = name.name_id")
+			reqSynonyms.WriteString(" JOIN product ON productsynonyms.productsynonyms_product_id = product.product_id")
+			reqSynonyms.WriteString(" WHERE product.product_id = ?")
 
-			if err = db.Select(&products[i].Synonyms, req.String(), pr.ProductID); err != nil {
-				globals.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts")
+			if err = db.Select(&products[i].Synonyms, reqSynonyms.String(), pr.ProductID); err != nil {
+				logger.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts:goroutine:synonyms")
 			}
 		}
 		wg.Done()
@@ -2064,16 +2173,19 @@ func (db *SQLiteDataStore) GetProducts(p DbselectparamProduct) ([]Product, int, 
 	//
 	wg.Add(1)
 	go func() {
+
+		var reqHS strings.Builder
+
 		for i, pr := range products {
 			// note: do not modify p but products[i] instead
-			req.Reset()
-			req.WriteString("SELECT hazardstatement_id, hazardstatement_label, hazardstatement_reference, hazardstatement_cmr FROM hazardstatement")
-			req.WriteString(" JOIN producthazardstatements ON producthazardstatements.producthazardstatements_hazardstatement_id = hazardstatement.hazardstatement_id")
-			req.WriteString(" JOIN product ON producthazardstatements.producthazardstatements_product_id = product.product_id")
-			req.WriteString(" WHERE product.product_id = ?")
+			reqHS.Reset()
+			reqHS.WriteString("SELECT hazardstatement_id, hazardstatement_label, hazardstatement_reference, hazardstatement_cmr FROM hazardstatement")
+			reqHS.WriteString(" JOIN producthazardstatements ON producthazardstatements.producthazardstatements_hazardstatement_id = hazardstatement.hazardstatement_id")
+			reqHS.WriteString(" JOIN product ON producthazardstatements.producthazardstatements_product_id = product.product_id")
+			reqHS.WriteString(" WHERE product.product_id = ?")
 
-			if err = db.Select(&products[i].HazardStatements, req.String(), pr.ProductID); err != nil {
-				globals.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts")
+			if err = db.Select(&products[i].HazardStatements, reqHS.String(), pr.ProductID); err != nil {
+				logger.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts:goroutine:hs")
 			}
 		}
 		wg.Done()
@@ -2084,16 +2196,19 @@ func (db *SQLiteDataStore) GetProducts(p DbselectparamProduct) ([]Product, int, 
 	//
 	wg.Add(1)
 	go func() {
+
+		var reqPS strings.Builder
+
 		for i, pr := range products {
 			// note: do not modify p but products[i] instead
-			req.Reset()
-			req.WriteString("SELECT precautionarystatement_id, precautionarystatement_label, precautionarystatement_reference FROM precautionarystatement")
-			req.WriteString(" JOIN productprecautionarystatements ON productprecautionarystatements.productprecautionarystatements_precautionarystatement_id = precautionarystatement.precautionarystatement_id")
-			req.WriteString(" JOIN product ON productprecautionarystatements.productprecautionarystatements_product_id = product.product_id")
-			req.WriteString(" WHERE product.product_id = ?")
+			reqPS.Reset()
+			reqPS.WriteString("SELECT precautionarystatement_id, precautionarystatement_label, precautionarystatement_reference FROM precautionarystatement")
+			reqPS.WriteString(" JOIN productprecautionarystatements ON productprecautionarystatements.productprecautionarystatements_precautionarystatement_id = precautionarystatement.precautionarystatement_id")
+			reqPS.WriteString(" JOIN product ON productprecautionarystatements.productprecautionarystatements_product_id = product.product_id")
+			reqPS.WriteString(" WHERE product.product_id = ?")
 
-			if err = db.Select(&products[i].PrecautionaryStatements, req.String(), pr.ProductID); err != nil {
-				globals.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts")
+			if err = db.Select(&products[i].PrecautionaryStatements, reqPS.String(), pr.ProductID); err != nil {
+				logger.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts:goroutine:ps")
 			}
 		}
 		wg.Done()
@@ -2104,11 +2219,17 @@ func (db *SQLiteDataStore) GetProducts(p DbselectparamProduct) ([]Product, int, 
 	//
 	wg.Add(1)
 	go func() {
+
+		var (
+			reqtsc, reqsc, reqasc strings.Builder
+		)
+
 		for i, pr := range products {
 			// getting the total storage count
 			reqtsc.Reset()
 			reqtsc.WriteString("SELECT count(DISTINCT storage_id) from storage")
 			reqtsc.WriteString(" JOIN product ON storage.product = ? AND storage.storage IS NULL AND storage.storage_archive == false")
+
 			if isadmin {
 				reqsc.Reset()
 				reqsc.WriteString("SELECT count(DISTINCT storage_id) from storage")
@@ -2136,13 +2257,13 @@ func (db *SQLiteDataStore) GetProducts(p DbselectparamProduct) ([]Product, int, 
 				reqasc.WriteString(" (personentities.personentities_person_id = ?)")
 			}
 			if err = db.Get(&products[i].ProductSC, reqsc.String(), pr.ProductID, p.GetLoggedPersonID()); err != nil {
-				globals.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts")
+				logger.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts:goroutine:SC")
 			}
 			if err = db.Get(&products[i].ProductASC, reqasc.String(), pr.ProductID, p.GetLoggedPersonID()); err != nil {
-				globals.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts")
+				logger.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts:goroutine:ASC")
 			}
 			if err = db.Get(&products[i].ProductTSC, reqtsc.String(), pr.ProductID, p.GetLoggedPersonID()); err != nil {
-				globals.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts")
+				logger.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts:goroutine:TSC")
 			}
 		}
 		wg.Done()
@@ -2166,7 +2287,7 @@ func (db *SQLiteDataStore) CountProductStorages(id int) (int, error) {
 		return 0, err
 	}
 
-	globals.Log.WithFields(logrus.Fields{"count": count}).Debug("CountProductStorages")
+	logger.Log.WithFields(logrus.Fields{"count": count}).Debug("CountProductStorages")
 	return count, nil
 }
 
@@ -2184,11 +2305,14 @@ func (db *SQLiteDataStore) GetProduct(id int) (Product, error) {
 	product_restricted,
 	product_radioactive,
 	product_threedformula,
+	product_twodformula,
 	product_molformula,
 	product_disposalcomment,
 	product_remark,
 	product_sheet,
 	product_temperature,
+	product_number_per_carton,
+	product_number_per_bag,
 	linearformula.linearformula_id AS "linearformula.linearformula_id",
 	linearformula.linearformula_label AS "linearformula.linearformula_label",
 	empiricalformula.empiricalformula_id AS "empiricalformula.empiricalformula_id",
@@ -2312,7 +2436,7 @@ func (db *SQLiteDataStore) GetProduct(id int) (Product, error) {
 		return product, err
 	}
 
-	globals.Log.WithFields(logrus.Fields{"id": id, "product": product}).Debug("GetProduct")
+	logger.Log.WithFields(logrus.Fields{"id": id, "product": product}).Debug("GetProduct")
 	return product, nil
 }
 
@@ -2322,7 +2446,7 @@ func (db *SQLiteDataStore) DeleteProduct(id int) error {
 		sqlr string
 		err  error
 	)
-	globals.Log.WithFields(logrus.Fields{"id": id}).Debug("DeleteProduct")
+	logger.Log.WithFields(logrus.Fields{"id": id}).Debug("DeleteProduct")
 	// deleting symbols
 	sqlr = `DELETE FROM productsymbols WHERE productsymbols.productsymbols_product_id = (?)`
 	if _, err = db.Exec(sqlr, id); err != nil {
@@ -2380,7 +2504,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 
 	// if CasNumberID = -1 then it is a new cas
 	if v, err := p.CasNumber.CasNumberID.Value(); p.CasNumber.CasNumberID.Valid && err == nil && v.(int64) == -1 {
-		globals.Log.Debug("new casnumber " + p.CasNumberLabel.String)
+		logger.Log.Debug("new casnumber " + p.CasNumberLabel.String)
 		sqlr = `INSERT INTO casnumber (casnumber_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.CasNumberLabel); err != nil {
 			if errr := tx.Rollback(); errr != nil {
@@ -2400,7 +2524,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	}
 	// if CeNumberID = -1 then it is a new ce
 	if v, err := p.CeNumber.CeNumberID.Value(); p.CeNumber.CeNumberID.Valid && err == nil && v.(int64) == -1 {
-		globals.Log.Debug("new cenumber " + p.CeNumberLabel.String)
+		logger.Log.Debug("new cenumber " + p.CeNumberLabel.String)
 		sqlr = `INSERT INTO cenumber (cenumber_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.CeNumberLabel.String); err != nil {
 			if errr := tx.Rollback(); errr != nil {
@@ -2419,7 +2543,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 		p.CeNumber.CeNumberID = sql.NullInt64{Valid: true, Int64: lastid}
 	}
 	if err != nil {
-		globals.Log.Error("cenumber error - " + err.Error())
+		logger.Log.Error("cenumber error - " + err.Error())
 		if errr := tx.Rollback(); errr != nil {
 			return 0, errr
 		}
@@ -2427,7 +2551,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	}
 	// if NameID = -1 then it is a new name
 	if p.Name.NameID == -1 {
-		globals.Log.Debug("new name " + p.NameLabel)
+		logger.Log.Debug("new name " + p.NameLabel)
 		sqlr = `INSERT INTO name (name_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, strings.ToUpper(p.NameLabel)); err != nil {
 			if errr := tx.Rollback(); errr != nil {
@@ -2447,7 +2571,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	}
 	for i, syn := range p.Synonyms {
 		if syn.NameID == -1 {
-			globals.Log.Debug("new name(syn) " + syn.NameLabel)
+			logger.Log.Debug("new name(syn) " + syn.NameLabel)
 			sqlr = `INSERT INTO name (name_label) VALUES (?)`
 			if res, err = tx.Exec(sqlr, strings.ToUpper(syn.NameLabel)); err != nil {
 				if errr := tx.Rollback(); errr != nil {
@@ -2468,7 +2592,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	// if ClassOfCompoundID = -1 then it is a new class of compounds
 	for i, coc := range p.ClassOfCompound {
 		if coc.ClassOfCompoundID == -1 {
-			globals.Log.Debug("new classofcompound " + coc.ClassOfCompoundLabel)
+			logger.Log.Debug("new classofcompound " + coc.ClassOfCompoundLabel)
 			sqlr = `INSERT INTO classofcompound (classofcompound_label) VALUES (?)`
 			if res, err = tx.Exec(sqlr, strings.ToUpper(coc.ClassOfCompoundLabel)); err != nil {
 				if errr := tx.Rollback(); errr != nil {
@@ -2489,9 +2613,9 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	// if SupplierRefID = -1 then it is a new supplier ref
 	for i, sr := range p.SupplierRefs {
 		if sr.SupplierRefID == -1 {
-			globals.Log.Debug("new supplierref " + sr.SupplierRefLabel)
+			logger.Log.Debug("new supplierref " + sr.SupplierRefLabel)
 			sqlr = `INSERT INTO supplierref (supplierref_label, supplier) VALUES (?, ?)`
-			if res, err = tx.Exec(sqlr, sr.SupplierRefLabel, sr.SupplierID); err != nil {
+			if res, err = tx.Exec(sqlr, sr.SupplierRefLabel, sr.Supplier.SupplierID); err != nil {
 				if errr := tx.Rollback(); errr != nil {
 					return 0, errr
 				}
@@ -2510,7 +2634,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	// if TagID = -1 then it is a new tag
 	for i, tag := range p.Tags {
 		if tag.TagID == -1 {
-			globals.Log.Debug("new tag " + tag.TagLabel)
+			logger.Log.Debug("new tag " + tag.TagLabel)
 			sqlr = `INSERT INTO tag (tag_label) VALUES (?)`
 			if res, err = tx.Exec(sqlr, tag.TagLabel); err != nil {
 				if errr := tx.Rollback(); errr != nil {
@@ -2530,7 +2654,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	}
 	// if EmpiricalFormulaID = -1 then it is a new empirical formula
 	if v, err := p.EmpiricalFormula.EmpiricalFormulaID.Value(); p.EmpiricalFormula.EmpiricalFormulaID.Valid && err == nil && v.(int64) == -1 {
-		globals.Log.Debug("new empiricalformula " + p.EmpiricalFormulaLabel.String)
+		logger.Log.Debug("new empiricalformula " + p.EmpiricalFormulaLabel.String)
 		sqlr = `INSERT INTO empiricalformula (empiricalformula_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.EmpiricalFormulaLabel); err != nil {
 			if errr := tx.Rollback(); errr != nil {
@@ -2550,7 +2674,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	}
 	// if LinearFormulaID = -1 then it is a new linear formula
 	if v, err := p.LinearFormula.LinearFormulaID.Value(); p.LinearFormula.LinearFormulaID.Valid && err == nil && v.(int64) == -1 {
-		globals.Log.Debug("new linearformula " + p.LinearFormulaLabel.String)
+		logger.Log.Debug("new linearformula " + p.LinearFormulaLabel.String)
 		sqlr = `INSERT INTO linearformula (linearformula_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.LinearFormulaLabel.String); err != nil {
 			if errr := tx.Rollback(); errr != nil {
@@ -2570,7 +2694,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	}
 	// if PhysicalStateID = -1 then it is a new physical state
 	if v, err := p.PhysicalState.PhysicalStateID.Value(); p.PhysicalState.PhysicalStateID.Valid && err == nil && v.(int64) == -1 {
-		globals.Log.Debug("new physicalstate " + p.PhysicalStateLabel.String)
+		logger.Log.Debug("new physicalstate " + p.PhysicalStateLabel.String)
 		sqlr = `INSERT INTO physicalstate (physicalstate_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.PhysicalStateLabel.String); err != nil {
 			if errr := tx.Rollback(); errr != nil {
@@ -2590,7 +2714,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	}
 	// if CategoryID = -1 then it is a new category
 	if v, err := p.Category.CategoryID.Value(); p.Category.CategoryID.Valid && err == nil && v.(int64) == -1 {
-		globals.Log.Debug("new category " + p.CategoryLabel.String)
+		logger.Log.Debug("new category " + p.CategoryLabel.String)
 		sqlr = `INSERT INTO category (category_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.CategoryLabel.String); err != nil {
 			if errr := tx.Rollback(); errr != nil {
@@ -2608,11 +2732,11 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 		// updating the product PhysicalStateID (PhysicalStateLabel already set)
 		p.Category.CategoryID = sql.NullInt64{Valid: true, Int64: lastid}
 	}
-	// if ProducerRefID = -1 then it is a new physical state
+	// if ProducerRefID = -1 then it is a new producer ref
 	if v, err := p.ProducerRef.ProducerRefID.Value(); p.ProducerRef.ProducerRefID.Valid && err == nil && v.(int64) == -1 {
-		globals.Log.Debug("new producerref " + p.ProducerRefLabel.String)
+		logger.Log.Debug("new producerref " + p.ProducerRefLabel.String)
 		sqlr = `INSERT INTO producerref (producerref_label, producer) VALUES (?, ?)`
-		if res, err = tx.Exec(sqlr, p.ProducerRefLabel.String, p.ProducerID); err != nil {
+		if res, err = tx.Exec(sqlr, p.ProducerRefLabel.String, p.Producer.ProducerID); err != nil {
 			if errr := tx.Rollback(); errr != nil {
 				return 0, errr
 			}
@@ -2625,7 +2749,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 			}
 			return 0, err
 		}
-		// updating the product ProducerRefID (PhysicalStateLabel already set)
+		// updating the product ProducerRefID (ProducerRefLabel already set)
 		p.ProducerRef.ProducerRefID = sql.NullInt64{Valid: true, Int64: lastid}
 	}
 
@@ -2634,24 +2758,15 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	if p.ProductSpecificity.Valid {
 		s["product_specificity"] = p.ProductSpecificity.String
 	}
-	// if p.ProductBatchNumber.Valid {
-	// 	s["product_batchnumber"] = p.ProductBatchNumber.String
-	// }
 	if p.ProductMSDS.Valid {
 		s["product_msds"] = p.ProductMSDS.String
 	}
 	if p.ProductSheet.Valid {
 		s["product_sheet"] = p.ProductSheet.String
 	}
-	// if p.ProductConcentration.Valid {
-	// 	s["product_concentration"] = int(p.ProductConcentration.Int64)
-	// }
 	if p.ProductTemperature.Valid {
 		s["product_temperature"] = int(p.ProductTemperature.Int64)
 	}
-	// if p.ProductExpirationDate.Valid {
-	// 	s["product_expirationdate"] = p.ProductExpirationDate.Time
-	// }
 	if p.ProductRestricted.Valid {
 		s["product_restricted"] = p.ProductRestricted.Bool
 	}
@@ -2662,20 +2777,26 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	if p.Category.CategoryID.Valid {
 		s["category"] = int(p.Category.CategoryID.Int64)
 	}
-	// if p.UnitConcentration.UnitID.Valid {
-	// 	s["unit_concentration"] = int(p.UnitConcentration.UnitID.Int64)
-	// }
 	if p.UnitTemperature.UnitID.Valid {
 		s["unit_temperature"] = int(p.UnitTemperature.UnitID.Int64)
 	}
 	if p.ProductThreeDFormula.Valid {
 		s["product_threedformula"] = p.ProductThreeDFormula.String
 	}
+	if p.ProductTwoDFormula.Valid {
+		s["product_twodformula"] = p.ProductTwoDFormula.String
+	}
 	if p.ProductDisposalComment.Valid {
 		s["product_disposalcomment"] = p.ProductDisposalComment.String
 	}
 	if p.ProductRemark.Valid {
 		s["product_remark"] = p.ProductRemark.String
+	}
+	if p.ProductNumberPerCarton.Valid {
+		s["product_number_per_carton"] = p.ProductNumberPerCarton.Int64
+	}
+	if p.ProductNumberPerBag.Valid {
+		s["product_number_per_bag"] = p.ProductNumberPerBag.Int64
 	}
 	if p.EmpiricalFormulaID.Valid {
 		s["empiricalformula"] = int(p.EmpiricalFormulaID.Int64)
@@ -2714,6 +2835,8 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 		switch v.(type) {
 		case int:
 			val = append(val, v.(int))
+		case int64:
+			val = append(val, v.(int64))
 		case string:
 			val = append(val, v.(string))
 		case bool:
@@ -2731,12 +2854,12 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 		return 0, err
 	}
 
-	//globals.Log.Debug(sqlr)
-	//globals.Log.Debug(sqla)
+	//logger.Log.Debug(sqlr)
+	//logger.Log.Debug(sqla)
 
 	if res, err = tx.Exec(sqlr, sqla...); err != nil {
-		globals.Log.Error("product error - " + err.Error())
-		globals.Log.Error("sql:" + sqlr)
+		logger.Log.Error("product error - " + err.Error())
+		logger.Log.Error("sql:" + sqlr)
 		if errr := tx.Rollback(); errr != nil {
 			return 0, errr
 		}
@@ -2751,13 +2874,13 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 		return 0, err
 	}
 	p.ProductID = int(lastid)
-	globals.Log.WithFields(logrus.Fields{"p": p}).Debug("CreateProduct")
+	logger.Log.WithFields(logrus.Fields{"p": p}).Debug("CreateProduct")
 
 	// adding supplierrefs
 	for _, sr := range p.SupplierRefs {
 		sqlr = `INSERT INTO productsupplierrefs (productsupplierrefs_product_id, productsupplierrefs_supplierref_id) VALUES (?,?)`
 		if _, err = tx.Exec(sqlr, p.ProductID, sr.SupplierRefID); err != nil {
-			globals.Log.Error("productsupplierrefs error - " + err.Error())
+			logger.Log.Error("productsupplierrefs error - " + err.Error())
 			if errr := tx.Rollback(); errr != nil {
 				return 0, errr
 			}
@@ -2769,7 +2892,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	for _, tag := range p.Tags {
 		sqlr = `INSERT INTO producttags (producttags_product_id, producttags_tag_id) VALUES (?,?)`
 		if _, err = tx.Exec(sqlr, p.ProductID, tag.TagID); err != nil {
-			globals.Log.Error("producttags error - " + err.Error())
+			logger.Log.Error("producttags error - " + err.Error())
 			if errr := tx.Rollback(); errr != nil {
 				return 0, errr
 			}
@@ -2781,7 +2904,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	for _, sym := range p.Symbols {
 		sqlr = `INSERT INTO productsymbols (productsymbols_product_id, productsymbols_symbol_id) VALUES (?,?)`
 		if _, err = tx.Exec(sqlr, p.ProductID, sym.SymbolID); err != nil {
-			globals.Log.Error("productsymbols error - " + err.Error())
+			logger.Log.Error("productsymbols error - " + err.Error())
 			if errr := tx.Rollback(); errr != nil {
 				return 0, errr
 			}
@@ -2793,7 +2916,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	for _, coc := range p.ClassOfCompound {
 		sqlr = `INSERT INTO productclassofcompound (productclassofcompound_product_id, productclassofcompound_classofcompound_id) VALUES (?,?)`
 		if _, err = tx.Exec(sqlr, p.ProductID, coc.ClassOfCompoundID); err != nil {
-			globals.Log.Error("productclassofcompound error - " + err.Error())
+			logger.Log.Error("productclassofcompound error - " + err.Error())
 			if errr := tx.Rollback(); errr != nil {
 				return 0, errr
 			}
@@ -2804,7 +2927,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	for _, hs := range p.HazardStatements {
 		sqlr = `INSERT INTO producthazardstatements (producthazardstatements_product_id, producthazardstatements_hazardstatement_id) VALUES (?,?)`
 		if _, err = tx.Exec(sqlr, p.ProductID, hs.HazardStatementID); err != nil {
-			globals.Log.Error("producthazardstatements error - " + err.Error())
+			logger.Log.Error("producthazardstatements error - " + err.Error())
 			if errr := tx.Rollback(); errr != nil {
 				return 0, errr
 			}
@@ -2815,7 +2938,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	for _, ps := range p.PrecautionaryStatements {
 		sqlr = `INSERT INTO productprecautionarystatements (productprecautionarystatements_product_id, productprecautionarystatements_precautionarystatement_id) VALUES (?,?)`
 		if _, err = tx.Exec(sqlr, p.ProductID, ps.PrecautionaryStatementID); err != nil {
-			globals.Log.Error("productprecautionarystatements error - " + err.Error())
+			logger.Log.Error("productprecautionarystatements error - " + err.Error())
 			if errr := tx.Rollback(); errr != nil {
 				return 0, errr
 			}
@@ -2826,7 +2949,7 @@ func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
 	for _, syn := range p.Synonyms {
 		sqlr = `INSERT INTO productsynonyms (productsynonyms_product_id, productsynonyms_name_id) VALUES (?,?)`
 		if _, err = tx.Exec(sqlr, p.ProductID, syn.NameID); err != nil {
-			globals.Log.Error("productsynonyms error - " + err.Error())
+			logger.Log.Error("productsynonyms error - " + err.Error())
 			if errr := tx.Rollback(); errr != nil {
 				return 0, errr
 			}
@@ -2863,7 +2986,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 
 	// if CasNumberID = -1 then it is a new cas
 	if v, err := p.CasNumber.CasNumberID.Value(); p.CasNumber.CasNumberID.Valid && err == nil && v.(int64) == -1 {
-		globals.Log.Debug("new casnumber " + p.CasNumberLabel.String)
+		logger.Log.Debug("new casnumber " + p.CasNumberLabel.String)
 		sqlr = `INSERT INTO casnumber (casnumber_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.CasNumberLabel); err != nil {
 			if errr := tx.Rollback(); errr != nil {
@@ -2883,7 +3006,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	}
 	// if CeNumberID = -1 then it is a new ce
 	if v, err := p.CeNumber.CeNumberID.Value(); p.CeNumber.CeNumberID.Valid && err == nil && v.(int64) == -1 {
-		globals.Log.Debug("new cenumber " + p.CeNumberLabel.String)
+		logger.Log.Debug("new cenumber " + p.CeNumberLabel.String)
 		sqlr = `INSERT INTO cenumber (cenumber_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.CeNumberLabel.String); err != nil {
 			if errr := tx.Rollback(); errr != nil {
@@ -2902,14 +3025,14 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 		p.CeNumber.CeNumberID = sql.NullInt64{Valid: true, Int64: lastid}
 	}
 	if err != nil {
-		globals.Log.Error("cenumber error - " + err.Error())
+		logger.Log.Error("cenumber error - " + err.Error())
 		if errr := tx.Rollback(); errr != nil {
 			return errr
 		}
 	}
 	// if NameID = -1 then it is a new name
 	if p.Name.NameID == -1 {
-		globals.Log.Debug("new name " + p.NameLabel)
+		logger.Log.Debug("new name " + p.NameLabel)
 		sqlr = `INSERT INTO name (name_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, strings.ToUpper(p.NameLabel)); err != nil {
 			if errr := tx.Rollback(); errr != nil {
@@ -2929,7 +3052,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	}
 	for i, syn := range p.Synonyms {
 		if syn.NameID == -1 {
-			globals.Log.Debug("new name(syn) " + syn.NameLabel)
+			logger.Log.Debug("new name(syn) " + syn.NameLabel)
 			sqlr = `INSERT INTO name (name_label) VALUES (?)`
 			if res, err = tx.Exec(sqlr, strings.ToUpper(syn.NameLabel)); err != nil {
 				if errr := tx.Rollback(); errr != nil {
@@ -2950,7 +3073,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	// if ClassOfCompoundID = -1 then it is a new class of compounds
 	for i, coc := range p.ClassOfCompound {
 		if coc.ClassOfCompoundID == -1 {
-			globals.Log.Debug("new classofcompound " + coc.ClassOfCompoundLabel)
+			logger.Log.Debug("new classofcompound " + coc.ClassOfCompoundLabel)
 			sqlr = `INSERT INTO classofcompound (classofcompound_label) VALUES (?)`
 			if res, err = tx.Exec(sqlr, strings.ToUpper(coc.ClassOfCompoundLabel)); err != nil {
 				if errr := tx.Rollback(); errr != nil {
@@ -2971,9 +3094,9 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	// if SupplierRefID = -1 then it is a new supplier ref
 	for i, sr := range p.SupplierRefs {
 		if sr.SupplierRefID == -1 {
-			globals.Log.Debug("new supplierref " + sr.SupplierRefLabel)
+			logger.Log.Debug("new supplierref " + sr.SupplierRefLabel)
 			sqlr = `INSERT INTO supplierref (supplierref_label, supplier) VALUES (?, ?)`
-			if res, err = tx.Exec(sqlr, sr.SupplierRefLabel, sr.SupplierID); err != nil {
+			if res, err = tx.Exec(sqlr, sr.SupplierRefLabel, sr.Supplier.SupplierID); err != nil {
 				if errr := tx.Rollback(); errr != nil {
 					return errr
 				}
@@ -2992,7 +3115,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	// if TagID = -1 then it is a new tag
 	for i, tag := range p.Tags {
 		if tag.TagID == -1 {
-			globals.Log.Debug("new tag " + tag.TagLabel)
+			logger.Log.Debug("new tag " + tag.TagLabel)
 			sqlr = `INSERT INTO tag (tag_label) VALUES (?)`
 			if res, err = tx.Exec(sqlr, tag.TagLabel); err != nil {
 				if errr := tx.Rollback(); errr != nil {
@@ -3012,7 +3135,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	}
 	// if EmpiricalFormulaID = -1 then it is a new empirical formula
 	if v, err := p.EmpiricalFormula.EmpiricalFormulaID.Value(); p.EmpiricalFormula.EmpiricalFormulaID.Valid && err == nil && v.(int64) == -1 {
-		globals.Log.Debug("new empiricalformula " + p.EmpiricalFormulaLabel.String)
+		logger.Log.Debug("new empiricalformula " + p.EmpiricalFormulaLabel.String)
 		sqlr = `INSERT INTO empiricalformula (p.EmpiricalFormulaLabel) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.EmpiricalFormulaLabel); err != nil {
 			if errr := tx.Rollback(); errr != nil {
@@ -3032,7 +3155,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	}
 	// if LinearFormulaID = -1 then it is a new linear formula
 	if v, err := p.LinearFormula.LinearFormulaID.Value(); p.LinearFormula.LinearFormulaID.Valid && err == nil && v.(int64) == -1 {
-		globals.Log.Debug("new linearformula " + p.LinearFormulaLabel.String)
+		logger.Log.Debug("new linearformula " + p.LinearFormulaLabel.String)
 		sqlr = `INSERT INTO linearformula (linearformula_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.LinearFormulaLabel.String); err != nil {
 			if errr := tx.Rollback(); errr != nil {
@@ -3052,7 +3175,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	}
 	// if PhysicalStateID = -1 then it is a new physical state
 	if v, err := p.PhysicalState.PhysicalStateID.Value(); p.PhysicalState.PhysicalStateID.Valid && err == nil && v.(int64) == -1 {
-		globals.Log.Debug("new physicalstate " + p.PhysicalStateLabel.String)
+		logger.Log.Debug("new physicalstate " + p.PhysicalStateLabel.String)
 		sqlr = `INSERT INTO physicalstate (physicalstate_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.PhysicalStateLabel.String); err != nil {
 			if errr := tx.Rollback(); errr != nil {
@@ -3072,7 +3195,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	}
 	// if CategoryID = -1 then it is a new category
 	if v, err := p.Category.CategoryID.Value(); p.Category.CategoryID.Valid && err == nil && v.(int64) == -1 {
-		globals.Log.Debug("new category " + p.CategoryLabel.String)
+		logger.Log.Debug("new category " + p.CategoryLabel.String)
 		sqlr = `INSERT INTO category (category_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.CategoryLabel.String); err != nil {
 			if errr := tx.Rollback(); errr != nil {
@@ -3092,9 +3215,9 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	}
 	// if ProducerRefID = -1 then it is a new physical state
 	if v, err := p.ProducerRef.ProducerRefID.Value(); p.ProducerRef.ProducerRefID.Valid && err == nil && v.(int64) == -1 {
-		globals.Log.Debug("new producerref " + p.ProducerRefLabel.String)
+		logger.Log.Debug("new producerref " + p.ProducerRefLabel.String)
 		sqlr = `INSERT INTO producerref (producerref_label, producer) VALUES (?, ?)`
-		if res, err = tx.Exec(sqlr, p.ProducerRefLabel.String, p.ProducerID); err != nil {
+		if res, err = tx.Exec(sqlr, p.ProducerRefLabel.String, p.Producer.ProducerID); err != nil {
 			if errr := tx.Rollback(); errr != nil {
 				return errr
 			}
@@ -3116,24 +3239,15 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	if p.ProductSpecificity.Valid {
 		s["product_specificity"] = p.ProductSpecificity.String
 	}
-	// if p.ProductBatchNumber.Valid {
-	// 	s["product_batchnumber"] = p.ProductBatchNumber.String
-	// }
 	if p.ProductMSDS.Valid {
 		s["product_msds"] = p.ProductMSDS.String
 	}
 	if p.ProductSheet.Valid {
 		s["product_sheet"] = p.ProductSheet.String
 	}
-	// if p.ProductConcentration.Valid {
-	// 	s["product_concentration"] = int(p.ProductConcentration.Int64)
-	// }
 	if p.ProductTemperature.Valid {
 		s["product_temperature"] = int(p.ProductTemperature.Int64)
 	}
-	// if p.ProductExpirationDate.Valid {
-	// 	s["product_expirationdate"] = p.ProductExpirationDate.Time
-	// }
 	if p.ProductRestricted.Valid {
 		s["product_restricted"] = p.ProductRestricted.Bool
 	}
@@ -3144,20 +3258,26 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	if p.Category.CategoryID.Valid {
 		s["category"] = int(p.Category.CategoryID.Int64)
 	}
-	// if p.UnitConcentration.UnitID.Valid {
-	// 	s["unit_concentration"] = int(p.UnitConcentration.UnitID.Int64)
-	// }
 	if p.UnitTemperature.UnitID.Valid {
 		s["unit_temperature"] = int(p.UnitTemperature.UnitID.Int64)
 	}
 	if p.ProductThreeDFormula.Valid {
 		s["product_threedformula"] = p.ProductThreeDFormula.String
 	}
+	if p.ProductTwoDFormula.Valid {
+		s["product_twodformula"] = p.ProductTwoDFormula.String
+	}
 	if p.ProductDisposalComment.Valid {
 		s["product_disposalcomment"] = p.ProductDisposalComment.String
 	}
 	if p.ProductRemark.Valid {
 		s["product_remark"] = p.ProductRemark.String
+	}
+	if p.ProductNumberPerCarton.Valid {
+		s["product_number_per_carton"] = p.ProductNumberPerCarton.Int64
+	}
+	if p.ProductNumberPerBag.Valid {
+		s["product_number_per_bag"] = p.ProductNumberPerBag.Int64
 	}
 	if p.EmpiricalFormulaID.Valid {
 		s["empiricalformula"] = int(p.EmpiricalFormulaID.Int64)
@@ -3211,7 +3331,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	for _, sr := range p.SupplierRefs {
 		sqlr = `INSERT INTO productsupplierrefs (productsupplierrefs_product_id, productsupplierrefs_supplierref_id) VALUES (?,?)`
 		if _, err = tx.Exec(sqlr, p.ProductID, sr.SupplierRefID); err != nil {
-			globals.Log.Error("productsupplierrefs error - " + err.Error())
+			logger.Log.Error("productsupplierrefs error - " + err.Error())
 			if errr := tx.Rollback(); errr != nil {
 				return errr
 			}
@@ -3230,7 +3350,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	for _, tag := range p.Tags {
 		sqlr = `INSERT INTO producttags (producttags_product_id, producttags_tag_id) VALUES (?,?)`
 		if _, err = tx.Exec(sqlr, p.ProductID, tag.TagID); err != nil {
-			globals.Log.Error("producttags error - " + err.Error())
+			logger.Log.Error("producttags error - " + err.Error())
 			if errr := tx.Rollback(); errr != nil {
 				return errr
 			}
@@ -3285,7 +3405,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	for _, coc := range p.ClassOfCompound {
 		sqlr = `INSERT INTO productclassofcompound (productclassofcompound_product_id, productclassofcompound_classofcompound_id) VALUES (?,?)`
 		if _, err = tx.Exec(sqlr, p.ProductID, coc.ClassOfCompoundID); err != nil {
-			globals.Log.Error("productclassofcompound error - " + err.Error())
+			logger.Log.Error("productclassofcompound error - " + err.Error())
 			if errr := tx.Rollback(); errr != nil {
 				return errr
 			}
@@ -3304,7 +3424,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	for _, hs := range p.HazardStatements {
 		sqlr = `INSERT INTO producthazardstatements (producthazardstatements_product_id, producthazardstatements_hazardstatement_id) VALUES (?,?)`
 		if _, err = tx.Exec(sqlr, p.ProductID, hs.HazardStatementID); err != nil {
-			globals.Log.Error("producthazardstatements error - " + err.Error())
+			logger.Log.Error("producthazardstatements error - " + err.Error())
 			if errr := tx.Rollback(); errr != nil {
 				return errr
 			}
@@ -3323,7 +3443,7 @@ func (db *SQLiteDataStore) UpdateProduct(p Product) error {
 	for _, ps := range p.PrecautionaryStatements {
 		sqlr = `INSERT INTO productprecautionarystatements (productprecautionarystatements_product_id, productprecautionarystatements_precautionarystatement_id) VALUES (?,?)`
 		if _, err = tx.Exec(sqlr, p.ProductID, ps.PrecautionaryStatementID); err != nil {
-			globals.Log.Error("productprecautionarystatements error - " + err.Error())
+			logger.Log.Error("productprecautionarystatements error - " + err.Error())
 			if errr := tx.Rollback(); errr != nil {
 				return errr
 			}
@@ -3350,7 +3470,7 @@ func (db *SQLiteDataStore) CreateProducer(p Producer) (int, error) {
 		lastid int64
 		err    error
 	)
-	globals.Log.WithFields(logrus.Fields{"p": p}).Debug("CreateProducer")
+	logger.Log.WithFields(logrus.Fields{"p": p}).Debug("CreateProducer")
 
 	if !p.ProducerLabel.Valid {
 		return 0, errors.New("empty string")
@@ -3397,7 +3517,7 @@ func (db *SQLiteDataStore) CreateSupplier(s Supplier) (int, error) {
 		lastid int64
 		err    error
 	)
-	globals.Log.WithFields(logrus.Fields{"s": s}).Debug("CreateSupplier")
+	logger.Log.WithFields(logrus.Fields{"s": s}).Debug("CreateSupplier")
 
 	if !s.SupplierLabel.Valid {
 		return 0, errors.New("empty string")

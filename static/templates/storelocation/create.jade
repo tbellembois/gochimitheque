@@ -1,30 +1,32 @@
-extends ../base.jade
+
+include ../mixins
 block CONTENT
     :go:func
         Storelocationcreate(c ViewContainer)
 
     +titleicon(iconitem="docker" label="storelocation_create_title")
 
-    form#storelocation
-        .form-group.row
-            .form-group.col-sm-12
-                +inputtext("storelocation_name_title", "storelocation_name")
-        .form-group.row
-            .form-group.col-sm-12
-                +select("storelocation_entity_title", "entity")
-        .form-group.row
-            .form-group.col-sm-12
-                +select("storelocation_parent_title", "storelocation") 
-        .form-group.row
-            .form-group.col-sm-12
-                +checkbox("storelocation_canstore_title", "storelocation_canstore")
-        .form-group.row
-            .form-group.col-sm-12
-                +inputtext("storelocation_color_title", "storelocation_color")
+    .card.mx-auto.w-50
+        .card-body
+            form#storelocation
+                .form-group.row
+                    .form-group.col-sm-12
+                        +inputtext(name="storelocation_name", label="storelocation_name_title")
+                .form-group.row
+                    .form-group.col-sm-12
+                        +inputselect(name="entity", label="storelocation_entity_title")
+                .form-group.row
+                    .form-group.col-sm-12
+                        +inputselect(name="storelocation", label="storelocation_parent_title") 
+                .form-group.row
+                    .form-group.col-sm-12
+                        +checkbox(name="storelocation_canstore", label="storelocation_canstore_title")
+                .form-group.row
+                    .form-group.col-sm-12
+                        +inputtext(name="storelocation_color", label="storelocation_color_title")
 
-    button#save.btn.btn-link(type='button', onclick='saveStoreLocation()')
-        span.mdi.mdi-content-save.mdi-24px.iconlabel
-            = T("save", 1)
+            button#save.btn.btn-primary.float-right(type='button', onclick='StoreLocation_saveStoreLocation()')
+                span.mdi.mdi-content-save.mdi-24px.iconlabel
+                    = T("save", 1)
 
 block CONTENTJS
-	script(src="../js/chim/storelocation.js")

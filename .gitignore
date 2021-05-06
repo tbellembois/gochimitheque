@@ -1,10 +1,21 @@
 *.log
 
+gochimitheque
+
 storage.*
+
+wasm/wasm*
 
 rice-box.go
 
-gjs-common.js*
+bind-gochimitheque-wasm/*
 
 static/jade/*
 !static/jade/funcs.go
+
+node_modules
+
+package.json
+package-lock.json
+
+jade

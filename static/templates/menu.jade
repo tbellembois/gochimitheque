@@ -1,0 +1,98 @@
+:go:func
+    Menu(c ViewContainer)
+
+nav.navbar.navbar-expand-lg.navbar-light
+    a.navbar-brand(href="#", title="product list", onclick="$('#advancedsearch').collapse('hide'); Menu_loadContent('product', '" + c.ProxyPath + "v/products', 'Product_list')")
+        img(src=c.ProxyPath + "static/img/logo_chimitheque_simple.png", alt="chimitheque_logo", title="Chimithèque")
+    button.navbar-toggler(
+                        type="button"
+                        data-toggle="collapse" 
+                        data-target="#navbarSupportedContent" 
+                        aria-controls="navbarSupportedContent" 
+                        aria-expanded="false" 
+                        aria-label="Toggle navigation")
+        span.navbar-toggler-icon
+
+    div.collapse.navbar-collapse#navbarSupportedContent
+        ul.navbar-nav.mr-auto
+            li.nav-item#menu_list_bookmarks.collapse
+                a(href="#", onclick="Product_listBookmark()").nav-link
+                    span.mdi.mdi-bookmark.mdi-36px.iconlabel
+                        = T("menu_bookmark", 1) 
+            li.nav-item#menu_scan_qrcode.collapse
+                a(onclick="scanQR();").nav-link
+                    span.mdi.mdi-qrcode-scan.mdi-36px.iconlabel
+                        = T("menu_scanqr", 1) 
+            li.nav-item#menu_create_product.collapse
+                a(href="#", onclick="Menu_loadContent('product', '" + c.ProxyPath + "vc/products', 'Product_create')").nav-link
+                    span.mdi.mdi-tag.mdi-36px.iconlabel
+                        = T("menu_create_productcard", 1)
+            li.nav-item.dropdown#menu_entities.collapse
+                a(href="#").nav-link.dropdown-toggle#navbarDropdown(
+                    role="button" 
+                    data-toggle="dropdown" 
+                    aria-haspopup="true" 
+                    aria-expanded="false")
+                    span.mdi.mdi-store.mdi-36px.iconlabel
+                        = T("menu_entity", 1)
+                div.dropdown-menu(aria-labelledby="navbarDropdown")
+                    a(href="#", onclick="Menu_loadContent('entity', '" + c.ProxyPath + "v/entities', 'Entity_list')").dropdown-item
+                        span.iconlabel
+                            = T("list", 1)
+                    a#menu_create_entity.collapse(href="#", onclick="Menu_loadContent('entity', '" + c.ProxyPath + "vc/entities', 'Entity_create')").dropdown-item
+                        span.iconlabel
+                            = T("create", 1)
+
+            li.nav-item.dropdown#menu_storelocations.collapse
+                a(href="#").nav-link.dropdown-toggle#navbarDropdown(
+                    role="button" 
+                    data-toggle="dropdown" 
+                    aria-haspopup="true" 
+                    aria-expanded="false")
+                    span.mdi.mdi-docker.mdi-36px.iconlabel
+                        = T("menu_storelocation", 1)
+                div.dropdown-menu(aria-labelledby="navbarDropdown")
+                    a(href="#", onclick="Menu_loadContent('storelocation', '" + c.ProxyPath + "v/storelocations', 'StoreLocation_list')").dropdown-item
+                        span.iconlabel
+                            = T("list", 1)
+                    a#menu_create_storelocation.collapse(href="#", onclick="Menu_loadContent('storelocation', '" + c.ProxyPath + "vc/storelocations', 'StoreLocation_create')").dropdown-item
+                        span.iconlabel
+                            = T("create", 1)
+
+            li.nav-item.dropdown#menu_people.collapse
+                a(href="#").nav-link.dropdown-toggle#navbarDropdown(
+                    role="button" 
+                    data-toggle="dropdown" 
+                    aria-haspopup="true" 
+                    aria-expanded="false")
+                    span.mdi.mdi-account-group.mdi-36px.iconlabel
+                        = T("menu_people", 1)
+                div.dropdown-menu(aria-labelledby="navbarDropdown")
+                    a(href="#", onclick="Menu_loadContent('person', '" + c.ProxyPath + "v/people', 'Person_list')").dropdown-item
+                        span.iconlabel
+                            = T("list", 1)
+                    a#menu_create_person.collapse(href="#", onclick="Menu_loadContent('person', '" + c.ProxyPath + "vc/people', 'Person_create')").dropdown-item
+                        span.iconlabel
+                            = T("create", 1)
+
+            li.nav-item.dropdown#menu_account
+                a(href="#").nav-link.dropdown-toggle#navbarDropdown(
+                    role="button" 
+                    data-toggle="dropdown" 
+                    aria-haspopup="true" 
+                    aria-expanded="false")
+                    span.mdi.mdi-account.mdi-36px.iconlabel
+                        = T("menu_account", 1)
+                div.dropdown-menu(aria-labelledby="navbarDropdown")
+                    a.dropdown-item(href="#", onclick="Menu_loadContent('person', '" + c.ProxyPath + "vu/peoplepass', 'PersonPass_list')")
+                        span.mdi.iconlabel
+                                = T("menu_password", 1)
+                    a#menu_update_welcomeannounce.dropdown-item(href="#", onclick="Menu_loadContent('welcome', '" + c.ProxyPath + "v/welcomeannounce', 'WelcomeAnnounce_list')").collapse
+                        span.mdi.iconlabel
+                                = T("menu_welcomeannounce", 1)
+                    a.dropdown-item(onclick="localStorage.clear(); window.location.replace('" + c.ProxyPath + "delete-token')")
+                        span.mdi.iconlabel
+                                = T("menu_logout", 1 )
+                    a.dropdown-item(href="#", onclick="Menu_loadContent('about', '" + c.ProxyPath + "about', 'About_list')")
+                        span.mdi.iconlabel
+                                = T("menu_about", 1 )

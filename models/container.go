@@ -2,18 +2,16 @@ package models
 
 import (
 	"net/http"
-	"net/url"
 )
 
 // ViewContainer is a struct passed to the view
 type ViewContainer struct {
-	PersonEmail    string
-	PersonLanguage string
-	PersonID       int
-	URLValues      url.Values
-	ProxyPath      string
-	BuildID        string
-	DisableCache   bool
+	PersonEmail    string `json:"PersonEmail"`
+	PersonLanguage string `json:"PersonLanguage"`
+	PersonID       int    `json:"PersonID"`
+	ProxyPath      string `json:"ProxyPath"`
+	BuildID        string `json:"BuildID"`
+	DisableCache   bool   `json:"DisableCache"`
 }
 
 // ContainerFromRequestContext returns a ViewContainer from the request context

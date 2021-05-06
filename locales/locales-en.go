@@ -8,6 +8,22 @@ var LOCALES_EN = []byte(`
 [nil]
 	one = " "
 
+[project_leader]
+	one = "project leader"
+[project_site]
+	one = "web site"
+[project_support]
+	one = "support/bug report"
+[project_license]
+	one = "license"
+[project_version]
+	one = "version"
+
+[wasm_loading]
+	one = "Loading Web Assembly module."
+[wasm_loaded]
+	one = "Web Assembly module loaded."
+
 [created]
 	one = "created"
 [modified]
@@ -25,6 +41,8 @@ var LOCALES_EN = []byte(`
 	one = "edit"
 [delete]
 	one = "delete"
+[archive]
+	one = "archive"
 [save]
 	one = "save"
 [close]
@@ -33,12 +51,26 @@ var LOCALES_EN = []byte(`
 	one = "list"
 [create]
 	one = "create"
+[check_all]
+	one = "check all"
 
 [required_input]
 	one = "required input"
 [error_occured]
 	one = "an error occured"
-	
+[no_result]
+	one = "no result"
+[no_item]
+	one = "no item"
+[active_filter]
+	one = "active filter(s)"
+[no_filter]
+	one = "no filter"
+[remove_filter]
+	one = "remove filter"
+
+[empirical_formula_convert]
+	one = "convert to empirical formula"
 [no_empirical_formula]
 	one = "no empirical formula"
 [no_cas_number]
@@ -52,6 +84,10 @@ var LOCALES_EN = []byte(`
 	one = "confirm password"
 [invalid_password]
 	one = "invalid password"
+[invalid_email]
+	one = "invalid email"
+[not_same_password]
+	one = "you have not entered the same password"
 
 [members]
 	one = "members"
@@ -62,7 +98,13 @@ var LOCALES_EN = []byte(`
 	one = "magical selector"
 
 [nb_duplicate]
-	one = "nb of duplicates"
+	one = "number of items (bottles, boxes...)"
+[nb_duplicate_comment]
+	one = "will create a storage card per item with a different barecode (except if \"identical barecode\" is checked)"
+[identical_barecode]
+	one = "identical barecode"
+[identical_barecode_comment]
+	one = "generate the same barecode for every storage card - scanning a storage card qrcode will also return the storages with the same barecode"
 
 [bt_loadingMessage]
 	one = "loading..."
@@ -85,10 +127,8 @@ var LOCALES_EN = []byte(`
 	one = "reset password"
 [resetpassword2_text]
 	one = "reset my password, I am not a robot"
-[resetpassword_warning_enteremail]
-	one = "enter your email in the login form"
 [resetpassword_message_mailsentto]
-	one = "a reinitialization link has been sent to"
+	one = "a reinitialization link has been sent to %s"
 [resetpassword_areyourobot]
 	one = "are you a robot?"
 [resetpassword_mailbody1]
@@ -101,7 +141,7 @@ var LOCALES_EN = []byte(`
 	one = "Chimithèque new temporary password\r\n"
 [resetpassword_mailbody2]
 	one = '''
-	Click on this link to reinitialize your password: %s%sreset?token=%s
+	Click on this link to reinitialize your password: %sreset?token=%s
 
 	You will then receive a new mail with a temporary password.
 	'''
@@ -133,12 +173,22 @@ var LOCALES_EN = []byte(`
 [welcomeannounce_text_modificationsuccess]
 	one = "announce modified"
 
+[s_tags]
+	one = "tag(s)"
+[s_category]
+	one = "category"
+[s_entity]
+	one = "entity"
+[s_storelocation]
+	one = "store location"
+[s_producerref]
+	one = "producer reference number"
 [s_custom_name_part_of]
 	one = "part of name"
 [s_name]
 	one = "exact name"
 [s_casnumber]
-	one = "CAS"
+	one = "CAS number"
 [s_empiricalformula]
 	one = "emp. formula"
 [s_storage_barecode]
@@ -161,13 +211,13 @@ var LOCALES_EN = []byte(`
 [menu_home]
 	one = "home"
 [menu_bookmark]
-	one = "my bookmarks"
+	one = "bookmarks"
 [menu_scanqr]
-	one = "scan a QR code"
+	one = "scan"
 [menu_borrow]
 	one = "my borrowed products"
 [menu_create_productcard]
-	one = "create product card"
+	one = "create a card"
 [menu_entity]
 	one = "entities"
 [menu_storelocation]
@@ -186,11 +236,18 @@ var LOCALES_EN = []byte(`
 	one = "my account"
 
 [clearsearch_text]
-	one = "clear search form"
+	one = "reset filters"
 [search_text]
 	one = "search"
 [advancedsearch_text]
 	one = "advanced search"
+
+[chemical_product]
+	one = "chemical product"
+[biological_product]
+	one = "biological reagent"
+[consumable_product]
+	one = "lab consumable"
 
 [switchproductview_text]
 	one = "switch to product view"
@@ -198,14 +255,20 @@ var LOCALES_EN = []byte(`
 	one = "switch to storage view"
 [export_text]
 	one = "export"
+[download_export]
+	one = "download export"
+[export_progress]
+	one = "export in progress -  this operation can be long"
+[export_done]
+	one = "export done"
 [showdeleted_text]
-	one = "show deleted"
+	one = "show archives"
 [hidedeleted_text]
-	one = "hide deleted"
+	one = "hide archives"
 [storeagain_text]
 	one = "store this product"
 [totalstock_text]
-	one = "show total stock"
+	one = "compute total stock"
 
 [unit_label_title]
 	one = "unit"
@@ -216,13 +279,27 @@ var LOCALES_EN = []byte(`
 
 [add_producer_title]
 	one = "add a producer to the list"
+[producer_added]
+	one = "producer added"
 [add_supplier_title]
 	one = "add a supplier to the list"
+[supplier_added]
+	one = "supplier added"
 
+[store]
+	one = "store"
+[storages]
+	one = "storages"
+[storage]
+	one = "storage"
+[archives]
+	one = "archives"
+[ostorages]
+	one = "availability"
 [storage_create_title]
-	one = "create storage"
+	one = "store a product"
 [storage_update_title]
-	one = "update storage"
+	one = "update a storage"
 [storage_clone]
 	one = "clone"
 [storage_borrow]
@@ -284,11 +361,31 @@ var LOCALES_EN = []byte(`
 	one = "quantity"
 [storage_barecode_table_header]
 	one = "barecode"
+[storage_storelocation_placeholder]
+	one = "select a store location"
+[storage_borrower_placeholder]
+	one = "select a borrower"
+[storage_supplier_placeholder]
+	one = "select or enter a supplier"
+[storage_print_qrcode]
+	one = "print qrcode"
+[storage_number_of_unit]
+	one = "number of unit(s)"
+[storage_number_of_bag]
+	one = "number of bag(s)"
+[storage_number_of_bag_comment]
+	one = "only if the number of units per bag for the corresponding product is set"
+[storage_number_of_carton]
+	one = "number of carton(s)"
+[storage_number_of_carton_comment]
+	one = "only if the number of units per carton for the corresponding product is set"
+[storage_one_number_required]
+	one = "at least one of the numbers required"
 
 [stock_storelocation_title]
 	one = "in this store location"
 [stock_storelocation_sub_title]
-	one = "including children store locations"
+	one = "with children store locations"
 
 [empiricalformula_label_title]
 	one = "empirical formula"
@@ -317,24 +414,40 @@ var LOCALES_EN = []byte(`
 [synonym_label_title]
 	one = "synonym(s)"
 
+[restricted]
+	one = "restricted access"
+[bookmark]
+	one = "bookmark"
+[unbookmark]
+	one = "remove bookmark"
 [product_create_title]
-	one = "create product"
+	one = "create a product card"
 [product_update_title]
 	one = "update product"
 [product_threedformula_title]
 	one = "3D formula"
+[product_twodformula_title]
+	one = "molecule picture"
 [product_threedformula_mol_title]
 	one = "3D formula MOL file"
 [product_msds_title]
-	one = "MSDS"
+	one = "MSDS link"
 [product_sheet_title]
-	one = "supplier product cheet"
+	one = "producer product cheet"
 [product_temperature_title]
 	one = "preconised storage temperature"
+[product_number_per_carton_title]
+	one = "number of units per carton"
+[product_number_per_bag_title]
+	one = "number of units per bag"
 [producer_label_title]
 	one = "producer"
 [producerref_label_title]
 	one = "producer reference number"
+[producerref_create_needproducer]
+	one = "to create a new reference select a producer first"
+[supplierref_create_needsupplier]
+	one = "to create a new reference select a supplier first"
 [category_label_title]
 	one = "category"
 [tag_label_title]
@@ -362,7 +475,7 @@ var LOCALES_EN = []byte(`
 [product_ce_placeholder]
 	one = "select or enter an EC number"
 [product_physicalstate_placeholder]
-	one = "select a physical state"
+	one = "select or enter a physical state"
 [product_signalword_placeholder]
 	one = "select a signal word"
 [product_classofcompound_placeholder]
@@ -383,15 +496,31 @@ var LOCALES_EN = []byte(`
 	one = "select statement(s)"
 [product_precautionarystatements_placeholder]
 	one = "select statement(s)"
+[product_producer_placeholder]
+	one = "select a producer"
+[product_producerref_placeholder]
+	one = "select or enter a producer reference"
+[product_supplier_placeholder]
+	one = "select a supplier"
+[product_supplierref_placeholder]
+	one = "select or enter supplier reference(s)"
+[product_tag_placeholder]
+	one = "select or enter tag(s)"
+[product_category_placeholder]
+	one = "select or enter a category"
+[product_unit_placeholder]
+	one = "select a unit"
 [product_deleted_message]
 	one = "product deleted"
 [product_updated_message]
 	one = "product updated"
 [product_created_message]
 	one = "product created"
+[product_flammable]
+	one = "flammable"
 
 [person_create_title]
-	one = "create person"
+	one = "create a person"
 [person_update_title]
 	one = "update person"
 [person_deleted_message]
@@ -402,6 +531,8 @@ var LOCALES_EN = []byte(`
 	one = "password"
 [person_entity_title]
 	one = "entity(ies)"
+[person_permission_title]
+	one = "permissions"
 [person_email_table_header]
 	one = "email"
 [person_can_not_remove_entity_manager]
@@ -412,9 +543,32 @@ var LOCALES_EN = []byte(`
 	one = "person updated"
 [person_password_updated_message]
 	one = "password updated"
+[person_entity_placeholder]
+	one = "select entity(ies)"
+[person_select_all_none_storage]
+	one = "select all 'no permission'"
+[person_select_all_r_storage]
+	one = "select all 'view only'"
+[person_select_all_rw_storage]
+	one = "select all 'view, modify, create and delete'"
+[person_show_password]
+  one = "show password field"
+  
+[permission_product]
+	one = "products"
+[permission_rproduct]
+	one = "restricted products"
+[permission_storages]
+	one = "storages"
+[permission_none]
+	one = "no permission"
+[permission_read]
+	one = "view only"
+[permission_crud]
+	one = "view, modify, create and delete"
 
 [storelocation_create_title]
-	one = "create store location"
+	one = "create a store location"
 [storelocation_update_title]
 	one = "update store location"
 [storelocation_deleted_message]
@@ -443,6 +597,10 @@ var LOCALES_EN = []byte(`
 	one = "can store"
 [storelocation_parent_table_header]
 	one = "parent"
+[storelocation_entity_placeholder]
+	one = "select an entity"
+[storelocation_storelocation_placeholder]
+	one = "select an entity first"
 
 [entity_create_title]
 	one = "create entity"
@@ -460,6 +618,8 @@ var LOCALES_EN = []byte(`
 	one = "description"
 [entity_manager_table_header]
 	one = "manager(s)"
+[entity_manager_placeholder]
+	one = "select manager(s)"
 
 [entity_nameexist_validate]
 	one = "entity with this name already present" 

@@ -1,132 +1,99 @@
-extends ../base.jade
+
+include ../mixins
 block CONTENT
     :go:func
         Storagecreate(c ViewContainer)
 
-    +titleicon("forklift", "storage_create_title")
+    //- +titleicon("forklift", "storage_create_title")
 
-    .row
-        .d-flex.justify-content-center
-            #filter-product
+    .card.mx-auto.w-75.mt-sm-2
+        .card-body
+    
+            button#save.btn.btn-primary.float-right(type='button', onclick='Storage_saveStorage()')
+                span.mdi.mdi-content-save.mdi-24px.iconlabel
+                    = T("save", 1)
+            button.btn.btn-secondary.float-left(type='button', onclick="Menu_loadContent('product', '" + c.ProxyPath + "v/products', 'Product_list')")
+                span.mdi.mdi-close-box.mdi-24px.iconlabel
+                    = T("close", 1)
 
-    form#storage
-        input#index(type='hidden', name='index', value='')
-        input#product_id(type='hidden', name='product_id', value='')
+            .row.w-100.pt-sm-2
+                .d-flex.justify-content-center
+                    #filter-product
 
-        input#exactMatchSupplier(type="hidden")
+            form#storage
 
-        .form-group.row
-            .col-sm-4
-                +inputnumber("nb_duplicate", "storage_nbitem", "1", "1", "50", "")
-        hr
-        .form-group.row
-            .form-group.col-sm-12
-                +selectrequired("storage_storelocation_title", "storelocation")
-        .form-group.row
-            .col-sm-6
-                +inputnumber("storage_quantity_title", "storage_quantity", "any", "1", "10000000", "")
-            .col-sm-6
-                +select("unit_label_title", "unit_quantity") 
+                input#index(type='hidden', name='index', value='')
+                input#product_id(type='hidden', name='product_id', value='')
+                input#storage_id(type='hidden', name='storage_id', value='')
 
-        // bio
-        .form-group.row
-            .col-sm-6
-                +inputnumber("storage_concentration_title", "storage_concentration", "any", "1", "10000000", "")
-            .col-sm-6
-                +select("unit_label_title", "unit_concentration")
+                input#exactMatchSupplier(type="hidden")
 
-        .form-group.row
-            .col-sm-12
-                +select("supplier_label_title", "supplier")
-        .form-group.row
-            .col-sm-3
-                +inputdate("storage_entrydate_title", "storage_entrydate")
-            .col-sm-3
-                +inputdate("storage_exitdate_title", "storage_exitdate")
-            .col-sm-3
-                +inputdate("storage_openingdate_title", "storage_openingdate")
-            .col-sm-3
-                +inputdate("storage_expirationdate_title", "storage_expirationdate")
-        .form-group.row
-            .col-sm-6
-                +inputtext("storage_reference_title", "storage_reference")
-            .col-sm-6
-                +inputtext("storage_batchnumber_title", "storage_batchnumber")
-        .form-group.row
-            .col-sm-12
-                +inputtext("storage_barecode_title", "storage_barecode")
-                +inputcomment("storage_create_barecode_comment")
-        .form-group.row
-            .col-sm-12
-                +inputtext("storage_comment_title", "storage_comment")  
-        .form-group.row
-            .col-sm-12
-                +checkbox("storage_todestroy_title", "storage_todestroy")
+                .form-group.row
+                    .col-sm-6
+                        +inputnumber(name="storage_nbitem", label="nb_duplicate", step="1", min="1", max="50", value="", help=T("nb_duplicate_comment", 1))
+                    .col-sm-6
+                        +checkbox(name="storage_identicalbarecode", label="identical_barecode", icon="", help=T("identical_barecode_comment", 1))
+                hr
+                .consu.collapse
+                    span.badge.badge-pill.badge-danger &nbsp;
+                    span.iconlabel
+                        = T("storage_one_number_required", 1)
+                .form-group.row.consu.collapse
+                    .col-sm-4
+                        +inputnumber(name="storage_number_of_unit", label="storage_number_of_unit", step="1", min="0", max="10000000")
+                    .col-sm-4
+                        +inputnumber(name="storage_number_of_bag", label="storage_number_of_bag", step="1", min="0", max="10000000", value="", help=T("storage_number_of_bag_comment", 1))
+                    .col-sm-4
+                        +inputnumber(name="storage_number_of_carton", label="storage_number_of_carton", step="1", min="0", max="10000000", value="", help=T("storage_number_of_carton_comment", 1))
 
-    button#save.btn.btn-link(type='button', onclick='saveStorage()')
-        span.mdi.mdi-content-save.mdi-24px.iconlabel
-            = T("save", 1)
+                .form-group.row
+                    .form-group.col-sm-12
+                        +inputselect(name="storelocation", label="storage_storelocation_title", ismultiple=false, placeholder="", help="", required=true)
+                .form-group.row.bio.chem.collapse
+                    .col-sm-6
+                        +inputnumber(name="storage_quantity", label="storage_quantity_title", step="any", min="1", max="10000000")
+                    .col-sm-6
+                        +inputselect(name="unit_quantity", label="unit_label_title") 
+                .form-group.row
+                    .col-sm-6
+                        +inputtext(name="storage_batchnumber", label="storage_batchnumber_title", htmltype="text", placeholder="", help="", required=true)
+                    .col-sm-6.chem.collapse
+                        +inputtext(name="storage_reference", label="storage_reference_title")
+
+                // bio
+                .form-group.row.bio.chem.collapse
+                    .col-sm-6
+                        +inputnumber(name="storage_concentration", label="storage_concentration_title", step="any", min="1", max="10000000")
+                    .col-sm-6
+                        +inputselect(name="unit_concentration", label="unit_label_title")
+
+                .form-group.row
+                    .col-sm-12
+                        +inputselect(name="supplier", label="supplier_label_title")
+                .form-group.row
+                    .col-sm-3
+                        +inputtext(name="storage_entrydate", label="storage_entrydate_title", type="date")
+                    .col-sm-3
+                        +inputtext(name="storage_exitdate", label="storage_exitdate_title", type="date")
+                    .col-sm-3
+                        +inputtext(name="storage_openingdate", label="storage_openingdate_title", type="date")
+                    .col-sm-3
+                        +inputtext(name="storage_expirationdate", label="storage_expirationdate_title", type="date")
+                .form-group.row
+                    .col-sm-12
+                        +inputtext(name="storage_barecode", label="storage_barecode_title", htmltype="text", placeholder="", help=T("storage_create_barecode_comment", 1))
+                .form-group.row
+                    .col-sm-12
+                        +inputtext(name="storage_comment", label="storage_comment_title")  
+                .form-group.row
+                    .col-sm-12
+                        +checkbox(name="storage_todestroy", label="storage_todestroy_title")
+
+                button#save.btn.btn-primary.float-right(type='button', onclick='Storage_saveStorage()')
+                    span.mdi.mdi-content-save.mdi-24px.iconlabel
+                        = T("save", 1)
+                button.btn.btn-secondary.float-left(type='button', onclick="Menu_loadContent('product', '" + c.ProxyPath + "v/products', 'Product_list')")
+                    span.mdi.mdi-close-box.mdi-24px.iconlabel
+                        = T("close", 1)
 
 block CONTENTJS
-    script.
-
-       $( document ).ready(function() {           
-
-            //
-            // retrieving product
-            //
-            var urlParams = new URLSearchParams(window.location.search);
-            p = urlParams.get("product");
-            if (p === null) {
-                window.location.replace("/v/products");
-            }
-            // getting the product
-            $.ajax({
-                url: proxyPath + "products/" + p,
-                method: "GET",
-            }).done(function(data, textStatus, jqXHR) {
-                $("input#product_id").val(p);
-                $("#filter-product").html(gjsWidgets.title(data.name.name_label + " " + data.product_specificity.String, "product"));
-            }).fail(function(jqXHR, textStatus, errorThrown) {
-                handleHTTPError(jqXHR.statusText, jqXHR.status)
-            });
-
-            // clone mode
-            s = urlParams.get("storage");
-            if (s !== null) {
-            // getting the storage
-            $.ajax({
-                url: proxyPath + "storages/" + s,
-                method: "GET",
-            }).done(function(data, textStatus, jqXHR) {
-                // flattening response data
-                fdata = flatten(data);
-
-                // processing sqlNull values
-                //newfdata = normalizeSqlNull(fdata)
-                newfdata = gjsUtils.normalizeSqlNull(fdata);
-
-                // autofilling form
-                $("form#storage").autofill( newfdata, {"findbyname": false } );
-
-                // select2 is not autofilled - we need a special operation
-                var newOption = new Option(data.storelocation.storelocation_name.String, data.storelocation.storelocation_id.Int64, true, true);
-                $('select#storelocation').append(newOption).trigger('change');
-
-                if (data.unit_quantity.unit_id.Valid) {
-                    var newOption = new Option(data.unit_quantity.unit_label.String, data.unit_quantity.unit_id.Int64, true, true);
-                    $('select#unit_quantity').append(newOption).trigger('change');
-                }
-
-                if (data.supplier.supplier_id.Valid) {
-                    var newOption = new Option(data.supplier.supplier_label.String, data.supplier.supplier_id.Int64, true, true);
-                    $('select#supplier').append(newOption).trigger('change');
-                }         
-            }).fail(function(jqXHR, textStatus, errorThrown) {
-                handleHTTPError(jqXHR.statusText, jqXHR.status)
-            });
-            }
-
-        });
-
-    script(src="../js/chim/storage.js")

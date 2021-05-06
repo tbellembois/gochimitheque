@@ -7,7 +7,6 @@ import (
 
 	"regexp"
 
-	"github.com/tbellembois/gochimitheque/globals"
 	"github.com/tbellembois/gochimitheque/locales"
 )
 
@@ -26,8 +25,12 @@ script.
 var r = regexp.MustCompile("\\[(\\S+)\\]\\n\\s+one = \"(.*)\"")
 
 // locales map
-var mEn map[string]string
-var mFr map[string]string
+var mEnUpperCase map[string]string
+var mEnLowerCase map[string]string
+var mEnSimple map[string]string
+var mFrUpperCase map[string]string
+var mFrLowerCase map[string]string
+var mFrSimple map[string]string
 
 // Tdata contains the "variable name" -> "translation string"
 // maps for each supported language
@@ -37,33 +40,52 @@ type Tdata struct {
 }
 
 func GenerateLocalJS() {
-	mEn = make(map[string]string)
-	mFr = make(map[string]string)
+	mFrUpperCase = make(map[string]string)
+	mFrLowerCase = make(map[string]string)
+	mFrSimple = make(map[string]string)
+	mEnUpperCase = make(map[string]string)
+	mEnLowerCase = make(map[string]string)
+	mEnSimple = make(map[string]string)
 
 	// finding matches
 	msEn := r.FindAllStringSubmatch(string(locales.LOCALES_EN), -1)
 	for _, v := range msEn {
 		//fmt.Printf("%d. %s\n", k, v)
 		//fmt.Printf("%s -> %s\n", v[1], v[2])
-		k := fmt.Sprintf("locale_en_%s", v[1])
-		mEn[k] = v[2]
+		ksimple := fmt.Sprintf("locale_en_%s", v[1])
+		klower := fmt.Sprintf("locale_en_en_%s", v[1])
+		kupper := fmt.Sprintf("locale_en_EN_%s", v[1])
+		mEnSimple[ksimple] = v[2]
+		mEnLowerCase[klower] = v[2]
+		mEnUpperCase[kupper] = v[2]
 	}
 	msFr := r.FindAllStringSubmatch(string(locales.LOCALES_FR), -1)
 	for _, v := range msFr {
 		//fmt.Printf("%d. %s\n", k, v)
 		//fmt.Printf("%s -> %s\n", v[1], v[2])
-		k := fmt.Sprintf("locale_fr_%s", v[1])
-		mFr[k] = v[2]
+		ksimple := fmt.Sprintf("locale_fr_%s", v[1])
+		klower := fmt.Sprintf("locale_fr_fr_%s", v[1])
+		kupper := fmt.Sprintf("locale_fr_FR_%s", v[1])
+		mFrSimple[ksimple] = v[2]
+		mFrLowerCase[klower] = v[2]
+		mFrUpperCase[kupper] = v[2]
 	}
 
 	// opening output file
 	f, err := os.Create("static/templates/localejs.jade")
 	if err != nil {
-		globals.Log.Fatal(err)
+		panic(err)
 	}
 	defer f.Close()
 
-	if err := packageTemplate.Execute(f, Tdata{EN: mEn, FR: mFr}); err != nil {
+	if err := packageTemplate.Execute(f, Tdata{EN: mEnLowerCase, FR: mFrLowerCase}); err != nil {
 		panic(err.Error())
 	}
+	if err := packageTemplate.Execute(f, Tdata{EN: mEnUpperCase, FR: mFrUpperCase}); err != nil {
+		panic(err.Error())
+	}
+	if err := packageTemplate.Execute(f, Tdata{EN: mEnSimple, FR: mFrSimple}); err != nil {
+		panic(err.Error())
+	}
+
 }

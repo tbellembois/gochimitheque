@@ -8,6 +8,22 @@ var LOCALES_FR = []byte(`
 [nil]
 	one = " "
 
+[project_leader]
+	one = "chef de project"
+[project_site]
+	one = "site web"
+[project_support]
+	one = "support/rapport d'erreurs"
+[project_license]
+	one = "license"
+[project_version]
+	one = "version"
+
+[wasm_loading]
+	one = "Chargement du module Web Assembly."
+[wasm_loaded]
+	one = "Module Web Assembly chargé."
+
 [created]
 	one = "créé"
 [modified]
@@ -25,6 +41,8 @@ var LOCALES_FR = []byte(`
 	one = "editer"
 [delete]
 	one = "supprimer"
+[archive]
+	one = "archiver"
 [save]
 	one = "enregistrer"
 [close]
@@ -33,12 +51,26 @@ var LOCALES_FR = []byte(`
 	one = "lister"
 [create]
 	one = "créer"
+[check_all]
+	one = "sélectionner tout"
 
 [required_input]
 	one = "champs requis"
 [error_occured]
 	one = "une erreur est survenue"
+[no_result]
+	one = "pas de résultat"
+[no_item]
+	one = "pas d'élément"
+[active_filter]
+	one = "filtre(s) actif"
+[no_filter]
+	one = "pas de filtre"
+[remove_filter]
+	one = "supprimer le filtre"
 
+[empirical_formula_convert]
+	one = "convertir en formule brute"
 [no_empirical_formula]
 	one = "pas de formule brute"
 [no_cas_number]
@@ -52,6 +84,10 @@ var LOCALES_FR = []byte(`
 	one = "confirmer le mot de passe"
 [invalid_password]
 	one = "mauvais mot de passe"
+[invalid_email]
+	one = "adresse email invalide"
+[not_same_password]
+	one = "vous n'avez pas saisi le même mot de passe"
 
 [members]
 	one = "membres"
@@ -62,7 +98,13 @@ var LOCALES_FR = []byte(`
 	one = "selecteur magique"
 
 [nb_duplicate]
-	one = "nombre de duplications"
+	one = "nombre d'éléments (bouteilles, boites...)"
+[nb_duplicate_comment]
+	one = "créera une fiche stockage par élément avec un code barre différent (sauf si \"code barre identique\" est coché)"
+[identical_barecode]
+	one = "code barre identique"
+[identical_barecode_comment]
+	one = "génère le même code barre pour chaque fiche de stockage - scanner le qrcode d'une fiche stockage retournera aussi les stockages avec un code barre identique"
 
 [bt_loadingMessage]
 	one = "chargement..."
@@ -85,10 +127,8 @@ var LOCALES_FR = []byte(`
 	one = "réinitialiser mon mot de passe"
 [resetpassword2_text]
 	one = "réinitialiser mon mot de passe, je ne suis pas un robot"
-[resetpassword_warning_enteremail]
-	one = "entrez votre adresse mail dans le formulaire"
 [resetpassword_message_mailsentto]
-	one = "un mail de réinitialisation a été envoyé à"
+	one = "un mail de réinitialisation a été envoyé à %s"
 [resetpassword_areyourobot]
 	one = "êtes vous un robot ?"
 [resetpassword_mailbody1]
@@ -101,7 +141,7 @@ var LOCALES_FR = []byte(`
 	one = "Chimithèque nouveau mot de passe temporaire\r\n"
 [resetpassword_mailbody2]
 	one = '''
-	Cliquez sur ce lien pour réinitialiser votre mot de passe : %s%sreset?token=%s
+	Cliquez sur ce lien pour réinitialiser votre mot de passe : %sreset?token=%s
 
 	Vous recevrez ensuite un nouveau mail avec un mot de passe temporaire.
 	'''
@@ -124,7 +164,7 @@ var LOCALES_FR = []byte(`
 	'''
 
 [logo_information1]
-	one = "Logo Chimithèque réalisé par "
+	one = "logo Chimithèque réalisé par "
 [logo_information2]
 	one = "Ne pas utiliser ou copier sans sa permission."
 
@@ -133,12 +173,22 @@ var LOCALES_FR = []byte(`
 [welcomeannounce_text_modificationsuccess]
 	one = "Texte modifié"
 
+[s_tags]
+	one = "tag(s)"
+[s_category]
+	one = "categorie"
+[s_entity]
+	one = "entité"
+[s_storelocation]
+	one = "entrepôt"
 [s_custom_name_part_of]
 	one = "partie du nom"
+[s_producerref]
+	one = "numéro référence fabriquant"
 [s_name]
 	one = "nom exact"
 [s_casnumber]
-	one = "CAS"
+	one = "numéro CAS"
 [s_empiricalformula]
 	one = "formule brute"
 [s_storage_barecode]
@@ -161,13 +211,13 @@ var LOCALES_FR = []byte(`
 [menu_home]
 	one = "accueil"
 [menu_bookmark]
-	one = "mes favoris"
+	one = "favoris"
 [menu_scanqr]
-	one = "scanner un code QR"
+	one = "scanner"
 [menu_borrow]
 	one = "mes produits empruntés"
 [menu_create_productcard]
-	one = "créer fiche produit"
+	one = "créer une fiche"
 [menu_entity]
 	one = "entités"
 [menu_storelocation]
@@ -186,11 +236,18 @@ var LOCALES_FR = []byte(`
 	one = "mon compte"
 
 [clearsearch_text]
-	one = "effacer le formulaire"
+	one = "supprimer tous les filtres"
 [search_text]
 	one = "rechercher"
 [advancedsearch_text]
 	one = "recherche avancée"
+
+[chemical_product]
+	one = "produit chimique"
+[biological_product]
+	one = "réactif biologique"
+[consumable_product]
+	one = "consommable"
 
 [switchproductview_text]
 	one = "vue par produits"
@@ -198,14 +255,20 @@ var LOCALES_FR = []byte(`
 	one = "vue par stockages"
 [export_text]
 	one = "exporter"
+[download_export]
+	one = "télécharger l'export"
+[export_progress]
+	one = "export en cours -  cette opération peut être longue"
+[export_done]
+	one = "export effectué"
 [showdeleted_text]
-	one = "voir supprimés"
+	one = "voir archives"
 [hidedeleted_text]
-	one = "cacher supprimés"
+	one = "cacher archives"
 [storeagain_text]
 	one = "stocker ce produit"
 [totalstock_text]
-	one = "afficher le stock total"
+	one = "calculer le stock total"
 
 [unit_label_title]
 	one = "unité"
@@ -215,14 +278,28 @@ var LOCALES_FR = []byte(`
 	one = "numéro référence fournisseur"
 
 [add_producer_title]
-	one = "ajouter un producteur à la liste"
+	one = "ajouter un fabriquant à la liste"
+[producer_added]
+	one = "fabriquant ajouté"
 [add_supplier_title]
 	one = "ajouter un fournisseur à la liste"
+[supplier_added]
+	one = "fournisseur ajouté"
 
+[store]
+	one = "stocker"
+[storages]
+	one = "stockages"
+[storage]
+	one = "stockage"
+[archives]
+	one = "archives"
+[ostorages]
+	one = "disponibilité"
 [storage_create_title]
-	one = "créer stockage"
+	one = "stocker un produit"
 [storage_update_title]
-	one = "mise à jour stockage"
+	one = "mise à jour d'un stockage"
 [storage_clone]
 	one = "cloner"
 [storage_borrow]
@@ -284,11 +361,31 @@ var LOCALES_FR = []byte(`
 	one = "quantité"
 [storage_barecode_table_header]
 	one = "code barre"
+[storage_storelocation_placeholder]
+	one = "selectionnez un entrepôt"
+[storage_borrower_placeholder]
+	one = "selectionnez un emprunteur"
+[storage_supplier_placeholder]
+	one = "selectionnez ou entrez un fournisseur"
+[storage_print_qrcode]
+	one = "imprimer le qrcode"
+[storage_number_of_unit]
+	one = "nombre d'unité(s)"
+[storage_number_of_bag]
+	one = "nombre de sac(s)"
+[storage_number_of_bag_comment]
+	one = "seulement si le nombre d'unités par sachet est défini pour le produit"
+[storage_number_of_carton]
+	one = "nombre de carton(s)"
+[storage_number_of_carton_comment]
+	one = "seulement si le nombre d'unités par carton est défini pour le produit"
+[storage_one_number_required]
+	one = "au moins un des nombres requis"
 
 [stock_storelocation_title]
 	one = "dans cet entrepôt"
 [stock_storelocation_sub_title]
-	one = "en incluant les sous entrepôts"
+	one = "avec les sous entrepôts"
 
 [empiricalformula_label_title]
 	one = "formule brute"
@@ -317,24 +414,40 @@ var LOCALES_FR = []byte(`
 [synonym_label_title]
 	one = "synonyme(s)"
 
+[restricted]
+	one = "accès restreint"
+[bookmark]
+	one = "ajouter aux favoris"
+[unbookmark]
+	one = "retirer des favoris"
 [product_create_title]
-	one = "créer produit"
+	one = "créer une fiche produit"
 [product_update_title]
 	one = "mettre à jour produit"
 [product_threedformula_title]
 	one = "formule 3D"
+[product_twodformula_title]
+	one = "image molécule"
 [product_threedformula_mol_title]
 	one = "fichier MOL formule 3D"
 [product_msds_title]
-	one = "FDS"
+	one = "lien FDS"
 [product_sheet_title]
-	one = "fiche produit fournisseur"
+	one = "fiche produit fabriquant"
 [product_temperature_title]
 	one = "température de stockage préconisée"
+[product_number_per_carton_title]
+	one = "nombre d'unités par carton"
+[product_number_per_bag_title]
+	one = "nombre d'unités par sachet"
 [producer_label_title]
 	one = "fabriquant"
 [producerref_label_title]
 	one = "numéro référence fabriquant"
+[producerref_create_needproducer]
+	one = "pour créer une nouvelle référence sélectionnez un fabriquant d'abord"
+[supplierref_create_needsupplier]
+	one = "pour créer une nouvelle référence sélectionnez un fournisseur d'abord"
 [category_label_title]
 	one = "catégorie"
 [tag_label_title]
@@ -362,11 +475,11 @@ var LOCALES_FR = []byte(`
 [product_ce_placeholder]
 	one = "sélectionnez ou entrez un numéro CE"
 [product_physicalstate_placeholder]
-	one = "sélectionnez un état physique"
+	one = "sélectionnez ou entrez un état physique"
 [product_signalword_placeholder]
 	one = "sélectionnez une mention"
 [product_classofcompound_placeholder]
-	one = "sélectionnez une ou plusieurs famille(s)"
+	one = "sélectionnez ou entrez une ou plusieurs famille(s)"
 [product_name_placeholder]
 	one = "sélectionnez ou entrez un nom"
 [product_synonyms_placeholder]
@@ -383,15 +496,31 @@ var LOCALES_FR = []byte(`
 	one = "sélectionnez une ou plusieurs mention(s)"
 [product_precautionarystatements_placeholder]
 	one = "sélectionnez un ou plusieurs conseil(s)"
+[product_producer_placeholder]
+	one = "sélectionnez un fabriquant"
+[product_producerref_placeholder]
+	one = "sélectionnez ou entrez une référence fabriquant"
+[product_supplier_placeholder]
+	one = "sélectionnez un fournisseur"
+[product_supplierref_placeholder]
+	one = "sélectionnez ou entrez une ou plusieurs référence(s) fournisseur"
+[product_tag_placeholder]
+	one = "sélectionnez ou entrez un ou plusieurs tag(s)"
+[product_category_placeholder]
+	one = "sélectionnez ou entrez une catégorie"
+[product_unit_placeholder]
+	one = "sélectionnez une unité"
 [product_deleted_message]
 	one = "produit supprimé"
 [product_updated_message]
 	one = "produit mis à jour"
 [product_created_message]
 	one = "produit créé"
+[product_flammable]
+	one = "inflammable"
 
 [person_create_title]
-	one = "créer personne"
+	one = "créer une personne"
 [person_update_title]
 	one = "mettre à jour personne"
 [person_deleted_message]
@@ -402,6 +531,8 @@ var LOCALES_FR = []byte(`
 	one = "mot de passe"
 [person_entity_title]
 	one = "entité(s)"
+[person_permission_title]
+	one = "permissions"
 [person_email_table_header]
 	one = "mail"
 [person_can_not_remove_entity_manager]
@@ -412,9 +543,32 @@ var LOCALES_FR = []byte(`
 	one = "personne mise à jour"
 [person_password_updated_message]
 	one = "mot de passe mis à jour"
+[person_entity_placeholder]
+	one = "sélectionnez une ou plusieurs entité(s)"
+[person_select_all_none_storage]
+	one = "sélectionner tous les 'aucune permission'"
+[person_select_all_r_storage]
+	one = "sélectionner tous les 'voir seulement'"
+[person_select_all_rw_storage]
+	one = "sélectionner tous les 'voir, modifier, créer et supprimer'"
+[person_show_password]
+  one = "afficher le champs mot de passe"
+  
+[permission_product]
+	one = "produits"
+[permission_rproduct]
+	one = "produits restreints"
+[permission_storages]
+	one = "stockages"
+[permission_none]
+	one = "aucune permission"
+[permission_read]
+	one = "voir seulement"
+[permission_crud]
+	one = "voir, modifier, créer et supprimer"
 
 [storelocation_create_title]
-	one = "créer entrepôt"
+	one = "créer un entrepôt"
 [storelocation_update_title]
 	one = "mettre à jour entrepôt"
 [storelocation_deleted_message]
@@ -443,6 +597,10 @@ var LOCALES_FR = []byte(`
 	one = "peut stocker"
 [storelocation_parent_table_header]
 	one = "parent"
+[storelocation_entity_placeholder]
+	one = "sélectionnez une entité"
+[storelocation_storelocation_placeholder]
+	one = "sélectionnez une entité d'abord"
 
 [entity_create_title]
 	one = "créer une entité"
@@ -460,6 +618,8 @@ var LOCALES_FR = []byte(`
 	one = "description"
 [entity_manager_table_header]
 	one = "responsable(s)"
+[entity_manager_placeholder]
+	one = "sélectionnez un ou plusieurs manager(s)"
 	
 [entity_nameexist_validate]
 	one = "une entité avec ce nom existe déjà"

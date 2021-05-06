@@ -34,12 +34,12 @@ type dbselectparam struct {
 // dbselectparamProduct contains the parameters of the GetProducts function
 type DbselectparamProduct interface {
 	Dbselectparam
+	SetProducerRef(int)
 	SetEntity(int)
 	SetProduct(int)
 	SetStorelocation(int)
 	SetBookmark(bool)
 	SetProductSpecificity(string)
-
 	SetCustomNamePartOf(string)
 	SetName(int)
 	SetEmpiricalFormula(int)
@@ -52,13 +52,19 @@ type DbselectparamProduct interface {
 	SetCasNumberCmr(bool)
 	SetBorrowing(bool)
 	SetStorageToDestroy(bool)
+	SetStorageBatchNumber(string)
+	SetShowBio(bool)
+	SetShowChem(bool)
+	SetShowConsu(bool)
+	SetTags([]int)
+	SetCategory(int)
 
+	GetProducerRef() int
 	GetEntity() int
 	GetProduct() int
 	GetStorelocation() int
 	GetBookmark() bool
 	GetProductSpecificity() string
-
 	GetCustomNamePartOf() string
 	GetName() int
 	GetEmpiricalFormula() int
@@ -71,12 +77,19 @@ type DbselectparamProduct interface {
 	GetCasNumberCmr() bool
 	GetBorrowing() bool
 	GetStorageToDestroy() bool
+	GetStorageBatchNumber() string
+	GetShowBio() bool
+	GetShowChem() bool
+	GetShowConsu() bool
+	GetTags() []int
+	GetCategory() int
 }
 type dbselectparamProduct struct {
 	dbselectparam
 	Entity        int // id
 	Product       int // id
 	Storelocation int // id
+	ProducerRef   int // id
 	Bookmark      bool
 
 	CustomNamePartOf        string
@@ -84,6 +97,7 @@ type dbselectparamProduct struct {
 	EmpiricalFormula        int // id
 	CasNumber               int // id
 	StorageBarecode         string
+	StorageBatchNumber      string
 	Symbols                 []int // ids
 	HazardStatements        []int //ids
 	PrecautionaryStatements []int //ids
@@ -92,11 +106,18 @@ type dbselectparamProduct struct {
 	ProductSpecificity      string
 	Borrowing               bool
 	StorageToDestroy        bool
+	Tags                    []int
+	Category                int
+
+	ShowBio   bool
+	ShowChem  bool
+	ShowConsu bool
 }
 
 // DbselectparamStorage contains the parameters of the GetStorages function
 type DbselectparamStorage interface {
 	Dbselectparam
+	SetIds([]int)
 	SetEntity(int)
 	SetProduct(int)
 	SetStorelocation(int)
@@ -104,6 +125,7 @@ type DbselectparamStorage interface {
 	SetStorage(int)
 	SetHistory(bool)
 	SetStorageArchive(bool)
+	SetProducerRef(int)
 
 	SetCustomNamePartOf(string)
 	SetName(int)
@@ -117,7 +139,15 @@ type DbselectparamStorage interface {
 	SetCasNumberCmr(bool)
 	SetBorrowing(bool)
 	SetStorageToDestroy(bool)
+	SetStorageBatchNumber(string)
+	SetTags([]int)
+	SetCategory(int)
 
+	SetShowBio(bool)
+	SetShowChem(bool)
+	SetShowConsu(bool)
+
+	GetIds() []int
 	GetEntity() int
 	GetProduct() int
 	GetStorelocation() int
@@ -125,6 +155,7 @@ type DbselectparamStorage interface {
 	GetStorage() int
 	GetHistory() bool
 	GetStorageArchive() bool
+	GetProducerRef() int
 
 	GetCustomNamePartOf() string
 	GetName() int
@@ -138,13 +169,22 @@ type DbselectparamStorage interface {
 	GetCasNumberCmr() bool
 	GetBorrowing() bool
 	GetStorageToDestroy() bool
+	GetStorageBatchNumber() string
+	GetTags() []int
+	GetCategory() int
+
+	GetShowBio() bool
+	GetShowChem() bool
+	GetShowConsu() bool
 }
 type dbselectparamStorage struct {
 	dbselectparam
+	Ids            []int
 	Entity         int // id
 	Product        int // id
 	Storelocation  int // id
 	Storage        int // id
+	ProducerRef    int // id
 	Bookmark       bool
 	History        bool
 	StorageArchive bool
@@ -154,6 +194,7 @@ type dbselectparamStorage struct {
 	EmpiricalFormula        int // id
 	CasNumber               int // id
 	StorageBarecode         string
+	StorageBatchNumber      string
 	Symbols                 []int // ids
 	HazardStatements        []int //ids
 	PrecautionaryStatements []int //ids
@@ -161,6 +202,12 @@ type dbselectparamStorage struct {
 	CasNumberCmr            bool
 	Borrowing               bool
 	StorageToDestroy        bool
+	Tags                    []int
+	Category                int
+
+	ShowBio   bool
+	ShowChem  bool
+	ShowConsu bool
 }
 
 // DbselectparamPerson contains the parameters of the GetPeople function
@@ -232,7 +279,6 @@ type dbselectparamProducerRef struct {
 type DbselectparamSupplierRef interface {
 	Dbselectparam
 	SetSupplier(int)
-
 	GetSupplier() int
 }
 type dbselectparamSupplierRef struct {
@@ -357,6 +403,54 @@ func (d *dbselectparamStoreLocation) SetPermission(p string) {
 //
 // dbselectparamProduct functions
 //
+func (d *dbselectparamProduct) SetTags(t []int) {
+	d.Tags = t
+}
+
+func (d *dbselectparamProduct) GetTags() []int {
+	return d.Tags
+}
+
+func (d *dbselectparamProduct) SetCategory(c int) {
+	d.Category = c
+}
+
+func (d *dbselectparamProduct) GetCategory() int {
+	return d.Category
+}
+
+func (d *dbselectparamProduct) SetShowBio(b bool) {
+	d.ShowBio = b
+}
+
+func (d *dbselectparamProduct) GetShowBio() bool {
+	return d.ShowBio
+}
+
+func (d *dbselectparamProduct) SetShowChem(b bool) {
+	d.ShowChem = b
+}
+
+func (d *dbselectparamProduct) GetShowChem() bool {
+	return d.ShowChem
+}
+
+func (d *dbselectparamProduct) SetShowConsu(b bool) {
+	d.ShowConsu = b
+}
+
+func (d *dbselectparamProduct) GetShowConsu() bool {
+	return d.ShowConsu
+}
+
+func (d *dbselectparamProduct) SetProducerRef(i int) {
+	d.ProducerRef = i
+}
+
+func (d dbselectparamProduct) GetProducerRef() int {
+	return d.ProducerRef
+}
+
 func (d *dbselectparamProduct) SetEntity(i int) {
 	d.Entity = i
 }
@@ -411,6 +505,14 @@ func (d *dbselectparamProduct) SetCasNumber(n int) {
 
 func (d dbselectparamProduct) GetCasNumber() int {
 	return d.CasNumber
+}
+
+func (d dbselectparamProduct) GetStorageBatchNumber() string {
+	return d.StorageBatchNumber
+}
+
+func (d *dbselectparamProduct) SetStorageBatchNumber(n string) {
+	d.StorageBatchNumber = n
 }
 
 func (d *dbselectparamProduct) SetStorageBarecode(n string) {
@@ -496,6 +598,62 @@ func (d *dbselectparamProduct) GetStorageToDestroy() bool {
 //
 // dbselectparamStorage functions
 //
+func (d *dbselectparamStorage) SetTags(t []int) {
+	d.Tags = t
+}
+
+func (d *dbselectparamStorage) GetTags() []int {
+	return d.Tags
+}
+
+func (d *dbselectparamStorage) SetCategory(c int) {
+	d.Category = c
+}
+
+func (d *dbselectparamStorage) GetCategory() int {
+	return d.Category
+}
+
+func (d *dbselectparamStorage) SetShowBio(b bool) {
+	d.ShowBio = b
+}
+
+func (d *dbselectparamStorage) GetShowBio() bool {
+	return d.ShowBio
+}
+
+func (d *dbselectparamStorage) SetShowChem(b bool) {
+	d.ShowChem = b
+}
+
+func (d *dbselectparamStorage) GetShowChem() bool {
+	return d.ShowChem
+}
+
+func (d *dbselectparamStorage) SetShowConsu(b bool) {
+	d.ShowConsu = b
+}
+
+func (d *dbselectparamStorage) GetShowConsu() bool {
+	return d.ShowConsu
+}
+
+func (d *dbselectparamStorage) SetIds(i []int) {
+	d.Ids = i
+}
+
+func (d *dbselectparamStorage) GetIds() []int {
+	return d.Ids
+}
+
+func (d *dbselectparamStorage) SetProducerRef(i int) {
+	d.ProducerRef = i
+}
+
+func (d dbselectparamStorage) GetProducerRef() int {
+	return d.ProducerRef
+}
+
 func (d *dbselectparamStorage) SetEntity(i int) {
 	d.Entity = i
 }
@@ -574,6 +732,14 @@ func (d *dbselectparamStorage) SetCasNumber(n int) {
 
 func (d dbselectparamStorage) GetCasNumber() int {
 	return d.CasNumber
+}
+
+func (d *dbselectparamStorage) SetStorageBatchNumber(n string) {
+	d.StorageBatchNumber = n
+}
+
+func (d dbselectparamStorage) GetStorageBatchNumber() string {
+	return d.StorageBatchNumber
 }
 
 func (d *dbselectparamStorage) SetStorageBarecode(n string) {
@@ -736,6 +902,8 @@ func NewdbselectparamProduct(r *http.Request, f func(string) (string, error)) (*
 	)
 
 	// init defaults
+	dspp.Category = -1
+	dspp.ProducerRef = -1
 	dspp.Entity = -1
 	dspp.Product = -1
 	dspp.Storelocation = -1
@@ -744,6 +912,7 @@ func NewdbselectparamProduct(r *http.Request, f func(string) (string, error)) (*
 	dspp.CasNumber = -1
 	dspp.EmpiricalFormula = -1
 	dspp.StorageBarecode = ""
+	dspp.StorageBatchNumber = ""
 	dspp.CustomNamePartOf = ""
 	dspp.SignalWord = -1
 	dspp.CasNumberCmr = false
@@ -767,6 +936,15 @@ func NewdbselectparamProduct(r *http.Request, f func(string) (string, error)) (*
 					Error:   err,
 					Code:    http.StatusInternalServerError,
 					Message: "entity atoi conversion",
+				}
+			}
+		}
+		if producerrefid, ok := r.URL.Query()["producerref"]; ok {
+			if dspp.ProducerRef, err = strconv.Atoi(producerrefid[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "producerref atoi conversion",
 				}
 			}
 		}
@@ -875,6 +1053,9 @@ func NewdbselectparamProduct(r *http.Request, f func(string) (string, error)) (*
 		if storage_barecode, ok := r.URL.Query()["storage_barecode"]; ok {
 			dspp.StorageBarecode = "%" + storage_barecode[0] + "%"
 		}
+		if storage_batchnumber, ok := r.URL.Query()["storage_batchnumber"]; ok {
+			dspp.StorageBatchNumber = "%" + storage_batchnumber[0] + "%"
+		}
 		if custom_name_part_of, ok := r.URL.Query()["custom_name_part_of"]; ok {
 			dspp.CustomNamePartOf = "%" + custom_name_part_of[0] + "%"
 		}
@@ -908,6 +1089,55 @@ func NewdbselectparamProduct(r *http.Request, f func(string) (string, error)) (*
 				}
 			}
 		}
+		if showbio, ok := r.URL.Query()["showbio"]; ok {
+			if dspp.ShowBio, err = strconv.ParseBool(showbio[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "showbio bool conversion",
+				}
+			}
+		}
+		if showchem, ok := r.URL.Query()["showchem"]; ok {
+			if dspp.ShowChem, err = strconv.ParseBool(showchem[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "showchem bool conversion",
+				}
+			}
+		}
+		if showconsu, ok := r.URL.Query()["showconsu"]; ok {
+			if dspp.ShowConsu, err = strconv.ParseBool(showconsu[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "showconsu bool conversion",
+				}
+			}
+		}
+		if categoryid, ok := r.URL.Query()["category"]; ok {
+			if dspp.Category, err = strconv.Atoi(categoryid[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "category atoi conversion",
+				}
+			}
+		}
+		if tagsids, ok := r.URL.Query()["tags[]"]; ok {
+			var tint int
+			for _, t := range tagsids {
+				if tint, err = strconv.Atoi(t); err != nil {
+					return nil, &AppError{
+						Error:   err,
+						Code:    http.StatusInternalServerError,
+						Message: "tag atoi conversion",
+					}
+				}
+				dspp.Tags = append(dspp.Tags, tint)
+			}
+		}
 	}
 	return &dspp, nil
 
@@ -925,6 +1155,8 @@ func NewdbselectparamStorage(r *http.Request, f func(string) (string, error)) (*
 	)
 
 	// init defaults
+	dsps.Category = -1
+	dsps.ProducerRef = -1
 	dsps.Entity = -1
 	dsps.Product = -1
 	dsps.Storelocation = -1
@@ -936,6 +1168,7 @@ func NewdbselectparamStorage(r *http.Request, f func(string) (string, error)) (*
 	dsps.CasNumber = -1
 	dsps.EmpiricalFormula = -1
 	dsps.StorageBarecode = ""
+	dsps.StorageBatchNumber = ""
 	dsps.CustomNamePartOf = ""
 	dsps.SignalWord = -1
 	dsps.CasNumberCmr = false
@@ -947,6 +1180,19 @@ func NewdbselectparamStorage(r *http.Request, f func(string) (string, error)) (*
 	dsps.dbselectparam = *dsp
 
 	if r != nil {
+		if ids, ok := r.URL.Query()["ids"]; ok {
+			for _, id := range ids {
+				idInt, err := strconv.Atoi(id)
+				if err != nil {
+					return nil, &AppError{
+						Error:   err,
+						Code:    http.StatusInternalServerError,
+						Message: "ids atoi conversion",
+					}
+				}
+				dsps.Ids = append(dsps.Ids, idInt)
+			}
+		}
 		if o, ok := r.URL.Query()["sort"]; ok {
 			switch o[0] {
 			case "product.name.name_label":
@@ -963,6 +1209,15 @@ func NewdbselectparamStorage(r *http.Request, f func(string) (string, error)) (*
 					Error:   err,
 					Code:    http.StatusInternalServerError,
 					Message: "entity atoi conversion",
+				}
+			}
+		}
+		if producerrefid, ok := r.URL.Query()["producerref"]; ok {
+			if dsps.ProducerRef, err = strconv.Atoi(producerrefid[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "producerref atoi conversion",
 				}
 			}
 		}
@@ -1098,6 +1353,9 @@ func NewdbselectparamStorage(r *http.Request, f func(string) (string, error)) (*
 		if storage_barecode, ok := r.URL.Query()["storage_barecode"]; ok {
 			dsps.StorageBarecode = "%" + storage_barecode[0] + "%"
 		}
+		if storage_batchnumber, ok := r.URL.Query()["storage_batchnumber"]; ok {
+			dsps.StorageBatchNumber = "%" + storage_batchnumber[0] + "%"
+		}
 		if custom_name_part_of, ok := r.URL.Query()["custom_name_part_of"]; ok {
 			dsps.CustomNamePartOf = "%" + custom_name_part_of[0] + "%"
 		}
@@ -1126,6 +1384,55 @@ func NewdbselectparamStorage(r *http.Request, f func(string) (string, error)) (*
 					Code:    http.StatusInternalServerError,
 					Message: "storage_to_destroy bool conversion",
 				}
+			}
+		}
+		if showbio, ok := r.URL.Query()["showbio"]; ok {
+			if dsps.ShowBio, err = strconv.ParseBool(showbio[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "showbio bool conversion",
+				}
+			}
+		}
+		if showchem, ok := r.URL.Query()["showchem"]; ok {
+			if dsps.ShowChem, err = strconv.ParseBool(showchem[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "showchem bool conversion",
+				}
+			}
+		}
+		if showconsu, ok := r.URL.Query()["showconsu"]; ok {
+			if dsps.ShowConsu, err = strconv.ParseBool(showconsu[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "showconsu bool conversion",
+				}
+			}
+		}
+		if categoryid, ok := r.URL.Query()["category"]; ok {
+			if dsps.Category, err = strconv.Atoi(categoryid[0]); err != nil {
+				return nil, &AppError{
+					Error:   err,
+					Code:    http.StatusInternalServerError,
+					Message: "category atoi conversion",
+				}
+			}
+		}
+		if tagsids, ok := r.URL.Query()["tags[]"]; ok {
+			var tint int
+			for _, t := range tagsids {
+				if tint, err = strconv.Atoi(t); err != nil {
+					return nil, &AppError{
+						Error:   err,
+						Code:    http.StatusInternalServerError,
+						Message: "tag atoi conversion",
+					}
+				}
+				dsps.Tags = append(dsps.Tags, tint)
 			}
 		}
 	}
@@ -1163,7 +1470,7 @@ func NewdbselectparamStoreLocation(r *http.Request, f func(string) (string, erro
 				return nil, &AppError{
 					Error:   err,
 					Code:    http.StatusInternalServerError,
-					Message: "limit atoi conversion",
+					Message: "entity atoi conversion",
 				}
 			}
 		}
@@ -1243,7 +1550,7 @@ func NewdbselectparamProducerRef(r *http.Request, f func(string) (string, error)
 				return nil, &AppError{
 					Error:   err,
 					Code:    http.StatusInternalServerError,
-					Message: "limit atoi conversion",
+					Message: "producer atoi conversion",
 				}
 			}
 		}
@@ -1280,7 +1587,7 @@ func NewdbselectparamSupplierRef(r *http.Request, f func(string) (string, error)
 				return nil, &AppError{
 					Error:   err,
 					Code:    http.StatusInternalServerError,
-					Message: "limit atoi conversion",
+					Message: "supplier atoi conversion",
 				}
 			}
 		}
@@ -1317,7 +1624,7 @@ func NewdbselectparamPerson(r *http.Request, f func(string) (string, error)) (*d
 				return nil, &AppError{
 					Error:   err,
 					Code:    http.StatusInternalServerError,
-					Message: "limit atoi conversion",
+					Message: "entity atoi conversion",
 				}
 			}
 		}

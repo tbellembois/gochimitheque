@@ -6,166 +6,17 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
-	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
-	"github.com/tbellembois/gochimitheque/globals"
+	"github.com/tbellembois/gochimitheque-utils/convert"
+	"github.com/tbellembois/gochimitheque-utils/sort"
+	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
 	"github.com/tbellembois/gochimitheque/static/jade"
-	"github.com/tbellembois/gochimitheque/utils"
 )
-
-// oneGroupAtomCount returns a count of the atoms of the f formula as a map.
-// f must be a formula like (XYZ) (XYZ)n or [XYZ] [XYZ]n.
-// example:
-// (CH3)2 will return "C":2, "H":6
-// CH3CH(NO2)CH3 will return "N":1 "O":2
-// CH3CH(NO2)(CH3)2 will return "N":1 "O":2 - process only the first match
-func oneGroupAtomCount(f string) map[string]int {
-	var (
-		// the result map
-		c = make(map[string]int)
-		r = globals.OneGroupMolRe
-	)
-	// Looking for non matching molecules.
-	if !r.MatchString(f) {
-		return nil
-	}
-
-	// sl is a list of 3 elements like
-	// [[(CH3Na6CCl5H)2 CH3Na6CCl5H 2]]
-	sl := r.FindAllStringSubmatch(f, -1)
-	basicMol := sl[0][1]
-	multiplier, _ := strconv.Atoi(sl[0][2])
-
-	// if there is no multiplier
-	if multiplier == 0 {
-		multiplier = 1
-	}
-
-	// counting the atoms
-	aCount := basicAtomCount(basicMol)
-	for at, nb := range aCount {
-		c[at] = nb * multiplier
-	}
-
-	return c
-}
-
-// basicAtomCount returns a count of the atoms of the f formula as a map.
-// f must be a basic formula with only atoms and numbers.
-// example:
-// C6H5COC6H4CO2H will return "C1":4, "H":10, "O":3
-// CH3CH(NO2)CH3 will return Nil, parenthesis are not allowed
-func basicAtomCount(f string) map[string]int {
-	var (
-		// the result map
-		c   = make(map[string]int)
-		r   = globals.BasicMolRe
-		err error
-	)
-	// Looking for non matching molecules.
-	if !r.MatchString(f) {
-		return nil
-	}
-
-	// sl is a slice like [[Na Na ] [Cl Cl ] [C2 C 2] [Cl3 Cl 3]]
-	// for f = NaClC2Cl3
-	// [ matchingString capture1 capture2 ]
-	// capture1 is the atom
-	// capture2 is the its number
-	sl := r.FindAllStringSubmatch(f, -1)
-	for _, i := range sl {
-		atom := i[1]
-		var nbAtom int
-		if i[2] != "" {
-			nbAtom, err = strconv.Atoi(i[2])
-			if err != nil {
-				return nil
-			}
-		} else {
-			nbAtom = 1
-		}
-		if _, ok := c[atom]; ok {
-			c[atom] = c[atom] + nbAtom
-		} else {
-			c[atom] = nbAtom
-		}
-	}
-	return c
-}
-
-// LinearToEmpiricalFormula returns the empirical formula from the linear formula f.
-// example: [(CH3)2SiH]2NH
-//          (CH3)2C[C6H2(Br)2OH]2
-func LinearToEmpiricalFormula(f string) string {
-	var ef string
-
-	s := "-"
-	nf := ""
-
-	// Finding the first (XYZ)n match
-	reg := globals.OneGroupMolRe
-
-	for s != "" {
-		s = reg.FindString(f)
-
-		// Counting the atoms and rebuilding the molecule string
-		m := oneGroupAtomCount(s)
-		ms := "" // molecule string
-		for k, v := range m {
-			ms += k
-			if v != 1 {
-				ms += fmt.Sprintf("%d", v)
-			}
-		}
-
-		// Then replacing the match with the molecule string - nf is for "new f"
-		nf = strings.Replace(f, s, ms, 1)
-		f = nf
-	}
-
-	// Counting the atoms
-	bAc := basicAtomCount(nf)
-
-	// Sorting the atoms
-	// C, H and then in alphabetical order
-	var ats []string // atoms
-	hasC := false    // C atom present
-	hasH := false    // H atom present
-
-	for k := range bAc {
-		switch k {
-		case "C":
-			hasC = true
-		case "H":
-			hasH = true
-		default:
-			ats = append(ats, k)
-		}
-	}
-	sort.Strings(ats)
-
-	if hasH {
-		ats = append([]string{"H"}, ats...)
-	}
-	if hasC {
-		ats = append([]string{"C"}, ats...)
-	}
-
-	for _, at := range ats {
-		ef += at
-		nb := bAc[at]
-		if nb != 1 {
-			ef += fmt.Sprintf("%d", nb)
-		}
-	}
-
-	return ef
-}
 
 func sanitizeProduct(p *models.Product) {
 
@@ -208,97 +59,9 @@ func (env *Env) VCreateProductHandler(w http.ResponseWriter, r *http.Request) *m
 	REST handlers
 */
 
-// MagicHandler handles the magical selector.
-func (env *Env) MagicHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("MagicHandler")
-
-	rhs := regexp.MustCompile("((?:EU){0,1}H[0-9]{3}[FfDdAi]{0,2})")
-	rps := regexp.MustCompile("(P[0-9]{3})")
-
-	// form receiver
-	type magic struct {
-		MSDS string
-	}
-	// response
-	type Resp struct {
-		HS []models.HazardStatement        `json:"hs"`
-		PS []models.PrecautionaryStatement `json:"ps"`
-	}
-
-	var (
-		err  error
-		m    magic
-		hs   models.HazardStatement
-		ps   models.PrecautionaryStatement
-		resp Resp
-	)
-
-	if err = r.ParseForm(); err != nil {
-		return &models.AppError{
-			Error:   err,
-			Message: "form parsing error",
-			Code:    http.StatusBadRequest}
-	}
-	if err = globals.Decoder.Decode(&m, r.PostForm); err != nil {
-		return &models.AppError{
-			Error:   err,
-			Message: "form decoding error",
-			Code:    http.StatusBadRequest}
-	}
-
-	shs := rhs.FindAllStringSubmatch(m.MSDS, -1)
-	sps := rps.FindAllStringSubmatch(m.MSDS, -1)
-
-	var (
-		processedH map[string]string
-		processedP map[string]string
-		ok         bool
-	)
-	processedH = make(map[string]string)
-	for _, h := range shs {
-
-		if _, ok = processedH[h[1]]; !ok {
-			processedH[h[1]] = ""
-
-			// silent db errors
-			hs, err = env.DB.GetProductsHazardStatementByReference(h[1])
-			if err != sql.ErrNoRows {
-				resp.HS = append(resp.HS, hs)
-			}
-
-		}
-	}
-	processedP = make(map[string]string)
-	for _, p := range sps {
-
-		if _, ok = processedP[p[1]]; !ok {
-			processedP[p[1]] = ""
-
-			// silent db errors
-			ps, err = env.DB.GetProductsPrecautionaryStatementByReference(p[1])
-			if err != sql.ErrNoRows {
-				resp.PS = append(resp.PS, ps)
-			}
-
-		}
-	}
-
-	globals.Log.WithFields(logrus.Fields{"m.msds": m.MSDS, "shs": shs, "sps": sps}).Debug("MagicHandler")
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	if err = json.NewEncoder(w).Encode(resp); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
-
-	return nil
-}
-
 // GetProductsProducerRefsHandler returns a json list of the producerref
 func (env *Env) GetProductsProducerRefsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetProductsProducerRefsHandler")
+	logger.Log.Debug("GetProductsProducerRefsHandler")
 
 	var (
 		err  error
@@ -338,7 +101,7 @@ func (env *Env) GetProductsProducerRefsHandler(w http.ResponseWriter, r *http.Re
 
 // GetProductsSupplierRefsHandler returns a json list of the producerref
 func (env *Env) GetProductsSupplierRefsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetProductsSupplierRefsHandler")
+	logger.Log.Debug("GetProductsSupplierRefsHandler")
 
 	var (
 		err  error
@@ -378,7 +141,7 @@ func (env *Env) GetProductsSupplierRefsHandler(w http.ResponseWriter, r *http.Re
 
 // GetProductsCategoriesHandler returns a json list of the producer
 func (env *Env) GetProductsCategoriesHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetProductsCategoriesHandler")
+	logger.Log.Debug("GetProductsCategoriesHandler")
 
 	var (
 		err  error
@@ -418,7 +181,7 @@ func (env *Env) GetProductsCategoriesHandler(w http.ResponseWriter, r *http.Requ
 
 // GetProductsTagsHandler returns a json list of the tag
 func (env *Env) GetProductsTagsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetProductsTagsHandler")
+	logger.Log.Debug("GetProductsTagsHandler")
 
 	var (
 		err  error
@@ -458,7 +221,7 @@ func (env *Env) GetProductsTagsHandler(w http.ResponseWriter, r *http.Request) *
 
 // GetProductsProducersHandler returns a json list of the producer
 func (env *Env) GetProductsProducersHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetProductsProducersHandler")
+	logger.Log.Debug("GetProductsProducersHandler")
 
 	var (
 		err  error
@@ -498,7 +261,7 @@ func (env *Env) GetProductsProducersHandler(w http.ResponseWriter, r *http.Reque
 
 // GetProductsSuppliersHandler returns a json list of the supplier
 func (env *Env) GetProductsSuppliersHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetProductsSuppliersHandler")
+	logger.Log.Debug("GetProductsSuppliersHandler")
 
 	var (
 		err  error
@@ -571,8 +334,13 @@ func (env *Env) ToogleProductBookmarkHandler(w http.ResponseWriter, r *http.Requ
 	// toggling the bookmark
 	if isbookmark {
 		err = env.DB.DeleteProductBookmark(product, person)
+		product.Bookmark = nil
 	} else {
 		err = env.DB.CreateProductBookmark(product, person)
+		product.Bookmark = &models.Bookmark{
+			Person:  person,
+			Product: product,
+		}
 	}
 	if err != nil {
 		return &models.AppError{
@@ -595,7 +363,7 @@ func (env *Env) ToogleProductBookmarkHandler(w http.ResponseWriter, r *http.Requ
 
 // GetProductsCasNumbersHandler returns a json list of the cas numbers matching the search criteria
 func (env *Env) GetProductsCasNumbersHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetProductsCasNumbersHandler")
+	logger.Log.Debug("GetProductsCasNumbersHandler")
 
 	var (
 		err  error
@@ -654,7 +422,7 @@ func (env *Env) GetProductsCasNumbersHandler(w http.ResponseWriter, r *http.Requ
 
 // GetProductsCeNumbersHandler returns a json list of the ce numbers matching the search criteria
 func (env *Env) GetProductsCeNumbersHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetProductsCeNumbersHandler")
+	logger.Log.Debug("GetProductsCeNumbersHandler")
 
 	var (
 		err  error
@@ -694,7 +462,7 @@ func (env *Env) GetProductsCeNumbersHandler(w http.ResponseWriter, r *http.Reque
 
 // GetProductsPhysicalStatesHandler returns a json list of the physical states matching the search criteria
 func (env *Env) GetProductsPhysicalStatesHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetProductsPhysicalStatesHandler")
+	logger.Log.Debug("GetProductsPhysicalStatesHandler")
 
 	var (
 		err  error
@@ -734,7 +502,7 @@ func (env *Env) GetProductsPhysicalStatesHandler(w http.ResponseWriter, r *http.
 
 // GetProductsSignalWordsHandler returns a json list of the signal words matching the search criteria
 func (env *Env) GetProductsSignalWordsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetProductsSignalWordsHandler")
+	logger.Log.Debug("GetProductsSignalWordsHandler")
 
 	var (
 		err  error
@@ -774,7 +542,7 @@ func (env *Env) GetProductsSignalWordsHandler(w http.ResponseWriter, r *http.Req
 
 // GetProductsClassOfCompoundsHandler returns a json list of the classes of compounds matching the search criteria
 func (env *Env) GetProductsClassOfCompoundsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetProductsClassOfCompoundsHandler")
+	logger.Log.Debug("GetProductsClassOfCompoundsHandler")
 
 	var (
 		err  error
@@ -814,7 +582,7 @@ func (env *Env) GetProductsClassOfCompoundsHandler(w http.ResponseWriter, r *htt
 
 // GetProductsEmpiricalFormulasHandler returns a json list of the empirical formulas matching the search criteria
 func (env *Env) GetProductsEmpiricalFormulasHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetProductsEmpiricalFormulasHandler")
+	logger.Log.Debug("GetProductsEmpiricalFormulasHandler")
 
 	var (
 		err  error
@@ -823,7 +591,7 @@ func (env *Env) GetProductsEmpiricalFormulasHandler(w http.ResponseWriter, r *ht
 	)
 
 	// init db request parameters
-	if dsp, aerr = models.Newdbselectparam(r, utils.SortEmpiricalFormula); aerr != nil {
+	if dsp, aerr = models.Newdbselectparam(r, sort.SortEmpiricalFormula); aerr != nil {
 		return aerr
 	}
 
@@ -854,7 +622,7 @@ func (env *Env) GetProductsEmpiricalFormulasHandler(w http.ResponseWriter, r *ht
 
 // GetProductsLinearFormulasHandler returns a json list of the linear formulas matching the search criteria
 func (env *Env) GetProductsLinearFormulasHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetProductsLinearFormulasHandler")
+	logger.Log.Debug("GetProductsLinearFormulasHandler")
 
 	var (
 		err  error
@@ -894,7 +662,7 @@ func (env *Env) GetProductsLinearFormulasHandler(w http.ResponseWriter, r *http.
 
 // GetProductsNamesHandler returns a json list of the names matching the search criteria
 func (env *Env) GetProductsNamesHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetProductsNamesHandler")
+	logger.Log.Debug("GetProductsNamesHandler")
 
 	var (
 		err  error
@@ -934,7 +702,7 @@ func (env *Env) GetProductsNamesHandler(w http.ResponseWriter, r *http.Request) 
 
 // GetProductsNameHandler returns a json of the name matching the id
 func (env *Env) GetProductsNameHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetProductsNameHandler")
+	logger.Log.Debug("GetProductsNameHandler")
 
 	vars := mux.Vars(r)
 	var (
@@ -971,7 +739,7 @@ func (env *Env) GetProductsNameHandler(w http.ResponseWriter, r *http.Request) *
 
 // GetProductsEmpiricalFormulaHandler returns a json of the formula matching the id
 func (env *Env) GetProductsEmpiricalFormulaHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetProductsEmpiricalFormulaHandler")
+	logger.Log.Debug("GetProductsEmpiricalFormulaHandler")
 
 	vars := mux.Vars(r)
 	var (
@@ -1008,7 +776,7 @@ func (env *Env) GetProductsEmpiricalFormulaHandler(w http.ResponseWriter, r *htt
 
 // GetProductsCasNumberHandler returns a json of the formula matching the id
 func (env *Env) GetProductsCasNumberHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetProductsCasNumberHandler")
+	logger.Log.Debug("GetProductsCasNumberHandler")
 
 	vars := mux.Vars(r)
 	var (
@@ -1045,7 +813,7 @@ func (env *Env) GetProductsCasNumberHandler(w http.ResponseWriter, r *http.Reque
 
 // GetProductsSignalWordHandler returns a json of the signal word matching the id
 func (env *Env) GetProductsSignalWordHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetProductsSignalWordHandler")
+	logger.Log.Debug("GetProductsSignalWordHandler")
 
 	vars := mux.Vars(r)
 	var (
@@ -1082,7 +850,7 @@ func (env *Env) GetProductsSignalWordHandler(w http.ResponseWriter, r *http.Requ
 
 // GetProductsSymbolsHandler returns a json list of the symbols matching the search criteria
 func (env *Env) GetProductsSymbolsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetProductsSymbolsHandler")
+	logger.Log.Debug("GetProductsSymbolsHandler")
 
 	var (
 		err  error
@@ -1122,7 +890,7 @@ func (env *Env) GetProductsSymbolsHandler(w http.ResponseWriter, r *http.Request
 
 // GetProductsSymbolHandler returns a json of the symbol matching the id
 func (env *Env) GetProductsSymbolHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetProductsSymbolHandler")
+	logger.Log.Debug("GetProductsSymbolHandler")
 
 	vars := mux.Vars(r)
 	var (
@@ -1159,7 +927,7 @@ func (env *Env) GetProductsSymbolHandler(w http.ResponseWriter, r *http.Request)
 
 // GetProductsHazardStatementsHandler returns a json list of the hazard statements matching the search criteria
 func (env *Env) GetProductsHazardStatementsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetProductsHazardStatementsHandler")
+	logger.Log.Debug("GetProductsHazardStatementsHandler")
 
 	var (
 		err  error
@@ -1199,7 +967,7 @@ func (env *Env) GetProductsHazardStatementsHandler(w http.ResponseWriter, r *htt
 
 // GetProductsHazardStatementHandler returns a json of the hazardstatement matching the id
 func (env *Env) GetProductsHazardStatementHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetProductsHazardStatementHandler")
+	logger.Log.Debug("GetProductsHazardStatementHandler")
 
 	vars := mux.Vars(r)
 	var (
@@ -1236,7 +1004,7 @@ func (env *Env) GetProductsHazardStatementHandler(w http.ResponseWriter, r *http
 
 // GetProductsPrecautionaryStatementsHandler returns a json list of the precautionary statements matching the search criteria
 func (env *Env) GetProductsPrecautionaryStatementsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetProductsPrecautionaryStatementsHandler")
+	logger.Log.Debug("GetProductsPrecautionaryStatementsHandler")
 
 	var (
 		err  error
@@ -1276,7 +1044,7 @@ func (env *Env) GetProductsPrecautionaryStatementsHandler(w http.ResponseWriter,
 
 // GetProductsPrecautionaryStatementHandler returns a json of the precautionarystatement matching the id
 func (env *Env) GetProductsPrecautionaryStatementHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetProductsPrecautionaryStatementHandler")
+	logger.Log.Debug("GetProductsPrecautionaryStatementHandler")
 
 	vars := mux.Vars(r)
 	var (
@@ -1313,7 +1081,7 @@ func (env *Env) GetProductsPrecautionaryStatementHandler(w http.ResponseWriter, 
 
 // GetProductsSynonymsHandler returns a json list of the symbols matching the search criteria
 func (env *Env) GetProductsSynonymsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetProductsSynonymsHandler")
+	logger.Log.Debug("GetProductsSynonymsHandler")
 
 	var (
 		err  error
@@ -1353,7 +1121,7 @@ func (env *Env) GetProductsSynonymsHandler(w http.ResponseWriter, r *http.Reques
 
 // GetExposedProductsHandler returns a json of the product with the requested id
 func (env *Env) GetExposedProductsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetExposedProductsHandler")
+	logger.Log.Debug("GetExposedProductsHandler")
 
 	var (
 		err error
@@ -1386,7 +1154,7 @@ func (env *Env) GetExposedProductsHandler(w http.ResponseWriter, r *http.Request
 
 // GetProductsHandler returns a json list of the products matching the search criteria
 func (env *Env) GetProductsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetProductsHandler")
+	logger.Log.Debug("GetProductsHandler")
 
 	var (
 		err      error
@@ -1411,7 +1179,7 @@ func (env *Env) GetProductsHandler(w http.ResponseWriter, r *http.Request) *mode
 
 	// export?
 	if _, export := r.URL.Query()["export"]; export {
-		exportfn = utils.ProductsToCSV(products)
+		exportfn = models.ProductsToCSV(products)
 		// emptying results on exports
 		products = []models.Product{}
 		count = 0
@@ -1457,7 +1225,7 @@ func (env *Env) GetProductHandler(w http.ResponseWriter, r *http.Request) *model
 			Message: "error getting the product",
 		}
 	}
-	globals.Log.WithFields(logrus.Fields{"product": product}).Debug("GetProductHandler")
+	logger.Log.WithFields(logrus.Fields{"product": product}).Debug("GetProductHandler")
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
@@ -1472,30 +1240,24 @@ func (env *Env) GetProductHandler(w http.ResponseWriter, r *http.Request) *model
 
 // CreateProductHandler creates the product from the request form
 func (env *Env) CreateProductHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("CreateProductHandler")
+	logger.Log.Debug("CreateProductHandler")
 	var (
 		p   models.Product
 		err error
 	)
-	if err = r.ParseForm(); err != nil {
+
+	if err = json.NewDecoder(r.Body).Decode(&p); err != nil {
 		return &models.AppError{
 			Error:   err,
-			Message: "form parsing error",
-			Code:    http.StatusBadRequest}
+			Message: "JSON decoding error",
+			Code:    http.StatusInternalServerError}
 	}
 
 	// retrieving the logged user id from request context
 	c := models.ContainerFromRequestContext(r)
 
-	if err = globals.Decoder.Decode(&p, r.PostForm); err != nil {
-		return &models.AppError{
-			Error:   err,
-			Message: "form decoding error",
-			Code:    http.StatusBadRequest}
-	}
-	// p.ProductCreationDate = time.Now()
 	p.PersonID = c.PersonID
-	globals.Log.WithFields(logrus.Fields{"p": p}).Debug("CreateProductHandler")
+	logger.Log.WithFields(logrus.Fields{"p": fmt.Sprintf("%+v", p)}).Debug("CreateProductHandler")
 
 	sanitizeProduct(&p)
 	if p.ProductID, err = env.DB.CreateProduct(p); err != nil {
@@ -1525,25 +1287,19 @@ func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *mo
 		p   models.Product
 	)
 
-	if err := r.ParseForm(); err != nil {
+	if err = json.NewDecoder(r.Body).Decode(&p); err != nil {
 		return &models.AppError{
 			Error:   err,
-			Message: "form parsing error",
-			Code:    http.StatusBadRequest}
+			Message: "JSON decoding error",
+			Code:    http.StatusInternalServerError}
 	}
 
 	// retrieving the logged user id from request context
 	c := models.ContainerFromRequestContext(r)
 
-	if err := globals.Decoder.Decode(&p, r.PostForm); err != nil {
-		return &models.AppError{
-			Error:   err,
-			Message: "form decoding error",
-			Code:    http.StatusBadRequest}
-	}
 	// p.ProductCreationDate = time.Now()
 	p.PersonID = c.PersonID
-	globals.Log.WithFields(logrus.Fields{"p": p}).Debug("UpdateProductHandler")
+	logger.Log.WithFields(logrus.Fields{"p": p}).Debug("UpdateProductHandler")
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
 		return &models.AppError{
@@ -1558,7 +1314,6 @@ func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *mo
 	updatedp.EmpiricalFormula = p.EmpiricalFormula
 	updatedp.LinearFormula = p.LinearFormula
 	updatedp.Name = p.Name
-	// updatedp.ProductBatchNumber = p.ProductBatchNumber
 	updatedp.ProductSpecificity = p.ProductSpecificity
 	updatedp.Symbols = p.Symbols
 	updatedp.Synonyms = p.Synonyms
@@ -1567,9 +1322,12 @@ func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *mo
 	updatedp.ProductRadioactive = p.ProductRadioactive
 	updatedp.LinearFormula = p.LinearFormula
 	updatedp.ProductThreeDFormula = p.ProductThreeDFormula
+	updatedp.ProductTwoDFormula = p.ProductTwoDFormula
 	updatedp.ProductMolFormula = p.ProductMolFormula
 	updatedp.ProductDisposalComment = p.ProductDisposalComment
 	updatedp.ProductRemark = p.ProductRemark
+	updatedp.ProductNumberPerCarton = p.ProductNumberPerCarton
+	updatedp.ProductNumberPerBag = p.ProductNumberPerBag
 	updatedp.PhysicalState = p.PhysicalState
 	updatedp.SignalWord = p.SignalWord
 	updatedp.ClassOfCompound = p.ClassOfCompound
@@ -1579,13 +1337,10 @@ func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *mo
 	updatedp.Category = p.Category
 	updatedp.ProducerRef = p.ProducerRef
 	updatedp.SupplierRefs = p.SupplierRefs
-	// updatedp.ProductBatchNumber = p.ProductBatchNumber
-	// updatedp.ProductConcentration = p.ProductConcentration
+	updatedp.ProductSheet = p.ProductSheet
 	updatedp.ProductTemperature = p.ProductTemperature
-	// updatedp.ProductExpirationDate = p.ProductExpirationDate
-	// updatedp.UnitConcentration = p.UnitConcentration
 	updatedp.UnitTemperature = p.UnitTemperature
-	globals.Log.WithFields(logrus.Fields{"updatedp": updatedp}).Debug("UpdateProductHandler")
+	logger.Log.WithFields(logrus.Fields{"updatedp": updatedp}).Debug("UpdateProductHandler")
 
 	sanitizeProduct(&updatedp)
 	if err := env.DB.UpdateProduct(updatedp); err != nil {
@@ -1640,7 +1395,7 @@ func (env *Env) ConvertProductEmpiricalToLinearFormulaHandler(w http.ResponseWri
 		err  error
 	)
 
-	l2ef = LinearToEmpiricalFormula(vars["f"])
+	l2ef = convert.LinearToEmpiricalFormula(vars["f"])
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
@@ -1656,25 +1411,33 @@ func (env *Env) ConvertProductEmpiricalToLinearFormulaHandler(w http.ResponseWri
 
 // CreateSupplierHandler creates the supplier from the request form
 func (env *Env) CreateSupplierHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("CreateSupplierHandler")
+	logger.Log.Debug("CreateSupplierHandler")
 	var (
 		sup models.Supplier
 		err error
 		id  int
 	)
-	if err := r.ParseForm(); err != nil {
+
+	if err = json.NewDecoder(r.Body).Decode(&sup); err != nil {
 		return &models.AppError{
 			Error:   err,
-			Message: "form parsing error",
-			Code:    http.StatusBadRequest}
+			Message: "JSON decoding error",
+			Code:    http.StatusInternalServerError}
 	}
 
-	if err := globals.Decoder.Decode(&sup, r.PostForm); err != nil {
-		return &models.AppError{
-			Error:   err,
-			Message: "form decoding error",
-			Code:    http.StatusBadRequest}
-	}
+	// if err := r.ParseForm(); err != nil {
+	// 	return &models.AppError{
+	// 		Error:   err,
+	// 		Message: "form parsing error",
+	// 		Code:    http.StatusBadRequest}
+	// }
+
+	// if err := globals.Decoder.Decode(&sup, r.PostForm); err != nil {
+	// 	return &models.AppError{
+	// 		Error:   err,
+	// 		Message: "form decoding error",
+	// 		Code:    http.StatusBadRequest}
+	// }
 
 	if id, err = env.DB.CreateSupplier(sup); err != nil {
 		return &models.AppError{
@@ -1697,25 +1460,33 @@ func (env *Env) CreateSupplierHandler(w http.ResponseWriter, r *http.Request) *m
 
 // CreateProducerHandler creates the producer from the request form
 func (env *Env) CreateProducerHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("CreateProducerHandler")
+	logger.Log.Debug("CreateProducerHandler")
 	var (
 		pr  models.Producer
 		err error
 		id  int
 	)
-	if err := r.ParseForm(); err != nil {
+
+	if err = json.NewDecoder(r.Body).Decode(&pr); err != nil {
 		return &models.AppError{
 			Error:   err,
-			Message: "form parsing error",
-			Code:    http.StatusBadRequest}
+			Message: "JSON decoding error",
+			Code:    http.StatusInternalServerError}
 	}
 
-	if err := globals.Decoder.Decode(&pr, r.PostForm); err != nil {
-		return &models.AppError{
-			Error:   err,
-			Message: "form decoding error",
-			Code:    http.StatusBadRequest}
-	}
+	// if err := r.ParseForm(); err != nil {
+	// 	return &models.AppError{
+	// 		Error:   err,
+	// 		Message: "form parsing error",
+	// 		Code:    http.StatusBadRequest}
+	// }
+
+	// if err := globals.Decoder.Decode(&pr, r.PostForm); err != nil {
+	// 	return &models.AppError{
+	// 		Error:   err,
+	// 		Message: "form decoding error",
+	// 		Code:    http.StatusBadRequest}
+	// }
 
 	if id, err = env.DB.CreateProducer(pr); err != nil {
 		return &models.AppError{

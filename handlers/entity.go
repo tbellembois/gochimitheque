@@ -7,7 +7,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
-	"github.com/tbellembois/gochimitheque/globals"
+	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
 	"github.com/tbellembois/gochimitheque/static/jade"
 )
@@ -42,7 +42,7 @@ func (env *Env) VCreateEntityHandler(w http.ResponseWriter, r *http.Request) *mo
 
 // GetEntitiesHandler returns a json list of the entities matching the search criteria
 func (env *Env) GetEntitiesHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	globals.Log.Debug("GetEntitiesHandler")
+	logger.Log.Debug("GetEntitiesHandler")
 
 	var (
 		err      error
@@ -146,7 +146,7 @@ func (env *Env) GetEntityHandler(w http.ResponseWriter, r *http.Request) *models
 			Message: "error getting the entity",
 		}
 	}
-	globals.Log.WithFields(logrus.Fields{"entity": entity}).Debug("GetEntityHandler")
+	logger.Log.WithFields(logrus.Fields{"entity": entity}).Debug("GetEntityHandler")
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
@@ -175,14 +175,14 @@ func (env *Env) GetEntityPeopleHandler(w http.ResponseWriter, r *http.Request) *
 			Code:    http.StatusInternalServerError}
 	}
 
-	if people, err = env.DB.GetEntityPeople(id); err != nil {
+	if people, err = env.DB.GetEntityManager(id); err != nil {
 		return &models.AppError{
 			Error:   err,
 			Code:    http.StatusInternalServerError,
 			Message: "error getting the entity people",
 		}
 	}
-	globals.Log.WithFields(logrus.Fields{"people": people}).Debug("GetEntityPeopleHandler")
+	logger.Log.WithFields(logrus.Fields{"people": people}).Debug("GetEntityPeopleHandler")
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
@@ -222,7 +222,7 @@ func (env *Env) CreateEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 	// 		Message: "form decoding error",
 	// 		Code:    http.StatusBadRequest}
 	// }
-	globals.Log.WithFields(logrus.Fields{"e": e}).Debug("CreateEntityHandler")
+	logger.Log.WithFields(logrus.Fields{"e": e}).Debug("CreateEntityHandler")
 
 	if _, err = env.DB.CreateEntity(e); err != nil {
 		return &models.AppError{
@@ -231,7 +231,7 @@ func (env *Env) CreateEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 			Code:    http.StatusInternalServerError}
 	}
 
-	env.ReloadPolicy()
+	env.InitCasbinPolicy()
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
@@ -273,7 +273,7 @@ func (env *Env) UpdateEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 	// 		Message: "form decoding error",
 	// 		Code:    http.StatusBadRequest}
 	// }
-	globals.Log.WithFields(logrus.Fields{"e": e}).Debug("UpdateEntityHandler")
+	logger.Log.WithFields(logrus.Fields{"e": e}).Debug("UpdateEntityHandler")
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
 		return &models.AppError{
@@ -291,7 +291,7 @@ func (env *Env) UpdateEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 	updatede.EntityName = e.EntityName
 	updatede.EntityDescription = e.EntityDescription
 	updatede.Managers = e.Managers
-	globals.Log.WithFields(logrus.Fields{"updatede": updatede}).Debug("UpdateEntityHandler")
+	logger.Log.WithFields(logrus.Fields{"updatede": updatede}).Debug("UpdateEntityHandler")
 
 	if err = env.DB.UpdateEntity(updatede); err != nil {
 		return &models.AppError{
@@ -300,7 +300,7 @@ func (env *Env) UpdateEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 			Code:    http.StatusInternalServerError}
 	}
 
-	env.ReloadPolicy()
+	env.InitCasbinPolicy()
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
@@ -327,7 +327,7 @@ func (env *Env) DeleteEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 			Message: "id atoi conversion",
 			Code:    http.StatusInternalServerError}
 	}
-	globals.Log.WithFields(logrus.Fields{"id": id}).Debug("DeleteEntityHandler")
+	logger.Log.WithFields(logrus.Fields{"id": id}).Debug("DeleteEntityHandler")
 
 	if err := env.DB.DeleteEntity(id); err != nil {
 		return &models.AppError{

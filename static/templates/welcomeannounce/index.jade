@@ -1,4 +1,5 @@
-extends ../base.jade
+
+include ../mixins
 block CONTENT
     :go:func
         Welcomeannounceindex(c ViewContainer)
@@ -11,12 +12,11 @@ block CONTENT
           
             .form-group.row
                 .form-group.col-sm-12
-                    +inputtextarea("nil", "welcomeannounce_text")
+                    +inputtext(name="welcomeannounce_text", label="", type="textarea")
                     //div#welcomeannounce_text
 
-        button#save.btn.btn-link(type='button', onclick='saveWelcomeAnnounce()')
+        button#save.btn.btn-link(type='button', onclick='WelcomeAnnounce_saveWelcomeAnnounce()')
             span.mdi.mdi-content-save.mdi-24px.iconlabel
                 = T("save", 1)
                     
 block CONTENTJS
-    script(src="../js/chim/welcomeannounce.js")

@@ -1,4 +1,4 @@
-version: '3.7'
+version: '3.8'
 services:
     nginx:
         container_name: nginx
@@ -14,12 +14,11 @@ services:
             - chimitheque
     chimitheque:
         container_name: chimitheque
-        image: tbellembois/gochimitheque
+        image: tbellembois/gochimitheque:[tag]
         restart: unless-stopped
         environment:
-            - CHIMITHEQUE_PROXYURL=http://127.0.0.1
+            - CHIMITHEQUE_PROXYPATH=/chimitheque/
         #     - CHIMITHEQUE_PROXYURL=https://chimitheque.foo.com
-        #     - CHIMITHEQUE_PROXYPATH=/chimitheque
         #     - CHIMITHEQUE_MAILSERVERADDRESS=smtp.foo.com
         #     - CHIMITHEQUE_MAILSERVERPORT=467
         #     - CHIMITHEQUE_MAILSERVERSENDER=noreply@foo.com

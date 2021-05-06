@@ -1,186 +1,216 @@
-extends ../base.jade
+
+include ../mixins
 block CONTENT
     :go:func
         Productcreate(c ViewContainer)
 
-    +titleicon(iconitem="tag" label="product_create_title")
+    //+titleicon(iconitem="tag" label="product_create_title")
 
-    .form-row
-        .form-group.col-sm-4
-            .card-body
-                .form-check.form-check-inline
-                    input#showchem.form-check-input(type="radio" value="chem" name="typechooser")
-                    label.form-check-label(for="showchem")
-                        span.mdi.mdi-atom.mdi-36px
-                    input#showbio.form-check-input(type="radio" value="bio" name="typechooser")
-                    label.form-check-label(for="showbio")
-                        span.mdi.mdi-dna.mdi-36px
+    .card.mx-auto.w-75.mt-sm-2
+        .card-body
+            button#save.btn.btn-primary.float-right(type='button', onclick='Product_saveProduct()')
+                span.mdi.mdi-content-save.mdi-24px.iconlabel
+                    = T("save", 1)
+            button.btn.btn-secondary.float-left(type='button', onclick="Menu_loadContent('product', '" + c.ProxyPath + "v/products', 'Product_list')")
+                span.mdi.mdi-close-box.mdi-24px.iconlabel
+                    = T("close", 1)
 
-    form#product
-        input#exactMatchEmpiricalFormula(type="hidden")
-        input#exactMatchlinearFormula(type="hidden")
-        input#exactMatchCasNumber(type="hidden")
-        input#exactMatchCeNumber(type="hidden")
-        input#exactMatchName(type="hidden")
-        input#exactMatchSynonyms(type="hidden")
-        input#exactMatchClassofcompounds(type="hidden")
-        input#exactMatchPhysicalstate(type="hidden")
-        input#exactMatchProducerRef(type="hidden")
-        input#exactMatchProducer(type="hidden")
-        input#exactMatchSupplierRef(type="hidden")
-        input#exactMatchSupplier(type="hidden")
-        input#exactMatchTag(type="hidden")
+            .form-row.w-100
+                .form-group.col-sm-6
+                    .card-body
+                        .form-check.form-check-inline
+                            input#showchem.form-check-input(type="radio" value="chem" name="typechooser")
+                            label.form-check-label(for="showchem")
+                                span.mdi.mdi-atom.mdi-36px.iconlabel
+                                    = T("chemical_product", 1 )
+                            input#showbio.form-check-input(type="radio" value="bio" name="typechooser")
+                            label.form-check-label(for="showbio")
+                                span.mdi.mdi-dna.mdi-36px.iconlabel
+                                    = T("biological_product", 1 )
+                            input#showconsu.form-check-input(type="radio" value="consu" name="typechooser")
+                            label.form-check-label(for="showconsu")
+                                span.mdi.mdi-cube-scan.mdi-36px.iconlabel
+                                    = T("consumable_product", 1 )
 
-        // bio
-        .form-row.bio
-            .form-group.col-sm-6
-                +select(label="category_label_title" name="category")
-            .form-group.col-sm-6
-                +selectmultiple(label="tag_label_title" name="tags")
+            form#product
+                input#index(type='hidden', name='index', value='')
+                input#product_id(type='hidden', name='product_id', value='')
 
-        .form-row
-            .form-group.col-sm-6
-                +selectrequired(label="name_label_title" name="name")
-            .form-group.col-sm-6
-                +selectmultiple(label="synonym_label_title" name="synonyms")
+                input#exactMatchEmpiricalFormula(type="hidden")
+                input#exactMatchLinearFormula(type="hidden")
+                input#exactMatchCasNumber(type="hidden")
+                input#exactMatchCeNumber(type="hidden")
+                input#exactMatchName(type="hidden")
+                input#exactMatchClassOfCompound(type="hidden")
+                input#exactMatchPhysicalState(type="hidden")
+                input#exactMatchProducerRefs(type="hidden")
+                input#exactMatchProducer(type="hidden")
+                input#exactMatchSupplierRefs(type="hidden")
+                input#exactMatchSupplier(type="hidden")
+                input#exactMatchTag(type="hidden")
+                input#exactMatchCategory(type="hidden")
 
-        // bio
-        .form-row.bio
-            .form-group.col-sm-6
-                +selectrequired("producerref_label_title", "producerref")
-            .form-group.col-sm-6
-                +select("producer_label_title", "producer")
-        .form-row.bio
-            .form-group.col-sm-5.offset-sm-6
-                +inputtext("add_producer_title", "addproducer")
-            .form-group.col-sm-1.align-self-end
-                button.btn.btn-primary(type="button" onclick="addProducer()")
-                    span.mdi.mdi-plus-circle
+                .form-row
+                    .form-group.col-sm-6
+                        +inputselect(name="category", label="category_label_title")
+                    .form-group.col-sm-6
+                        +inputselect(name="tags", label="tag_label_title", ismultiple=true)
 
-        // bio
-        .form-row.bio
-            .form-group.col-sm-6
-                +selectmultiple("supplierref_label_title", "supplierrefs")
-            .form-group.col-sm-6
-                +select("supplier_label_title", "supplier")
-        .form-row.bio
-            .form-group.col-sm-5.offset-sm-6
-                +inputtext("add_supplier_title", "addsupplier")
-            .form-group.col-sm-1.align-self-end
-                button.btn.btn-primary(type="button" onclick="addSupplier()")
-                    span.mdi.mdi-plus-circle
+                .form-row
+                    .form-group.col-sm-6
+                        +inputselect(name="name", label="name_label_title", ismultiple=false, placeholder="", help="", required=true)
+                    .form-group.col-sm-6
+                        +inputselect(name="synonyms", label="synonym_label_title", ismultiple=true)
 
-        // bio
-        //- .form-row.bio
-        //-     .form-group.col-sm-4
-        //-         +inputtextrequired("product_batchnumber_title", "product_batchnumber")
-        //-     .form-group.col-sm-4
-        //-         +inputnumber("product_concentration_title", "product_concentration", "any", "1", "10000000", "")
-        //-     .form-group.col-sm-4
-        //-         +select("unit_label_title", "unit_concentration")
+                // bio and consu
+                .form-row.bio.consu.collapse
+                    .form-group.col-sm-6
+                        +inputselect(name="producerref", label="producerref_label_title", ismultiple=false, placeholder="", help="", required=true)
+                    .form-group.col-sm-6
+                        +inputselect(name="producer", label="producer_label_title")
+                .form-row.bio.consu.collapse
+                    .form-group.col-sm-5.offset-sm-6
+                        +inputtext(name="addproducer", label="add_producer_title")
+                    .form-group.col-sm-1.align-self-end
+                        button.btn.btn-primary(type="button" onclick="Product_addProducer()")
+                            span.mdi.mdi-plus-circle
 
-        // bio
-        .form-row.bio
-            //- .form-group.col-sm-4
-            //-     +inputdate("product_expirationdate_title", "product_expirationdate")
-            .form-group.col-sm-4
-                +inputnumber("product_temperature_title", "product_temperature", "any", "-10000000", "10000000", "")
-            .form-group.col-sm-4
-                +select("unit_label_title", "unit_temperature")
+                // bio and consu
+                .form-row.bio.consu.collapse
+                    .form-group.col-sm-6
+                        +inputselect(name="supplierrefs", label="supplierref_label_title", ismultiple=true)
+                    .form-group.col-sm-6
+                        +inputselect(name="supplier", label="supplier_label_title")
+                .form-row.bio.consu.collapse
+                    .form-group.col-sm-5.offset-sm-6
+                        +inputtext(name="addsupplier", label="add_supplier_title")
+                    .form-group.col-sm-1.align-self-end
+                        button.btn.btn-primary(type="button" onclick="Product_addSupplier()")
+                            span.mdi.mdi-plus-circle
 
-        .form-row.chem
-            .form-group.col-sm-12
-                button.btn.btn-primary(type="button" onclick="noEmpiricalFormula()")
-                    span.mdi.mdi-24px.mdi-cursor-default-click-outline &nbsp;
-                    = T("no_empirical_formula", 1 )
+                // consu
+                .form-row.consu.collapse
+                    .form-group.col-sm-6
+                        +inputnumber(name="product_number_per_carton", label="product_number_per_carton_title", step="1", min="0", max="10000000")
+                    .form-group.col-sm-6
+                        +inputnumber(name="product_number_per_bag", label="product_number_per_bag_title", step="1", min="0", max="10000000")
+                        
+                // bio
+                .form-row.bio.collapse
+                    .form-group.col-sm-6
+                        +inputnumber(name="product_temperature", label="product_temperature_title", step="any", min="-10000000", max="10000000")
+                    .form-group.col-sm-6
+                        +inputselect(name="unit_temperature", label="unit_label_title")
 
-        .form-row.chem
-            .form-group.col-sm-6
-                +selectrequired("empiricalformula_label_title", "empiricalformula")
-            .form-group.col-sm-1.align-self-end
-                button#fconverter.btn.btn-primary(type="button" onclick="linearToEmpirical()")
-                    span.mdi.mdi-arrow-left-circle
-            .form-group.col-sm-5
-                +select("linearformula_label_title", "linearformula")
+                .form-row.chem.collapse
+                    .form-group.col-sm-6
+                        button.btn.btn-link(type="button" onclick="Product_noEmpiricalFormula()")
+                            span.mdi.mdi-24px.mdi-cursor-default-click-outline &nbsp;
+                            = T("no_empirical_formula", 1 )
+                    .form-group.col-sm-6
+                        button.btn.btn-primary(type="button" onclick="Product_linearToEmpirical()")
+                            span.mr-sm-2.mdi.mdi-restart
+                            = T("empirical_formula_convert", 1 )
+                        span.ml-sm-2#convertedEmpiricalFormula
+                    .form-group.col-sm-6
+                        +inputselect(name="empiricalformula", label="empiricalformula_label_title", ismultiple=false, placeholder="", help="", required=true)
+                    .form-group.col-sm-6
+                        +inputselect(name="linearformula", label="linearformula_label_title")
 
-        .form-row.chem
-            .form-group.col-sm-12
-                button.btn.btn-primary(type="button" onclick="noCASNumber()")
-                    span.mdi.mdi-24px.mdi-cursor-default-click-outline &nbsp;
-                    = T("no_cas_number", 1 )
 
-        .form-row.chem
-            .form-group.col-sm-6
-                +selectrequired("casnumber_label_title", "casnumber")
-            .form-group.col-sm-6
-                +select("cenumber_label_title", "cenumber")
 
-        .form-row.chem
-            .form-group.col-sm-12
-                +inputtext("product_specificity_title", "product_specificity")
+                //- .form-row.chem.collapse.float-right
+                //-         span#convertedEmpiricalFormula
+                //-         button.btn.btn-primary(type="button" onclick="Product_linearToEmpirical()")
+                //-             span.mr-sm-2.mdi.mdi-restart
+                //-             = T("empirical_formula_convert", 1 )
 
-        .form-row
-            .form-group.col-sm-6
-                +inputtext("product_msds_title", "product_msds")
-            //bio
-            .form-group.col-sm-6
-                +inputtext("product_sheet_title", "product_sheet")
+                .form-row.chem.collapse
+                    .form-group.col-sm-12
+                        button.btn.btn-link(type="button" onclick="Product_noCas()")
+                            span.mdi.mdi-24px.mdi-cursor-default-click-outline &nbsp;
+                            = T("no_cas_number", 1 )
+                    .form-group.col-sm-4
+                        +inputselect(name="casnumber", label="casnumber_label_title", ismultiple=false, placeholder="", help="", required=true)
+                    .form-group.col-sm-4
+                        +inputtext(name="product_specificity", label="product_specificity_title")
+                    .form-group.col-sm-4
+                        +inputselect(name="cenumber", label="cenumber_label_title")
 
-        .form-row
-            .form-group.col-sm-6
-                +inputtext("product_threedformula_title", "product_threedformula")
-            .form-group.col-sm-6
-                +inputfile("product_threedformula_mol_title", "product_molformula")
-                +inputhidden("product_molformula_content", "")
 
-        .form-row
-            .form-group.col-sm-6
-                +select("physicalstate_label_title", "physicalstate")
-            .form-group.col-sm-6
-                +selectmultiple("classofcompound_label_title", "classofcompound")  
+                .form-row.chem.collapse
+                    .form-group.col-sm-6
+                        +inputtext(name="product_threedformula", label="product_threedformula_title")
+                    .form-group.col-sm-6
+                        +inputfile("product_twodformula_title", "product_twodformula", ".png,.jpg,.jpeg")
+                        +inputhidden("product_twodformula_content", "")
 
-        .form-row
-            .form-group.col-sm-12
-                button.btn.btn-light(type="button" onclick="howToMagicalSelector()")
-                    span.mdi.mdi-24px.mdi-cursor-default-click-outline &nbsp;
-                    = T("howto_magicalselector", 1 )
+                //- .form-row.chem.collapse
+                //-     .form-group.col-sm-12
+                //-         +inputtext(name="product_specificity", label="product_specificity_title")
 
-        .form-row
-            .form-group.col-sm-5.d-flex.align-items-end
-                +inputtextarea("magical_selector", "magical")
-            .form-group.col-sm-1.d-flex.align-items-end
-                button#magical-button(type="button" onclick="magic();")
-                    span.mdi.mdi-24px.mdi-auto-fix
+                .form-row
+                    .form-group.col-sm-6
+                        +inputtext(name="product_msds", label="product_msds_title")
+                    .form-group.col-sm-6
+                        +inputtext(name="product_sheet", label="product_sheet_title")
 
-        .form-row
-            .form-group.col-sm-6
-                +select("signalword_label_title", "signalword")
-            .form-group.col-sm-6
-                +selectmultiple("symbol_label_title", "symbols")
+                //- .form-row
+                //-     .form-group.col-sm-6
+                //-         +inputtext(name="product_threedformula", label="product_threedformula_title")
+                //-     .form-group.col-sm-6
+                        //- +inputfile("product_threedformula_mol_title", "product_molformula")
+                        //- +inputhidden("product_molformula_content", "")
 
-        .form-row
-            .form-group.col-sm-6
-                +selectmultiple("hazardstatement_label_title", "hazardstatements")
-            .form-group.col-sm-6
-                +selectmultiple("precautionarystatement_label_title", "precautionarystatements")
+                .form-row.chem.bio
+                    .form-group.col-sm-6
+                        +inputselect(name="physicalstate", label="physicalstate_label_title")
+                    .form-group.col-sm-6
+                        +inputselect(name="classofcompound", label="classofcompound_label_title", ismultiple=true)  
 
-        .form-row
-            .form-group.col-sm-12
-                +checkboxicon("product_restricted_title", "product_restricted", "mdi-hand")
-        .form-row
-            .form-group.col-sm-12
-                +checkboxicon("product_radioactive_title", "product_radioactive", "mdi-radioactive")
+                .form-row.chem.bio
+                    .form-group.col-sm-12
+                        button.btn.btn-light(type="button" onclick="Product_howToMagicalSelector()")
+                            span.mdi.mdi-24px.mdi-cursor-default-click-outline &nbsp;
+                            = T("howto_magicalselector", 1 )
 
-        .form-row
-            .form-group.col-sm-12
-                +inputtextarea("product_disposalcomment_title", "product_disposalcomment")
-        .form-row
-            .form-group.col-sm-12
-                +inputtextarea("product_remark_title", "product_remark")
+                .form-row.chem.bio
+                    .form-group.col-sm-11.d-flex.align-items-end
+                        +inputtext(name="magical", label="magical_selector", type="textarea")
+                    .form-group.col-sm-1.d-flex.align-items-end
+                        button#magical-button(type="button" onclick="Product_magic();")
+                            span.mdi.mdi-24px.mdi-auto-fix
 
-        button#save.btn.btn-link(type='button', onclick='saveProduct()')
-            span.mdi.mdi-content-save.mdi-24px.iconlabel
-                = T("save", 1)
+                .form-row.chem.bio
+                    .form-group.col-sm-6
+                        +inputselect(name="signalword", label="signalword_label_title")
+                    .form-group.col-sm-6
+                        +inputselect(name="symbols", label="symbol_label_title", ismultiple=true)
+
+                .form-row.chem.bio
+                    .form-group.col-sm-6
+                        +inputselect(name="hazardstatements", label="hazardstatement_label_title", ismultiple=true)
+                    .form-group.col-sm-6
+                        +inputselect(name="precautionarystatements", label="precautionarystatement_label_title", ismultiple=true)
+
+                .form-row
+                    .form-group.col-sm-4
+                        +checkbox(name="product_restricted", label="product_restricted_title", icon="mdi-hand")
+                    .form-group.col-sm-4.chem.bio
+                        +checkbox(name="product_radioactive", label="product_radioactive_title", icon="mdi-radioactive")
+
+                .form-row
+                    .form-group.col-sm-12
+                        +inputtext(name="product_disposalcomment", label="product_disposalcomment_title", type="textarea")
+                .form-row
+                    .form-group.col-sm-12
+                        +inputtext(name="product_remark", label="product_remark_title", type="textarea")
+
+            button#save.btn.btn-primary.float-right(type='button', onclick='Product_saveProduct()')
+                span.mdi.mdi-content-save.mdi-24px.iconlabel
+                    = T("save", 1)
+            button.btn.btn-secondary.float-left(type='button', onclick="Menu_loadContent('product', '" + c.ProxyPath + "v/products', 'Product_list')")
+                span.mdi.mdi-close-box.mdi-24px.iconlabel
+                    = T("close", 1)
 
 block CONTENTJS
-    script(src="../js/chim/product.js")

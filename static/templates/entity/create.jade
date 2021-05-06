@@ -1,21 +1,26 @@
-extends ../base.jade
+
+include ../mixins
 block CONTENT
     :go:func
         Entitycreate(c ViewContainer)
 
     +titleicon("store", "entity_create_title")
 
-    form#entity
-        .form-group.row
-            +inputtext("entity_name_table_header", "entity_name")
-        .form-group.row
-            +inputtext("entity_description_table_header", "entity_description")
-        .form-group.row
-            +selectmultiple("entity_manager_table_header", "managers")
+    .card.mx-auto.w-50
+        .card-body
+            form#entity
+                .form-group.row
+                    .form-group.col-sm-12
+                        +inputtext(name="entity_name", label="entity_name_table_header")
+                .form-group.row
+                    .form-group.col-sm-12
+                        +inputtext(name="entity_description", label="entity_description_table_header")
+                .form-group.row
+                    .form-group.col-sm-12
+                        +inputselect(name="managers", label="entity_manager_table_header", ismultiple=true)
 
-    button#save.btn.btn-link(type='button', onclick='gjsEntity.saveEntity()')
-        span.mdi.mdi-content-save.mdi-24px.iconlabel
-            = T("save", 1)
+            button#save.btn.btn-primary.float-right(type='button', onclick='Entity_saveEntity()')
+                span.mdi.mdi-content-save.mdi-24px.iconlabel
+                    = T("save", 1)
 
 block CONTENTJS
-    //script(src="../js/chim/entity.js")
