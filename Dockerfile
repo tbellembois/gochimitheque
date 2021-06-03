@@ -79,6 +79,10 @@ RUN rm -Rf /go/src/*
 COPY docker/entrypoint.sh /
 RUN chmod +x /entrypoint.sh
 
+# Adding ENS-Lyon CA certificates.
+ADD docker/terena.crt /usr/local/share/ca-certificates/terena.crt
+RUN chmod 644 /usr/local/share/ca-certificates/terena.crt && update-ca-certificates
+
 # Container configuration.
 USER www-data
 WORKDIR /var/www-data
