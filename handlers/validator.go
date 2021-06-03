@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -334,7 +335,7 @@ func (env *Env) ValidateProductCasNumberHandler(w http.ResponseWriter, r *http.R
 	if product_id == -1 {
 
 		// get cas number id
-		if cas, err = env.DB.GetProductsCasNumberByLabel(r.Form.Get("casnumber")); err != nil {
+		if cas, err = env.DB.GetProductsCasNumberByLabel(r.Form.Get("casnumber")); err != nil && err != sql.ErrNoRows {
 
 			logger.Log.Error("GetProductsCasNumberByLabel error")
 			resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "casnumber_validate_wrongcas", PluralCount: 1})
@@ -343,33 +344,37 @@ func (env *Env) ValidateProductCasNumberHandler(w http.ResponseWriter, r *http.R
 
 		}
 
-		// init db request parameters
-		if dspp, aerr = models.NewdbselectparamProduct(r, nil); aerr != nil {
+		if err != sql.ErrNoRows {
 
-			logger.Log.Error("NewdbselectparamProduct error")
-			resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "casnumber_validate_wrongcas", PluralCount: 1})
-			sendResponse(w, resp)
-			return nil
+			// init db request parameters
+			if dspp, aerr = models.NewdbselectparamProduct(r, nil); aerr != nil {
 
-		}
+				logger.Log.Error("NewdbselectparamProduct error")
+				resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "casnumber_validate_wrongcas", PluralCount: 1})
+				sendResponse(w, resp)
+				return nil
 
-		if cas.CasNumberID.Valid {
-			dspp.SetCasNumber(int(cas.CasNumberID.Int64))
-		}
-		dspp.SetProductSpecificity(r.Form.Get("product_specificity"))
+			}
 
-		// getting the products matching the cas and specificity
-		if _, nbProducts, err = env.DB.GetProducts(dspp); err != nil {
+			if cas.CasNumberID.Valid {
+				dspp.SetCasNumber(int(cas.CasNumberID.Int64))
+			}
+			dspp.SetProductSpecificity(r.Form.Get("product_specificity"))
 
-			logger.Log.Error("GetProducts error")
-			resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "casnumber_validate_wrongcas", PluralCount: 1})
-			sendResponse(w, resp)
-			return nil
+			// getting the products matching the cas and specificity
+			if _, nbProducts, err = env.DB.GetProducts(dspp); err != nil {
 
-		}
+				logger.Log.Error("GetProducts error")
+				resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "casnumber_validate_wrongcas", PluralCount: 1})
+				sendResponse(w, resp)
+				return nil
 
-		if nbProducts != 0 {
-			resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "casnumber_validate_casspecificity", PluralCount: 1})
+			}
+
+			if nbProducts != 0 {
+				resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "casnumber_validate_casspecificity", PluralCount: 1})
+			}
+
 		}
 	}
 
