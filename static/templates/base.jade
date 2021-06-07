@@ -30,8 +30,12 @@ html
     body
         div#message
         div#loading
-            span.mdi.mdi-loading.mdi-spin.iconlabel
-                = T("wasm_loading", 1) 
+            .card.text-center.m-sm-2.p-sm-1(style="width: 18rem;")
+                object(data=c.ProxyPath + "static/img/web-assembly-logo-black.svg" style="display: block; margin: auto;" preserveAspectRatio="xMinYMin meet" width="35%" viewBox="0 0 25 25")
+                .card-body
+                    .card-text
+                        span.mdi.mdi-loading.mdi-spin
+                            = T("wasm_loading", 1) 
         div.container.invisible
 
             span.text-right#logged.blockquote-footer

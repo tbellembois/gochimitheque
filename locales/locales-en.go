@@ -20,9 +20,9 @@ var LOCALES_EN = []byte(`
 	one = "version"
 
 [wasm_loading]
-	one = "Loading Web Assembly module."
+	one = "Loading software module."
 [wasm_loaded]
-	one = "Web Assembly module loaded."
+	one = "Software module loaded."
 
 [created]
 	one = "created"
