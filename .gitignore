@@ -9,6 +9,7 @@ wasm/wasm*
 rice-box.go
 
 bind-gochimitheque-wasm/*
+bind-gochimitheque-utils/*
 
 static/jade/*
 !static/jade/funcs.go

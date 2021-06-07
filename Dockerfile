@@ -27,7 +27,9 @@ RUN go get -v github.com/Joker/jade/cmd/jade@master
 # Getting wasm module sources.
 WORKDIR /go/src/github.com/tbellembois/
 # sudo mount --bind ~/workspace/workspace_go/src/github.com/tbellembois/gochimitheque-wasm ./bind-gochimitheque-wasm
+# sudo mount --bind ~/workspace/workspace_go/src/github.com/tbellembois/gochimitheque-utils ./bind-gochimitheque-utils
 COPY ./bind-gochimitheque-wasm ./gochimitheque-wasm
+COPY ./bind-gochimitheque-utils ./gochimitheque-utils
 
 # Copying Chimithèque sources.
 WORKDIR /go/src/github.com/tbellembois/gochimitheque/
