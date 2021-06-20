@@ -51,7 +51,7 @@ block CONTENT
                         +inputselect(name="storelocation", label="storage_storelocation_title", ismultiple=false, placeholder="", help="", required=true)
                 .form-group.row.bio.chem.collapse
                     .col-sm-6
-                        +inputnumber(name="storage_quantity", label="storage_quantity_title", step="any", min="1", max="10000000")
+                        +inputnumber(name="storage_quantity", label="storage_quantity_title", step="any", min="0", max="10000000")
                     .col-sm-6
                         +inputselect(name="unit_quantity", label="unit_label_title") 
                 .form-group.row
@@ -63,7 +63,7 @@ block CONTENT
                 // bio
                 .form-group.row.bio.chem.collapse
                     .col-sm-6
-                        +inputnumber(name="storage_concentration", label="storage_concentration_title", step="any", min="1", max="10000000")
+                        +inputnumber(name="storage_concentration", label="storage_concentration_title", step="any", min="0", max="10000000")
                     .col-sm-6
                         +inputselect(name="unit_concentration", label="unit_label_title")
 

@@ -2,15 +2,11 @@ module github.com/tbellembois/gochimitheque
 
 go 1.16
 
-replace (
-	github.com/tbellembois/gochimitheque-utils v0.0.0 => /home/thbellem/workspace/workspace_go/src/github.com/tbellembois/gochimitheque-utils
-)
+replace github.com/tbellembois/gochimitheque-utils v0.0.0 => /home/thbellem/workspace/workspace_go/src/github.com/tbellembois/gochimitheque-utils
 
 require (
 	github.com/BurntSushi/toml v0.3.1
-	github.com/GeertJohan/go.rice v1.0.2
 	github.com/Joker/hpp v1.0.0 // indirect
-	github.com/Joker/jade v1.0.1-0.20200506134858-ee26e3c533bb // indirect
 	github.com/Masterminds/squirrel v1.5.0
 	github.com/casbin/casbin/v2 v2.23.0
 	github.com/casbin/json-adapter/v2 v2.0.0

@@ -157,7 +157,7 @@ func initLogger() {
 	}
 
 	var internalServerErrorLogFile *os.File
-	if internalServerErrorLogFile, err = os.OpenFile("errors.log", os.O_WRONLY|os.O_CREATE, 0755); err != nil {
+	if internalServerErrorLogFile, err = os.OpenFile(path.Join(*paramDBPath, "server_errors.log"), os.O_WRONLY|os.O_CREATE, 0755); err != nil {
 		logger.Log.Fatal(err)
 	} else {
 		logger.LogInternal.SetOutput(internalServerErrorLogFile)

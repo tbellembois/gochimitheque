@@ -1111,6 +1111,7 @@ func (db *SQLiteDataStore) CreateStorage(s Storage, itemNumber int) (int, error)
 		default:
 			val = append(val, v)
 		}
+
 	}
 
 	ibuilder = sq.Insert("storage").Columns(col...).Values(val...)

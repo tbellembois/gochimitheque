@@ -1,6 +1,6 @@
 package datastores
 
-var versionToMigration = []string{migrationOne, migrationTwo, migrationThree}
+var versionToMigration = []string{migrationOne, migrationTwo, migrationThree, migrationFour}
 
 var migrationOne = `BEGIN TRANSACTION;
 
@@ -344,6 +344,109 @@ CREATE INDEX "idx_permission_entity_id" ON "permission" (
 );
 
 PRAGMA user_version=3;
+COMMIT;
+PRAGMA foreign_keys=on;
+`
+
+var migrationFour = `PRAGMA foreign_keys=off;
+
+BEGIN TRANSACTION;
+
+CREATE TABLE IF NOT EXISTS new_storage (
+	storage_id integer PRIMARY KEY,
+	storage_creationdate datetime NOT NULL,
+	storage_modificationdate datetime NOT NULL,
+	storage_entrydate datetime,
+	storage_exitdate datetime,
+	storage_openingdate datetime,
+	storage_expirationdate datetime,
+	storage_quantity float,
+	storage_barecode text,
+	storage_comment text,
+	storage_reference text,
+	storage_batchnumber text,
+	storage_todestroy boolean default 0,
+	storage_archive boolean default 0,
+	storage_qrcode blob,
+	storage_concentration integer,
+	storage_number_of_unit integer,
+	storage_number_of_bag integer,
+	storage_number_of_carton integer,
+	person integer NOT NULL,
+	product integer NOT NULL,
+	storelocation integer NOT NULL,
+	unit_concentration integer,
+	unit_quantity integer,
+	supplier integer,
+	storage integer,
+	FOREIGN KEY(unit_concentration) references unit(unit_id),
+	FOREIGN KEY(storage) references storage(storage_id),
+	FOREIGN KEY(unit_quantity) references unit(unit_id),
+	FOREIGN KEY(supplier) references supplier(supplier_id),
+	FOREIGN KEY(person) references person(person_id),
+	FOREIGN KEY(product) references product(product_id),
+	FOREIGN KEY(storelocation) references storelocation(storelocation_id));
+
+INSERT INTO new_storage (
+	storage_id,
+	storage_creationdate,
+	storage_modificationdate,
+	storage_entrydate,
+	storage_exitdate,
+	storage_openingdate,
+	storage_expirationdate,
+	storage_quantity,
+	storage_barecode,
+	storage_comment,
+	storage_reference,
+	storage_batchnumber,
+	storage_todestroy,
+	storage_archive,
+	storage_qrcode,
+	storage_concentration,
+	storage_number_of_unit,
+	storage_number_of_bag,
+	storage_number_of_carton,
+	person,
+	product,
+	storelocation,
+	unit_concentration,
+	unit_quantity,
+	supplier,
+	storage
+)
+SELECT storage_id,
+	storage_creationdate,
+	storage_modificationdate,
+	storage_entrydate,
+	storage_exitdate,
+	storage_openingdate,
+	storage_expirationdate,
+	storage_quantity,
+	storage_barecode,
+	storage_comment,
+	storage_reference,
+	storage_batchnumber,
+	storage_todestroy,
+	storage_archive,
+	storage_qrcode,
+	storage_concentration,
+	storage_number_of_unit,
+	storage_number_of_bag,
+	storage_number_of_carton,
+	person,
+	product,
+	storelocation,
+	unit_concentration,
+	unit_quantity,
+	supplier,
+	storage
+FROM storage;
+
+DROP TABLE storage;
+ALTER TABLE new_storage RENAME TO storage; 
+
+PRAGMA user_version=4;
 COMMIT;
 PRAGMA foreign_keys=on;
 `
