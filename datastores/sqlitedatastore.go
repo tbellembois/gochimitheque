@@ -509,7 +509,7 @@ func (db *SQLiteDataStore) Import(url string) error {
 		// cas number already exist ?
 		if p.CasNumberID.Valid {
 			var casnumber CasNumber
-			if casnumber, err = db.GetProductsCasNumberByLabel(p.CasNumberLabel.String); err != nil {
+			if casnumber, err = db.GetCasNumberByLabel(p.CasNumberLabel.String); err != nil {
 				if err != sql.ErrNoRows {
 					logger.Log.Error("can not get product cas number " + err.Error())
 					os.Exit(1)
@@ -530,7 +530,7 @@ func (db *SQLiteDataStore) Import(url string) error {
 		// ce number already exist ?
 		if p.CeNumberID.Valid {
 			var cenumber CeNumber
-			if cenumber, err = db.GetProductsCeNumberByLabel(p.CeNumberLabel.String); err != nil {
+			if cenumber, err = db.GetCeNumberByLabel(p.CeNumberLabel.String); err != nil {
 				if err != sql.ErrNoRows {
 					logger.Log.Error("can not get product ce number " + err.Error())
 					os.Exit(1)
@@ -549,7 +549,7 @@ func (db *SQLiteDataStore) Import(url string) error {
 		// empirical formula already exist ?
 		if p.EmpiricalFormula.EmpiricalFormulaID.Valid {
 			var eformula EmpiricalFormula
-			if eformula, err = db.GetProductsEmpiricalFormulaByLabel(p.EmpiricalFormula.EmpiricalFormulaLabel.String); err != nil {
+			if eformula, err = db.GetEmpiricalFormulaByLabel(p.EmpiricalFormula.EmpiricalFormulaLabel.String); err != nil {
 				if err != sql.ErrNoRows {
 					logger.Log.Error("can not get product empirical formula " + err.Error())
 					os.Exit(1)
@@ -568,7 +568,7 @@ func (db *SQLiteDataStore) Import(url string) error {
 		// linear formula already exist ?
 		if p.LinearFormula.LinearFormulaID.Valid {
 			var lformula LinearFormula
-			if lformula, err = db.GetProductsLinearFormulaByLabel(p.LinearFormula.LinearFormulaLabel.String); err != nil {
+			if lformula, err = db.GetLinearFormulaByLabel(p.LinearFormula.LinearFormulaLabel.String); err != nil {
 				if err != sql.ErrNoRows {
 					logger.Log.Error("can not get product linear formula " + err.Error())
 					os.Exit(1)
@@ -587,7 +587,7 @@ func (db *SQLiteDataStore) Import(url string) error {
 		// physical state already exist ?
 		if p.PhysicalState.PhysicalStateID.Valid {
 			var physicalstate PhysicalState
-			if physicalstate, err = db.GetProductsPhysicalStateByLabel(p.PhysicalState.PhysicalStateLabel.String); err != nil {
+			if physicalstate, err = db.GetPhysicalStateByLabel(p.PhysicalState.PhysicalStateLabel.String); err != nil {
 				if err != sql.ErrNoRows {
 					logger.Log.Error("can not get product physical state " + err.Error())
 					os.Exit(1)
@@ -606,7 +606,7 @@ func (db *SQLiteDataStore) Import(url string) error {
 		// signal word already exist ?
 		if p.SignalWord.SignalWordID.Valid {
 			var signalword SignalWord
-			if signalword, err = db.GetProductsSignalWordByLabel(p.SignalWord.SignalWordLabel.String); err != nil {
+			if signalword, err = db.GetSignalWordByLabel(p.SignalWord.SignalWordLabel.String); err != nil {
 				if err != sql.ErrNoRows {
 					logger.Log.Error("can not get product signal word " + err.Error())
 					os.Exit(1)
@@ -624,7 +624,7 @@ func (db *SQLiteDataStore) Import(url string) error {
 
 		// name already exist ?
 		var name Name
-		if name, err = db.GetProductsNameByLabel(p.Name.NameLabel); err != nil {
+		if name, err = db.GetNameByLabel(p.Name.NameLabel); err != nil {
 			if err != sql.ErrNoRows {
 				logger.Log.Error("can not get product name " + err.Error())
 				os.Exit(1)
@@ -659,7 +659,7 @@ func (db *SQLiteDataStore) Import(url string) error {
 
 			// synonym already exist ?
 			var syn2 Name
-			if syn2, err = db.GetProductsNameByLabel(syn.NameLabel); err != nil {
+			if syn2, err = db.GetNameByLabel(syn.NameLabel); err != nil {
 				if err != sql.ErrNoRows {
 					logger.Log.Error("can not get product synonym " + err.Error())
 					os.Exit(1)
@@ -680,7 +680,7 @@ func (db *SQLiteDataStore) Import(url string) error {
 		for i, coc := range p.ClassOfCompound {
 			// class of compounds already exist ?
 			var coc2 ClassOfCompound
-			if coc2, err = db.GetProductsClassOfCompoundByLabel(coc.ClassOfCompoundLabel); err != nil {
+			if coc2, err = db.GetClassOfCompoundByLabel(coc.ClassOfCompoundLabel); err != nil {
 				if err != sql.ErrNoRows {
 					logger.Log.Error("can not get product class of compounds " + err.Error())
 					os.Exit(1)
@@ -700,7 +700,7 @@ func (db *SQLiteDataStore) Import(url string) error {
 		for i, sym := range p.Symbols {
 			// symbols already exist ?
 			var sym2 Symbol
-			if sym2, err = db.GetProductsSymbolByLabel(sym.SymbolLabel); err != nil {
+			if sym2, err = db.GetSymbolByLabel(sym.SymbolLabel); err != nil {
 				if err != sql.ErrNoRows {
 					logger.Log.Error("can not get product symbol " + err.Error())
 					os.Exit(1)
@@ -720,7 +720,7 @@ func (db *SQLiteDataStore) Import(url string) error {
 		for i, hs := range p.HazardStatements {
 			// hazard statement already exist ?
 			var hs2 HazardStatement
-			if hs2, err = db.GetProductsHazardStatementByReference(hs.HazardStatementReference); err != nil {
+			if hs2, err = db.GetHazardStatementByReference(hs.HazardStatementReference); err != nil {
 				if err != sql.ErrNoRows {
 					logger.Log.Error("can not get product hazard statement " + err.Error())
 					os.Exit(1)
@@ -740,7 +740,7 @@ func (db *SQLiteDataStore) Import(url string) error {
 		for i, ps := range p.PrecautionaryStatements {
 			// precautionary statement already exist ?
 			var ps2 PrecautionaryStatement
-			if ps2, err = db.GetProductsPrecautionaryStatementByReference(ps.PrecautionaryStatementReference); err != nil {
+			if ps2, err = db.GetPrecautionaryStatementByReference(ps.PrecautionaryStatementReference); err != nil {
 				if err != sql.ErrNoRows {
 					logger.Log.Error("can not get product precautionary statement " + err.Error())
 					os.Exit(1)

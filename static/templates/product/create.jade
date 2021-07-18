@@ -65,9 +65,9 @@ block CONTENT
                 // bio and consu
                 .form-row.bio.consu.collapse
                     .form-group.col-sm-6
-                        +inputselect(name="producerref", label="producerref_label_title", ismultiple=false, placeholder="", help="", required=true)
-                    .form-group.col-sm-6
                         +inputselect(name="producer", label="producer_label_title")
+                    .form-group.col-sm-6
+                        +inputselect(name="producerref", label="producerref_label_title", ismultiple=false, placeholder="", help="", required=true)
                 .form-row.bio.consu.collapse
                     .form-group.col-sm-5.offset-sm-6
                         +inputtext(name="addproducer", label="add_producer_title")
@@ -78,9 +78,9 @@ block CONTENT
                 // bio and consu
                 .form-row.bio.consu.collapse
                     .form-group.col-sm-6
-                        +inputselect(name="supplierrefs", label="supplierref_label_title", ismultiple=true)
-                    .form-group.col-sm-6
                         +inputselect(name="supplier", label="supplier_label_title")
+                    .form-group.col-sm-6
+                        +inputselect(name="supplierrefs", label="supplierref_label_title", ismultiple=true)
                 .form-row.bio.consu.collapse
                     .form-group.col-sm-5.offset-sm-6
                         +inputtext(name="addsupplier", label="add_supplier_title")

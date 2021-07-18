@@ -335,7 +335,7 @@ func (env *Env) ValidateProductCasNumberHandler(w http.ResponseWriter, r *http.R
 	if product_id == -1 {
 
 		// get cas number id
-		if cas, err = env.DB.GetProductsCasNumberByLabel(r.Form.Get("casnumber")); err != nil && err != sql.ErrNoRows {
+		if cas, err = env.DB.GetCasNumberByLabel(r.Form.Get("casnumber")); err != nil && err != sql.ErrNoRows {
 
 			logger.Log.Error("GetProductsCasNumberByLabel error")
 			resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "casnumber_validate_wrongcas", PluralCount: 1})

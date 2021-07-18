@@ -74,7 +74,7 @@ func (env *Env) GetProductsProducerRefsHandler(w http.ResponseWriter, r *http.Re
 		return aerr
 	}
 
-	prefs, count, err := env.DB.GetProductsProducerRefs(dsp)
+	prefs, count, err := env.DB.GetProducerRefs(dsp)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -114,7 +114,7 @@ func (env *Env) GetProductsSupplierRefsHandler(w http.ResponseWriter, r *http.Re
 		return aerr
 	}
 
-	srefs, count, err := env.DB.GetProductsSupplierRefs(dsp)
+	srefs, count, err := env.DB.GetSupplierRefs(dsp)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -154,7 +154,7 @@ func (env *Env) GetProductsCategoriesHandler(w http.ResponseWriter, r *http.Requ
 		return aerr
 	}
 
-	cats, count, err := env.DB.GetProductsCategories(dsp)
+	cats, count, err := env.DB.GetCategories(dsp)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -194,7 +194,7 @@ func (env *Env) GetProductsTagsHandler(w http.ResponseWriter, r *http.Request) *
 		return aerr
 	}
 
-	tags, count, err := env.DB.GetProductsTags(dsp)
+	tags, count, err := env.DB.GetTags(dsp)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -234,7 +234,7 @@ func (env *Env) GetProductsProducersHandler(w http.ResponseWriter, r *http.Reque
 		return aerr
 	}
 
-	prs, count, err := env.DB.GetProductsProducers(dsp)
+	prs, count, err := env.DB.GetProducers(dsp)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -274,7 +274,7 @@ func (env *Env) GetProductsSuppliersHandler(w http.ResponseWriter, r *http.Reque
 		return aerr
 	}
 
-	srs, count, err := env.DB.GetProductsSuppliers(dsp)
+	srs, count, err := env.DB.GetSuppliers(dsp)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -395,7 +395,7 @@ func (env *Env) GetProductsCasNumbersHandler(w http.ResponseWriter, r *http.Requ
 		dsp.SetSearch(fmt.Sprintf("%s-%s-%s", md["groupone"], md["grouptwo"], md["groupthree"]))
 	}
 
-	casnumbers, count, err := env.DB.GetProductsCasNumbers(dsp)
+	casnumbers, count, err := env.DB.GetCasNumbers(dsp)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -435,7 +435,7 @@ func (env *Env) GetProductsCeNumbersHandler(w http.ResponseWriter, r *http.Reque
 		return aerr
 	}
 
-	cenumbers, count, err := env.DB.GetProductsCeNumbers(dsp)
+	cenumbers, count, err := env.DB.GetCeNumbers(dsp)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -475,7 +475,7 @@ func (env *Env) GetProductsPhysicalStatesHandler(w http.ResponseWriter, r *http.
 		return aerr
 	}
 
-	pstates, count, err := env.DB.GetProductsPhysicalStates(dsp)
+	pstates, count, err := env.DB.GetPhysicalStates(dsp)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -515,7 +515,7 @@ func (env *Env) GetProductsSignalWordsHandler(w http.ResponseWriter, r *http.Req
 		return aerr
 	}
 
-	swords, count, err := env.DB.GetProductsSignalWords(dsp)
+	swords, count, err := env.DB.GetSignalWords(dsp)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -555,7 +555,7 @@ func (env *Env) GetProductsClassOfCompoundsHandler(w http.ResponseWriter, r *htt
 		return aerr
 	}
 
-	cocs, count, err := env.DB.GetProductsClassOfCompounds(dsp)
+	cocs, count, err := env.DB.GetClassesOfCompound(dsp)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -595,7 +595,7 @@ func (env *Env) GetProductsEmpiricalFormulasHandler(w http.ResponseWriter, r *ht
 		return aerr
 	}
 
-	eformulas, count, err := env.DB.GetProductsEmpiricalFormulas(dsp)
+	eformulas, count, err := env.DB.GetEmpiricalFormulas(dsp)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -635,7 +635,7 @@ func (env *Env) GetProductsLinearFormulasHandler(w http.ResponseWriter, r *http.
 		return aerr
 	}
 
-	lformulas, count, err := env.DB.GetProductsLinearFormulas(dsp)
+	lformulas, count, err := env.DB.GetLinearFormulas(dsp)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -652,83 +652,6 @@ func (env *Env) GetProductsLinearFormulasHandler(w http.ResponseWriter, r *http.
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	if err = json.NewEncoder(w).Encode(resp{Rows: lformulas, Total: count}); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
-	return nil
-}
-
-// GetProductsNamesHandler returns a json list of the names matching the search criteria
-func (env *Env) GetProductsNamesHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	logger.Log.Debug("GetProductsNamesHandler")
-
-	var (
-		err  error
-		aerr *models.AppError
-		dsp  models.Dbselectparam
-	)
-
-	// init db request parameters
-	if dsp, aerr = models.Newdbselectparam(r, nil); err != nil {
-		return aerr
-	}
-
-	names, count, err := env.DB.GetProductsNames(dsp)
-	if err != nil {
-		return &models.AppError{
-			Error:   err,
-			Code:    http.StatusInternalServerError,
-			Message: "error getting the cas numbers",
-		}
-	}
-
-	type resp struct {
-		Rows  []models.Name `json:"rows"`
-		Total int           `json:"total"`
-	}
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-	if err = json.NewEncoder(w).Encode(resp{Rows: names, Total: count}); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
-	return nil
-}
-
-// GetProductsNameHandler returns a json of the name matching the id
-func (env *Env) GetProductsNameHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	logger.Log.Debug("GetProductsNameHandler")
-
-	vars := mux.Vars(r)
-	var (
-		id  int
-		err error
-	)
-
-	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
-			Error:   err,
-			Message: "id atoi conversion",
-			Code:    http.StatusInternalServerError}
-	}
-
-	name, err := env.DB.GetProductsName(id)
-	if err != nil {
-		return &models.AppError{
-			Error:   err,
-			Code:    http.StatusInternalServerError,
-			Message: "error getting the name",
-		}
-	}
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-	if err = json.NewEncoder(w).Encode(name); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
 			Message: err.Error(),
@@ -754,7 +677,7 @@ func (env *Env) GetProductsEmpiricalFormulaHandler(w http.ResponseWriter, r *htt
 			Code:    http.StatusInternalServerError}
 	}
 
-	ef, err := env.DB.GetProductsEmpiricalFormula(id)
+	ef, err := env.DB.GetEmpiricalFormula(id)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -791,7 +714,7 @@ func (env *Env) GetProductsCasNumberHandler(w http.ResponseWriter, r *http.Reque
 			Code:    http.StatusInternalServerError}
 	}
 
-	cas, err := env.DB.GetProductsCasNumber(id)
+	cas, err := env.DB.GetCasNumber(id)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -828,7 +751,7 @@ func (env *Env) GetProductsSignalWordHandler(w http.ResponseWriter, r *http.Requ
 			Code:    http.StatusInternalServerError}
 	}
 
-	signalword, err := env.DB.GetProductsSignalWord(id)
+	signalword, err := env.DB.GetSignalWord(id)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -863,7 +786,7 @@ func (env *Env) GetProductsSymbolsHandler(w http.ResponseWriter, r *http.Request
 		return aerr
 	}
 
-	symbols, count, err := env.DB.GetProductsSymbols(dsp)
+	symbols, count, err := env.DB.GetSymbols(dsp)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -905,7 +828,7 @@ func (env *Env) GetProductsSymbolHandler(w http.ResponseWriter, r *http.Request)
 			Code:    http.StatusInternalServerError}
 	}
 
-	symbol, err := env.DB.GetProductsSymbol(id)
+	symbol, err := env.DB.GetSymbol(id)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -940,7 +863,7 @@ func (env *Env) GetProductsHazardStatementsHandler(w http.ResponseWriter, r *htt
 		return aerr
 	}
 
-	hs, count, err := env.DB.GetProductsHazardStatements(dsp)
+	hs, count, err := env.DB.GetHazardStatements(dsp)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -982,7 +905,7 @@ func (env *Env) GetProductsHazardStatementHandler(w http.ResponseWriter, r *http
 			Code:    http.StatusInternalServerError}
 	}
 
-	hs, err := env.DB.GetProductsHazardStatement(id)
+	hs, err := env.DB.GetHazardStatement(id)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -1017,7 +940,7 @@ func (env *Env) GetProductsPrecautionaryStatementsHandler(w http.ResponseWriter,
 		return aerr
 	}
 
-	ps, count, err := env.DB.GetProductsPrecautionaryStatements(dsp)
+	ps, count, err := env.DB.GetPrecautionaryStatements(dsp)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -1059,7 +982,7 @@ func (env *Env) GetProductsPrecautionaryStatementHandler(w http.ResponseWriter, 
 			Code:    http.StatusInternalServerError}
 	}
 
-	ps, err := env.DB.GetProductsPrecautionaryStatement(id)
+	ps, err := env.DB.GetPrecautionaryStatement(id)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -1071,6 +994,83 @@ func (env *Env) GetProductsPrecautionaryStatementHandler(w http.ResponseWriter, 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	if err = json.NewEncoder(w).Encode(ps); err != nil {
+		return &models.AppError{
+			Code:    http.StatusInternalServerError,
+			Message: err.Error(),
+		}
+	}
+	return nil
+}
+
+// GetProductsNamesHandler returns a json list of the names matching the search criteria
+func (env *Env) GetProductsNamesHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+	logger.Log.Debug("GetProductsNamesHandler")
+
+	var (
+		err  error
+		aerr *models.AppError
+		dsp  models.Dbselectparam
+	)
+
+	// init db request parameters
+	if dsp, aerr = models.Newdbselectparam(r, nil); err != nil {
+		return aerr
+	}
+
+	names, count, err := env.DB.GetNames(dsp)
+	if err != nil {
+		return &models.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the cas numbers",
+		}
+	}
+
+	type resp struct {
+		Rows  []models.Name `json:"rows"`
+		Total int           `json:"total"`
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err = json.NewEncoder(w).Encode(resp{Rows: names, Total: count}); err != nil {
+		return &models.AppError{
+			Code:    http.StatusInternalServerError,
+			Message: err.Error(),
+		}
+	}
+	return nil
+}
+
+// GetProductsNameHandler returns a json of the name matching the id
+func (env *Env) GetProductsNameHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+	logger.Log.Debug("GetProductsNameHandler")
+
+	vars := mux.Vars(r)
+	var (
+		id  int
+		err error
+	)
+
+	if id, err = strconv.Atoi(vars["id"]); err != nil {
+		return &models.AppError{
+			Error:   err,
+			Message: "id atoi conversion",
+			Code:    http.StatusInternalServerError}
+	}
+
+	name, err := env.DB.GetName(id)
+	if err != nil {
+		return &models.AppError{
+			Error:   err,
+			Code:    http.StatusInternalServerError,
+			Message: "error getting the name",
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err = json.NewEncoder(w).Encode(name); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
 			Message: err.Error(),
@@ -1094,7 +1094,7 @@ func (env *Env) GetProductsSynonymsHandler(w http.ResponseWriter, r *http.Reques
 		return aerr
 	}
 
-	synonyms, count, err := env.DB.GetProductsNames(dsp)
+	synonyms, count, err := env.DB.GetNames(dsp)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -1415,7 +1415,7 @@ func (env *Env) CreateSupplierHandler(w http.ResponseWriter, r *http.Request) *m
 	var (
 		sup models.Supplier
 		err error
-		id  int
+		id  int64
 	)
 
 	if err = json.NewDecoder(r.Body).Decode(&sup); err != nil {
@@ -1445,7 +1445,7 @@ func (env *Env) CreateSupplierHandler(w http.ResponseWriter, r *http.Request) *m
 			Message: "create supplier error",
 			Code:    http.StatusInternalServerError}
 	}
-	sup.SupplierID = sql.NullInt64{Valid: true, Int64: int64(id)}
+	sup.SupplierID = sql.NullInt64{Valid: true, Int64: id}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
@@ -1464,7 +1464,7 @@ func (env *Env) CreateProducerHandler(w http.ResponseWriter, r *http.Request) *m
 	var (
 		pr  models.Producer
 		err error
-		id  int
+		id  int64
 	)
 
 	if err = json.NewDecoder(r.Body).Decode(&pr); err != nil {
@@ -1494,7 +1494,7 @@ func (env *Env) CreateProducerHandler(w http.ResponseWriter, r *http.Request) *m
 			Message: "create producer error",
 			Code:    http.StatusInternalServerError}
 	}
-	pr.ProducerID = sql.NullInt64{Valid: true, Int64: int64(id)}
+	pr.ProducerID = sql.NullInt64{Valid: true, Int64: id}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)

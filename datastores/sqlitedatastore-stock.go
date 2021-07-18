@@ -138,10 +138,12 @@ func (db *SQLiteDataStore) computeStockStorelocation(p Product, s *SyncStoreLoca
 		goqu.I("storage.product").Eq(p.ProductID),
 		goqu.Or(
 			goqu.I("storage.unit_quantity").Eq(u.UnitID.Int64),
-			goqu.I("storage.unit_quantity").In(dialect.From("unit").Select("unit_id").Where(goqu.I("unit.unit").Eq(u.UnitID.Int64))),
+			goqu.I("unit.unit").Eq(u.UnitID.Int64),
+			// goqu.I("storage.unit_quantity").In(dialect.From("unit").Select("unit_id").Where(goqu.I("unit.unit").Eq(u.UnitID.Int64))),
 		),
 	).Select(
-		goqu.SUM(goqu.L("storage.storage_quantity * unit_multiplier")),
+		goqu.L("SUM(storage.storage_quantity) * unit_multiplier"),
+		// goqu.SUM(goqu.L("storage.storage_quantity * unit_multiplier")),
 	)
 
 	if sqlr, args, err = sQuery.ToSQL(); err != nil {

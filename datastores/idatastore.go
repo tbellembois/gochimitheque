@@ -25,52 +25,70 @@ type Datastore interface {
 	GetExposedProducts() ([]Product, int, error)
 	GetProducts(DbselectparamProduct) ([]Product, int, error)
 
-	GetProductsCasNumbers(Dbselectparam) ([]CasNumber, int, error)
-	GetProductsCasNumber(id int) (CasNumber, error)
-	GetProductsCasNumberByLabel(label string) (CasNumber, error)
+	GetCasNumbers(Dbselectparam) ([]CasNumber, int, error)
+	GetCasNumber(id int) (CasNumber, error)
+	GetCasNumberByLabel(label string) (CasNumber, error)
 
-	GetProductsCeNumbers(Dbselectparam) ([]CeNumber, int, error)
-	GetProductsCeNumberByLabel(label string) (CeNumber, error)
+	GetCeNumbers(Dbselectparam) ([]CeNumber, int, error)
+	GetCeNumber(id int) (CeNumber, error)
+	GetCeNumberByLabel(label string) (CeNumber, error)
 
-	GetProductsNames(Dbselectparam) ([]Name, int, error)
-	GetProductsName(id int) (Name, error)
-	GetProductsNameByLabel(label string) (Name, error)
+	GetNames(Dbselectparam) ([]Name, int, error)
+	GetName(id int) (Name, error)
+	GetNameByLabel(label string) (Name, error)
 
-	GetProductsSymbols(Dbselectparam) ([]Symbol, int, error)
-	GetProductsSymbol(id int) (Symbol, error)
-	GetProductsSymbolByLabel(label string) (Symbol, error)
+	GetSymbols(Dbselectparam) ([]Symbol, int, error)
+	GetSymbol(id int) (Symbol, error)
+	GetSymbolByLabel(label string) (Symbol, error)
 
-	GetProductsEmpiricalFormulas(Dbselectparam) ([]EmpiricalFormula, int, error)
-	GetProductsEmpiricalFormula(id int) (EmpiricalFormula, error)
-	GetProductsEmpiricalFormulaByLabel(label string) (EmpiricalFormula, error)
+	GetEmpiricalFormulas(Dbselectparam) ([]EmpiricalFormula, int, error)
+	GetEmpiricalFormula(id int) (EmpiricalFormula, error)
+	GetEmpiricalFormulaByLabel(label string) (EmpiricalFormula, error)
 
-	GetProductsLinearFormulas(Dbselectparam) ([]LinearFormula, int, error)
-	GetProductsLinearFormulaByLabel(label string) (LinearFormula, error)
+	GetLinearFormulas(Dbselectparam) ([]LinearFormula, int, error)
+	GetLinearFormula(id int) (LinearFormula, error)
+	GetLinearFormulaByLabel(label string) (LinearFormula, error)
 
-	GetProductsPhysicalStates(Dbselectparam) ([]PhysicalState, int, error)
-	GetProductsPhysicalStateByLabel(label string) (PhysicalState, error)
+	GetPhysicalStates(Dbselectparam) ([]PhysicalState, int, error)
+	GetPhysicalState(id int) (PhysicalState, error)
+	GetPhysicalStateByLabel(label string) (PhysicalState, error)
 
-	GetProductsSignalWords(Dbselectparam) ([]SignalWord, int, error)
-	GetProductsSignalWord(id int) (SignalWord, error)
-	GetProductsSignalWordByLabel(label string) (SignalWord, error)
+	GetSignalWords(Dbselectparam) ([]SignalWord, int, error)
+	GetSignalWord(id int) (SignalWord, error)
+	GetSignalWordByLabel(label string) (SignalWord, error)
 
-	GetProductsClassOfCompounds(Dbselectparam) ([]ClassOfCompound, int, error)
-	GetProductsClassOfCompoundByLabel(label string) (ClassOfCompound, error)
+	GetClassesOfCompound(Dbselectparam) ([]ClassOfCompound, int, error)
+	GetClassOfCompound(id int) (ClassOfCompound, error)
+	GetClassOfCompoundByLabel(label string) (ClassOfCompound, error)
 
-	GetProductsHazardStatementByReference(string) (HazardStatement, error)
-	GetProductsHazardStatements(Dbselectparam) ([]HazardStatement, int, error)
-	GetProductsHazardStatement(id int) (HazardStatement, error)
+	GetHazardStatementByReference(string) (HazardStatement, error)
+	GetHazardStatements(Dbselectparam) ([]HazardStatement, int, error)
+	GetHazardStatement(id int) (HazardStatement, error)
 
-	GetProductsPrecautionaryStatementByReference(string) (PrecautionaryStatement, error)
-	GetProductsPrecautionaryStatements(Dbselectparam) ([]PrecautionaryStatement, int, error)
-	GetProductsPrecautionaryStatement(id int) (PrecautionaryStatement, error)
+	GetPrecautionaryStatementByReference(string) (PrecautionaryStatement, error)
+	GetPrecautionaryStatements(Dbselectparam) ([]PrecautionaryStatement, int, error)
+	GetPrecautionaryStatement(id int) (PrecautionaryStatement, error)
 
-	GetProductsProducerRefs(DbselectparamProducerRef) ([]ProducerRef, int, error)
-	GetProductsProducers(Dbselectparam) ([]Producer, int, error)
-	GetProductsCategories(Dbselectparam) ([]Category, int, error)
-	GetProductsTags(Dbselectparam) ([]Tag, int, error)
-	GetProductsSuppliers(Dbselectparam) ([]Supplier, int, error)
-	GetProductsSupplierRefs(DbselectparamSupplierRef) ([]SupplierRef, int, error)
+	GetTags(Dbselectparam) ([]Tag, int, error)
+	GetTag(id int) (Tag, error)
+	GetTagByLabel(label string) (Tag, error)
+
+	GetCategories(Dbselectparam) ([]Category, int, error)
+	GetCategory(id int) (Category, error)
+	GetCategoryByLabel(label string) (Category, error)
+
+	GetProducers(Dbselectparam) ([]Producer, int, error)
+	GetProducer(id int) (Producer, error)
+	GetProducerByLabel(label string) (Producer, error)
+	CreateProducer(p Producer) (int64, error)
+
+	GetSuppliers(Dbselectparam) ([]Supplier, int, error)
+	GetSupplier(id int) (Supplier, error)
+	GetSupplierByLabel(label string) (Supplier, error)
+	CreateSupplier(s Supplier) (int64, error)
+
+	GetProducerRefs(DbselectparamProducerRef) ([]ProducerRef, int, error)
+	GetSupplierRefs(DbselectparamSupplierRef) ([]SupplierRef, int, error)
 
 	GetProduct(id int) (Product, error)
 	CountProductStorages(id int) (int, error)
@@ -80,9 +98,6 @@ type Datastore interface {
 	CreateProductBookmark(pr Product, pe Person) error
 	DeleteProductBookmark(pr Product, pe Person) error
 	IsProductBookmark(pr Product, pe Person) (bool, error)
-
-	CreateProducer(p Producer) (int, error)
-	CreateSupplier(s Supplier) (int, error)
 
 	// storages
 	GetStorages(DbselectparamStorage) ([]Storage, int, error)
