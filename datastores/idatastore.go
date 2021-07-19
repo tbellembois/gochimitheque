@@ -17,13 +17,17 @@ type Datastore interface {
 	Import(url string) error
 	ToCasbinJSONAdapter() ([]byte, error)
 
-	// welcome announce
 	GetWelcomeAnnounce() (WelcomeAnnounce, error)
 	UpdateWelcomeAnnounce(w WelcomeAnnounce) error
 
-	// products
-	GetExposedProducts() ([]Product, int, error)
-	GetProducts(DbselectparamProduct) ([]Product, int, error)
+	GetProducts(DbselectparamProduct, bool) ([]Product, int, error)
+	GetProduct(id int) (Product, error)
+	CountProductStorages(id int) (int, error)
+	DeleteProduct(id int) error
+	CreateUpdateProduct(p Product, update bool) (int64, error)
+	CreateProductBookmark(pr Product, pe Person) error
+	DeleteProductBookmark(pr Product, pe Person) error
+	IsProductBookmark(pr Product, pe Person) (bool, error)
 
 	GetCasNumbers(Dbselectparam) ([]CasNumber, int, error)
 	GetCasNumber(id int) (CasNumber, error)
@@ -90,27 +94,16 @@ type Datastore interface {
 	GetProducerRefs(DbselectparamProducerRef) ([]ProducerRef, int, error)
 	GetSupplierRefs(DbselectparamSupplierRef) ([]SupplierRef, int, error)
 
-	GetProduct(id int) (Product, error)
-	CountProductStorages(id int) (int, error)
-	DeleteProduct(id int) error
-	CreateProduct(p Product) (int, error)
-	UpdateProduct(p Product) error
-	CreateProductBookmark(pr Product, pe Person) error
-	DeleteProductBookmark(pr Product, pe Person) error
-	IsProductBookmark(pr Product, pe Person) (bool, error)
-
 	// storages
 	GetStorages(DbselectparamStorage) ([]Storage, int, error)
 	GetOtherStorages(DbselectparamStorage) ([]Entity, int, error)
 	GetStorage(id int) (Storage, error)
 	GetStoragesUnits(DbselectparamUnit) ([]Unit, int, error)
-	GetStoragesSuppliers(Dbselectparam) ([]Supplier, int, error)
 	GetStorageEntity(id int) (Entity, error)
 	DeleteStorage(id int) error
 	ArchiveStorage(id int) error
 	RestoreStorage(id int) error
-	CreateStorage(s Storage, itemNumber int) (int, error)
-	UpdateStorage(s Storage) error
+	CreateUpdateStorage(s Storage, itemNumber int, update bool) (int64, error)
 	ToogleStorageBorrowing(s Storage) error
 	UpdateAllQRCodes() error
 

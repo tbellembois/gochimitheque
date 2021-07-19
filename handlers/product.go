@@ -1124,10 +1124,16 @@ func (env *Env) GetExposedProductsHandler(w http.ResponseWriter, r *http.Request
 	logger.Log.Debug("GetExposedProductsHandler")
 
 	var (
-		err error
+		err  error
+		aerr *models.AppError
+		dspp models.DbselectparamProduct
 	)
 
-	products, count, err := env.DB.GetExposedProducts()
+	// init db request parameters
+	if dspp, aerr = models.NewdbselectparamProduct(r, nil); err != nil {
+		return aerr
+	}
+	products, count, err := env.DB.GetProducts(dspp, true)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -1168,7 +1174,7 @@ func (env *Env) GetProductsHandler(w http.ResponseWriter, r *http.Request) *mode
 		return aerr
 	}
 
-	products, count, err := env.DB.GetProducts(dspp)
+	products, count, err := env.DB.GetProducts(dspp, false)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -1260,12 +1266,14 @@ func (env *Env) CreateProductHandler(w http.ResponseWriter, r *http.Request) *mo
 	logger.Log.WithFields(logrus.Fields{"p": fmt.Sprintf("%+v", p)}).Debug("CreateProductHandler")
 
 	sanitizeProduct(&p)
-	if p.ProductID, err = env.DB.CreateProduct(p); err != nil {
+	var pid int64
+	if pid, err = env.DB.CreateUpdateProduct(p, false); err != nil {
 		return &models.AppError{
 			Error:   err,
 			Message: "create product error",
 			Code:    http.StatusInternalServerError}
 	}
+	p.ProductID = int(pid)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
@@ -1343,7 +1351,7 @@ func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *mo
 	logger.Log.WithFields(logrus.Fields{"updatedp": updatedp}).Debug("UpdateProductHandler")
 
 	sanitizeProduct(&updatedp)
-	if err := env.DB.UpdateProduct(updatedp); err != nil {
+	if _, err := env.DB.CreateUpdateProduct(updatedp, true); err != nil {
 		return &models.AppError{
 			Error:   err,
 			Message: "update product error",

@@ -362,7 +362,7 @@ func (env *Env) ValidateProductCasNumberHandler(w http.ResponseWriter, r *http.R
 			dspp.SetProductSpecificity(r.Form.Get("product_specificity"))
 
 			// getting the products matching the cas and specificity
-			if _, nbProducts, err = env.DB.GetProducts(dspp); err != nil {
+			if _, nbProducts, err = env.DB.GetProducts(dspp, false); err != nil {
 
 				logger.Log.Error("GetProducts error")
 				resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "casnumber_validate_wrongcas", PluralCount: 1})

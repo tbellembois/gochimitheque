@@ -2,12 +2,12 @@ package datastores
 
 import (
 	"database/sql"
+	"database/sql/driver"
 	"fmt"
 	"regexp"
 	"strings"
 	"sync"
 
-	sq "github.com/Masterminds/squirrel"
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/sqlite3"
 	"github.com/jmoiron/sqlx"
@@ -135,175 +135,8 @@ func (db *SQLiteDataStore) DeleteProductBookmark(pr Product, pe Person) error {
 
 }
 
-// GetExposedProducts return all the products
-func (db *SQLiteDataStore) GetExposedProducts() ([]Product, int, error) {
-	var (
-		products                                []Product
-		count                                   int
-		req, precreq, presreq, comreq, postsreq strings.Builder
-		cnstmt                                  *sqlx.NamedStmt
-		snstmt                                  *sqlx.NamedStmt
-		err                                     error
-	)
-
-	// pre request: select or count
-	precreq.WriteString(" SELECT count(DISTINCT p.product_id)")
-	presreq.WriteString(` SELECT p.product_id, 
-	p.product_specificity, 
-	p.product_msds,
-	p.product_restricted,
-	p.product_radioactive,
-	p.product_threedformula,
-	p.product_twodformula,
-	p.product_molformula,
-	p.product_disposalcomment,
-	p.product_remark,
-	linearformula.linearformula_id AS "linearformula.linearformula_id",
-	linearformula.linearformula_label AS "linearformula.linearformula_label",
-	empiricalformula.empiricalformula_id AS "empiricalformula.empiricalformula_id",
-	empiricalformula.empiricalformula_label AS "empiricalformula.empiricalformula_label",
-	physicalstate.physicalstate_id AS "physicalstate.physicalstate_id",
-	physicalstate.physicalstate_label AS "physicalstate.physicalstate_label",
-	signalword.signalword_id AS "signalword.signalword_id",
-	signalword.signalword_label AS "signalword.signalword_label",
-	name.name_id AS "name.name_id",
-	name.name_label AS "name.name_label",
-	cenumber.cenumber_id AS "cenumber.cenumber_id",
-	cenumber.cenumber_label AS "cenumber.cenumber_label",
-	casnumber.casnumber_id AS "casnumber.casnumber_id",
-	casnumber.casnumber_label AS "casnumber.casnumber_label",
-	casnumber.casnumber_cmr AS "casnumber.casnumber_cmr"`)
-
-	// common parts
-	comreq.WriteString(" FROM product as p")
-	// get name
-	comreq.WriteString(" JOIN name ON p.name = name.name_id")
-	// get casnumber
-	comreq.WriteString(" JOIN casnumber ON p.casnumber = casnumber.casnumber_id")
-	// get cenumber
-	comreq.WriteString(" LEFT JOIN cenumber ON p.cenumber = cenumber.cenumber_id")
-	// get physical state
-	comreq.WriteString(" LEFT JOIN physicalstate ON p.physicalstate = physicalstate.physicalstate_id")
-	// get signal word
-	comreq.WriteString(" LEFT JOIN signalword ON p.signalword = signalword.signalword_id")
-	// get empirical formula
-	comreq.WriteString(" JOIN empiricalformula ON p.empiricalformula = empiricalformula.empiricalformula_id")
-	// get linear formula
-	comreq.WriteString(" LEFT JOIN linearformula ON p.linearformula = linearformula.linearformula_id")
-	// get symbols
-	comreq.WriteString(" JOIN productsymbols AS ps ON ps.productsymbols_product_id = p.product_id")
-
-	// get hazardstatements
-	comreq.WriteString(" JOIN producthazardstatements AS phs ON phs.producthazardstatements_product_id = p.product_id")
-	// get precautionarystatements
-	comreq.WriteString(" JOIN productprecautionarystatements AS pps ON pps.productprecautionarystatements_product_id = p.product_id")
-
-	// post select request
-	postsreq.WriteString(" GROUP BY p.product_id")
-
-	// building count and select statements
-	if cnstmt, err = db.PrepareNamed(precreq.String() + comreq.String()); err != nil {
-		return nil, 0, err
-	}
-	if snstmt, err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); err != nil {
-		return nil, 0, err
-	}
-
-	m := map[string]interface{}{}
-	// select
-	if err = snstmt.Select(&products, m); err != nil {
-		return nil, 0, err
-	}
-	// count
-	if err = cnstmt.Get(&count, m); err != nil {
-		return nil, 0, err
-	}
-
-	//
-	// getting symbols
-	//
-	for i, pr := range products {
-		// note: do not modify p but products[i] instead
-		req.Reset()
-		req.WriteString("SELECT symbol_id, symbol_label, symbol_image FROM symbol")
-		req.WriteString(" JOIN productsymbols ON productsymbols.productsymbols_symbol_id = symbol.symbol_id")
-		req.WriteString(" JOIN product ON productsymbols.productsymbols_product_id = product.product_id")
-		req.WriteString(" WHERE product.product_id = ?")
-
-		if err = db.Select(&products[i].Symbols, req.String(), pr.ProductID); err != nil {
-			return nil, 0, err
-		}
-	}
-
-	//
-	// getting classes of compounds
-	//
-	for i, pr := range products {
-		// note: do not modify p but products[i] instead
-		req.Reset()
-		req.WriteString("SELECT classofcompound_id, classofcompound_label FROM classofcompound")
-		req.WriteString(" JOIN productclassofcompound ON productclassofcompound.productclassofcompound_classofcompound_id = classofcompound.classofcompound_id")
-		req.WriteString(" JOIN product ON productclassofcompound.productclassofcompound_product_id = product.product_id")
-		req.WriteString(" WHERE product.product_id = ?")
-
-		if err = db.Select(&products[i].ClassOfCompound, req.String(), pr.ProductID); err != nil {
-			return nil, 0, err
-		}
-	}
-
-	//
-	// getting synonyms
-	//
-	for i, pr := range products {
-		// note: do not modify p but products[i] instead
-		req.Reset()
-		req.WriteString("SELECT name_id, name_label FROM name")
-		req.WriteString(" JOIN productsynonyms ON productsynonyms.productsynonyms_name_id = name.name_id")
-		req.WriteString(" JOIN product ON productsynonyms.productsynonyms_product_id = product.product_id")
-		req.WriteString(" WHERE product.product_id = ?")
-
-		if err = db.Select(&products[i].Synonyms, req.String(), pr.ProductID); err != nil {
-			return nil, 0, err
-		}
-	}
-
-	//
-	// getting hazard statements
-	//
-	for i, pr := range products {
-		// note: do not modify p but products[i] instead
-		req.Reset()
-		req.WriteString("SELECT hazardstatement_id, hazardstatement_label, hazardstatement_reference FROM hazardstatement")
-		req.WriteString(" JOIN producthazardstatements ON producthazardstatements.producthazardstatements_hazardstatement_id = hazardstatement.hazardstatement_id")
-		req.WriteString(" JOIN product ON producthazardstatements.producthazardstatements_product_id = product.product_id")
-		req.WriteString(" WHERE product.product_id = ?")
-
-		if err = db.Select(&products[i].HazardStatements, req.String(), pr.ProductID); err != nil {
-			return nil, 0, err
-		}
-	}
-
-	//
-	// getting precautionary statements
-	//
-	for i, pr := range products {
-		// note: do not modify p but products[i] instead
-		req.Reset()
-		req.WriteString("SELECT precautionarystatement_id, precautionarystatement_label, precautionarystatement_reference FROM precautionarystatement")
-		req.WriteString(" JOIN productprecautionarystatements ON productprecautionarystatements.productprecautionarystatements_precautionarystatement_id = precautionarystatement.precautionarystatement_id")
-		req.WriteString(" JOIN product ON productprecautionarystatements.productprecautionarystatements_product_id = product.product_id")
-		req.WriteString(" WHERE product.product_id = ?")
-
-		if err = db.Select(&products[i].PrecautionaryStatements, req.String(), pr.ProductID); err != nil {
-			return nil, 0, err
-		}
-	}
-
-	return products, count, nil
-}
-
 // GetProducts return the products matching the search criteria
-func (db *SQLiteDataStore) GetProducts(p DbselectparamProduct) ([]Product, int, error) {
+func (db *SQLiteDataStore) GetProducts(p DbselectparamProduct, public bool) ([]Product, int, error) {
 	//defer TimeTrack(time.Now(), "GetProducts")
 
 	var (
@@ -319,13 +152,18 @@ func (db *SQLiteDataStore) GetProducts(p DbselectparamProduct) ([]Product, int, 
 	)
 	logger.Log.WithFields(logrus.Fields{"p": p}).Debug("GetProducts")
 
-	// is the user an admin?
-	if isadmin, err = db.IsPersonAdmin(p.GetLoggedPersonID()); err != nil {
-		return nil, 0, err
-	}
-	// has the person rproducts permission?
-	if rperm, err = db.HasPersonReadRestrictedProductPermission(p.GetLoggedPersonID()); err != nil {
-		return nil, 0, err
+	if !public {
+		// is the user an admin?
+		if isadmin, err = db.IsPersonAdmin(p.GetLoggedPersonID()); err != nil {
+			return nil, 0, err
+		}
+		// has the person rproducts permission?
+		if rperm, err = db.HasPersonReadRestrictedProductPermission(p.GetLoggedPersonID()); err != nil {
+			return nil, 0, err
+		}
+	} else {
+		isadmin = true
+		rperm = true
 	}
 
 	// pre request: select or count
@@ -369,9 +207,12 @@ func (db *SQLiteDataStore) GetProducts(p DbselectparamProduct) ([]Product, int, 
 	ut.unit_id AS "unit_temperature.unit_id",
 	ut.unit_label AS "unit_temperature.unit_label",
 	category.category_id AS "category.category_id",
-	category.category_label AS "category.category_label",
-	GROUP_CONCAT(DISTINCT storage.storage_barecode) AS "product_sl"
+	category.category_label AS "category.category_label"
 	`)
+
+	if !public {
+		presreq.WriteString(`,GROUP_CONCAT(DISTINCT storage.storage_barecode) AS "product_sl"`)
+	}
 
 	if p.GetCasNumberCmr() {
 		presreq.WriteString(`,GROUP_CONCAT(DISTINCT hazardstatement.hazardstatement_cmr) AS "hazardstatement_cmr"`)
@@ -450,11 +291,14 @@ func (db *SQLiteDataStore) GetProducts(p DbselectparamProduct) ([]Product, int, 
 	}
 
 	// filter by permissions
-	comreq.WriteString(` JOIN permission AS perm ON
+	if !public {
+		comreq.WriteString(` JOIN permission AS perm ON
 	perm.person = :personid and 
 	(perm.permission_item_name in ("all", "products")) and 
 	(perm.permission_perm_name in ("all", "r", "w"))
 	`)
+	}
+
 	comreq.WriteString(" WHERE 1")
 	if p.GetStorageToDestroy() {
 		comreq.WriteString(" AND storage.storage_todestroy = true")
@@ -564,8 +408,10 @@ func (db *SQLiteDataStore) GetProducts(p DbselectparamProduct) ([]Product, int, 
 	postsreq.WriteString(" ORDER BY " + p.GetOrderBy() + " " + p.GetOrder())
 
 	// limit
-	if p.GetLimit() != ^uint64(0) {
-		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
+	if !public {
+		if p.GetLimit() != ^uint64(0) {
+			postsreq.WriteString(" LIMIT :limit OFFSET :offset")
+		}
 	}
 
 	// building count and select statements
@@ -613,82 +459,88 @@ func (db *SQLiteDataStore) GetProducts(p DbselectparamProduct) ([]Product, int, 
 	//
 	// cleaning product_sl
 	//
-	wg.Add(1)
-	go func() {
-		r := regexp.MustCompile(`([a-zA-Z]{1}[0-9]+)\.[0-9]+`)
-		for i, pr := range products {
-			// note: do not modify p but products[i] instead
-			m := r.FindAllStringSubmatch(pr.ProductSL.String, -1)
+	if !public {
+		wg.Add(1)
+		go func() {
+			r := regexp.MustCompile(`([a-zA-Z]{1}[0-9]+)\.[0-9]+`)
+			for i, pr := range products {
+				// note: do not modify p but products[i] instead
+				m := r.FindAllStringSubmatch(pr.ProductSL.String, -1)
 
-			if len(m) > 0 {
-				differentSL := false
-				mBackup := m[0][1]
-				for i := range m {
-					if (m[i][1]) != mBackup {
-						differentSL = true
-						break
+				if len(m) > 0 {
+					differentSL := false
+					mBackup := m[0][1]
+					for i := range m {
+						if (m[i][1]) != mBackup {
+							differentSL = true
+							break
+						}
 					}
-				}
-				if !differentSL {
-					products[i].ProductSL.String = m[0][1]
+					if !differentSL {
+						products[i].ProductSL.String = m[0][1]
+					} else {
+						products[i].ProductSL.String = ""
+					}
 				} else {
 					products[i].ProductSL.String = ""
 				}
-			} else {
-				products[i].ProductSL.String = ""
 			}
-		}
-		wg.Done()
-	}()
+			wg.Done()
+		}()
+	}
 
 	//
 	// getting supplierref
 	//
-	wg.Add(1)
-	go func() {
+	if !public {
+		wg.Add(1)
+		go func() {
 
-		var reqSupplierref strings.Builder
+			var reqSupplierref strings.Builder
 
-		for i, pr := range products {
-			// note: do not modify p but products[i] instead
-			reqSupplierref.Reset()
-			reqSupplierref.WriteString(`SELECT supplierref_id, 
+			for i, pr := range products {
+				// note: do not modify p but products[i] instead
+				reqSupplierref.Reset()
+				reqSupplierref.WriteString(`SELECT supplierref_id, 
 			supplierref_label,
 			supplier.supplier_id AS "supplier.supplier_id",
 			supplier.supplier_label AS "supplier.supplier_label"
 			FROM supplierref`)
-			reqSupplierref.WriteString(" JOIN productsupplierrefs ON productsupplierrefs.productsupplierrefs_supplierref_id = supplierref.supplierref_id AND productsupplierrefs.productsupplierrefs_product_id = ?")
-			reqSupplierref.WriteString(" JOIN supplier ON supplierref.supplier = supplier.supplier_id")
+				reqSupplierref.WriteString(" JOIN productsupplierrefs ON productsupplierrefs.productsupplierrefs_supplierref_id = supplierref.supplierref_id AND productsupplierrefs.productsupplierrefs_product_id = ?")
+				reqSupplierref.WriteString(" JOIN supplier ON supplierref.supplier = supplier.supplier_id")
 
-			if err = db.Select(&products[i].SupplierRefs, reqSupplierref.String(), pr.ProductID); err != nil {
-				logger.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts:goroutine:supplierref")
+				if err = db.Select(&products[i].SupplierRefs, reqSupplierref.String(), pr.ProductID); err != nil {
+					logger.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts:goroutine:supplierref")
+				}
 			}
-		}
-		wg.Done()
-	}()
+			wg.Done()
+		}()
+	}
 
 	//
 	// getting tags
 	//
-	wg.Add(1)
-	go func() {
+	if !public {
+		wg.Add(1)
+		go func() {
 
-		var reqTags strings.Builder
+			var reqTags strings.Builder
 
-		for i, pr := range products {
-			// note: do not modify p but products[i] instead
-			reqTags.Reset()
-			reqTags.WriteString("SELECT tag_id, tag_label FROM tag")
-			reqTags.WriteString(" JOIN producttags ON producttags.producttags_tag_id = tag.tag_id")
-			reqTags.WriteString(" JOIN product ON producttags.producttags_product_id = product.product_id")
-			reqTags.WriteString(" WHERE product.product_id = ?")
+			for i, pr := range products {
+				// note: do not modify p but products[i] instead
+				reqTags.Reset()
+				reqTags.WriteString("SELECT tag_id, tag_label FROM tag")
+				reqTags.WriteString(" JOIN producttags ON producttags.producttags_tag_id = tag.tag_id")
+				reqTags.WriteString(" JOIN product ON producttags.producttags_product_id = product.product_id")
+				reqTags.WriteString(" WHERE product.product_id = ?")
 
-			if err = db.Select(&products[i].Tags, reqTags.String(), pr.ProductID); err != nil {
-				logger.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts:goroutine:tags")
+				if err = db.Select(&products[i].Tags, reqTags.String(), pr.ProductID); err != nil {
+					logger.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts:goroutine:tags")
+				}
 			}
-		}
-		wg.Done()
-	}()
+			wg.Done()
+		}()
+	}
 
 	//
 	// getting symbols
@@ -808,57 +660,59 @@ func (db *SQLiteDataStore) GetProducts(p DbselectparamProduct) ([]Product, int, 
 	//
 	// getting number of storages for each product
 	//
-	wg.Add(1)
-	go func() {
+	if !public {
+		wg.Add(1)
+		go func() {
 
-		var (
-			reqtsc, reqsc, reqasc strings.Builder
-		)
+			var (
+				reqtsc, reqsc, reqasc strings.Builder
+			)
 
-		for i, pr := range products {
-			// getting the total storage count
-			reqtsc.Reset()
-			reqtsc.WriteString("SELECT count(DISTINCT storage_id) from storage")
-			reqtsc.WriteString(" JOIN product ON storage.product = ? AND storage.storage IS NULL AND storage.storage_archive == false")
+			for i, pr := range products {
+				// getting the total storage count
+				reqtsc.Reset()
+				reqtsc.WriteString("SELECT count(DISTINCT storage_id) from storage")
+				reqtsc.WriteString(" JOIN product ON storage.product = ? AND storage.storage IS NULL AND storage.storage_archive == false")
 
-			if isadmin {
-				reqsc.Reset()
-				reqsc.WriteString("SELECT count(DISTINCT storage_id) from storage")
-				reqsc.WriteString(" JOIN product ON storage.product = ? AND storage.storage IS NULL AND storage.storage_archive == false")
+				if isadmin {
+					reqsc.Reset()
+					reqsc.WriteString("SELECT count(DISTINCT storage_id) from storage")
+					reqsc.WriteString(" JOIN product ON storage.product = ? AND storage.storage IS NULL AND storage.storage_archive == false")
 
-				reqasc.Reset()
-				reqasc.WriteString("SELECT count(DISTINCT storage_id) from storage")
-				reqasc.WriteString(" JOIN product ON storage.product = ? AND storage.storage_archive == true")
-			} else {
-				// getting the storage count of the logged user entities
-				reqsc.Reset()
-				reqsc.WriteString("SELECT count(DISTINCT storage_id) from storage")
-				reqsc.WriteString(" JOIN product ON storage.product = ? AND storage.storage IS NULL AND storage.storage_archive == false")
-				reqsc.WriteString(" JOIN storelocation ON storage.storelocation = storelocation.storelocation_id")
-				reqsc.WriteString(" JOIN entity ON storelocation.entity = entity.entity_id")
-				reqsc.WriteString(" JOIN personentities ON (entity.entity_id = personentities.personentities_entity_id) AND")
-				reqsc.WriteString(" (personentities.personentities_person_id = ?)")
+					reqasc.Reset()
+					reqasc.WriteString("SELECT count(DISTINCT storage_id) from storage")
+					reqasc.WriteString(" JOIN product ON storage.product = ? AND storage.storage_archive == true")
+				} else {
+					// getting the storage count of the logged user entities
+					reqsc.Reset()
+					reqsc.WriteString("SELECT count(DISTINCT storage_id) from storage")
+					reqsc.WriteString(" JOIN product ON storage.product = ? AND storage.storage IS NULL AND storage.storage_archive == false")
+					reqsc.WriteString(" JOIN storelocation ON storage.storelocation = storelocation.storelocation_id")
+					reqsc.WriteString(" JOIN entity ON storelocation.entity = entity.entity_id")
+					reqsc.WriteString(" JOIN personentities ON (entity.entity_id = personentities.personentities_entity_id) AND")
+					reqsc.WriteString(" (personentities.personentities_person_id = ?)")
 
-				reqasc.Reset()
-				reqasc.WriteString("SELECT count(DISTINCT storage_id) from storage")
-				reqasc.WriteString(" JOIN product ON storage.product = ? AND storage.storage_archive == true")
-				reqasc.WriteString(" JOIN storelocation ON storage.storelocation = storelocation.storelocation_id")
-				reqasc.WriteString(" JOIN entity ON storelocation.entity = entity.entity_id")
-				reqasc.WriteString(" JOIN personentities ON (entity.entity_id = personentities.personentities_entity_id) AND")
-				reqasc.WriteString(" (personentities.personentities_person_id = ?)")
+					reqasc.Reset()
+					reqasc.WriteString("SELECT count(DISTINCT storage_id) from storage")
+					reqasc.WriteString(" JOIN product ON storage.product = ? AND storage.storage_archive == true")
+					reqasc.WriteString(" JOIN storelocation ON storage.storelocation = storelocation.storelocation_id")
+					reqasc.WriteString(" JOIN entity ON storelocation.entity = entity.entity_id")
+					reqasc.WriteString(" JOIN personentities ON (entity.entity_id = personentities.personentities_entity_id) AND")
+					reqasc.WriteString(" (personentities.personentities_person_id = ?)")
+				}
+				if err = db.Get(&products[i].ProductSC, reqsc.String(), pr.ProductID, p.GetLoggedPersonID()); err != nil {
+					logger.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts:goroutine:SC")
+				}
+				if err = db.Get(&products[i].ProductASC, reqasc.String(), pr.ProductID, p.GetLoggedPersonID()); err != nil {
+					logger.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts:goroutine:ASC")
+				}
+				if err = db.Get(&products[i].ProductTSC, reqtsc.String(), pr.ProductID, p.GetLoggedPersonID()); err != nil {
+					logger.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts:goroutine:TSC")
+				}
 			}
-			if err = db.Get(&products[i].ProductSC, reqsc.String(), pr.ProductID, p.GetLoggedPersonID()); err != nil {
-				logger.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts:goroutine:SC")
-			}
-			if err = db.Get(&products[i].ProductASC, reqasc.String(), pr.ProductID, p.GetLoggedPersonID()); err != nil {
-				logger.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts:goroutine:ASC")
-			}
-			if err = db.Get(&products[i].ProductTSC, reqtsc.String(), pr.ProductID, p.GetLoggedPersonID()); err != nil {
-				logger.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts:goroutine:TSC")
-			}
-		}
-		wg.Done()
-	}()
+			wg.Done()
+		}()
+	}
 
 	wg.Wait()
 
@@ -1077,977 +931,468 @@ func (db *SQLiteDataStore) DeleteProduct(id int) error {
 }
 
 // CreateProduct insert the new product p into the database
-func (db *SQLiteDataStore) CreateProduct(p Product) (int, error) {
+func (db *SQLiteDataStore) CreateUpdateProduct(p Product, update bool) (lastInsertId int64, err error) {
+
 	var (
-		lastid   int64
-		tx       *sql.Tx
-		sqlr     string
-		res      sql.Result
-		sqla     []interface{}
-		ibuilder sq.InsertBuilder
-		err      error
+		v    driver.Value
+		sqlr string
+		args []interface{}
+		tx   *sql.Tx
+		res  sql.Result
 	)
 
-	// beginning transaction
+	dialect := goqu.Dialect("sqlite3")
+	tableProduct := goqu.T("product")
+
 	if tx, err = db.Begin(); err != nil {
 		return 0, err
 	}
 
+	defer func() {
+		if err != nil {
+			logger.Log.Error(err)
+			if rbErr := tx.Rollback(); rbErr != nil {
+				logger.Log.Error(rbErr)
+				err = rbErr
+				return
+			}
+			return
+		}
+		err = tx.Commit()
+	}()
+
 	// if CasNumberID = -1 then it is a new cas
-	if v, err := p.CasNumber.CasNumberID.Value(); p.CasNumber.CasNumberID.Valid && err == nil && v.(int64) == -1 {
+	if v, err = p.CasNumber.CasNumberID.Value(); p.CasNumber.CasNumberID.Valid && err == nil && v.(int64) == -1 {
+
 		logger.Log.Debug("new casnumber " + p.CasNumberLabel.String)
 		sqlr = `INSERT INTO casnumber (casnumber_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.CasNumberLabel); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return 0, errr
-			}
-			return 0, err
+			return
 		}
 		// getting the last inserted id
-		if lastid, err = res.LastInsertId(); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return 0, errr
-			}
-			return 0, err
+		if lastInsertId, err = res.LastInsertId(); err != nil {
+			return
 		}
 		// updating the product CasNumberID (CasNumberLabel already set)
-		p.CasNumber.CasNumberID = sql.NullInt64{Valid: true, Int64: int64(lastid)}
+		p.CasNumber.CasNumberID = sql.NullInt64{Valid: true, Int64: lastInsertId}
+
 	}
+
 	// if CeNumberID = -1 then it is a new ce
-	if v, err := p.CeNumber.CeNumberID.Value(); p.CeNumber.CeNumberID.Valid && err == nil && v.(int64) == -1 {
+	if v, err = p.CeNumber.CeNumberID.Value(); p.CeNumber.CeNumberID.Valid && err == nil && v.(int64) == -1 {
+
 		logger.Log.Debug("new cenumber " + p.CeNumberLabel.String)
 		sqlr = `INSERT INTO cenumber (cenumber_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.CeNumberLabel.String); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return 0, errr
-			}
-			return 0, err
+			return
 		}
 		// getting the last inserted id
-		if lastid, err = res.LastInsertId(); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return 0, errr
-			}
-			return 0, err
+		if lastInsertId, err = res.LastInsertId(); err != nil {
+			return
 		}
 		// updating the product CeNumberID (CeNumberLabel already set)
-		p.CeNumber.CeNumberID = sql.NullInt64{Valid: true, Int64: lastid}
+		p.CeNumber.CeNumberID = sql.NullInt64{Valid: true, Int64: lastInsertId}
+
 	}
 	if err != nil {
 		logger.Log.Error("cenumber error - " + err.Error())
-		if errr := tx.Rollback(); errr != nil {
-			return 0, errr
-		}
-		return 0, err
+		return
 	}
+
 	// if NameID = -1 then it is a new name
 	if p.Name.NameID == -1 {
+
 		logger.Log.Debug("new name " + p.NameLabel)
 		sqlr = `INSERT INTO name (name_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, strings.ToUpper(p.NameLabel)); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return 0, errr
-			}
-			return 0, err
+			return
 		}
 		// getting the last inserted id
-		if lastid, err = res.LastInsertId(); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return 0, errr
-			}
-			return 0, err
+		if lastInsertId, err = res.LastInsertId(); err != nil {
+			return
 		}
 		// updating the product NameID (NameLabel already set)
-		p.Name.NameID = int(lastid)
+		p.Name.NameID = int(lastInsertId)
+
 	}
+
+	// if NameID = -1 then it is a new name
 	for i, syn := range p.Synonyms {
+
 		if syn.NameID == -1 {
+
 			logger.Log.Debug("new name(syn) " + syn.NameLabel)
 			sqlr = `INSERT INTO name (name_label) VALUES (?)`
 			if res, err = tx.Exec(sqlr, strings.ToUpper(syn.NameLabel)); err != nil {
-				if errr := tx.Rollback(); errr != nil {
-					return 0, errr
-				}
-				return 0, err
+				return
 			}
 			// getting the last inserted id
-			if lastid, err = res.LastInsertId(); err != nil {
-				if errr := tx.Rollback(); errr != nil {
-					return 0, errr
-				}
-				return 0, err
+			if lastInsertId, err = res.LastInsertId(); err != nil {
+				return
 			}
-			p.Synonyms[i].NameID = int(lastid)
+			p.Synonyms[i].NameID = int(lastInsertId)
+
 		}
+
 	}
+
 	// if ClassOfCompoundID = -1 then it is a new class of compounds
 	for i, coc := range p.ClassOfCompound {
+
 		if coc.ClassOfCompoundID == -1 {
+
 			logger.Log.Debug("new classofcompound " + coc.ClassOfCompoundLabel)
 			sqlr = `INSERT INTO classofcompound (classofcompound_label) VALUES (?)`
 			if res, err = tx.Exec(sqlr, strings.ToUpper(coc.ClassOfCompoundLabel)); err != nil {
-				if errr := tx.Rollback(); errr != nil {
-					return 0, errr
-				}
-				return 0, err
+				return
 			}
 			// getting the last inserted id
-			if lastid, err = res.LastInsertId(); err != nil {
-				if errr := tx.Rollback(); errr != nil {
-					return 0, errr
-				}
-				return 0, err
+			if lastInsertId, err = res.LastInsertId(); err != nil {
+				return
 			}
-			p.ClassOfCompound[i].ClassOfCompoundID = int(lastid)
+			p.ClassOfCompound[i].ClassOfCompoundID = int(lastInsertId)
+
 		}
+
 	}
+
 	// if SupplierRefID = -1 then it is a new supplier ref
 	for i, sr := range p.SupplierRefs {
+
 		if sr.SupplierRefID == -1 {
+
 			logger.Log.Debug("new supplierref " + sr.SupplierRefLabel)
 			sqlr = `INSERT INTO supplierref (supplierref_label, supplier) VALUES (?, ?)`
 			if res, err = tx.Exec(sqlr, sr.SupplierRefLabel, sr.Supplier.SupplierID); err != nil {
-				if errr := tx.Rollback(); errr != nil {
-					return 0, errr
-				}
-				return 0, err
+				return
 			}
 			// getting the last inserted id
-			if lastid, err = res.LastInsertId(); err != nil {
-				if errr := tx.Rollback(); errr != nil {
-					return 0, errr
-				}
-				return 0, err
+			if lastInsertId, err = res.LastInsertId(); err != nil {
+				return
 			}
-			p.SupplierRefs[i].SupplierRefID = int(lastid)
+			p.SupplierRefs[i].SupplierRefID = int(lastInsertId)
+
 		}
+
 	}
+
 	// if TagID = -1 then it is a new tag
 	for i, tag := range p.Tags {
+
 		if tag.TagID == -1 {
+
 			logger.Log.Debug("new tag " + tag.TagLabel)
 			sqlr = `INSERT INTO tag (tag_label) VALUES (?)`
 			if res, err = tx.Exec(sqlr, tag.TagLabel); err != nil {
-				if errr := tx.Rollback(); errr != nil {
-					return 0, errr
-				}
-				return 0, err
+				return
 			}
 			// getting the last inserted id
-			if lastid, err = res.LastInsertId(); err != nil {
-				if errr := tx.Rollback(); errr != nil {
-					return 0, errr
-				}
-				return 0, err
+			if lastInsertId, err = res.LastInsertId(); err != nil {
+				return
 			}
-			p.Tags[i].TagID = int(lastid)
+			p.Tags[i].TagID = int(lastInsertId)
+
 		}
+
 	}
+
 	// if EmpiricalFormulaID = -1 then it is a new empirical formula
-	if v, err := p.EmpiricalFormula.EmpiricalFormulaID.Value(); p.EmpiricalFormula.EmpiricalFormulaID.Valid && err == nil && v.(int64) == -1 {
+	if v, err = p.EmpiricalFormula.EmpiricalFormulaID.Value(); p.EmpiricalFormula.EmpiricalFormulaID.Valid && err == nil && v.(int64) == -1 {
+
 		logger.Log.Debug("new empiricalformula " + p.EmpiricalFormulaLabel.String)
 		sqlr = `INSERT INTO empiricalformula (empiricalformula_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.EmpiricalFormulaLabel); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return 0, errr
-			}
-			return 0, err
+			return
 		}
 		// getting the last inserted id
-		if lastid, err = res.LastInsertId(); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return 0, errr
-			}
-			return 0, err
+		if lastInsertId, err = res.LastInsertId(); err != nil {
+			return
 		}
 		// updating the product EmpiricalFormulaID (EmpiricalFormulaLabel already set)
-		p.EmpiricalFormula.EmpiricalFormulaID = sql.NullInt64{Valid: true, Int64: int64(lastid)}
+		p.EmpiricalFormula.EmpiricalFormulaID = sql.NullInt64{Valid: true, Int64: lastInsertId}
+
 	}
+
 	// if LinearFormulaID = -1 then it is a new linear formula
-	if v, err := p.LinearFormula.LinearFormulaID.Value(); p.LinearFormula.LinearFormulaID.Valid && err == nil && v.(int64) == -1 {
+	if v, err = p.LinearFormula.LinearFormulaID.Value(); p.LinearFormula.LinearFormulaID.Valid && err == nil && v.(int64) == -1 {
+
 		logger.Log.Debug("new linearformula " + p.LinearFormulaLabel.String)
 		sqlr = `INSERT INTO linearformula (linearformula_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.LinearFormulaLabel.String); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return 0, errr
-			}
-			return 0, err
+			return
 		}
 		// getting the last inserted id
-		if lastid, err = res.LastInsertId(); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return 0, errr
-			}
-			return 0, err
+		if lastInsertId, err = res.LastInsertId(); err != nil {
+			return
 		}
 		// updating the product LinearFormulaID (LinearFormulaLabel already set)
-		p.LinearFormula.LinearFormulaID = sql.NullInt64{Valid: true, Int64: lastid}
+		p.LinearFormula.LinearFormulaID = sql.NullInt64{Valid: true, Int64: lastInsertId}
+
 	}
+
 	// if PhysicalStateID = -1 then it is a new physical state
-	if v, err := p.PhysicalState.PhysicalStateID.Value(); p.PhysicalState.PhysicalStateID.Valid && err == nil && v.(int64) == -1 {
+	if v, err = p.PhysicalState.PhysicalStateID.Value(); p.PhysicalState.PhysicalStateID.Valid && err == nil && v.(int64) == -1 {
+
 		logger.Log.Debug("new physicalstate " + p.PhysicalStateLabel.String)
 		sqlr = `INSERT INTO physicalstate (physicalstate_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.PhysicalStateLabel.String); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return 0, errr
-			}
-			return 0, err
+			return
 		}
 		// getting the last inserted id
-		if lastid, err = res.LastInsertId(); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return 0, errr
-			}
-			return 0, err
+		if lastInsertId, err = res.LastInsertId(); err != nil {
+			return
 		}
 		// updating the product PhysicalStateID (PhysicalStateLabel already set)
-		p.PhysicalState.PhysicalStateID = sql.NullInt64{Valid: true, Int64: lastid}
+		p.PhysicalState.PhysicalStateID = sql.NullInt64{Valid: true, Int64: lastInsertId}
+
 	}
+
 	// if CategoryID = -1 then it is a new category
-	if v, err := p.Category.CategoryID.Value(); p.Category.CategoryID.Valid && err == nil && v.(int64) == -1 {
+	if v, err = p.Category.CategoryID.Value(); p.Category.CategoryID.Valid && err == nil && v.(int64) == -1 {
+
 		logger.Log.Debug("new category " + p.CategoryLabel.String)
 		sqlr = `INSERT INTO category (category_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, p.CategoryLabel.String); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return 0, errr
-			}
-			return 0, err
+			return
 		}
 		// getting the last inserted id
-		if lastid, err = res.LastInsertId(); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return 0, errr
-			}
-			return 0, err
+		if lastInsertId, err = res.LastInsertId(); err != nil {
+			return
 		}
 		// updating the product PhysicalStateID (PhysicalStateLabel already set)
-		p.Category.CategoryID = sql.NullInt64{Valid: true, Int64: lastid}
+		p.Category.CategoryID = sql.NullInt64{Valid: true, Int64: lastInsertId}
+
 	}
+
 	// if ProducerRefID = -1 then it is a new producer ref
-	if v, err := p.ProducerRef.ProducerRefID.Value(); p.ProducerRef.ProducerRefID.Valid && err == nil && v.(int64) == -1 {
+	if v, err = p.ProducerRef.ProducerRefID.Value(); p.ProducerRef.ProducerRefID.Valid && err == nil && v.(int64) == -1 {
+
 		logger.Log.Debug("new producerref " + p.ProducerRefLabel.String)
 		sqlr = `INSERT INTO producerref (producerref_label, producer) VALUES (?, ?)`
 		if res, err = tx.Exec(sqlr, p.ProducerRefLabel.String, p.Producer.ProducerID); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return 0, errr
-			}
-			return 0, err
+			return
 		}
 		// getting the last inserted id
-		if lastid, err = res.LastInsertId(); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return 0, errr
-			}
-			return 0, err
+		if lastInsertId, err = res.LastInsertId(); err != nil {
+			return
 		}
 		// updating the product ProducerRefID (ProducerRefLabel already set)
-		p.ProducerRef.ProducerRefID = sql.NullInt64{Valid: true, Int64: lastid}
+		p.ProducerRef.ProducerRefID = sql.NullInt64{Valid: true, Int64: lastInsertId}
+
 	}
 
 	// finally updating the product
-	s := make(map[string]interface{})
+	insertCols := goqu.Record{}
+
 	if p.ProductSpecificity.Valid {
-		s["product_specificity"] = p.ProductSpecificity.String
+		insertCols["product_specificity"] = p.ProductSpecificity.String
 	}
 	if p.ProductMSDS.Valid {
-		s["product_msds"] = p.ProductMSDS.String
+		insertCols["product_msds"] = p.ProductMSDS.String
 	}
 	if p.ProductSheet.Valid {
-		s["product_sheet"] = p.ProductSheet.String
+		insertCols["product_sheet"] = p.ProductSheet.String
 	}
 	if p.ProductTemperature.Valid {
-		s["product_temperature"] = int(p.ProductTemperature.Int64)
+		insertCols["product_temperature"] = int(p.ProductTemperature.Int64)
 	}
 	if p.ProductRestricted.Valid {
-		s["product_restricted"] = p.ProductRestricted.Bool
+		insertCols["product_restricted"] = p.ProductRestricted.Bool
 	}
 	if p.ProductRadioactive.Valid {
-		s["product_radioactive"] = p.ProductRadioactive.Bool
+		insertCols["product_radioactive"] = p.ProductRadioactive.Bool
 	}
 
 	if p.Category.CategoryID.Valid {
-		s["category"] = int(p.Category.CategoryID.Int64)
+		insertCols["category"] = int(p.Category.CategoryID.Int64)
 	}
 	if p.UnitTemperature.UnitID.Valid {
-		s["unit_temperature"] = int(p.UnitTemperature.UnitID.Int64)
+		insertCols["unit_temperature"] = int(p.UnitTemperature.UnitID.Int64)
 	}
 	if p.ProductThreeDFormula.Valid {
-		s["product_threedformula"] = p.ProductThreeDFormula.String
+		insertCols["product_threedformula"] = p.ProductThreeDFormula.String
 	}
 	if p.ProductTwoDFormula.Valid {
-		s["product_twodformula"] = p.ProductTwoDFormula.String
+		insertCols["product_twodformula"] = p.ProductTwoDFormula.String
 	}
 	if p.ProductDisposalComment.Valid {
-		s["product_disposalcomment"] = p.ProductDisposalComment.String
+		insertCols["product_disposalcomment"] = p.ProductDisposalComment.String
 	}
 	if p.ProductRemark.Valid {
-		s["product_remark"] = p.ProductRemark.String
+		insertCols["product_remark"] = p.ProductRemark.String
 	}
 	if p.ProductNumberPerCarton.Valid {
-		s["product_number_per_carton"] = p.ProductNumberPerCarton.Int64
+		insertCols["product_number_per_carton"] = p.ProductNumberPerCarton.Int64
 	}
 	if p.ProductNumberPerBag.Valid {
-		s["product_number_per_bag"] = p.ProductNumberPerBag.Int64
+		insertCols["product_number_per_bag"] = p.ProductNumberPerBag.Int64
 	}
 	if p.EmpiricalFormulaID.Valid {
-		s["empiricalformula"] = int(p.EmpiricalFormulaID.Int64)
+		insertCols["empiricalformula"] = int(p.EmpiricalFormulaID.Int64)
 	}
 	if p.LinearFormulaID.Valid {
-		s["linearformula"] = int(p.LinearFormulaID.Int64)
+		insertCols["linearformula"] = int(p.LinearFormulaID.Int64)
 	}
 	if p.PhysicalStateID.Valid {
-		s["physicalstate"] = int(p.PhysicalStateID.Int64)
+		insertCols["physicalstate"] = int(p.PhysicalStateID.Int64)
 	}
 	if p.SignalWordID.Valid {
-		s["signalword"] = int(p.SignalWordID.Int64)
+		insertCols["signalword"] = int(p.SignalWordID.Int64)
 	}
 	if p.CasNumberID.Valid {
-		s["casnumber"] = int(p.CasNumberID.Int64)
+		insertCols["casnumber"] = int(p.CasNumberID.Int64)
 	}
 	if p.CeNumberID.Valid {
-		s["cenumber"] = int(p.CeNumberID.Int64)
+		insertCols["cenumber"] = int(p.CeNumberID.Int64)
 	}
 	if p.ProducerRefID.Valid {
-		s["producerref"] = int(p.ProducerRefID.Int64)
+		insertCols["producerref"] = int(p.ProducerRefID.Int64)
 	}
 	if p.ProductMolFormula.Valid {
-		s["product_molformula"] = p.ProductMolFormula.String
+		insertCols["product_molformula"] = p.ProductMolFormula.String
 	}
 
-	s["name"] = p.NameID
-	s["person"] = p.PersonID
+	insertCols["name"] = p.NameID
+	insertCols["person"] = p.PersonID
 
-	// building column names/values
-	col := make([]string, 0, len(s))
-	val := make([]interface{}, 0, len(s))
-	for k, v := range s {
-		col = append(col, k)
-
-		switch v.(type) {
-		case int:
-			val = append(val, v.(int))
-		case int64:
-			val = append(val, v.(int64))
-		case string:
-			val = append(val, v.(string))
-		case bool:
-			val = append(val, v.(bool))
-		default:
-			val = append(val, v)
+	if update {
+		iQuery := dialect.Update(tableProduct).Set(insertCols)
+		if sqlr, args, err = iQuery.ToSQL(); err != nil {
+			return
 		}
-	}
-
-	ibuilder = sq.Insert("product").Columns(col...).Values(val...)
-	if sqlr, sqla, err = ibuilder.ToSql(); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return 0, errr
+	} else {
+		iQuery := dialect.Insert(tableProduct).Rows(insertCols)
+		if sqlr, args, err = iQuery.ToSQL(); err != nil {
+			return
 		}
-		return 0, err
 	}
 
 	//logger.Log.Debug(sqlr)
-	//logger.Log.Debug(sqla)
+	//logger.Log.Debug(args)
 
-	if res, err = tx.Exec(sqlr, sqla...); err != nil {
-		logger.Log.Error("product error - " + err.Error())
-		logger.Log.Error("sql:" + sqlr)
-		if errr := tx.Rollback(); errr != nil {
-			return 0, errr
-		}
-		return 0, err
+	if res, err = tx.Exec(sqlr, args...); err != nil {
+		return
 	}
 
 	// getting the last inserted id
-	if lastid, err = res.LastInsertId(); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return 0, errr
-		}
-		return 0, err
+	if lastInsertId, err = res.LastInsertId(); err != nil {
+		return
 	}
-	p.ProductID = int(lastid)
+	p.ProductID = int(lastInsertId)
 	logger.Log.WithFields(logrus.Fields{"p": p}).Debug("CreateProduct")
 
 	// adding supplierrefs
+	if update {
+		sqlr = `DELETE FROM productsupplierrefs WHERE productsupplierrefs.productsupplierrefs_product_id = (?)`
+		if _, err = tx.Exec(sqlr, p.ProductID); err != nil {
+			return
+		}
+	}
 	for _, sr := range p.SupplierRefs {
+
 		sqlr = `INSERT INTO productsupplierrefs (productsupplierrefs_product_id, productsupplierrefs_supplierref_id) VALUES (?,?)`
 		if _, err = tx.Exec(sqlr, p.ProductID, sr.SupplierRefID); err != nil {
-			logger.Log.Error("productsupplierrefs error - " + err.Error())
-			if errr := tx.Rollback(); errr != nil {
-				return 0, errr
-			}
-			return 0, err
+			return
 		}
+
 	}
 
 	// adding tags
+	if update {
+		sqlr = `DELETE FROM producttags WHERE producttags.producttags_product_id = (?)`
+		if _, err = tx.Exec(sqlr, p.ProductID); err != nil {
+			return
+		}
+	}
 	for _, tag := range p.Tags {
+
 		sqlr = `INSERT INTO producttags (producttags_product_id, producttags_tag_id) VALUES (?,?)`
 		if _, err = tx.Exec(sqlr, p.ProductID, tag.TagID); err != nil {
-			logger.Log.Error("producttags error - " + err.Error())
-			if errr := tx.Rollback(); errr != nil {
-				return 0, errr
-			}
-			return 0, err
+			return
 		}
+
 	}
 
 	// adding symbols
+	if update {
+		sqlr = `DELETE FROM productsymbols WHERE productsymbols.productsymbols_product_id = (?)`
+		if _, err = tx.Exec(sqlr, p.ProductID); err != nil {
+			return
+		}
+	}
 	for _, sym := range p.Symbols {
+
 		sqlr = `INSERT INTO productsymbols (productsymbols_product_id, productsymbols_symbol_id) VALUES (?,?)`
 		if _, err = tx.Exec(sqlr, p.ProductID, sym.SymbolID); err != nil {
-			logger.Log.Error("productsymbols error - " + err.Error())
-			if errr := tx.Rollback(); errr != nil {
-				return 0, errr
-			}
-			return 0, err
+			return
 		}
+
 	}
 
 	// adding classes of compounds
-	for _, coc := range p.ClassOfCompound {
-		sqlr = `INSERT INTO productclassofcompound (productclassofcompound_product_id, productclassofcompound_classofcompound_id) VALUES (?,?)`
-		if _, err = tx.Exec(sqlr, p.ProductID, coc.ClassOfCompoundID); err != nil {
-			logger.Log.Error("productclassofcompound error - " + err.Error())
-			if errr := tx.Rollback(); errr != nil {
-				return 0, errr
-			}
-			return 0, err
+	if update {
+		sqlr = `DELETE FROM productclassofcompound WHERE productclassofcompound.productclassofcompound_product_id = (?)`
+		if _, err = tx.Exec(sqlr, p.ProductID); err != nil {
+			return
 		}
 	}
+	for _, coc := range p.ClassOfCompound {
+
+		sqlr = `INSERT INTO productclassofcompound (productclassofcompound_product_id, productclassofcompound_classofcompound_id) VALUES (?,?)`
+		if _, err = tx.Exec(sqlr, p.ProductID, coc.ClassOfCompoundID); err != nil {
+			return
+		}
+
+	}
+
 	// adding hazard statements
-	for _, hs := range p.HazardStatements {
-		sqlr = `INSERT INTO producthazardstatements (producthazardstatements_product_id, producthazardstatements_hazardstatement_id) VALUES (?,?)`
-		if _, err = tx.Exec(sqlr, p.ProductID, hs.HazardStatementID); err != nil {
-			logger.Log.Error("producthazardstatements error - " + err.Error())
-			if errr := tx.Rollback(); errr != nil {
-				return 0, errr
-			}
-			return 0, err
+	if update {
+		sqlr = `DELETE FROM producthazardstatements WHERE producthazardstatements.producthazardstatements_product_id = (?)`
+		if _, err = tx.Exec(sqlr, p.ProductID); err != nil {
+			return
 		}
 	}
+	for _, hs := range p.HazardStatements {
+
+		sqlr = `INSERT INTO producthazardstatements (producthazardstatements_product_id, producthazardstatements_hazardstatement_id) VALUES (?,?)`
+		if _, err = tx.Exec(sqlr, p.ProductID, hs.HazardStatementID); err != nil {
+			return
+		}
+
+	}
+
 	// adding precautionary statements
-	for _, ps := range p.PrecautionaryStatements {
-		sqlr = `INSERT INTO productprecautionarystatements (productprecautionarystatements_product_id, productprecautionarystatements_precautionarystatement_id) VALUES (?,?)`
-		if _, err = tx.Exec(sqlr, p.ProductID, ps.PrecautionaryStatementID); err != nil {
-			logger.Log.Error("productprecautionarystatements error - " + err.Error())
-			if errr := tx.Rollback(); errr != nil {
-				return 0, errr
-			}
-			return 0, err
+	if update {
+		sqlr = `DELETE FROM productprecautionarystatements WHERE productprecautionarystatements.productprecautionarystatements_product_id = (?)`
+		if _, err = tx.Exec(sqlr, p.ProductID); err != nil {
+			return
 		}
 	}
+	for _, ps := range p.PrecautionaryStatements {
+
+		sqlr = `INSERT INTO productprecautionarystatements (productprecautionarystatements_product_id, productprecautionarystatements_precautionarystatement_id) VALUES (?,?)`
+		if _, err = tx.Exec(sqlr, p.ProductID, ps.PrecautionaryStatementID); err != nil {
+			return
+		}
+
+	}
+
 	// adding synonyms
+	if update {
+		sqlr = `DELETE FROM productsynonyms WHERE productsynonyms.productsynonyms_product_id = (?)`
+		if _, err = tx.Exec(sqlr, p.ProductID); err != nil {
+			return
+		}
+	}
 	for _, syn := range p.Synonyms {
+
 		sqlr = `INSERT INTO productsynonyms (productsynonyms_product_id, productsynonyms_name_id) VALUES (?,?)`
 		if _, err = tx.Exec(sqlr, p.ProductID, syn.NameID); err != nil {
-			logger.Log.Error("productsynonyms error - " + err.Error())
-			if errr := tx.Rollback(); errr != nil {
-				return 0, errr
-			}
-			return 0, err
+			return
 		}
-	}
-	// committing changes
-	if err = tx.Commit(); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return 0, errr
-		}
-		return 0, err
+
 	}
 
-	return p.ProductID, nil
-}
+	return
 
-// UpdateProduct updates the product p into the database
-func (db *SQLiteDataStore) UpdateProduct(p Product) error {
-	var (
-		lastid   int64
-		tx       *sql.Tx
-		sqlr     string
-		res      sql.Result
-		sqla     []interface{}
-		ubuilder sq.UpdateBuilder
-		err      error
-	)
-
-	// beginning transaction
-	if tx, err = db.Begin(); err != nil {
-		return err
-	}
-
-	// if CasNumberID = -1 then it is a new cas
-	if v, err := p.CasNumber.CasNumberID.Value(); p.CasNumber.CasNumberID.Valid && err == nil && v.(int64) == -1 {
-		logger.Log.Debug("new casnumber " + p.CasNumberLabel.String)
-		sqlr = `INSERT INTO casnumber (casnumber_label) VALUES (?)`
-		if res, err = tx.Exec(sqlr, p.CasNumberLabel); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return errr
-			}
-			return err
-		}
-		// getting the last inserted id
-		if lastid, err = res.LastInsertId(); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return errr
-			}
-			return err
-		}
-		// updating the product CasNumberID (CasNumberLabel already set)
-		p.CasNumber.CasNumberID = sql.NullInt64{Valid: true, Int64: int64(lastid)}
-	}
-	// if CeNumberID = -1 then it is a new ce
-	if v, err := p.CeNumber.CeNumberID.Value(); p.CeNumber.CeNumberID.Valid && err == nil && v.(int64) == -1 {
-		logger.Log.Debug("new cenumber " + p.CeNumberLabel.String)
-		sqlr = `INSERT INTO cenumber (cenumber_label) VALUES (?)`
-		if res, err = tx.Exec(sqlr, p.CeNumberLabel.String); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return errr
-			}
-			return err
-		}
-		// getting the last inserted id
-		if lastid, err = res.LastInsertId(); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return errr
-			}
-			return err
-		}
-		// updating the product CeNumberID (CeNumberLabel already set)
-		p.CeNumber.CeNumberID = sql.NullInt64{Valid: true, Int64: lastid}
-	}
-	if err != nil {
-		logger.Log.Error("cenumber error - " + err.Error())
-		if errr := tx.Rollback(); errr != nil {
-			return errr
-		}
-	}
-	// if NameID = -1 then it is a new name
-	if p.Name.NameID == -1 {
-		logger.Log.Debug("new name " + p.NameLabel)
-		sqlr = `INSERT INTO name (name_label) VALUES (?)`
-		if res, err = tx.Exec(sqlr, strings.ToUpper(p.NameLabel)); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return errr
-			}
-			return err
-		}
-		// getting the last inserted id
-		if lastid, err = res.LastInsertId(); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return errr
-			}
-			return err
-		}
-		// updating the product NameID (NameLabel already set)
-		p.Name.NameID = int(lastid)
-	}
-	for i, syn := range p.Synonyms {
-		if syn.NameID == -1 {
-			logger.Log.Debug("new name(syn) " + syn.NameLabel)
-			sqlr = `INSERT INTO name (name_label) VALUES (?)`
-			if res, err = tx.Exec(sqlr, strings.ToUpper(syn.NameLabel)); err != nil {
-				if errr := tx.Rollback(); errr != nil {
-					return errr
-				}
-				return err
-			}
-			// getting the last inserted id
-			if lastid, err = res.LastInsertId(); err != nil {
-				if errr := tx.Rollback(); errr != nil {
-					return errr
-				}
-				return err
-			}
-			p.Synonyms[i].NameID = int(lastid)
-		}
-	}
-	// if ClassOfCompoundID = -1 then it is a new class of compounds
-	for i, coc := range p.ClassOfCompound {
-		if coc.ClassOfCompoundID == -1 {
-			logger.Log.Debug("new classofcompound " + coc.ClassOfCompoundLabel)
-			sqlr = `INSERT INTO classofcompound (classofcompound_label) VALUES (?)`
-			if res, err = tx.Exec(sqlr, strings.ToUpper(coc.ClassOfCompoundLabel)); err != nil {
-				if errr := tx.Rollback(); errr != nil {
-					return errr
-				}
-				return err
-			}
-			// getting the last inserted id
-			if lastid, err = res.LastInsertId(); err != nil {
-				if errr := tx.Rollback(); errr != nil {
-					return errr
-				}
-				return err
-			}
-			p.ClassOfCompound[i].ClassOfCompoundID = int(lastid)
-		}
-	}
-	// if SupplierRefID = -1 then it is a new supplier ref
-	for i, sr := range p.SupplierRefs {
-		if sr.SupplierRefID == -1 {
-			logger.Log.Debug("new supplierref " + sr.SupplierRefLabel)
-			sqlr = `INSERT INTO supplierref (supplierref_label, supplier) VALUES (?, ?)`
-			if res, err = tx.Exec(sqlr, sr.SupplierRefLabel, sr.Supplier.SupplierID); err != nil {
-				if errr := tx.Rollback(); errr != nil {
-					return errr
-				}
-				return err
-			}
-			// getting the last inserted id
-			if lastid, err = res.LastInsertId(); err != nil {
-				if errr := tx.Rollback(); errr != nil {
-					return errr
-				}
-				return err
-			}
-			p.SupplierRefs[i].SupplierRefID = int(lastid)
-		}
-	}
-	// if TagID = -1 then it is a new tag
-	for i, tag := range p.Tags {
-		if tag.TagID == -1 {
-			logger.Log.Debug("new tag " + tag.TagLabel)
-			sqlr = `INSERT INTO tag (tag_label) VALUES (?)`
-			if res, err = tx.Exec(sqlr, tag.TagLabel); err != nil {
-				if errr := tx.Rollback(); errr != nil {
-					return errr
-				}
-				return err
-			}
-			// getting the last inserted id
-			if lastid, err = res.LastInsertId(); err != nil {
-				if errr := tx.Rollback(); errr != nil {
-					return errr
-				}
-				return err
-			}
-			p.Tags[i].TagID = int(lastid)
-		}
-	}
-	// if EmpiricalFormulaID = -1 then it is a new empirical formula
-	if v, err := p.EmpiricalFormula.EmpiricalFormulaID.Value(); p.EmpiricalFormula.EmpiricalFormulaID.Valid && err == nil && v.(int64) == -1 {
-		logger.Log.Debug("new empiricalformula " + p.EmpiricalFormulaLabel.String)
-		sqlr = `INSERT INTO empiricalformula (p.EmpiricalFormulaLabel) VALUES (?)`
-		if res, err = tx.Exec(sqlr, p.EmpiricalFormulaLabel); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return errr
-			}
-			return err
-		}
-		// getting the last inserted id
-		if lastid, err = res.LastInsertId(); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return errr
-			}
-			return err
-		}
-		// updating the product EmpiricalFormulaID (EmpiricalFormulaLabel already set)
-		p.EmpiricalFormula.EmpiricalFormulaID = sql.NullInt64{Valid: true, Int64: int64(lastid)}
-	}
-	// if LinearFormulaID = -1 then it is a new linear formula
-	if v, err := p.LinearFormula.LinearFormulaID.Value(); p.LinearFormula.LinearFormulaID.Valid && err == nil && v.(int64) == -1 {
-		logger.Log.Debug("new linearformula " + p.LinearFormulaLabel.String)
-		sqlr = `INSERT INTO linearformula (linearformula_label) VALUES (?)`
-		if res, err = tx.Exec(sqlr, p.LinearFormulaLabel.String); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return errr
-			}
-			return err
-		}
-		// getting the last inserted id
-		if lastid, err = res.LastInsertId(); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return errr
-			}
-			return err
-		}
-		// updating the product LinearFormulaID (LinearFormulaLabel already set)
-		p.LinearFormula.LinearFormulaID = sql.NullInt64{Valid: true, Int64: lastid}
-	}
-	// if PhysicalStateID = -1 then it is a new physical state
-	if v, err := p.PhysicalState.PhysicalStateID.Value(); p.PhysicalState.PhysicalStateID.Valid && err == nil && v.(int64) == -1 {
-		logger.Log.Debug("new physicalstate " + p.PhysicalStateLabel.String)
-		sqlr = `INSERT INTO physicalstate (physicalstate_label) VALUES (?)`
-		if res, err = tx.Exec(sqlr, p.PhysicalStateLabel.String); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return errr
-			}
-			return err
-		}
-		// getting the last inserted id
-		if lastid, err = res.LastInsertId(); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return errr
-			}
-			return err
-		}
-		// updating the product PhysicalStateID (PhysicalStateLabel already set)
-		p.PhysicalState.PhysicalStateID = sql.NullInt64{Valid: true, Int64: lastid}
-	}
-	// if CategoryID = -1 then it is a new category
-	if v, err := p.Category.CategoryID.Value(); p.Category.CategoryID.Valid && err == nil && v.(int64) == -1 {
-		logger.Log.Debug("new category " + p.CategoryLabel.String)
-		sqlr = `INSERT INTO category (category_label) VALUES (?)`
-		if res, err = tx.Exec(sqlr, p.CategoryLabel.String); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return errr
-			}
-			return err
-		}
-		// getting the last inserted id
-		if lastid, err = res.LastInsertId(); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return errr
-			}
-			return err
-		}
-		// updating the product PhysicalStateID (PhysicalStateLabel already set)
-		p.Category.CategoryID = sql.NullInt64{Valid: true, Int64: lastid}
-	}
-	// if ProducerRefID = -1 then it is a new physical state
-	if v, err := p.ProducerRef.ProducerRefID.Value(); p.ProducerRef.ProducerRefID.Valid && err == nil && v.(int64) == -1 {
-		logger.Log.Debug("new producerref " + p.ProducerRefLabel.String)
-		sqlr = `INSERT INTO producerref (producerref_label, producer) VALUES (?, ?)`
-		if res, err = tx.Exec(sqlr, p.ProducerRefLabel.String, p.Producer.ProducerID); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return errr
-			}
-			return err
-		}
-		// getting the last inserted id
-		if lastid, err = res.LastInsertId(); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return errr
-			}
-			return err
-		}
-		// updating the product ProducerRefID (PhysicalStateLabel already set)
-		p.ProducerRef.ProducerRefID = sql.NullInt64{Valid: true, Int64: lastid}
-	}
-
-	// finally updating the product
-	s := make(map[string]interface{})
-	if p.ProductSpecificity.Valid {
-		s["product_specificity"] = p.ProductSpecificity.String
-	}
-	if p.ProductMSDS.Valid {
-		s["product_msds"] = p.ProductMSDS.String
-	}
-	if p.ProductSheet.Valid {
-		s["product_sheet"] = p.ProductSheet.String
-	}
-	if p.ProductTemperature.Valid {
-		s["product_temperature"] = int(p.ProductTemperature.Int64)
-	}
-	if p.ProductRestricted.Valid {
-		s["product_restricted"] = p.ProductRestricted.Bool
-	}
-	if p.ProductRadioactive.Valid {
-		s["product_radioactive"] = p.ProductRadioactive.Bool
-	}
-
-	if p.Category.CategoryID.Valid {
-		s["category"] = int(p.Category.CategoryID.Int64)
-	}
-	if p.UnitTemperature.UnitID.Valid {
-		s["unit_temperature"] = int(p.UnitTemperature.UnitID.Int64)
-	}
-	if p.ProductThreeDFormula.Valid {
-		s["product_threedformula"] = p.ProductThreeDFormula.String
-	}
-	if p.ProductTwoDFormula.Valid {
-		s["product_twodformula"] = p.ProductTwoDFormula.String
-	}
-	if p.ProductDisposalComment.Valid {
-		s["product_disposalcomment"] = p.ProductDisposalComment.String
-	}
-	if p.ProductRemark.Valid {
-		s["product_remark"] = p.ProductRemark.String
-	}
-	if p.ProductNumberPerCarton.Valid {
-		s["product_number_per_carton"] = p.ProductNumberPerCarton.Int64
-	}
-	if p.ProductNumberPerBag.Valid {
-		s["product_number_per_bag"] = p.ProductNumberPerBag.Int64
-	}
-	if p.EmpiricalFormulaID.Valid {
-		s["empiricalformula"] = int(p.EmpiricalFormulaID.Int64)
-	}
-	if p.LinearFormulaID.Valid {
-		s["linearformula"] = int(p.LinearFormulaID.Int64)
-	}
-	if p.PhysicalStateID.Valid {
-		s["physicalstate"] = int(p.PhysicalStateID.Int64)
-	}
-	if p.SignalWordID.Valid {
-		s["signalword"] = int(p.SignalWordID.Int64)
-	}
-	if p.CasNumberID.Valid {
-		s["casnumber"] = int(p.CasNumberID.Int64)
-	}
-	if p.CeNumberID.Valid {
-		s["cenumber"] = int(p.CeNumberID.Int64)
-	}
-	if p.ProducerRefID.Valid {
-		s["producerref"] = int(p.ProducerRefID.Int64)
-	}
-	if p.ProductMolFormula.Valid {
-		s["product_molformula"] = p.ProductMolFormula.String
-	}
-	s["name"] = p.NameID
-	s["person"] = p.PersonID
-
-	ubuilder = sq.Update("product").
-		SetMap(s).
-		Where(sq.Eq{"product_id": p.ProductID})
-	if sqlr, sqla, err = ubuilder.ToSql(); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return errr
-		}
-	}
-	if _, err = tx.Exec(sqlr, sqla...); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return errr
-		}
-	}
-
-	// deleting supplierrefs
-	sqlr = `DELETE FROM productsupplierrefs WHERE productsupplierrefs.productsupplierrefs_product_id = (?)`
-	if _, err = tx.Exec(sqlr, p.ProductID); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return errr
-		}
-	}
-	// adding new ones
-	for _, sr := range p.SupplierRefs {
-		sqlr = `INSERT INTO productsupplierrefs (productsupplierrefs_product_id, productsupplierrefs_supplierref_id) VALUES (?,?)`
-		if _, err = tx.Exec(sqlr, p.ProductID, sr.SupplierRefID); err != nil {
-			logger.Log.Error("productsupplierrefs error - " + err.Error())
-			if errr := tx.Rollback(); errr != nil {
-				return errr
-			}
-			return err
-		}
-	}
-
-	// deleting tags
-	sqlr = `DELETE FROM producttags WHERE producttags.producttags_product_id = (?)`
-	if _, err = tx.Exec(sqlr, p.ProductID); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return errr
-		}
-	}
-	// adding new ones
-	for _, tag := range p.Tags {
-		sqlr = `INSERT INTO producttags (producttags_product_id, producttags_tag_id) VALUES (?,?)`
-		if _, err = tx.Exec(sqlr, p.ProductID, tag.TagID); err != nil {
-			logger.Log.Error("producttags error - " + err.Error())
-			if errr := tx.Rollback(); errr != nil {
-				return errr
-			}
-			return err
-		}
-	}
-
-	// deleting symbols
-	sqlr = `DELETE FROM productsymbols WHERE productsymbols.productsymbols_product_id = (?)`
-	if _, err = tx.Exec(sqlr, p.ProductID); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return errr
-		}
-	}
-	// adding new ones
-	for _, sym := range p.Symbols {
-		sqlr = `INSERT INTO productsymbols (productsymbols_product_id, productsymbols_symbol_id) VALUES (?,?)`
-		if _, err = tx.Exec(sqlr, p.ProductID, sym.SymbolID); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return errr
-			}
-			return err
-		}
-	}
-
-	// deleting synonyms
-	sqlr = `DELETE FROM productsynonyms WHERE productsynonyms.productsynonyms_product_id = (?)`
-	if _, err = tx.Exec(sqlr, p.ProductID); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return errr
-		}
-	}
-	// adding new ones
-	for _, syn := range p.Synonyms {
-		sqlr = `INSERT INTO productsynonyms (productsynonyms_product_id, productsynonyms_name_id) VALUES (?,?)`
-		if _, err = tx.Exec(sqlr, p.ProductID, syn.NameID); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return errr
-			}
-			return err
-		}
-	}
-
-	// deleting classes of compounds
-	sqlr = `DELETE FROM productclassofcompound WHERE productclassofcompound.productclassofcompound_product_id = (?)`
-	if _, err = tx.Exec(sqlr, p.ProductID); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return errr
-		}
-	}
-	// adding new ones
-	for _, coc := range p.ClassOfCompound {
-		sqlr = `INSERT INTO productclassofcompound (productclassofcompound_product_id, productclassofcompound_classofcompound_id) VALUES (?,?)`
-		if _, err = tx.Exec(sqlr, p.ProductID, coc.ClassOfCompoundID); err != nil {
-			logger.Log.Error("productclassofcompound error - " + err.Error())
-			if errr := tx.Rollback(); errr != nil {
-				return errr
-			}
-			return err
-		}
-	}
-
-	// deleting hazard statements
-	sqlr = `DELETE FROM producthazardstatements WHERE producthazardstatements.producthazardstatements_product_id = (?)`
-	if _, err = tx.Exec(sqlr, p.ProductID); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return errr
-		}
-	}
-	// adding new ones
-	for _, hs := range p.HazardStatements {
-		sqlr = `INSERT INTO producthazardstatements (producthazardstatements_product_id, producthazardstatements_hazardstatement_id) VALUES (?,?)`
-		if _, err = tx.Exec(sqlr, p.ProductID, hs.HazardStatementID); err != nil {
-			logger.Log.Error("producthazardstatements error - " + err.Error())
-			if errr := tx.Rollback(); errr != nil {
-				return errr
-			}
-			return err
-		}
-	}
-
-	// deleting precautionary statements
-	sqlr = `DELETE FROM productprecautionarystatements WHERE productprecautionarystatements.productprecautionarystatements_product_id = (?)`
-	if _, err = tx.Exec(sqlr, p.ProductID); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return errr
-		}
-	}
-	// adding new ones
-	for _, ps := range p.PrecautionaryStatements {
-		sqlr = `INSERT INTO productprecautionarystatements (productprecautionarystatements_product_id, productprecautionarystatements_precautionarystatement_id) VALUES (?,?)`
-		if _, err = tx.Exec(sqlr, p.ProductID, ps.PrecautionaryStatementID); err != nil {
-			logger.Log.Error("productprecautionarystatements error - " + err.Error())
-			if errr := tx.Rollback(); errr != nil {
-				return errr
-			}
-			return err
-		}
-	}
-
-	// committing changes
-	if err = tx.Commit(); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return errr
-		}
-	}
-
-	return nil
 }

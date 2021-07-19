@@ -2,12 +2,13 @@ package datastores
 
 import (
 	"database/sql"
+	"database/sql/driver"
 	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
 
-	sq "github.com/Masterminds/squirrel"
+	"github.com/doug-martin/goqu/v9"
 	"github.com/jmoiron/sqlx" // register sqlite3 driver
 	"github.com/sirupsen/logrus"
 	qrcode "github.com/skip2/go-qrcode"
@@ -15,8 +16,9 @@ import (
 	. "github.com/tbellembois/gochimitheque/models"
 )
 
-// ToogleStorageBorrowing toogles the borrowing b
+// ToogleStorageBorrowing borrow/unborrow the storage for the connected user.
 func (db *SQLiteDataStore) ToogleStorageBorrowing(s Storage) error {
+
 	var (
 		sqlr  string
 		count int
@@ -41,10 +43,12 @@ func (db *SQLiteDataStore) ToogleStorageBorrowing(s Storage) error {
 	}
 
 	return nil
+
 }
 
-// GetStoragesUnits return the units matching the search criteria
+// GetStoragesUnits return the units.
 func (db *SQLiteDataStore) GetStoragesUnits(p DbselectparamUnit) ([]Unit, int, error) {
+
 	var (
 		units                              []Unit
 		count                              int
@@ -99,82 +103,14 @@ func (db *SQLiteDataStore) GetStoragesUnits(p DbselectparamUnit) ([]Unit, int, e
 
 	logger.Log.WithFields(logrus.Fields{"units": units}).Debug("GetStoragesUnits")
 	return units, count, nil
+
 }
 
-// GetStoragesSuppliers return the suppliers matching the search criteria
-func (db *SQLiteDataStore) GetStoragesSuppliers(p Dbselectparam) ([]Supplier, int, error) {
-	var (
-		suppliers                          []Supplier
-		count                              int
-		exactSearch                        string
-		precreq, presreq, comreq, postsreq strings.Builder
-		cnstmt                             *sqlx.NamedStmt
-		snstmt                             *sqlx.NamedStmt
-		err                                error
-	)
-
-	exactSearch = p.GetSearch()
-	exactSearch = strings.TrimPrefix(exactSearch, "%")
-	exactSearch = strings.TrimSuffix(exactSearch, "%")
-
-	precreq.WriteString(" SELECT count(DISTINCT supplier.supplier_id)")
-	presreq.WriteString(" SELECT supplier_id, supplier_label")
-
-	comreq.WriteString(" FROM supplier")
-	comreq.WriteString(" WHERE supplier_label LIKE :search")
-	postsreq.WriteString(" ORDER BY INSTR(supplier_label, \"" + exactSearch + "\") ASC, supplier_label ASC")
-
-	// limit
-	if p.GetLimit() != ^uint64(0) {
-		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
-	}
-
-	// building count and select statements
-	if cnstmt, err = db.PrepareNamed(precreq.String() + comreq.String()); err != nil {
-		return nil, 0, err
-	}
-	if snstmt, err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); err != nil {
-		return nil, 0, err
-	}
-
-	// building argument map
-	m := map[string]interface{}{
-		"search": p.GetSearch(),
-		"order":  p.GetOrder(),
-		"limit":  p.GetLimit(),
-		"offset": p.GetOffset(),
-	}
-
-	// select
-	if err = snstmt.Select(&suppliers, m); err != nil {
-		return nil, 0, err
-	}
-	// count
-	if err = cnstmt.Get(&count, m); err != nil {
-		return nil, 0, err
-	}
-
-	// setting the C attribute for formula matching exactly the search
-	var supplier Supplier
-
-	r := db.QueryRowx(`SELECT supplier_id, supplier_label FROM supplier WHERE supplier_label == ?`, exactSearch)
-	if err = r.StructScan(&supplier); err != nil && err != sql.ErrNoRows {
-		return nil, 0, err
-	}
-	for i, s := range suppliers {
-		if s.SupplierID == supplier.SupplierID {
-			suppliers[i].C = 1
-		}
-	}
-
-	logger.Log.WithFields(logrus.Fields{"suppliers": suppliers}).Debug("GetStoragesSuppliers")
-	return suppliers, count, nil
-}
-
-// GetStorages returns the storages matching the request parameters p
+// GetStorages returns the storages matching the request parameters p.
 // Only storages that the logged user can see are returned given his permissions
-// and membership
+// and membership.
 func (db *SQLiteDataStore) GetStorages(p DbselectparamStorage) ([]Storage, int, error) {
+
 	var (
 		storages                                  []Storage
 		count                                     int
@@ -532,11 +468,13 @@ func (db *SQLiteDataStore) GetStorages(p DbselectparamStorage) ([]Storage, int, 
 	}
 
 	return storages, count, nil
+
 }
 
 // GetOtherStorages returns the entity manager(s) email of the entities
-// storing the product with the id passed in the request parameters p
+// storing the product with the id passed in the request parameters p.
 func (db *SQLiteDataStore) GetOtherStorages(p DbselectparamStorage) ([]Entity, int, error) {
+
 	var (
 		entities                           []Entity
 		count                              int
@@ -611,10 +549,12 @@ func (db *SQLiteDataStore) GetOtherStorages(p DbselectparamStorage) ([]Entity, i
 	}
 
 	return entities, count, nil
+
 }
 
 // GetStorage returns the storage with id "id"
 func (db *SQLiteDataStore) GetStorage(id int) (Storage, error) {
+
 	var (
 		storage Storage
 		sqlr    string
@@ -675,12 +615,15 @@ func (db *SQLiteDataStore) GetStorage(id int) (Storage, error) {
 	if err = db.Get(&storage, sqlr, id); err != nil {
 		return Storage{}, err
 	}
+
 	logger.Log.WithFields(logrus.Fields{"ID": id, "storage": storage}).Debug("GetStorage")
 	return storage, nil
+
 }
 
 // GetStorageEntity returns the entity of the storage with id "id"
 func (db *SQLiteDataStore) GetStorageEntity(id int) (Entity, error) {
+
 	var (
 		entity Entity
 		sqlr   string
@@ -697,8 +640,10 @@ func (db *SQLiteDataStore) GetStorageEntity(id int) (Entity, error) {
 	if err = db.Get(&entity, sqlr, id); err != nil {
 		return Entity{}, err
 	}
+
 	logger.Log.WithFields(logrus.Fields{"ID": id, "entity": entity}).Debug("GetStorageEntity")
 	return entity, nil
+
 }
 
 // DeleteStorage deletes the storages with the given id
@@ -714,6 +659,7 @@ func (db *SQLiteDataStore) DeleteStorage(id int) error {
 		return err
 	}
 	return nil
+
 }
 
 // ArchiveStorage archives the storages with the given id
@@ -735,6 +681,7 @@ func (db *SQLiteDataStore) ArchiveStorage(id int) error {
 	}
 
 	return nil
+
 }
 
 // RestoreStorage restores (unarchive) the storages with the given id
@@ -744,6 +691,7 @@ func (db *SQLiteDataStore) RestoreStorage(id int) error {
 		sqlr string
 		err  error
 	)
+
 	sqlr = `UPDATE storage SET storage_archive = false 
 	WHERE storage_id = ?`
 	if _, err = db.Exec(sqlr, id); err != nil {
@@ -756,148 +704,18 @@ func (db *SQLiteDataStore) RestoreStorage(id int) error {
 	}
 
 	return nil
+
 }
 
-// GenerateAndUpdateStorageBarecode generate and set a barecode for the storage s
-// the barecode is [prefix]major.minor
-// with
-// prefix: extracted from the storelocation name [prefix]storelocation_name, or ""
-// major: unique uid identical for the differents storages of the same product in an entity
-// minor: incremental number for the differents storages of the same product in an entity
-// func (db *SQLiteDataStore) GenerateAndUpdateStorageBarecode(s *Storage) error {
-
-// 	var (
-// 		err      error
-// 		m        []string
-// 		png      []byte
-// 		lastbc   []string
-// 		prefix   string
-// 		major    string
-// 		minor    string
-// 		iminor   int
-// 		barecode string
-// 	)
-
-// 	// defaults
-// 	major = strconv.Itoa(s.ProductID)
-// 	minor = "0"
-
-// 	logger.Log.WithFields(logrus.Fields{"s": s}).Debug("GenerateAndUpdateStorageBarecode")
-
-// 	//
-// 	// prefix
-// 	//
-// 	// regex to detect store locations names starting with [a-zA-Z] to build barecode prefixes
-// 	slr := regexp.MustCompile(`^\[(?P<groupone>[a-zA-Z]{1})\].*$`)
-// 	// finding group names
-// 	n := slr.SubexpNames()
-// 	// finding matches
-// 	ms := slr.FindAllStringSubmatch(s.StoreLocationName.String, -1)
-// 	// then building a map of matches
-// 	md := map[string]string{}
-// 	if len(ms) != 0 {
-// 		m = ms[0]
-// 		for i, j := range m {
-// 			md[n[i]] = j
-// 		}
-// 	}
-// 	if len(md) > 0 {
-// 		prefix = md["groupone"]
-// 	}
-
-// 	//
-// 	// major
-// 	//
-// 	// getting the last storage barecode
-// 	// for the same product
-// 	// in the same entity
-// 	sqlr := `SELECT storage_barecode FROM storage
-// 	WHERE NOT storage_barecode IS NULL AND product = ? AND storelocation = ?
-// 	ORDER BY storage_barecode DESC`
-// 	if err = db.Select(&lastbc, sqlr, s.ProductID, s.StoreLocationID); err != nil && err != sql.ErrNoRows {
-// 		logger.Log.Error("error getting the last storage barecode")
-// 		return err
-// 	}
-// 	logger.Log.WithFields(logrus.Fields{"lastbc": lastbc}).Debug("GenerateAndUpdateStorageBarecode")
-
-// 	// regex to extract the major and minor from a barecode
-// 	majorr := regexp.MustCompile(`^[a-zA-Z]{0,1}(?P<groupone>[0-9]+)\.(?P<grouptwo>[0-9]+)$`)
-// 	// finding group names
-// 	n = majorr.SubexpNames()
-// 	for _, bc := range lastbc {
-
-// 		// finding matches
-// 		ms = majorr.FindAllStringSubmatch(bc, -1)
-// 		if ms != nil {
-
-// 			// then building a map of matches
-// 			md = map[string]string{}
-// 			if len(ms) != 0 {
-// 				m = ms[0]
-// 				for i, j := range m {
-// 					md[n[i]] = j
-// 				}
-// 			}
-// 			major = md["groupone"]
-// 			minor = md["grouptwo"]
-// 			logger.Log.WithFields(logrus.Fields{"major": major, "minor": minor}).Debug("GenerateAndUpdateStorageBarecode")
-
-// 			break
-
-// 		}
-// 	}
-
-// 	if iminor, err = strconv.Atoi(minor); err != nil {
-// 		return err
-// 	}
-// 	iminor++
-// 	minor = strconv.Itoa(iminor)
-// 	barecode = prefix + major + "." + minor
-// 	logger.Log.WithFields(logrus.Fields{"barecode": barecode}).Debug("GenerateAndUpdateStorageBarecode")
-
-// 	// sqlr := `UPDATE storage
-// 	// SET storage_barecode = '` + prefix + `' || storage.product || '.' || (select count(*) from storage join storelocation on storage.storelocation = storelocation.storelocation_id join entity on storelocation.entity = entity.entity_id where storage.product = ? and entity_id = ?)
-// 	// WHERE storage_id = ?`
-// 	sqlr = `UPDATE storage
-// 	SET storage_barecode = :barecode
-// 	WHERE storage_id = :storage`
-// 	if _, err = db.NamedExec(sqlr, map[string]interface{}{
-// 		"barecode": barecode,
-// 		"storage":  s.StorageID.Int64,
-// 	}); err != nil {
-// 		logger.Log.Error("error updating storage barecode")
-// 		return err
-// 	}
-
-// 	//
-// 	// qrcode
-// 	//
-// 	qr := strconv.FormatInt(s.StorageID.Int64, 10)
-// 	if png, err = qrcode.Encode(qr, qrcode.Medium, 512); err != nil {
-// 		return err
-// 	}
-// 	sqlr = `UPDATE storage
-// 	SET storage_qrcode = ?
-// 	WHERE storage_id = ?`
-// 	if _, err = db.Exec(sqlr, png, s.StorageID.Int64); err != nil {
-// 		logger.Log.Error("error updating storage qr code")
-// 		return err
-// 	}
-
-// 	return nil
-// }
-
 // CreateStorage creates a new storage
-func (db *SQLiteDataStore) CreateStorage(s Storage, itemNumber int) (int, error) {
+func (db *SQLiteDataStore) CreateUpdateStorage(s Storage, itemNumber int, update bool) (lastInsertId int64, err error) {
 
 	var (
-		lastid       int64
+		v            driver.Value
 		tx           *sql.Tx
 		sqlr         string
 		res          sql.Result
-		sqla         []interface{}
-		ibuilder     sq.InsertBuilder
-		err          error
+		args         []interface{}
 		prefix       string
 		major, minor string
 	)
@@ -905,293 +723,29 @@ func (db *SQLiteDataStore) CreateStorage(s Storage, itemNumber int) (int, error)
 	// Default major.
 	major = strconv.Itoa(s.ProductID)
 
+	dialect := goqu.Dialect("sqlite3")
+	tableStorage := goqu.T("storage")
+
 	if tx, err = db.Begin(); err != nil {
 		return 0, err
 	}
 
-	// Generating barecode if empty.
-	if !(s.StorageBarecode.Valid) || s.StorageBarecode.String == "" {
-
-		//
-		// Getting the barecode prefix from the storelocation name.
-		//
-		// regex to detect store locations names starting with [_a-zA-Z] to build barecode prefixes
-		prefixRegex := regexp.MustCompile(`^\[(?P<groupone>[_a-zA-Z]{1,5})\].*$`)
-		groupNames := prefixRegex.SubexpNames()
-		matches := prefixRegex.FindAllStringSubmatch(s.StoreLocationName.String, -1)
-		// Building a map of matches.
-		matchesMap := map[string]string{}
-		if len(matches) != 0 {
-			for i, j := range matches[0] {
-				matchesMap[groupNames[i]] = j
+	defer func() {
+		if err != nil {
+			logger.Log.Error(err)
+			if rbErr := tx.Rollback(); rbErr != nil {
+				logger.Log.Error(rbErr)
+				err = rbErr
+				return
 			}
+			return
 		}
+		err = tx.Commit()
+	}()
 
-		if len(matchesMap) > 0 {
-			prefix = matchesMap["groupone"]
-		} else {
-			prefix = "_"
-		}
-
-		//
-		// Getting the storage barecodes matching the regex
-		// for the same product in the same entity.
-		//
-		sqlr := `SELECT storage_barecode FROM storage 
-		JOIN storelocation on storage.storelocation = storelocation.storelocation_id 
-		WHERE product = ? AND storelocation.entity = ? AND regexp('^[_a-zA-Z]{0,5}[0-9]+\.[0-9]+$', '' || storage_barecode || '') = true
-		ORDER BY storage_barecode desc`
-		var rows *sql.Rows
-		if rows, err = tx.Query(sqlr, s.ProductID, s.EntityID); err != nil && err != sql.ErrNoRows {
-			if errr := tx.Rollback(); errr != nil {
-				return 0, errr
-			}
-			return 0, err
-		}
-
-		var (
-			count    = 0
-			newMinor = 0
-		)
-		for rows.Next() {
-
-			var barecode string
-			if err = rows.Scan(&barecode); err != nil && err != sql.ErrNoRows {
-				if errr := tx.Rollback(); errr != nil {
-					return 0, errr
-				}
-				return 0, err
-			}
-
-			majorRegex := regexp.MustCompile(`^[_a-zA-Z]{0,5}(?P<groupone>[0-9]+)\.(?P<grouptwo>[0-9]+)$`)
-			groupNames = majorRegex.SubexpNames()
-			matches = majorRegex.FindAllStringSubmatch(barecode, -1)
-			// Building a map of matches.
-			matchesMap = map[string]string{}
-			if len(matches) != 0 {
-				for i, j := range matches[0] {
-					matchesMap[groupNames[i]] = j
-				}
-			}
-
-			if count == 0 {
-				// All of the major number are the same.
-				// Extracting it ones.
-				major = matchesMap["groupone"]
-			}
-			minor = matchesMap["grouptwo"]
-			var iminor int
-			if iminor, err = strconv.Atoi(minor); err != nil {
-				return 0, err
-			}
-
-			if iminor > newMinor {
-				newMinor = iminor
-			}
-
-			count++
-
-		}
-
-		if (!s.StorageIdenticalBarecode.Valid || !s.StorageIdenticalBarecode.Bool) || (s.StorageIdenticalBarecode.Valid && s.StorageIdenticalBarecode.Bool && itemNumber == 1) {
-			newMinor++
-		}
-		minor = strconv.Itoa(newMinor)
-		s.StorageBarecode.String = prefix + major + "." + minor
-		s.StorageBarecode.Valid = true
-		logger.Log.WithFields(logrus.Fields{"s.StorageBarecode.String": s.StorageBarecode.String}).Debug("CreateStorage")
-
-	}
-
-	// if SupplierID = -1 then it is a new supplier
-	if v, err := s.Supplier.SupplierID.Value(); s.Supplier.SupplierID.Valid && err == nil && v.(int64) == -1 {
-		sqlr = `INSERT INTO supplier (supplier_label) VALUES (?)`
-		if res, err = tx.Exec(sqlr, s.Supplier.SupplierLabel); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return 0, errr
-			}
-			return 0, err
-		}
-		// getting the last inserted id
-		if lastid, err = res.LastInsertId(); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return 0, errr
-			}
-			return 0, err
-		}
-		// updating the storage SupplierId (SupplierLabel already set)
-		s.Supplier.SupplierID = sql.NullInt64{Valid: true, Int64: lastid}
-	}
-	if err != nil {
-		logger.Log.Error("supplier error - " + err.Error())
-		if errr := tx.Rollback(); errr != nil {
-			return 0, errr
-		}
-		return 0, err
-	}
-
-	// finally updating the storage
-	m := make(map[string]interface{})
-	if s.StorageComment.Valid {
-		m["storage_comment"] = s.StorageComment.String
-	}
-	if s.StorageQuantity.Valid {
-		m["storage_quantity"] = s.StorageQuantity.Float64
-	}
-	if s.StorageBarecode.Valid {
-		m["storage_barecode"] = s.StorageBarecode.String
-	}
-	if s.UnitQuantity.UnitID.Valid {
-		m["unit_quantity"] = s.UnitQuantity.UnitID.Int64
-	}
-	if s.SupplierID.Valid {
-		m["supplier"] = s.SupplierID.Int64
-	}
-	if s.StorageEntryDate.Valid {
-		m["storage_entrydate"] = s.StorageEntryDate.Time
-	}
-	if s.StorageExitDate.Valid {
-		m["storage_exitdate"] = s.StorageExitDate.Time
-	}
-	if s.StorageOpeningDate.Valid {
-		m["storage_openingdate"] = s.StorageOpeningDate.Time
-	}
-	if s.StorageExpirationDate.Valid {
-		m["storage_expirationdate"] = s.StorageExpirationDate.Time
-	}
-	if s.StorageReference.Valid {
-		m["storage_reference"] = s.StorageReference.String
-	}
-	if s.StorageBatchNumber.Valid {
-		m["storage_batchnumber"] = s.StorageBatchNumber.String
-	}
-	if s.StorageToDestroy.Valid {
-		m["storage_todestroy"] = s.StorageToDestroy.Bool
-	}
-	if s.StorageConcentration.Valid {
-		m["storage_concentration"] = int(s.StorageConcentration.Int64)
-	}
-	if s.StorageNumberOfBag.Valid {
-		m["storage_number_of_bag"] = int(s.StorageNumberOfBag.Int64)
-	}
-	if s.StorageNumberOfCarton.Valid {
-		m["storage_number_of_carton"] = int(s.StorageNumberOfCarton.Int64)
-	}
-	if s.StorageNumberOfUnit.Valid {
-		m["storage_number_of_unit"] = int(s.StorageNumberOfUnit.Int64)
-	}
-	if s.UnitConcentration.UnitID.Valid {
-		m["unit_concentration"] = int(s.UnitConcentration.UnitID.Int64)
-	}
-
-	m["person"] = s.PersonID
-	m["storelocation"] = s.StoreLocationID.Int64
-	m["product"] = s.ProductID
-	m["storage_creationdate"] = s.StorageCreationDate
-	m["storage_modificationdate"] = s.StorageModificationDate
-	m["storage_archive"] = false
-
-	// building column names/values
-	col := make([]string, 0, len(m))
-	val := make([]interface{}, 0, len(m))
-	for k, v := range m {
-		col = append(col, k)
-
-		switch t := v.(type) {
-		case int:
-			val = append(val, t)
-		case string:
-			val = append(val, t)
-		case bool:
-			val = append(val, t)
-		case int64:
-			val = append(val, t)
-		case float64:
-			val = append(val, t)
-		default:
-			val = append(val, v)
-		}
-
-	}
-
-	ibuilder = sq.Insert("storage").Columns(col...).Values(val...)
-	if sqlr, sqla, err = ibuilder.ToSql(); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return 0, errr
-		}
-		return 0, err
-	}
-
-	// logger.Log.Debug(sqlr)
-	// logger.Log.Debug(sqla)
-
-	if res, err = tx.Exec(sqlr, sqla...); err != nil {
-		logger.Log.Error("storage error - " + err.Error())
-		logger.Log.Error("sql:" + sqlr)
-		if errr := tx.Rollback(); errr != nil {
-			return 0, errr
-		}
-		return 0, err
-	}
-
-	// getting the last inserted id
-	if lastid, err = res.LastInsertId(); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return 0, errr
-		}
-		return 0, err
-	}
-
-	//
-	// qrcode
-	//
-	qr := strconv.FormatInt(lastid, 10)
-	if s.StorageQRCode, err = qrcode.Encode(qr, qrcode.Medium, 512); err != nil {
-		return 0, err
-	}
-
-	sqlr = `UPDATE storage SET storage_qrcode=? WHERE storage_id=?`
-	if _, err = tx.Exec(sqlr, s.StorageQRCode, lastid); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return 0, errr
-		}
-		return 0, err
-	}
-
-	// committing changes
-	if err = tx.Commit(); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return 0, errr
-		}
-		return 0, err
-	}
-
-	s.StorageID = sql.NullInt64{Valid: true, Int64: lastid}
-	logger.Log.WithFields(logrus.Fields{"s": s}).Debug("CreateStorage")
-
-	return int(s.StorageID.Int64), nil
-}
-
-// UpdateStorage updates the storage s
-func (db *SQLiteDataStore) UpdateStorage(s Storage) error {
-
-	var (
-		sqlr     string
-		err      error
-		tx       *sql.Tx
-		res      sql.Result
-		lastid   int64
-		sqla     []interface{}
-		ubuilder sq.UpdateBuilder
-	)
-
-	// beginning transaction
-	if tx, err = db.Begin(); err != nil {
-		return err
-	}
-
-	// create an history of the storage
-	sqlr = `INSERT into storage (storage_creationdate, 
+	if update {
+		// create an history of the storage
+		sqlr = `INSERT into storage (storage_creationdate, 
 		storage_modificationdate,
 		storage_entrydate, 
 		storage_exitdate, 
@@ -1238,120 +792,226 @@ func (db *SQLiteDataStore) UpdateStorage(s Storage) error {
 				unit_concentration,
 				supplier,
 				? FROM storage WHERE storage_id = ?`
-	if _, err = tx.Exec(sqlr, s.StorageID, s.StorageID); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return errr
+		if _, err = tx.Exec(sqlr, s.StorageID, s.StorageID); err != nil {
+			return
+		}
+	}
+
+	// Generating barecode if empty.
+	if !update {
+		if !(s.StorageBarecode.Valid) || s.StorageBarecode.String == "" {
+
+			//
+			// Getting the barecode prefix from the storelocation name.
+			//
+			// regex to detect store locations names starting with [_a-zA-Z] to build barecode prefixes
+			prefixRegex := regexp.MustCompile(`^\[(?P<groupone>[_a-zA-Z]{1,5})\].*$`)
+			groupNames := prefixRegex.SubexpNames()
+			matches := prefixRegex.FindAllStringSubmatch(s.StoreLocationName.String, -1)
+			// Building a map of matches.
+			matchesMap := map[string]string{}
+			if len(matches) != 0 {
+				for i, j := range matches[0] {
+					matchesMap[groupNames[i]] = j
+				}
+			}
+
+			if len(matchesMap) > 0 {
+				prefix = matchesMap["groupone"]
+			} else {
+				prefix = "_"
+			}
+
+			//
+			// Getting the storage barecodes matching the regex
+			// for the same product in the same entity.
+			//
+			sqlr := `SELECT storage_barecode FROM storage 
+		JOIN storelocation on storage.storelocation = storelocation.storelocation_id 
+		WHERE product = ? AND storelocation.entity = ? AND regexp('^[_a-zA-Z]{0,5}[0-9]+\.[0-9]+$', '' || storage_barecode || '') = true
+		ORDER BY storage_barecode desc`
+			var rows *sql.Rows
+			if rows, err = tx.Query(sqlr, s.ProductID, s.EntityID); err != nil && err != sql.ErrNoRows {
+				return
+			}
+
+			var (
+				count    = 0
+				newMinor = 0
+			)
+			for rows.Next() {
+
+				var barecode string
+				if err = rows.Scan(&barecode); err != nil && err != sql.ErrNoRows {
+					return
+				}
+
+				majorRegex := regexp.MustCompile(`^[_a-zA-Z]{0,5}(?P<groupone>[0-9]+)\.(?P<grouptwo>[0-9]+)$`)
+				groupNames = majorRegex.SubexpNames()
+				matches = majorRegex.FindAllStringSubmatch(barecode, -1)
+				// Building a map of matches.
+				matchesMap = map[string]string{}
+				if len(matches) != 0 {
+					for i, j := range matches[0] {
+						matchesMap[groupNames[i]] = j
+					}
+				}
+
+				if count == 0 {
+					// All of the major number are the same.
+					// Extracting it ones.
+					major = matchesMap["groupone"]
+				}
+				minor = matchesMap["grouptwo"]
+				var iminor int
+				if iminor, err = strconv.Atoi(minor); err != nil {
+					return 0, err
+				}
+
+				if iminor > newMinor {
+					newMinor = iminor
+				}
+
+				count++
+
+			}
+
+			if (!s.StorageIdenticalBarecode.Valid || !s.StorageIdenticalBarecode.Bool) || (s.StorageIdenticalBarecode.Valid && s.StorageIdenticalBarecode.Bool && itemNumber == 1) {
+				newMinor++
+			}
+			minor = strconv.Itoa(newMinor)
+			s.StorageBarecode.String = prefix + major + "." + minor
+			s.StorageBarecode.Valid = true
+			logger.Log.WithFields(logrus.Fields{"s.StorageBarecode.String": s.StorageBarecode.String}).Debug("CreateStorage")
+
 		}
 	}
 
 	// if SupplierID = -1 then it is a new supplier
-	if v, err := s.Supplier.SupplierID.Value(); s.Supplier.SupplierID.Valid && err == nil && v.(int64) == -1 {
+	if v, err = s.Supplier.SupplierID.Value(); s.Supplier.SupplierID.Valid && err == nil && v.(int64) == -1 {
 		sqlr = `INSERT INTO supplier (supplier_label) VALUES (?)`
-		if _, err = tx.Exec(sqlr, s.Supplier.SupplierLabel); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return errr
-			}
-			return err
+		if res, err = tx.Exec(sqlr, s.Supplier.SupplierLabel); err != nil {
+			return
 		}
 		// getting the last inserted id
-		if lastid, err = res.LastInsertId(); err != nil {
-			if errr := tx.Rollback(); errr != nil {
-				return errr
-			}
-			return err
+		if lastInsertId, err = res.LastInsertId(); err != nil {
+			return
 		}
 		// updating the storage SupplierId (SupplierLabel already set)
-		s.Supplier.SupplierID = sql.NullInt64{Valid: true, Int64: lastid}
+		s.Supplier.SupplierID = sql.NullInt64{Valid: true, Int64: lastInsertId}
 	}
 	if err != nil {
 		logger.Log.Error("supplier error - " + err.Error())
-		if errr := tx.Rollback(); errr != nil {
-			return errr
-		}
+		return
 	}
 
 	// finally updating the storage
-	m := make(map[string]interface{})
+	insertCols := goqu.Record{}
 	if s.StorageComment.Valid {
-		m["storage_comment"] = s.StorageComment.String
+		insertCols["storage_comment"] = s.StorageComment.String
 	}
 	if s.StorageQuantity.Valid {
-		m["storage_quantity"] = s.StorageQuantity.Float64
+		insertCols["storage_quantity"] = s.StorageQuantity.Float64
 	}
 	if s.StorageBarecode.Valid {
-		m["storage_barecode"] = s.StorageBarecode.String
+		insertCols["storage_barecode"] = s.StorageBarecode.String
 	}
 	if s.UnitQuantity.UnitID.Valid {
-		m["unit_quantity"] = s.UnitQuantity.UnitID.Int64
+		insertCols["unit_quantity"] = s.UnitQuantity.UnitID.Int64
 	}
 	if s.SupplierID.Valid {
-		m["supplier"] = s.SupplierID.Int64
+		insertCols["supplier"] = s.SupplierID.Int64
 	}
 	if s.StorageEntryDate.Valid {
-		m["storage_entrydate"] = s.StorageEntryDate.Time
+		insertCols["storage_entrydate"] = s.StorageEntryDate.Time
 	}
 	if s.StorageExitDate.Valid {
-		m["storage_exitdate"] = s.StorageExitDate.Time
+		insertCols["storage_exitdate"] = s.StorageExitDate.Time
 	}
 	if s.StorageOpeningDate.Valid {
-		m["storage_openingdate"] = s.StorageOpeningDate.Time
+		insertCols["storage_openingdate"] = s.StorageOpeningDate.Time
 	}
 	if s.StorageExpirationDate.Valid {
-		m["storage_expirationdate"] = s.StorageExpirationDate.Time
+		insertCols["storage_expirationdate"] = s.StorageExpirationDate.Time
 	}
 	if s.StorageReference.Valid {
-		m["storage_reference"] = s.StorageReference.String
+		insertCols["storage_reference"] = s.StorageReference.String
 	}
 	if s.StorageBatchNumber.Valid {
-		m["storage_batchnumber"] = s.StorageBatchNumber.String
+		insertCols["storage_batchnumber"] = s.StorageBatchNumber.String
 	}
 	if s.StorageToDestroy.Valid {
-		m["storage_todestroy"] = s.StorageToDestroy.Bool
+		insertCols["storage_todestroy"] = s.StorageToDestroy.Bool
 	}
 	if s.StorageConcentration.Valid {
-		m["storage_concentration"] = int(s.StorageConcentration.Int64)
+		insertCols["storage_concentration"] = int(s.StorageConcentration.Int64)
 	}
 	if s.StorageNumberOfBag.Valid {
-		m["storage_number_of_bag"] = int(s.StorageNumberOfBag.Int64)
+		insertCols["storage_number_of_bag"] = int(s.StorageNumberOfBag.Int64)
 	}
 	if s.StorageNumberOfCarton.Valid {
-		m["storage_number_of_carton"] = int(s.StorageNumberOfCarton.Int64)
+		insertCols["storage_number_of_carton"] = int(s.StorageNumberOfCarton.Int64)
 	}
 	if s.StorageNumberOfUnit.Valid {
-		m["storage_number_of_unit"] = int(s.StorageNumberOfUnit.Int64)
+		insertCols["storage_number_of_unit"] = int(s.StorageNumberOfUnit.Int64)
 	}
 	if s.UnitConcentration.UnitID.Valid {
-		m["unit_concentration"] = int(s.UnitConcentration.UnitID.Int64)
+		insertCols["unit_concentration"] = int(s.UnitConcentration.UnitID.Int64)
 	}
-	m["storage_modificationdate"] = s.StorageModificationDate
-	m["storage_archive"] = s.StorageArchive
-	m["person"] = s.PersonID
-	m["storelocation"] = s.StoreLocationID
-	m["unit_quantity"] = s.UnitQuantity.UnitID
-	m["supplier"] = s.SupplierID
 
-	ubuilder = sq.Update("storage").
-		SetMap(m).
-		Where(sq.Eq{"storage_id": s.StorageID})
-	if sqlr, sqla, err = ubuilder.ToSql(); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return errr
-		}
+	insertCols["person"] = s.PersonID
+	insertCols["storelocation"] = s.StoreLocationID.Int64
+	insertCols["product"] = s.ProductID
+	insertCols["storage_creationdate"] = s.StorageCreationDate
+	insertCols["storage_modificationdate"] = s.StorageModificationDate
+	insertCols["storage_archive"] = false
+
+	iQuery := dialect.Insert(tableStorage).Rows(insertCols)
+	if sqlr, args, err = iQuery.ToSQL(); err != nil {
+		return
 	}
-	if _, err = tx.Exec(sqlr, sqla...); err != nil {
+
+	// logger.Log.Debug(sqlr)
+	// logger.Log.Debug(args)
+
+	if res, err = tx.Exec(sqlr, args...); err != nil {
+		return
+	}
+
+	// getting the last inserted id
+	if lastInsertId, err = res.LastInsertId(); err != nil {
+		return
+	}
+
+	//
+	// qrcode
+	//
+	qr := strconv.FormatInt(lastInsertId, 10)
+	if s.StorageQRCode, err = qrcode.Encode(qr, qrcode.Medium, 512); err != nil {
+		return 0, err
+	}
+
+	sqlr = `UPDATE storage SET storage_qrcode=? WHERE storage_id=?`
+	if _, err = tx.Exec(sqlr, s.StorageQRCode, lastInsertId); err != nil {
 		if errr := tx.Rollback(); errr != nil {
-			return errr
+			return 0, errr
 		}
+		return 0, err
 	}
 
 	// committing changes
 	if err = tx.Commit(); err != nil {
 		if errr := tx.Rollback(); errr != nil {
-			return errr
+			return 0, errr
 		}
+		return 0, err
 	}
 
-	return nil
+	s.StorageID = sql.NullInt64{Valid: true, Int64: lastInsertId}
+	logger.Log.WithFields(logrus.Fields{"s": s}).Debug("CreateStorage")
+
+	return
+
 }
 
 // UpdateAllQRCodes updates the storages QRCodes
@@ -1407,4 +1067,5 @@ func (db *SQLiteDataStore) UpdateAllQRCodes() error {
 	}
 
 	return nil
+
 }

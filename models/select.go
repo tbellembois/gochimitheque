@@ -919,6 +919,9 @@ func NewdbselectparamProduct(r *http.Request, f func(string) (string, error)) (*
 	dspp.ProductSpecificity = ""
 	dspp.Borrowing = false
 	dspp.StorageToDestroy = false
+	dspp.ShowBio = true
+	dspp.ShowChem = true
+	dspp.ShowConsu = true
 	if dsp, aerr = Newdbselectparam(r, f); aerr != nil {
 		return nil, aerr
 	}

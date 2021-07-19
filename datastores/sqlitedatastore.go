@@ -760,7 +760,7 @@ func (db *SQLiteDataStore) Import(url string) error {
 		p.Person = admin
 
 		// finally creating the product
-		if _, err = db.CreateProduct(p); err != nil {
+		if _, err = db.CreateUpdateProduct(p, false); err != nil {
 			logger.Log.Error("can not create product " + err.Error())
 			os.Exit(1)
 		}

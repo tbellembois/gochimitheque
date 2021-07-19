@@ -142,7 +142,7 @@ func (env *Env) GetStoragesSuppliersHandler(w http.ResponseWriter, r *http.Reque
 		return aerr
 	}
 
-	suppliers, count, err := env.DB.GetStoragesSuppliers(dsp)
+	suppliers, count, err := env.DB.GetSuppliers(dsp)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -350,7 +350,7 @@ func (env *Env) UpdateStorageHandler(w http.ResponseWriter, r *http.Request) *mo
 	updateds.StorageNumberOfUnit = s.StorageNumberOfUnit
 	logger.Log.WithFields(logrus.Fields{"updateds": updateds}).Debug("UpdateStorageHandler")
 
-	if err := env.DB.UpdateStorage(updateds); err != nil {
+	if _, err := env.DB.CreateUpdateStorage(updateds, 0, false); err != nil {
 		return &models.AppError{
 			Error:   err,
 			Message: "update storage error",
@@ -446,7 +446,7 @@ func (env *Env) CreateStorageHandler(w http.ResponseWriter, r *http.Request) *mo
 	var (
 		s   models.Storage
 		err error
-		id  int
+		id  int64
 	)
 	if err = json.NewDecoder(r.Body).Decode(&s); err != nil {
 		return &models.AppError{
@@ -479,7 +479,7 @@ func (env *Env) CreateStorageHandler(w http.ResponseWriter, r *http.Request) *mo
 
 	var result []models.Storage
 	for i := 1; i <= s.StorageNbItem; i++ {
-		if id, err = env.DB.CreateStorage(s, i); err != nil {
+		if id, err = env.DB.CreateUpdateStorage(s, i, false); err != nil {
 			return &models.AppError{
 				Error:   err,
 				Message: "create storage error",
@@ -489,7 +489,7 @@ func (env *Env) CreateStorageHandler(w http.ResponseWriter, r *http.Request) *mo
 			StorageID: sql.NullInt64{Valid: true, Int64: int64(id)},
 		})
 	}
-	s.StorageID = sql.NullInt64{Valid: true, Int64: int64(id)}
+	s.StorageID = sql.NullInt64{Valid: true, Int64: id}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
