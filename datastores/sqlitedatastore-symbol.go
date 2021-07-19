@@ -11,7 +11,7 @@ import (
 )
 
 // GetSymbols return the symbols matching the search criteria
-func (db *SQLiteDataStore) GetSymbols(p Dbselectparam) ([]Symbol, int, error) {
+func (db *SQLiteDataStore) GetSymbols(p SelectFilter) ([]Symbol, int, error) {
 
 	var (
 		err                              error

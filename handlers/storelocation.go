@@ -48,7 +48,7 @@ func (env *Env) GetStoreLocationsHandler(w http.ResponseWriter, r *http.Request)
 	var (
 		err   error
 		aerr  *models.AppError
-		dspsl models.DbselectparamStoreLocation
+		dspsl *models.SelectFilterStoreLocation
 	)
 
 	// init db request parameters
@@ -56,7 +56,7 @@ func (env *Env) GetStoreLocationsHandler(w http.ResponseWriter, r *http.Request)
 		return aerr
 	}
 
-	storelocations, count, err := env.DB.GetStoreLocations(dspsl)
+	storelocations, count, err := env.DB.GetStoreLocations(*dspsl)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,

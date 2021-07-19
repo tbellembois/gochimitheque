@@ -5,10 +5,10 @@ import (
 	"strconv"
 )
 
-// Dbselectparam contains the common parameters
+// SelectFilter contains the common parameters
 // of the db select requests
 // such as in GetStoreLocations, GetEntities...
-type Dbselectparam interface {
+type SelectFilter interface {
 	SetLoggedPersonID(int)
 	SetSearch(string)
 	SetLimit(uint64)
@@ -22,7 +22,7 @@ type Dbselectparam interface {
 
 	SetOrderBy(string)
 }
-type dbselectparam struct {
+type selectFilter struct {
 	LoggedPersonID int // logged person, used to filter results
 	Search         string
 	OrderBy        string
@@ -31,61 +31,8 @@ type dbselectparam struct {
 	Limit          uint64
 }
 
-// dbselectparamProduct contains the parameters of the GetProducts function
-type DbselectparamProduct interface {
-	Dbselectparam
-	SetProducerRef(int)
-	SetEntity(int)
-	SetProduct(int)
-	SetStorelocation(int)
-	SetBookmark(bool)
-	SetProductSpecificity(string)
-	SetCustomNamePartOf(string)
-	SetName(int)
-	SetEmpiricalFormula(int)
-	SetCasNumber(int)
-	SetStorageBarecode(string)
-	SetSymbols([]int)
-	SetHazardStatements([]int)
-	SetPrecautionaryStatements([]int)
-	SetSignalWord(int)
-	SetCasNumberCmr(bool)
-	SetBorrowing(bool)
-	SetStorageToDestroy(bool)
-	SetStorageBatchNumber(string)
-	SetShowBio(bool)
-	SetShowChem(bool)
-	SetShowConsu(bool)
-	SetTags([]int)
-	SetCategory(int)
-
-	GetProducerRef() int
-	GetEntity() int
-	GetProduct() int
-	GetStorelocation() int
-	GetBookmark() bool
-	GetProductSpecificity() string
-	GetCustomNamePartOf() string
-	GetName() int
-	GetEmpiricalFormula() int
-	GetCasNumber() int
-	GetStorageBarecode() string
-	GetSymbols() []int
-	GetHazardStatements() []int
-	GetPrecautionaryStatements() []int
-	GetSignalWord() int
-	GetCasNumberCmr() bool
-	GetBorrowing() bool
-	GetStorageToDestroy() bool
-	GetStorageBatchNumber() string
-	GetShowBio() bool
-	GetShowChem() bool
-	GetShowConsu() bool
-	GetTags() []int
-	GetCategory() int
-}
-type dbselectparamProduct struct {
-	dbselectparam
+type SelectFilterProduct struct {
+	selectFilter
 	Entity        int // id
 	Product       int // id
 	Storelocation int // id
@@ -114,71 +61,8 @@ type dbselectparamProduct struct {
 	ShowConsu bool
 }
 
-// DbselectparamStorage contains the parameters of the GetStorages function
-type DbselectparamStorage interface {
-	Dbselectparam
-	SetIds([]int)
-	SetEntity(int)
-	SetProduct(int)
-	SetStorelocation(int)
-	SetBookmark(bool)
-	SetStorage(int)
-	SetHistory(bool)
-	SetStorageArchive(bool)
-	SetProducerRef(int)
-
-	SetCustomNamePartOf(string)
-	SetName(int)
-	SetEmpiricalFormula(int)
-	SetCasNumber(int)
-	SetStorageBarecode(string)
-	SetSymbols([]int)
-	SetHazardStatements([]int)
-	SetPrecautionaryStatements([]int)
-	SetSignalWord(int)
-	SetCasNumberCmr(bool)
-	SetBorrowing(bool)
-	SetStorageToDestroy(bool)
-	SetStorageBatchNumber(string)
-	SetTags([]int)
-	SetCategory(int)
-
-	SetShowBio(bool)
-	SetShowChem(bool)
-	SetShowConsu(bool)
-
-	GetIds() []int
-	GetEntity() int
-	GetProduct() int
-	GetStorelocation() int
-	GetBookmark() bool
-	GetStorage() int
-	GetHistory() bool
-	GetStorageArchive() bool
-	GetProducerRef() int
-
-	GetCustomNamePartOf() string
-	GetName() int
-	GetEmpiricalFormula() int
-	GetCasNumber() int
-	GetStorageBarecode() string
-	GetSymbols() []int
-	GetHazardStatements() []int
-	GetPrecautionaryStatements() []int
-	GetSignalWord() int
-	GetCasNumberCmr() bool
-	GetBorrowing() bool
-	GetStorageToDestroy() bool
-	GetStorageBatchNumber() string
-	GetTags() []int
-	GetCategory() int
-
-	GetShowBio() bool
-	GetShowChem() bool
-	GetShowConsu() bool
-}
-type dbselectparamStorage struct {
-	dbselectparam
+type SelectFilterStorage struct {
+	selectFilter
 	Ids            []int
 	Entity         int // id
 	Product        int // id
@@ -210,618 +94,574 @@ type dbselectparamStorage struct {
 	ShowConsu bool
 }
 
-// DbselectparamPerson contains the parameters of the GetPeople function
-type DbselectparamPerson interface {
-	Dbselectparam
-	SetEntity(int)
-
-	GetEntity() int
-}
-type dbselectparamPerson struct {
-	dbselectparam
+type SelectFilterPerson struct {
+	selectFilter
 	Entity int
 }
 
-// DbselectparamEntity contains the parameters of the GetEntities function
-type DbselectparamEntity interface {
-	Dbselectparam
-}
-type dbselectparamEntity struct {
-	dbselectparam
+type SelectFilterEntity struct {
+	selectFilter
 }
 
-// DbselectparamStoreLocation contains the parameters of the GetStoreLocations function
-type DbselectparamStoreLocation interface {
-	Dbselectparam
-	SetEntity(int)
-	SetStoreLocationCanStore(bool)
-
-	SetPermission(string)
-
-	GetEntity() int
-	GetStoreLocationCanStore() bool
-
-	GetPermission() string
-}
-type dbselectparamStoreLocation struct {
-	dbselectparam
+type SelectFilterStoreLocation struct {
+	selectFilter
 	Entity                int
 	StoreLocationCanStore bool
 
 	Permission string
 }
 
-// DbselectparamUnit contains the parameters of the GetStoragesUnits function
-type DbselectparamUnit interface {
-	Dbselectparam
-	SetUnitType(string)
-
-	GetUnitType() string
-}
-type dbselectparamUnit struct {
-	dbselectparam
+type SelectFilterUnit struct {
+	selectFilter
 	UnitType string
 }
 
-// DbselectparamProducerRef contains the parameters of the GetProducerRefs function
-type DbselectparamProducerRef interface {
-	Dbselectparam
-	SetProducer(int)
-
-	GetProducer() int
-}
-type dbselectparamProducerRef struct {
-	dbselectparam
+type SelectFilterProducerRef struct {
+	selectFilter
 	Producer int
 }
 
-// DbselectparamSupplierRef contains the parameters of the GetSupplierRefs function
-type DbselectparamSupplierRef interface {
-	Dbselectparam
-	SetSupplier(int)
-	GetSupplier() int
-}
-type dbselectparamSupplierRef struct {
-	dbselectparam
+type SelectFilterSupplierRef struct {
+	selectFilter
 	Supplier int
 }
 
 //
 // dbselectparam functions
 //
-func (d *dbselectparam) SetLoggedPersonID(i int) {
+func (d *selectFilter) SetLoggedPersonID(i int) {
 	d.LoggedPersonID = i
 }
 
-func (d *dbselectparam) SetSearch(s string) {
+func (d *selectFilter) SetSearch(s string) {
 	d.Search = s
 }
 
-func (d dbselectparam) GetLoggedPersonID() int {
+func (d selectFilter) GetLoggedPersonID() int {
 	return d.LoggedPersonID
 }
 
-func (d dbselectparam) GetSearch() string {
+func (d selectFilter) GetSearch() string {
 	return d.Search
 }
 
-func (d dbselectparam) GetOrder() string {
+func (d selectFilter) GetOrder() string {
 	return d.Order
 }
 
-func (d dbselectparam) GetOrderBy() string {
+func (d selectFilter) GetOrderBy() string {
 	return d.OrderBy
 }
 
-func (d *dbselectparam) SetOrderBy(o string) {
+func (d *selectFilter) SetOrderBy(o string) {
 	d.OrderBy = o
 }
 
-func (d dbselectparam) GetOffset() uint64 {
+func (d selectFilter) GetOffset() uint64 {
 	return d.Offset
 }
 
-func (d dbselectparam) GetLimit() uint64 {
+func (d selectFilter) GetLimit() uint64 {
 	return d.Limit
 }
 
-func (d *dbselectparam) SetLimit(l uint64) {
+func (d *selectFilter) SetLimit(l uint64) {
 	d.Limit = l
 }
 
 //
 // dbselectparamUnit functions
 //
-func (d *dbselectparamUnit) SetUnitType(s string) {
+func (d *SelectFilterUnit) SetUnitType(s string) {
 	d.UnitType = s
 }
 
-func (d dbselectparamUnit) GetUnitType() string {
+func (d SelectFilterUnit) GetUnitType() string {
 	return d.UnitType
 }
 
 //
 // dbselectparamProducerRef functions
 //
-func (d *dbselectparamProducerRef) SetProducer(i int) {
+func (d *SelectFilterProducerRef) SetProducer(i int) {
 	d.Producer = i
 }
 
-func (d dbselectparamProducerRef) GetProducer() int {
+func (d SelectFilterProducerRef) GetProducer() int {
 	return d.Producer
 }
 
 //
 // dbselectparamSupplierRef functions
 //
-func (d *dbselectparamSupplierRef) SetSupplier(i int) {
+func (d *SelectFilterSupplierRef) SetSupplier(i int) {
 	d.Supplier = i
 }
 
-func (d dbselectparamSupplierRef) GetSupplier() int {
+func (d SelectFilterSupplierRef) GetSupplier() int {
 	return d.Supplier
 }
 
 //
 // dbselectparamPerson functions
 //
-func (d *dbselectparamPerson) SetEntity(i int) {
+func (d *SelectFilterPerson) SetEntity(i int) {
 	d.Entity = i
 }
 
-func (d dbselectparamPerson) GetEntity() int {
+func (d SelectFilterPerson) GetEntity() int {
 	return d.Entity
 }
 
 //
 // dbselectparamStoreLocation functions
 //
-func (d *dbselectparamStoreLocation) SetEntity(i int) {
+func (d *SelectFilterStoreLocation) SetEntity(i int) {
 	d.Entity = i
 }
 
-func (d *dbselectparamStoreLocation) GetEntity() int {
+func (d *SelectFilterStoreLocation) GetEntity() int {
 	return d.Entity
 }
 
-func (d *dbselectparamStoreLocation) GetStoreLocationCanStore() bool {
+func (d *SelectFilterStoreLocation) GetStoreLocationCanStore() bool {
 	return d.StoreLocationCanStore
 }
 
-func (d *dbselectparamStoreLocation) SetStoreLocationCanStore(b bool) {
+func (d *SelectFilterStoreLocation) SetStoreLocationCanStore(b bool) {
 	d.StoreLocationCanStore = b
 }
 
-func (d *dbselectparamStoreLocation) GetPermission() string {
+func (d *SelectFilterStoreLocation) GetPermission() string {
 	return d.Permission
 }
 
-func (d *dbselectparamStoreLocation) SetPermission(p string) {
+func (d *SelectFilterStoreLocation) SetPermission(p string) {
 	d.Permission = p
 }
 
 //
 // dbselectparamProduct functions
 //
-func (d *dbselectparamProduct) SetTags(t []int) {
+func (d *SelectFilterProduct) SetTags(t []int) {
 	d.Tags = t
 }
 
-func (d *dbselectparamProduct) GetTags() []int {
+func (d *SelectFilterProduct) GetTags() []int {
 	return d.Tags
 }
 
-func (d *dbselectparamProduct) SetCategory(c int) {
+func (d *SelectFilterProduct) SetCategory(c int) {
 	d.Category = c
 }
 
-func (d *dbselectparamProduct) GetCategory() int {
+func (d *SelectFilterProduct) GetCategory() int {
 	return d.Category
 }
 
-func (d *dbselectparamProduct) SetShowBio(b bool) {
+func (d *SelectFilterProduct) SetShowBio(b bool) {
 	d.ShowBio = b
 }
 
-func (d *dbselectparamProduct) GetShowBio() bool {
+func (d *SelectFilterProduct) GetShowBio() bool {
 	return d.ShowBio
 }
 
-func (d *dbselectparamProduct) SetShowChem(b bool) {
+func (d *SelectFilterProduct) SetShowChem(b bool) {
 	d.ShowChem = b
 }
 
-func (d *dbselectparamProduct) GetShowChem() bool {
+func (d *SelectFilterProduct) GetShowChem() bool {
 	return d.ShowChem
 }
 
-func (d *dbselectparamProduct) SetShowConsu(b bool) {
+func (d *SelectFilterProduct) SetShowConsu(b bool) {
 	d.ShowConsu = b
 }
 
-func (d *dbselectparamProduct) GetShowConsu() bool {
+func (d *SelectFilterProduct) GetShowConsu() bool {
 	return d.ShowConsu
 }
 
-func (d *dbselectparamProduct) SetProducerRef(i int) {
+func (d *SelectFilterProduct) SetProducerRef(i int) {
 	d.ProducerRef = i
 }
 
-func (d dbselectparamProduct) GetProducerRef() int {
+func (d SelectFilterProduct) GetProducerRef() int {
 	return d.ProducerRef
 }
 
-func (d *dbselectparamProduct) SetEntity(i int) {
+func (d *SelectFilterProduct) SetEntity(i int) {
 	d.Entity = i
 }
 
-func (d dbselectparamProduct) GetEntity() int {
+func (d SelectFilterProduct) GetEntity() int {
 	return d.Entity
 }
 
-func (d *dbselectparamProduct) SetProduct(i int) {
+func (d *SelectFilterProduct) SetProduct(i int) {
 	d.Product = i
 }
 
-func (d dbselectparamProduct) GetProduct() int {
+func (d SelectFilterProduct) GetProduct() int {
 	return d.Product
 }
 
-func (d *dbselectparamProduct) SetStorelocation(i int) {
+func (d *SelectFilterProduct) SetStorelocation(i int) {
 	d.Storelocation = i
 }
 
-func (d dbselectparamProduct) GetStorelocation() int {
+func (d SelectFilterProduct) GetStorelocation() int {
 	return d.Storelocation
 }
 
-func (d *dbselectparamProduct) SetBookmark(b bool) {
+func (d *SelectFilterProduct) SetBookmark(b bool) {
 	d.Bookmark = b
 }
 
-func (d dbselectparamProduct) GetBookmark() bool {
+func (d SelectFilterProduct) GetBookmark() bool {
 	return d.Bookmark
 }
 
-func (d *dbselectparamProduct) SetName(n int) {
+func (d *SelectFilterProduct) SetName(n int) {
 	d.Name = n
 }
 
-func (d dbselectparamProduct) GetName() int {
+func (d SelectFilterProduct) GetName() int {
 	return d.Name
 }
 
-func (d *dbselectparamProduct) SetEmpiricalFormula(n int) {
+func (d *SelectFilterProduct) SetEmpiricalFormula(n int) {
 	d.Name = n
 }
 
-func (d dbselectparamProduct) GetEmpiricalFormula() int {
+func (d SelectFilterProduct) GetEmpiricalFormula() int {
 	return d.EmpiricalFormula
 }
 
-func (d *dbselectparamProduct) SetCasNumber(n int) {
+func (d *SelectFilterProduct) SetCasNumber(n int) {
 	d.CasNumber = n
 }
 
-func (d dbselectparamProduct) GetCasNumber() int {
+func (d SelectFilterProduct) GetCasNumber() int {
 	return d.CasNumber
 }
 
-func (d dbselectparamProduct) GetStorageBatchNumber() string {
+func (d SelectFilterProduct) GetStorageBatchNumber() string {
 	return d.StorageBatchNumber
 }
 
-func (d *dbselectparamProduct) SetStorageBatchNumber(n string) {
+func (d *SelectFilterProduct) SetStorageBatchNumber(n string) {
 	d.StorageBatchNumber = n
 }
 
-func (d *dbselectparamProduct) SetStorageBarecode(n string) {
+func (d *SelectFilterProduct) SetStorageBarecode(n string) {
 	d.StorageBarecode = n
 }
 
-func (d dbselectparamProduct) GetStorageBarecode() string {
+func (d SelectFilterProduct) GetStorageBarecode() string {
 	return d.StorageBarecode
 }
 
-func (d *dbselectparamProduct) SetSymbols(n []int) {
+func (d *SelectFilterProduct) SetSymbols(n []int) {
 	d.Symbols = n
 }
 
-func (d dbselectparamProduct) GetSymbols() []int {
+func (d SelectFilterProduct) GetSymbols() []int {
 	return d.Symbols
 }
 
-func (d *dbselectparamProduct) SetCustomNamePartOf(n string) {
+func (d *SelectFilterProduct) SetCustomNamePartOf(n string) {
 	d.CustomNamePartOf = n
 }
 
-func (d dbselectparamProduct) GetCustomNamePartOf() string {
+func (d SelectFilterProduct) GetCustomNamePartOf() string {
 	return d.CustomNamePartOf
 }
 
-func (d *dbselectparamProduct) SetHazardStatements(n []int) {
+func (d *SelectFilterProduct) SetHazardStatements(n []int) {
 	d.HazardStatements = n
 }
 
-func (d dbselectparamProduct) GetHazardStatements() []int {
+func (d SelectFilterProduct) GetHazardStatements() []int {
 	return d.HazardStatements
 }
 
-func (d *dbselectparamProduct) SetPrecautionaryStatements(n []int) {
+func (d *SelectFilterProduct) SetPrecautionaryStatements(n []int) {
 	d.PrecautionaryStatements = n
 }
 
-func (d dbselectparamProduct) GetPrecautionaryStatements() []int {
+func (d SelectFilterProduct) GetPrecautionaryStatements() []int {
 	return d.PrecautionaryStatements
 }
 
-func (d *dbselectparamProduct) SetSignalWord(n int) {
+func (d *SelectFilterProduct) SetSignalWord(n int) {
 	d.SignalWord = n
 }
 
-func (d dbselectparamProduct) GetSignalWord() int {
+func (d SelectFilterProduct) GetSignalWord() int {
 	return d.SignalWord
 }
 
-func (d *dbselectparamProduct) SetCasNumberCmr(n bool) {
+func (d *SelectFilterProduct) SetCasNumberCmr(n bool) {
 	d.CasNumberCmr = n
 }
 
-func (d dbselectparamProduct) GetCasNumberCmr() bool {
+func (d SelectFilterProduct) GetCasNumberCmr() bool {
 	return d.CasNumberCmr
 }
 
-func (d *dbselectparamProduct) SetProductSpecificity(s string) {
+func (d *SelectFilterProduct) SetProductSpecificity(s string) {
 	d.ProductSpecificity = s
 }
 
-func (d *dbselectparamProduct) GetProductSpecificity() string {
+func (d *SelectFilterProduct) GetProductSpecificity() string {
 	return d.ProductSpecificity
 }
 
-func (d *dbselectparamProduct) SetBorrowing(b bool) {
+func (d *SelectFilterProduct) SetBorrowing(b bool) {
 	d.Borrowing = b
 }
 
-func (d *dbselectparamProduct) GetBorrowing() bool {
+func (d *SelectFilterProduct) GetBorrowing() bool {
 	return d.Borrowing
 }
 
-func (d *dbselectparamProduct) SetStorageToDestroy(b bool) {
+func (d *SelectFilterProduct) SetStorageToDestroy(b bool) {
 	d.StorageToDestroy = b
 }
 
-func (d *dbselectparamProduct) GetStorageToDestroy() bool {
+func (d *SelectFilterProduct) GetStorageToDestroy() bool {
 	return d.StorageToDestroy
 }
 
 //
 // dbselectparamStorage functions
 //
-func (d *dbselectparamStorage) SetTags(t []int) {
+func (d *SelectFilterStorage) SetTags(t []int) {
 	d.Tags = t
 }
 
-func (d *dbselectparamStorage) GetTags() []int {
+func (d *SelectFilterStorage) GetTags() []int {
 	return d.Tags
 }
 
-func (d *dbselectparamStorage) SetCategory(c int) {
+func (d *SelectFilterStorage) SetCategory(c int) {
 	d.Category = c
 }
 
-func (d *dbselectparamStorage) GetCategory() int {
+func (d *SelectFilterStorage) GetCategory() int {
 	return d.Category
 }
 
-func (d *dbselectparamStorage) SetShowBio(b bool) {
+func (d *SelectFilterStorage) SetShowBio(b bool) {
 	d.ShowBio = b
 }
 
-func (d *dbselectparamStorage) GetShowBio() bool {
+func (d *SelectFilterStorage) GetShowBio() bool {
 	return d.ShowBio
 }
 
-func (d *dbselectparamStorage) SetShowChem(b bool) {
+func (d *SelectFilterStorage) SetShowChem(b bool) {
 	d.ShowChem = b
 }
 
-func (d *dbselectparamStorage) GetShowChem() bool {
+func (d *SelectFilterStorage) GetShowChem() bool {
 	return d.ShowChem
 }
 
-func (d *dbselectparamStorage) SetShowConsu(b bool) {
+func (d *SelectFilterStorage) SetShowConsu(b bool) {
 	d.ShowConsu = b
 }
 
-func (d *dbselectparamStorage) GetShowConsu() bool {
+func (d *SelectFilterStorage) GetShowConsu() bool {
 	return d.ShowConsu
 }
 
-func (d *dbselectparamStorage) SetIds(i []int) {
+func (d *SelectFilterStorage) SetIds(i []int) {
 	d.Ids = i
 }
 
-func (d *dbselectparamStorage) GetIds() []int {
+func (d *SelectFilterStorage) GetIds() []int {
 	return d.Ids
 }
 
-func (d *dbselectparamStorage) SetProducerRef(i int) {
+func (d *SelectFilterStorage) SetProducerRef(i int) {
 	d.ProducerRef = i
 }
 
-func (d dbselectparamStorage) GetProducerRef() int {
+func (d SelectFilterStorage) GetProducerRef() int {
 	return d.ProducerRef
 }
 
-func (d *dbselectparamStorage) SetEntity(i int) {
+func (d *SelectFilterStorage) SetEntity(i int) {
 	d.Entity = i
 }
 
-func (d dbselectparamStorage) GetEntity() int {
+func (d SelectFilterStorage) GetEntity() int {
 	return d.Entity
 }
 
-func (d *dbselectparamStorage) SetProduct(i int) {
+func (d *SelectFilterStorage) SetProduct(i int) {
 	d.Product = i
 }
 
-func (d dbselectparamStorage) GetProduct() int {
+func (d SelectFilterStorage) GetProduct() int {
 	return d.Product
 }
 
-func (d *dbselectparamStorage) SetStorelocation(i int) {
+func (d *SelectFilterStorage) SetStorelocation(i int) {
 	d.Storelocation = i
 }
 
-func (d dbselectparamStorage) GetStorelocation() int {
+func (d SelectFilterStorage) GetStorelocation() int {
 	return d.Storelocation
 }
 
-func (d *dbselectparamStorage) SetStorage(i int) {
+func (d *SelectFilterStorage) SetStorage(i int) {
 	d.Storage = i
 }
 
-func (d dbselectparamStorage) GetStorage() int {
+func (d SelectFilterStorage) GetStorage() int {
 	return d.Storage
 }
 
-func (d *dbselectparamStorage) SetBookmark(b bool) {
+func (d *SelectFilterStorage) SetBookmark(b bool) {
 	d.Bookmark = b
 }
 
-func (d dbselectparamStorage) GetBookmark() bool {
+func (d SelectFilterStorage) GetBookmark() bool {
 	return d.Bookmark
 }
 
-func (d dbselectparamStorage) GetHistory() bool {
+func (d SelectFilterStorage) GetHistory() bool {
 	return d.History
 }
 
-func (d *dbselectparamStorage) SetHistory(b bool) {
+func (d *SelectFilterStorage) SetHistory(b bool) {
 	d.History = b
 }
 
-func (d dbselectparamStorage) GetStorageArchive() bool {
+func (d SelectFilterStorage) GetStorageArchive() bool {
 	return d.StorageArchive
 }
 
-func (d *dbselectparamStorage) SetStorageArchive(b bool) {
+func (d *SelectFilterStorage) SetStorageArchive(b bool) {
 	d.StorageArchive = b
 }
 
-func (d *dbselectparamStorage) SetName(n int) {
+func (d *SelectFilterStorage) SetName(n int) {
 	d.Name = n
 }
 
-func (d dbselectparamStorage) GetName() int {
+func (d SelectFilterStorage) GetName() int {
 	return d.Name
 }
 
-func (d *dbselectparamStorage) SetEmpiricalFormula(n int) {
+func (d *SelectFilterStorage) SetEmpiricalFormula(n int) {
 	d.Name = n
 }
 
-func (d dbselectparamStorage) GetEmpiricalFormula() int {
+func (d SelectFilterStorage) GetEmpiricalFormula() int {
 	return d.EmpiricalFormula
 }
 
-func (d *dbselectparamStorage) SetCasNumber(n int) {
+func (d *SelectFilterStorage) SetCasNumber(n int) {
 	d.CasNumber = n
 }
 
-func (d dbselectparamStorage) GetCasNumber() int {
+func (d SelectFilterStorage) GetCasNumber() int {
 	return d.CasNumber
 }
 
-func (d *dbselectparamStorage) SetStorageBatchNumber(n string) {
+func (d *SelectFilterStorage) SetStorageBatchNumber(n string) {
 	d.StorageBatchNumber = n
 }
 
-func (d dbselectparamStorage) GetStorageBatchNumber() string {
+func (d SelectFilterStorage) GetStorageBatchNumber() string {
 	return d.StorageBatchNumber
 }
 
-func (d *dbselectparamStorage) SetStorageBarecode(n string) {
+func (d *SelectFilterStorage) SetStorageBarecode(n string) {
 	d.StorageBarecode = n
 }
 
-func (d dbselectparamStorage) GetStorageBarecode() string {
+func (d SelectFilterStorage) GetStorageBarecode() string {
 	return d.StorageBarecode
 }
 
-func (d *dbselectparamStorage) SetSymbols(n []int) {
+func (d *SelectFilterStorage) SetSymbols(n []int) {
 	d.Symbols = n
 }
 
-func (d dbselectparamStorage) GetSymbols() []int {
+func (d SelectFilterStorage) GetSymbols() []int {
 	return d.Symbols
 }
 
-func (d *dbselectparamStorage) SetCustomNamePartOf(n string) {
+func (d *SelectFilterStorage) SetCustomNamePartOf(n string) {
 	d.CustomNamePartOf = n
 }
 
-func (d dbselectparamStorage) GetCustomNamePartOf() string {
+func (d SelectFilterStorage) GetCustomNamePartOf() string {
 	return d.CustomNamePartOf
 }
 
-func (d *dbselectparamStorage) SetHazardStatements(n []int) {
+func (d *SelectFilterStorage) SetHazardStatements(n []int) {
 	d.HazardStatements = n
 }
 
-func (d dbselectparamStorage) GetHazardStatements() []int {
+func (d SelectFilterStorage) GetHazardStatements() []int {
 	return d.HazardStatements
 }
 
-func (d *dbselectparamStorage) SetPrecautionaryStatements(n []int) {
+func (d *SelectFilterStorage) SetPrecautionaryStatements(n []int) {
 	d.PrecautionaryStatements = n
 }
 
-func (d dbselectparamStorage) GetPrecautionaryStatements() []int {
+func (d SelectFilterStorage) GetPrecautionaryStatements() []int {
 	return d.PrecautionaryStatements
 }
 
-func (d *dbselectparamStorage) SetSignalWord(n int) {
+func (d *SelectFilterStorage) SetSignalWord(n int) {
 	d.SignalWord = n
 }
 
-func (d dbselectparamStorage) GetSignalWord() int {
+func (d SelectFilterStorage) GetSignalWord() int {
 	return d.SignalWord
 }
 
-func (d *dbselectparamStorage) SetCasNumberCmr(n bool) {
+func (d *SelectFilterStorage) SetCasNumberCmr(n bool) {
 	d.CasNumberCmr = n
 }
 
-func (d dbselectparamStorage) GetCasNumberCmr() bool {
+func (d SelectFilterStorage) GetCasNumberCmr() bool {
 	return d.CasNumberCmr
 }
 
-func (d *dbselectparamStorage) SetBorrowing(b bool) {
+func (d *SelectFilterStorage) SetBorrowing(b bool) {
 	d.Borrowing = b
 }
 
-func (d *dbselectparamStorage) GetBorrowing() bool {
+func (d *SelectFilterStorage) GetBorrowing() bool {
 	return d.Borrowing
 }
 
-func (d *dbselectparamStorage) SetStorageToDestroy(b bool) {
+func (d *SelectFilterStorage) SetStorageToDestroy(b bool) {
 	d.StorageToDestroy = b
 }
 
-func (d *dbselectparamStorage) GetStorageToDestroy() bool {
+func (d *SelectFilterStorage) GetStorageToDestroy() bool {
 	return d.StorageToDestroy
 }
 
 // Newdbselectparam returns a dbselectparam struct
 // with values populated from the request parameters
-func Newdbselectparam(r *http.Request, f func(string) (string, error)) (*dbselectparam, *AppError) {
+func Newdbselectparam(r *http.Request, f func(string) (string, error)) (*selectFilter, *AppError) {
 
 	var err error
 
 	// initializing default values
-	dsp := dbselectparam{
+	dsp := selectFilter{
 		LoggedPersonID: 0,
 		Search:         "%%",
 		OrderBy:        "",
@@ -892,13 +732,13 @@ func Newdbselectparam(r *http.Request, f func(string) (string, error)) (*dbselec
 
 // NewdbselectparamProduct returns a dbselectparamProduct struct
 // with values populated from the request parameters
-func NewdbselectparamProduct(r *http.Request, f func(string) (string, error)) (*dbselectparamProduct, *AppError) {
+func NewdbselectparamProduct(r *http.Request, f func(string) (string, error)) (*SelectFilterProduct, *AppError) {
 
 	var (
 		err  error
 		aerr *AppError
-		dsp  *dbselectparam
-		dspp dbselectparamProduct
+		dsp  *selectFilter
+		dspp SelectFilterProduct
 	)
 
 	// init defaults
@@ -919,13 +759,10 @@ func NewdbselectparamProduct(r *http.Request, f func(string) (string, error)) (*
 	dspp.ProductSpecificity = ""
 	dspp.Borrowing = false
 	dspp.StorageToDestroy = false
-	dspp.ShowBio = true
-	dspp.ShowChem = true
-	dspp.ShowConsu = true
 	if dsp, aerr = Newdbselectparam(r, f); aerr != nil {
 		return nil, aerr
 	}
-	dspp.dbselectparam = *dsp
+	dspp.selectFilter = *dsp
 
 	if r != nil {
 		if o, ok := r.URL.Query()["sort"]; ok {
@@ -1148,13 +985,13 @@ func NewdbselectparamProduct(r *http.Request, f func(string) (string, error)) (*
 
 // NewdbselectparamStorage returns a dbselectparamStorage struct
 // with values populated from the request parameters
-func NewdbselectparamStorage(r *http.Request, f func(string) (string, error)) (*dbselectparamStorage, *AppError) {
+func NewdbselectparamStorage(r *http.Request, f func(string) (string, error)) (*SelectFilterStorage, *AppError) {
 
 	var (
 		err  error
 		aerr *AppError
-		dsp  *dbselectparam
-		dsps dbselectparamStorage
+		dsp  *selectFilter
+		dsps SelectFilterStorage
 	)
 
 	// init defaults
@@ -1180,7 +1017,7 @@ func NewdbselectparamStorage(r *http.Request, f func(string) (string, error)) (*
 	if dsp, aerr = Newdbselectparam(r, f); aerr != nil {
 		return nil, aerr
 	}
-	dsps.dbselectparam = *dsp
+	dsps.selectFilter = *dsp
 
 	if r != nil {
 		if ids, ok := r.URL.Query()["ids"]; ok {
@@ -1445,13 +1282,13 @@ func NewdbselectparamStorage(r *http.Request, f func(string) (string, error)) (*
 
 // NewdbselectparamStoreLocation returns a dbselectparamStoreLocation struct
 // with values populated from the request parameters
-func NewdbselectparamStoreLocation(r *http.Request, f func(string) (string, error)) (*dbselectparamStoreLocation, *AppError) {
+func NewdbselectparamStoreLocation(r *http.Request, f func(string) (string, error)) (*SelectFilterStoreLocation, *AppError) {
 
 	var (
 		err   error
 		aerr  *AppError
-		dsp   *dbselectparam
-		dspsl dbselectparamStoreLocation
+		dsp   *selectFilter
+		dspsl SelectFilterStoreLocation
 	)
 
 	// init defaults
@@ -1460,7 +1297,7 @@ func NewdbselectparamStoreLocation(r *http.Request, f func(string) (string, erro
 	if dsp, aerr = Newdbselectparam(r, f); aerr != nil {
 		return nil, aerr
 	}
-	dspsl.dbselectparam = *dsp
+	dspsl.selectFilter = *dsp
 
 	if r != nil {
 		if o, ok := r.URL.Query()["sort"]; ok {
@@ -1496,12 +1333,12 @@ func NewdbselectparamStoreLocation(r *http.Request, f func(string) (string, erro
 
 // NewdbselectparamUnit returns a dbselectparamUnit struct
 // with values populated from the request parameters
-func NewdbselectparamUnit(r *http.Request, f func(string) (string, error)) (*dbselectparamUnit, *AppError) {
+func NewdbselectparamUnit(r *http.Request, f func(string) (string, error)) (*SelectFilterUnit, *AppError) {
 
 	var (
 		aerr *AppError
-		dsp  *dbselectparam
-		dspu dbselectparamUnit
+		dsp  *selectFilter
+		dspu SelectFilterUnit
 	)
 
 	// init defaults
@@ -1509,7 +1346,7 @@ func NewdbselectparamUnit(r *http.Request, f func(string) (string, error)) (*dbs
 	if dsp, aerr = Newdbselectparam(r, f); aerr != nil {
 		return nil, aerr
 	}
-	dspu.dbselectparam = *dsp
+	dspu.selectFilter = *dsp
 
 	if r != nil {
 		if o, ok := r.URL.Query()["sort"]; ok {
@@ -1526,13 +1363,13 @@ func NewdbselectparamUnit(r *http.Request, f func(string) (string, error)) (*dbs
 
 // NewdbselectparamProducerRef returns a dbselectparamProducerRef struct
 // with values populated from the request parameters
-func NewdbselectparamProducerRef(r *http.Request, f func(string) (string, error)) (*dbselectparamProducerRef, *AppError) {
+func NewdbselectparamProducerRef(r *http.Request, f func(string) (string, error)) (*SelectFilterProducerRef, *AppError) {
 
 	var (
 		err  error
 		aerr *AppError
-		dsp  *dbselectparam
-		dspp dbselectparamProducerRef
+		dsp  *selectFilter
+		dspp SelectFilterProducerRef
 	)
 
 	// init defaults
@@ -1540,7 +1377,7 @@ func NewdbselectparamProducerRef(r *http.Request, f func(string) (string, error)
 	if dsp, aerr = Newdbselectparam(r, f); aerr != nil {
 		return nil, aerr
 	}
-	dspp.dbselectparam = *dsp
+	dspp.selectFilter = *dsp
 
 	if r != nil {
 		if o, ok := r.URL.Query()["sort"]; ok {
@@ -1563,13 +1400,13 @@ func NewdbselectparamProducerRef(r *http.Request, f func(string) (string, error)
 
 // NewdbselectparamSupplierRef returns a dbselectparamSupplierRef struct
 // with values populated from the request parameters
-func NewdbselectparamSupplierRef(r *http.Request, f func(string) (string, error)) (*dbselectparamSupplierRef, *AppError) {
+func NewdbselectparamSupplierRef(r *http.Request, f func(string) (string, error)) (*SelectFilterSupplierRef, *AppError) {
 
 	var (
 		err  error
 		aerr *AppError
-		dsp  *dbselectparam
-		dspp dbselectparamSupplierRef
+		dsp  *selectFilter
+		dspp SelectFilterSupplierRef
 	)
 
 	// init defaults
@@ -1577,7 +1414,7 @@ func NewdbselectparamSupplierRef(r *http.Request, f func(string) (string, error)
 	if dsp, aerr = Newdbselectparam(r, f); aerr != nil {
 		return nil, aerr
 	}
-	dspp.dbselectparam = *dsp
+	dspp.selectFilter = *dsp
 
 	if r != nil {
 		if o, ok := r.URL.Query()["sort"]; ok {
@@ -1600,13 +1437,13 @@ func NewdbselectparamSupplierRef(r *http.Request, f func(string) (string, error)
 
 // NewdbselectparamPerson returns a dbselectparamStorePerson struct
 // with values populated from the request parameters
-func NewdbselectparamPerson(r *http.Request, f func(string) (string, error)) (*dbselectparamPerson, *AppError) {
+func NewdbselectparamPerson(r *http.Request, f func(string) (string, error)) (*SelectFilterPerson, *AppError) {
 
 	var (
 		err  error
 		aerr *AppError
-		dsp  *dbselectparam
-		dspp dbselectparamPerson
+		dsp  *selectFilter
+		dspp SelectFilterPerson
 	)
 
 	// init defaults
@@ -1614,7 +1451,7 @@ func NewdbselectparamPerson(r *http.Request, f func(string) (string, error)) (*d
 	if dsp, aerr = Newdbselectparam(r, f); aerr != nil {
 		return nil, aerr
 	}
-	dspp.dbselectparam = *dsp
+	dspp.selectFilter = *dsp
 
 	if r != nil {
 		if o, ok := r.URL.Query()["sort"]; ok {
@@ -1638,19 +1475,19 @@ func NewdbselectparamPerson(r *http.Request, f func(string) (string, error)) (*d
 
 // NewdbselectparamEntity returns a dbselectparamEntity struct
 // with values populated from the request parameters
-func NewdbselectparamEntity(r *http.Request, f func(string) (string, error)) (*dbselectparamEntity, *AppError) {
+func NewdbselectparamEntity(r *http.Request, f func(string) (string, error)) (*SelectFilterEntity, *AppError) {
 
 	var (
 		aerr *AppError
-		dsp  *dbselectparam
-		dspe dbselectparamEntity
+		dsp  *selectFilter
+		dspe SelectFilterEntity
 	)
 
 	// init defaults
 	if dsp, aerr = Newdbselectparam(r, f); aerr != nil {
 		return nil, aerr
 	}
-	dspe.dbselectparam = *dsp
+	dspe.selectFilter = *dsp
 	dspe.OrderBy = "entity_id"
 
 	if r != nil {

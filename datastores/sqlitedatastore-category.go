@@ -12,7 +12,7 @@ import (
 )
 
 // GetCategories return the categories matching the search criteria
-func (db *SQLiteDataStore) GetCategories(p Dbselectparam) ([]Category, int, error) {
+func (db *SQLiteDataStore) GetCategories(p SelectFilter) ([]Category, int, error) {
 
 	var (
 		err                              error

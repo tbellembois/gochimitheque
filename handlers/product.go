@@ -66,7 +66,7 @@ func (env *Env) GetProductsProducerRefsHandler(w http.ResponseWriter, r *http.Re
 	var (
 		err  error
 		aerr *models.AppError
-		dsp  models.DbselectparamProducerRef
+		dsp  *models.SelectFilterProducerRef
 	)
 
 	// init db request parameters
@@ -74,7 +74,7 @@ func (env *Env) GetProductsProducerRefsHandler(w http.ResponseWriter, r *http.Re
 		return aerr
 	}
 
-	prefs, count, err := env.DB.GetProducerRefs(dsp)
+	prefs, count, err := env.DB.GetProducerRefs(*dsp)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -106,7 +106,7 @@ func (env *Env) GetProductsSupplierRefsHandler(w http.ResponseWriter, r *http.Re
 	var (
 		err  error
 		aerr *models.AppError
-		dsp  models.DbselectparamSupplierRef
+		dsp  *models.SelectFilterSupplierRef
 	)
 
 	// init db request parameters
@@ -114,7 +114,7 @@ func (env *Env) GetProductsSupplierRefsHandler(w http.ResponseWriter, r *http.Re
 		return aerr
 	}
 
-	srefs, count, err := env.DB.GetSupplierRefs(dsp)
+	srefs, count, err := env.DB.GetSupplierRefs(*dsp)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -146,7 +146,7 @@ func (env *Env) GetProductsCategoriesHandler(w http.ResponseWriter, r *http.Requ
 	var (
 		err  error
 		aerr *models.AppError
-		dsp  models.Dbselectparam
+		dsp  models.SelectFilter
 	)
 
 	// init db request parameters
@@ -186,7 +186,7 @@ func (env *Env) GetProductsTagsHandler(w http.ResponseWriter, r *http.Request) *
 	var (
 		err  error
 		aerr *models.AppError
-		dsp  models.Dbselectparam
+		dsp  models.SelectFilter
 	)
 
 	// init db request parameters
@@ -226,7 +226,7 @@ func (env *Env) GetProductsProducersHandler(w http.ResponseWriter, r *http.Reque
 	var (
 		err  error
 		aerr *models.AppError
-		dsp  models.Dbselectparam
+		dsp  models.SelectFilter
 	)
 
 	// init db request parameters
@@ -266,7 +266,7 @@ func (env *Env) GetProductsSuppliersHandler(w http.ResponseWriter, r *http.Reque
 	var (
 		err  error
 		aerr *models.AppError
-		dsp  models.Dbselectparam
+		dsp  models.SelectFilter
 	)
 
 	// init db request parameters
@@ -368,7 +368,7 @@ func (env *Env) GetProductsCasNumbersHandler(w http.ResponseWriter, r *http.Requ
 	var (
 		err  error
 		aerr *models.AppError
-		dsp  models.Dbselectparam
+		dsp  models.SelectFilter
 	)
 
 	// init db request parameters
@@ -427,7 +427,7 @@ func (env *Env) GetProductsCeNumbersHandler(w http.ResponseWriter, r *http.Reque
 	var (
 		err  error
 		aerr *models.AppError
-		dsp  models.Dbselectparam
+		dsp  models.SelectFilter
 	)
 
 	// init db request parameters
@@ -467,7 +467,7 @@ func (env *Env) GetProductsPhysicalStatesHandler(w http.ResponseWriter, r *http.
 	var (
 		err  error
 		aerr *models.AppError
-		dsp  models.Dbselectparam
+		dsp  models.SelectFilter
 	)
 
 	// init db request parameters
@@ -507,7 +507,7 @@ func (env *Env) GetProductsSignalWordsHandler(w http.ResponseWriter, r *http.Req
 	var (
 		err  error
 		aerr *models.AppError
-		dsp  models.Dbselectparam
+		dsp  models.SelectFilter
 	)
 
 	// init db request parameters
@@ -547,7 +547,7 @@ func (env *Env) GetProductsClassOfCompoundsHandler(w http.ResponseWriter, r *htt
 	var (
 		err  error
 		aerr *models.AppError
-		dsp  models.Dbselectparam
+		dsp  models.SelectFilter
 	)
 
 	// init db request parameters
@@ -587,7 +587,7 @@ func (env *Env) GetProductsEmpiricalFormulasHandler(w http.ResponseWriter, r *ht
 	var (
 		err  error
 		aerr *models.AppError
-		dsp  models.Dbselectparam
+		dsp  models.SelectFilter
 	)
 
 	// init db request parameters
@@ -627,7 +627,7 @@ func (env *Env) GetProductsLinearFormulasHandler(w http.ResponseWriter, r *http.
 	var (
 		err  error
 		aerr *models.AppError
-		dsp  models.Dbselectparam
+		dsp  models.SelectFilter
 	)
 
 	// init db request parameters
@@ -778,7 +778,7 @@ func (env *Env) GetProductsSymbolsHandler(w http.ResponseWriter, r *http.Request
 	var (
 		err  error
 		aerr *models.AppError
-		dsp  models.Dbselectparam
+		dsp  models.SelectFilter
 	)
 
 	// init db request parameters
@@ -855,7 +855,7 @@ func (env *Env) GetProductsHazardStatementsHandler(w http.ResponseWriter, r *htt
 	var (
 		err  error
 		aerr *models.AppError
-		dsp  models.Dbselectparam
+		dsp  models.SelectFilter
 	)
 
 	// init db request parameters
@@ -932,7 +932,7 @@ func (env *Env) GetProductsPrecautionaryStatementsHandler(w http.ResponseWriter,
 	var (
 		err  error
 		aerr *models.AppError
-		dsp  models.Dbselectparam
+		dsp  models.SelectFilter
 	)
 
 	// init db request parameters
@@ -1009,7 +1009,7 @@ func (env *Env) GetProductsNamesHandler(w http.ResponseWriter, r *http.Request) 
 	var (
 		err  error
 		aerr *models.AppError
-		dsp  models.Dbselectparam
+		dsp  models.SelectFilter
 	)
 
 	// init db request parameters
@@ -1086,7 +1086,7 @@ func (env *Env) GetProductsSynonymsHandler(w http.ResponseWriter, r *http.Reques
 	var (
 		err  error
 		aerr *models.AppError
-		dsp  models.Dbselectparam
+		dsp  models.SelectFilter
 	)
 
 	// init db request parameters
@@ -1126,14 +1126,14 @@ func (env *Env) GetExposedProductsHandler(w http.ResponseWriter, r *http.Request
 	var (
 		err  error
 		aerr *models.AppError
-		dspp models.DbselectparamProduct
+		dspp *models.SelectFilterProduct
 	)
 
 	// init db request parameters
 	if dspp, aerr = models.NewdbselectparamProduct(r, nil); err != nil {
 		return aerr
 	}
-	products, count, err := env.DB.GetProducts(dspp, true)
+	products, count, err := env.DB.GetProducts(*dspp, true)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -1165,7 +1165,7 @@ func (env *Env) GetProductsHandler(w http.ResponseWriter, r *http.Request) *mode
 	var (
 		err      error
 		aerr     *models.AppError
-		dspp     models.DbselectparamProduct
+		dspp     *models.SelectFilterProduct
 		exportfn string
 	)
 
@@ -1174,7 +1174,7 @@ func (env *Env) GetProductsHandler(w http.ResponseWriter, r *http.Request) *mode
 		return aerr
 	}
 
-	products, count, err := env.DB.GetProducts(dspp, false)
+	products, count, err := env.DB.GetProducts(*dspp, false)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -1307,7 +1307,6 @@ func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *mo
 
 	// p.ProductCreationDate = time.Now()
 	p.PersonID = c.PersonID
-	logger.Log.WithFields(logrus.Fields{"p": p}).Debug("UpdateProductHandler")
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
 		return &models.AppError{
@@ -1316,7 +1315,13 @@ func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *mo
 			Code:    http.StatusInternalServerError}
 	}
 
-	updatedp, _ := env.DB.GetProduct(id)
+	var updatedp models.Product
+	if updatedp, err = env.DB.GetProduct(id); err != nil {
+		return &models.AppError{
+			Error:   err,
+			Message: "get product",
+			Code:    http.StatusInternalServerError}
+	}
 	updatedp.CasNumber = p.CasNumber
 	updatedp.CeNumber = p.CeNumber
 	updatedp.EmpiricalFormula = p.EmpiricalFormula

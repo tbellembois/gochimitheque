@@ -12,7 +12,7 @@ import (
 )
 
 // GetLinearFormulas return the linear formulas matching the search criteria
-func (db *SQLiteDataStore) GetLinearFormulas(p Dbselectparam) ([]LinearFormula, int, error) {
+func (db *SQLiteDataStore) GetLinearFormulas(p SelectFilter) ([]LinearFormula, int, error) {
 
 	var (
 		err                              error

@@ -12,7 +12,7 @@ import (
 )
 
 // GetEmpiricalFormulas return the empirical formulas matching the search criteria
-func (db *SQLiteDataStore) GetEmpiricalFormulas(p Dbselectparam) ([]EmpiricalFormula, int, error) {
+func (db *SQLiteDataStore) GetEmpiricalFormulas(p SelectFilter) ([]EmpiricalFormula, int, error) {
 
 	var (
 		err                              error

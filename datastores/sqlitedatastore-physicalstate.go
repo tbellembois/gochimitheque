@@ -12,7 +12,7 @@ import (
 )
 
 // GetPhysicalStates return the physical states matching the search criteria
-func (db *SQLiteDataStore) GetPhysicalStates(p Dbselectparam) ([]PhysicalState, int, error) {
+func (db *SQLiteDataStore) GetPhysicalStates(p SelectFilter) ([]PhysicalState, int, error) {
 
 	var (
 		err                              error

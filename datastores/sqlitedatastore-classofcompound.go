@@ -12,7 +12,7 @@ import (
 )
 
 // GetClassesOfCompound return the class of compounds matching the search criteria
-func (db *SQLiteDataStore) GetClassesOfCompound(p Dbselectparam) ([]ClassOfCompound, int, error) {
+func (db *SQLiteDataStore) GetClassesOfCompound(p SelectFilter) ([]ClassOfCompound, int, error) {
 
 	var (
 		err                              error

@@ -94,7 +94,7 @@ func (env *Env) GetStoragesUnitsHandler(w http.ResponseWriter, r *http.Request) 
 	var (
 		err  error
 		aerr *models.AppError
-		dsp  models.DbselectparamUnit
+		dsp  *models.SelectFilterUnit
 	)
 
 	// init db request parameters
@@ -102,7 +102,7 @@ func (env *Env) GetStoragesUnitsHandler(w http.ResponseWriter, r *http.Request) 
 		return aerr
 	}
 
-	units, count, err := env.DB.GetStoragesUnits(dsp)
+	units, count, err := env.DB.GetStoragesUnits(*dsp)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -134,7 +134,7 @@ func (env *Env) GetStoragesSuppliersHandler(w http.ResponseWriter, r *http.Reque
 	var (
 		err  error
 		aerr *models.AppError
-		dsp  models.Dbselectparam
+		dsp  models.SelectFilter
 	)
 
 	// init db request parameters
@@ -175,7 +175,7 @@ func (env *Env) GetOtherStoragesHandler(w http.ResponseWriter, r *http.Request) 
 	var (
 		err      error
 		aerr     *models.AppError
-		dsps     models.DbselectparamStorage
+		dsps     *models.SelectFilterStorage
 		exportfn string
 	)
 
@@ -184,7 +184,7 @@ func (env *Env) GetOtherStoragesHandler(w http.ResponseWriter, r *http.Request) 
 		return aerr
 	}
 
-	entities, count, err := env.DB.GetOtherStorages(dsps)
+	entities, count, err := env.DB.GetOtherStorages(*dsps)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -218,7 +218,7 @@ func (env *Env) GetStoragesHandler(w http.ResponseWriter, r *http.Request) *mode
 	var (
 		err      error
 		aerr     *models.AppError
-		dsps     models.DbselectparamStorage
+		dsps     *models.SelectFilterStorage
 		exportfn string
 	)
 
@@ -227,7 +227,7 @@ func (env *Env) GetStoragesHandler(w http.ResponseWriter, r *http.Request) *mode
 		return aerr
 	}
 
-	storages, count, err := env.DB.GetStorages(dsps)
+	storages, count, err := env.DB.GetStorages(*dsps)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,
@@ -329,7 +329,14 @@ func (env *Env) UpdateStorageHandler(w http.ResponseWriter, r *http.Request) *mo
 			Message: "id atoi conversion",
 			Code:    http.StatusInternalServerError}
 	}
-	updateds, _ := env.DB.GetStorage(id)
+	var updateds models.Storage
+	if updateds, err = env.DB.GetStorage(id); err != nil {
+		return &models.AppError{
+			Error:   err,
+			Message: "get storage",
+			Code:    http.StatusInternalServerError}
+	}
+
 	updateds.StorageModificationDate = time.Now()
 	updateds.StorageBarecode = s.StorageBarecode
 	updateds.StorageQuantity = s.StorageQuantity
@@ -350,7 +357,7 @@ func (env *Env) UpdateStorageHandler(w http.ResponseWriter, r *http.Request) *mo
 	updateds.StorageNumberOfUnit = s.StorageNumberOfUnit
 	logger.Log.WithFields(logrus.Fields{"updateds": updateds}).Debug("UpdateStorageHandler")
 
-	if _, err := env.DB.CreateUpdateStorage(updateds, 0, false); err != nil {
+	if _, err := env.DB.CreateUpdateStorage(updateds, 0, true); err != nil {
 		return &models.AppError{
 			Error:   err,
 			Message: "update storage error",

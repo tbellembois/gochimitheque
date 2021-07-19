@@ -11,7 +11,7 @@ import (
 )
 
 // GetHazardStatements return the hazard statements matching the search criteria
-func (db *SQLiteDataStore) GetHazardStatements(p Dbselectparam) ([]HazardStatement, int, error) {
+func (db *SQLiteDataStore) GetHazardStatements(p SelectFilter) ([]HazardStatement, int, error) {
 
 	var (
 		err                              error

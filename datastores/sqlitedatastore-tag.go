@@ -12,7 +12,7 @@ import (
 )
 
 // GetTags return the tags matching the search criteria
-func (db *SQLiteDataStore) GetTags(p Dbselectparam) ([]Tag, int, error) {
+func (db *SQLiteDataStore) GetTags(p SelectFilter) ([]Tag, int, error) {
 
 	var (
 		err                              error

@@ -7,7 +7,7 @@ import (
 	"github.com/tbellembois/gochimitheque/models"
 )
 
-// FakeHandler returns true.
+// FakeHandler return true.
 func (env *Env) FakeHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")

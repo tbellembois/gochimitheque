@@ -287,7 +287,7 @@ func (db *SQLiteDataStore) ComputeStockEntity(p Product, r *http.Request) []Stor
 
 	// Getting the entities (GetEntities returns only entities the connected user can see).
 	h, _ := NewdbselectparamEntity(r, nil)
-	if entities, _, err = db.GetEntities(h); err != nil {
+	if entities, _, err = db.GetEntities(*h); err != nil {
 		logger.Log.Error(err)
 		return []StoreLocation{}
 	}

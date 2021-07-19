@@ -12,7 +12,7 @@ import (
 )
 
 // GetProducers return the producers matching the search criteria
-func (db *SQLiteDataStore) GetProducers(p Dbselectparam) ([]Producer, int, error) {
+func (db *SQLiteDataStore) GetProducers(p SelectFilter) ([]Producer, int, error) {
 
 	var (
 		err                              error
@@ -223,7 +223,7 @@ func (db *SQLiteDataStore) CreateProducer(p Producer) (lastInsertId int64, err e
 }
 
 // GetProducerRefs return the producerrefs matching the search criteria
-func (db *SQLiteDataStore) GetProducerRefs(p DbselectparamProducerRef) ([]ProducerRef, int, error) {
+func (db *SQLiteDataStore) GetProducerRefs(p SelectFilterProducerRef) ([]ProducerRef, int, error) {
 
 	var (
 		err                              error

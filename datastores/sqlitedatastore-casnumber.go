@@ -12,7 +12,7 @@ import (
 )
 
 // GetCasNumbers return the cas numbers matching the search criteria
-func (db *SQLiteDataStore) GetCasNumbers(p Dbselectparam) ([]CasNumber, int, error) {
+func (db *SQLiteDataStore) GetCasNumbers(p SelectFilter) ([]CasNumber, int, error) {
 
 	var (
 		err                              error

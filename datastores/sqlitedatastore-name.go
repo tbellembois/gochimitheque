@@ -12,7 +12,7 @@ import (
 )
 
 // GetNames return the names matching the search criteria
-func (db *SQLiteDataStore) GetNames(p Dbselectparam) ([]Name, int, error) {
+func (db *SQLiteDataStore) GetNames(p SelectFilter) ([]Name, int, error) {
 
 	var (
 		err                              error

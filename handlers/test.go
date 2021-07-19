@@ -7,7 +7,7 @@ import (
 	"github.com/tbellembois/gochimitheque/models"
 )
 
-// VTestHandler is a test handler of course
+// VTestHandler is a test handler.
 func (env *Env) VTestHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 
 	e := errors.New("test error")

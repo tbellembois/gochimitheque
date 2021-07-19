@@ -11,46 +11,45 @@ import (
 	"github.com/tbellembois/gochimitheque/models"
 )
 
-// DownloadExportHandler serves the temporary export files
+// DownloadExportHandler serve the export files.
 func (env *Env) DownloadExportHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 
-	vars := mux.Vars(r)
 	var (
-		id  string // temporary file id
-		err error
-		tb  []byte
-		ok  bool
+		fileID string
+		ok     bool
+		err    error
 	)
 
-	if id, ok = vars["id"]; !ok {
+	vars := mux.Vars(r)
+
+	if fileID, ok = vars["id"]; !ok {
 		return &models.AppError{
 			Error:   err,
-			Message: "no temporary file id",
+			Message: "no query file id",
 			Code:    http.StatusBadRequest}
 	}
 
-	// full temporary file path
-	ftp := path.Join(os.TempDir(), "chimitheque-"+id)
+	fileFullPath := path.Join(os.TempDir(), "chimitheque-"+fileID)
 
-	// reading the file
-	if tb, err = ioutil.ReadFile(ftp); err != nil {
+	var fileData []byte
+	if fileData, err = ioutil.ReadFile(fileFullPath); err != nil {
 		return &models.AppError{
 			Error:   err,
 			Code:    http.StatusInternalServerError,
-			Message: "error reading the temporary file",
+			Message: "error reading the file",
 		}
 	}
 
 	w.Header().Set("Content-Type", "text/csv")
 	w.Header().Set("Content-Disposition", "attachment;filename=chimitheque.csv")
 
-	// stream file
-	b := bytes.NewBuffer(tb)
+	// Stream file.
+	b := bytes.NewBuffer(fileData)
 	if _, err = b.WriteTo(w); err != nil {
 		return &models.AppError{
 			Error:   err,
 			Code:    http.StatusInternalServerError,
-			Message: "error streaming the temporary file",
+			Message: "error streaming the file",
 		}
 	}
 
@@ -62,4 +61,5 @@ func (env *Env) DownloadExportHandler(w http.ResponseWriter, r *http.Request) *m
 	}
 
 	return nil
+
 }

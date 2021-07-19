@@ -12,7 +12,7 @@ import (
 )
 
 // GetCeNumbers return the cas numbers matching the search criteria
-func (db *SQLiteDataStore) GetCeNumbers(p Dbselectparam) ([]CeNumber, int, error) {
+func (db *SQLiteDataStore) GetCeNumbers(p SelectFilter) ([]CeNumber, int, error) {
 
 	var (
 		err                              error

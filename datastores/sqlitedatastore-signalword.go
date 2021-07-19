@@ -11,7 +11,7 @@ import (
 )
 
 // GetSignalWords return the signal words matching the search criteria
-func (db *SQLiteDataStore) GetSignalWords(p Dbselectparam) ([]SignalWord, int, error) {
+func (db *SQLiteDataStore) GetSignalWords(p SelectFilter) ([]SignalWord, int, error) {
 
 	var (
 		err                              error

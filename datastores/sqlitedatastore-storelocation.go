@@ -66,7 +66,7 @@ func (db *SQLiteDataStore) buildFullPath(s StoreLocation, tx *sqlx.Tx) string {
 
 // GetStoreLocations select the store locations matching p
 // and visible by the connected user.
-func (db *SQLiteDataStore) GetStoreLocations(p DbselectparamStoreLocation) ([]StoreLocation, int, error) {
+func (db *SQLiteDataStore) GetStoreLocations(p SelectFilterStoreLocation) ([]StoreLocation, int, error) {
 
 	logger.Log.WithFields(logrus.Fields{"p": p}).Debug("GetStoreLocations")
 

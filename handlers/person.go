@@ -62,7 +62,7 @@ func (env *Env) GetPeopleHandler(w http.ResponseWriter, r *http.Request) *models
 	var (
 		err  error
 		aerr *models.AppError
-		dspp models.DbselectparamPerson
+		dspp *models.SelectFilterPerson
 	)
 
 	// init db request parameters
@@ -70,7 +70,7 @@ func (env *Env) GetPeopleHandler(w http.ResponseWriter, r *http.Request) *models
 		return aerr
 	}
 
-	people, count, err := env.DB.GetPeople(dspp)
+	people, count, err := env.DB.GetPeople(*dspp)
 	if err != nil {
 		return &models.AppError{
 			Error:   err,

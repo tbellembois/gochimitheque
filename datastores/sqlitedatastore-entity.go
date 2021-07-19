@@ -12,7 +12,7 @@ import (
 
 // GetEntities select the entities matching p
 // and visible by the connected user.
-func (db *SQLiteDataStore) GetEntities(p DbselectparamEntity) ([]Entity, int, error) {
+func (db *SQLiteDataStore) GetEntities(p SelectFilterEntity) ([]Entity, int, error) {
 
 	var (
 		err                   error

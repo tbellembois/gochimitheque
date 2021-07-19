@@ -12,7 +12,7 @@ import (
 )
 
 // GetSuppliers return the suppliers matching the search criteria
-func (db *SQLiteDataStore) GetSuppliers(p Dbselectparam) ([]Supplier, int, error) {
+func (db *SQLiteDataStore) GetSuppliers(p SelectFilter) ([]Supplier, int, error) {
 
 	var (
 		err                              error
@@ -223,7 +223,7 @@ func (db *SQLiteDataStore) CreateSupplier(s Supplier) (lastInsertId int64, err e
 }
 
 // GetSupplierRefs return the supplierrefs matching the search criteria
-func (db *SQLiteDataStore) GetSupplierRefs(p DbselectparamSupplierRef) ([]SupplierRef, int, error) {
+func (db *SQLiteDataStore) GetSupplierRefs(p SelectFilterSupplierRef) ([]SupplierRef, int, error) {
 
 	var (
 		err                              error

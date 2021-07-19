@@ -49,7 +49,7 @@ func (env *Env) GetEntitiesHandler(w http.ResponseWriter, r *http.Request) *mode
 		aerr     *models.AppError
 		entities []models.Entity
 		count    int
-		dspe     models.DbselectparamEntity
+		dspe     *models.SelectFilterEntity
 	)
 
 	// retrieving the logged user id from request context
@@ -61,7 +61,7 @@ func (env *Env) GetEntitiesHandler(w http.ResponseWriter, r *http.Request) *mode
 	}
 	dspe.SetLoggedPersonID(c.PersonID)
 
-	if entities, count, err = env.DB.GetEntities(dspe); err != nil {
+	if entities, count, err = env.DB.GetEntities(*dspe); err != nil {
 		return &models.AppError{
 			Error:   err,
 			Code:    http.StatusInternalServerError,

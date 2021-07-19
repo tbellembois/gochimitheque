@@ -77,7 +77,7 @@ func (db *SQLiteDataStore) InsertCaptcha(token string, data *captcha.Data) (err 
 
 // GetPeople select the people matching p
 // and visible by the connected user.
-func (db *SQLiteDataStore) GetPeople(p DbselectparamPerson) ([]Person, int, error) {
+func (db *SQLiteDataStore) GetPeople(p SelectFilterPerson) ([]Person, int, error) {
 
 	var err error
 

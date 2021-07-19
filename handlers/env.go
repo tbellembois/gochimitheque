@@ -12,9 +12,9 @@ import (
 	"github.com/tbellembois/gochimitheque/logger"
 )
 
-// genSymmetricKey generates a key for the JWT encryption
 // https://github.com/northbright/Notes/blob/master/jwt/generate_hmac_secret_key_for_jwt.md
 func genSymmetricKey(bits int) (k []byte, err error) {
+
 	if bits <= 0 || bits%8 != 0 {
 		return nil, errors.New("key size error")
 	}
@@ -26,9 +26,10 @@ func genSymmetricKey(bits int) (k []byte, err error) {
 	}
 
 	return k, nil
+
 }
 
-// Env is a structure used to pass variables throughout the application.
+// Env is used to pass variables throughout the application.
 type Env struct {
 	DB datastores.Datastore
 
@@ -57,11 +58,11 @@ type Env struct {
 func NewEnv() Env {
 
 	var (
-		err error
 		env Env
+		err error
 	)
 
-	// generate JWT signing key
+	// Generate JWT signing key.
 	if env.TokenSignKey, err = genSymmetricKey(64); err != nil {
 		panic(err)
 	}
@@ -73,8 +74,8 @@ func NewEnv() Env {
 func (env *Env) InitCasbinPolicy() {
 
 	var (
-		err             error
 		jsonAdapterData []byte
+		err             error
 	)
 
 	if jsonAdapterData, err = env.DB.ToCasbinJSONAdapter(); err != nil {
@@ -82,9 +83,9 @@ func (env *Env) InitCasbinPolicy() {
 		os.Exit(1)
 	}
 
-	m, e := model.NewModelFromString(env.CasbinModel)
-	if e != nil {
-		logger.Log.Error("model creation error: " + e.Error())
+	var m model.Model
+	if m, err = model.NewModelFromString(env.CasbinModel); err != nil {
+		logger.Log.Error("model creation error: " + err.Error())
 		os.Exit(1)
 	}
 

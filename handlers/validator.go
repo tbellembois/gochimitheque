@@ -21,16 +21,13 @@ func sendResponse(w http.ResponseWriter, response string) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 
-	// TODO: check error
 	_ = json.NewEncoder(w).Encode(response)
 
 }
 
-// ValidatePersonEmailHandler checks that the person email does not already exist
-// if an id is given is the request the validator ignore the email of the person with this id
+// ValidatePersonEmailHandler checks that the person email does not already exist.
+// If an id is given is the request, the validator ignore the email of the person with this id.
 func (env *Env) ValidatePersonEmailHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-
-	vars := mux.Vars(r)
 
 	var (
 		err       error
@@ -39,8 +36,10 @@ func (env *Env) ValidatePersonEmailHandler(w http.ResponseWriter, r *http.Reques
 		resp      string
 		person    models.Person
 		person_id int
-		dspp      models.DbselectparamPerson
+		dspp      *models.SelectFilterPerson
 	)
+
+	vars := mux.Vars(r)
 
 	// retrieving the logged user id from request context
 	c := models.ContainerFromRequestContext(r)
@@ -78,7 +77,7 @@ func (env *Env) ValidatePersonEmailHandler(w http.ResponseWriter, r *http.Reques
 	dspp.SetSearch(r.Form.Get("person_email"))
 
 	// getting the people matching the email
-	people, count, err := env.DB.GetPeople(dspp)
+	people, count, err := env.DB.GetPeople(*dspp)
 	if err != nil {
 
 		logger.Log.Error("GetPeople error")
@@ -130,7 +129,7 @@ func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request
 		resp      string
 		entity    models.Entity
 		entity_id int
-		dspe      models.DbselectparamEntity
+		dspe      *models.SelectFilterEntity
 	)
 
 	// retrieving the logged user id from request context
@@ -169,7 +168,7 @@ func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request
 	dspe.SetSearch(r.Form.Get("entity_name"))
 
 	// getting the entities matching the name
-	entities, count, err := env.DB.GetEntities(dspe)
+	entities, count, err := env.DB.GetEntities(*dspe)
 	if err != nil {
 
 		logger.Log.Error("GetEntities error")
@@ -297,7 +296,7 @@ func (env *Env) ValidateProductCasNumberHandler(w http.ResponseWriter, r *http.R
 		cas        models.CasNumber
 		nbProducts int
 		aerr       *models.AppError
-		dspp       models.DbselectparamProduct
+		dspp       *models.SelectFilterProduct
 		product_id int
 	)
 
@@ -362,7 +361,7 @@ func (env *Env) ValidateProductCasNumberHandler(w http.ResponseWriter, r *http.R
 			dspp.SetProductSpecificity(r.Form.Get("product_specificity"))
 
 			// getting the products matching the cas and specificity
-			if _, nbProducts, err = env.DB.GetProducts(dspp, false); err != nil {
+			if _, nbProducts, err = env.DB.GetProducts(*dspp, false); err != nil {
 
 				logger.Log.Error("GetProducts error")
 				resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "casnumber_validate_wrongcas", PluralCount: 1})

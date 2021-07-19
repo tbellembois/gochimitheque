@@ -27,7 +27,7 @@ func (db *SQLiteDataStore) IsProductBookmark(pr Product, pe Person) (bool, error
 	)
 
 	dialect := goqu.Dialect("sqlite3")
-	tableProduct := goqu.T("product")
+	tableProduct := goqu.T("bookmark")
 
 	sQuery := dialect.From(tableProduct).Select(
 		goqu.COUNT("*"),
@@ -136,7 +136,7 @@ func (db *SQLiteDataStore) DeleteProductBookmark(pr Product, pe Person) error {
 }
 
 // GetProducts return the products matching the search criteria
-func (db *SQLiteDataStore) GetProducts(p DbselectparamProduct, public bool) ([]Product, int, error) {
+func (db *SQLiteDataStore) GetProducts(p SelectFilterProduct, public bool) ([]Product, int, error) {
 	//defer TimeTrack(time.Now(), "GetProducts")
 
 	var (
@@ -1256,7 +1256,7 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p Product, update bool) (lastInse
 	insertCols["person"] = p.PersonID
 
 	if update {
-		iQuery := dialect.Update(tableProduct).Set(insertCols)
+		iQuery := dialect.Update(tableProduct).Set(insertCols).Where(goqu.I("product_id").Eq(p.ProductID))
 		if sqlr, args, err = iQuery.ToSQL(); err != nil {
 			return
 		}
@@ -1267,31 +1267,38 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p Product, update bool) (lastInse
 		}
 	}
 
-	//logger.Log.Debug(sqlr)
-	//logger.Log.Debug(args)
+	// logger.Log.Debug(sqlr)
+	// logger.Log.Debug(args)
 
 	if res, err = tx.Exec(sqlr, args...); err != nil {
 		return
 	}
 
-	// getting the last inserted id
-	if lastInsertId, err = res.LastInsertId(); err != nil {
-		return
+	if !update {
+		// getting the last inserted id
+		if lastInsertId, err = res.LastInsertId(); err != nil {
+			return
+		}
+		p.ProductID = int(lastInsertId)
 	}
-	p.ProductID = int(lastInsertId)
-	logger.Log.WithFields(logrus.Fields{"p": p}).Debug("CreateProduct")
+
+	logger.Log.WithFields(logrus.Fields{"p": p}).Debug("CreateUpdateProduct")
 
 	// adding supplierrefs
 	if update {
+
 		sqlr = `DELETE FROM productsupplierrefs WHERE productsupplierrefs.productsupplierrefs_product_id = (?)`
 		if _, err = tx.Exec(sqlr, p.ProductID); err != nil {
+			logger.Log.Error("error DELETE FROM productsupplierrefs")
 			return
 		}
+
 	}
 	for _, sr := range p.SupplierRefs {
 
 		sqlr = `INSERT INTO productsupplierrefs (productsupplierrefs_product_id, productsupplierrefs_supplierref_id) VALUES (?,?)`
 		if _, err = tx.Exec(sqlr, p.ProductID, sr.SupplierRefID); err != nil {
+			logger.Log.Error("error INSERT INTO productsupplierrefs")
 			return
 		}
 
@@ -1299,15 +1306,19 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p Product, update bool) (lastInse
 
 	// adding tags
 	if update {
+
 		sqlr = `DELETE FROM producttags WHERE producttags.producttags_product_id = (?)`
 		if _, err = tx.Exec(sqlr, p.ProductID); err != nil {
+			logger.Log.Error("error DELETE FROM producttags")
 			return
 		}
+
 	}
 	for _, tag := range p.Tags {
 
 		sqlr = `INSERT INTO producttags (producttags_product_id, producttags_tag_id) VALUES (?,?)`
 		if _, err = tx.Exec(sqlr, p.ProductID, tag.TagID); err != nil {
+			logger.Log.Error("error INSERT INTO producttags")
 			return
 		}
 
@@ -1315,15 +1326,19 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p Product, update bool) (lastInse
 
 	// adding symbols
 	if update {
+
 		sqlr = `DELETE FROM productsymbols WHERE productsymbols.productsymbols_product_id = (?)`
 		if _, err = tx.Exec(sqlr, p.ProductID); err != nil {
+			logger.Log.Error("error DELETE FROM productsymbols")
 			return
 		}
+
 	}
 	for _, sym := range p.Symbols {
 
 		sqlr = `INSERT INTO productsymbols (productsymbols_product_id, productsymbols_symbol_id) VALUES (?,?)`
 		if _, err = tx.Exec(sqlr, p.ProductID, sym.SymbolID); err != nil {
+			logger.Log.Error("error INSERT INTO productsymbols")
 			return
 		}
 
@@ -1331,15 +1346,19 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p Product, update bool) (lastInse
 
 	// adding classes of compounds
 	if update {
+
 		sqlr = `DELETE FROM productclassofcompound WHERE productclassofcompound.productclassofcompound_product_id = (?)`
 		if _, err = tx.Exec(sqlr, p.ProductID); err != nil {
+			logger.Log.Error("error DELETE FROM productclassofcompound")
 			return
 		}
+
 	}
 	for _, coc := range p.ClassOfCompound {
 
 		sqlr = `INSERT INTO productclassofcompound (productclassofcompound_product_id, productclassofcompound_classofcompound_id) VALUES (?,?)`
 		if _, err = tx.Exec(sqlr, p.ProductID, coc.ClassOfCompoundID); err != nil {
+			logger.Log.Error("error INSERT INTO productclassofcompound")
 			return
 		}
 
@@ -1347,15 +1366,19 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p Product, update bool) (lastInse
 
 	// adding hazard statements
 	if update {
+
 		sqlr = `DELETE FROM producthazardstatements WHERE producthazardstatements.producthazardstatements_product_id = (?)`
 		if _, err = tx.Exec(sqlr, p.ProductID); err != nil {
+			logger.Log.Error("error DELETE FROM producthazardstatements")
 			return
 		}
+
 	}
 	for _, hs := range p.HazardStatements {
 
 		sqlr = `INSERT INTO producthazardstatements (producthazardstatements_product_id, producthazardstatements_hazardstatement_id) VALUES (?,?)`
 		if _, err = tx.Exec(sqlr, p.ProductID, hs.HazardStatementID); err != nil {
+			logger.Log.Error("error INSERT INTO producthazardstatements")
 			return
 		}
 
@@ -1363,15 +1386,19 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p Product, update bool) (lastInse
 
 	// adding precautionary statements
 	if update {
+
 		sqlr = `DELETE FROM productprecautionarystatements WHERE productprecautionarystatements.productprecautionarystatements_product_id = (?)`
 		if _, err = tx.Exec(sqlr, p.ProductID); err != nil {
+			logger.Log.Error("error DELETE FROM productprecautionarystatements")
 			return
 		}
+
 	}
 	for _, ps := range p.PrecautionaryStatements {
 
 		sqlr = `INSERT INTO productprecautionarystatements (productprecautionarystatements_product_id, productprecautionarystatements_precautionarystatement_id) VALUES (?,?)`
 		if _, err = tx.Exec(sqlr, p.ProductID, ps.PrecautionaryStatementID); err != nil {
+			logger.Log.Error("error INSERT INTO productprecautionarystatements")
 			return
 		}
 
@@ -1379,15 +1406,19 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p Product, update bool) (lastInse
 
 	// adding synonyms
 	if update {
+
 		sqlr = `DELETE FROM productsynonyms WHERE productsynonyms.productsynonyms_product_id = (?)`
 		if _, err = tx.Exec(sqlr, p.ProductID); err != nil {
+			logger.Log.Error("error DELETE FROM productsynonyms")
 			return
 		}
+
 	}
 	for _, syn := range p.Synonyms {
 
 		sqlr = `INSERT INTO productsynonyms (productsynonyms_product_id, productsynonyms_name_id) VALUES (?,?)`
 		if _, err = tx.Exec(sqlr, p.ProductID, syn.NameID); err != nil {
+			logger.Log.Error("error INSERT INTO productsynonyms")
 			return
 		}
 

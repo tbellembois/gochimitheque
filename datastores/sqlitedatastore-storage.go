@@ -47,7 +47,7 @@ func (db *SQLiteDataStore) ToogleStorageBorrowing(s Storage) error {
 }
 
 // GetStoragesUnits return the units.
-func (db *SQLiteDataStore) GetStoragesUnits(p DbselectparamUnit) ([]Unit, int, error) {
+func (db *SQLiteDataStore) GetStoragesUnits(p SelectFilterUnit) ([]Unit, int, error) {
 
 	var (
 		units                              []Unit
@@ -109,7 +109,7 @@ func (db *SQLiteDataStore) GetStoragesUnits(p DbselectparamUnit) ([]Unit, int, e
 // GetStorages returns the storages matching the request parameters p.
 // Only storages that the logged user can see are returned given his permissions
 // and membership.
-func (db *SQLiteDataStore) GetStorages(p DbselectparamStorage) ([]Storage, int, error) {
+func (db *SQLiteDataStore) GetStorages(p SelectFilterStorage) ([]Storage, int, error) {
 
 	var (
 		storages                                  []Storage
@@ -473,7 +473,7 @@ func (db *SQLiteDataStore) GetStorages(p DbselectparamStorage) ([]Storage, int, 
 
 // GetOtherStorages returns the entity manager(s) email of the entities
 // storing the product with the id passed in the request parameters p.
-func (db *SQLiteDataStore) GetOtherStorages(p DbselectparamStorage) ([]Entity, int, error) {
+func (db *SQLiteDataStore) GetOtherStorages(p SelectFilterStorage) ([]Entity, int, error) {
 
 	var (
 		entities                           []Entity
@@ -966,9 +966,16 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s Storage, itemNumber int, update
 	insertCols["storage_modificationdate"] = s.StorageModificationDate
 	insertCols["storage_archive"] = false
 
-	iQuery := dialect.Insert(tableStorage).Rows(insertCols)
-	if sqlr, args, err = iQuery.ToSQL(); err != nil {
-		return
+	if update {
+		iQuery := dialect.Update(tableStorage).Set(insertCols).Where(goqu.I("storage_id").Eq(s.StorageID))
+		if sqlr, args, err = iQuery.ToSQL(); err != nil {
+			return
+		}
+	} else {
+		iQuery := dialect.Insert(tableStorage).Rows(insertCols)
+		if sqlr, args, err = iQuery.ToSQL(); err != nil {
+			return
+		}
 	}
 
 	// logger.Log.Debug(sqlr)
@@ -979,8 +986,10 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s Storage, itemNumber int, update
 	}
 
 	// getting the last inserted id
-	if lastInsertId, err = res.LastInsertId(); err != nil {
-		return
+	if !update {
+		if lastInsertId, err = res.LastInsertId(); err != nil {
+			return
+		}
 	}
 
 	//
@@ -988,27 +997,16 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s Storage, itemNumber int, update
 	//
 	qr := strconv.FormatInt(lastInsertId, 10)
 	if s.StorageQRCode, err = qrcode.Encode(qr, qrcode.Medium, 512); err != nil {
-		return 0, err
+		return
 	}
 
 	sqlr = `UPDATE storage SET storage_qrcode=? WHERE storage_id=?`
 	if _, err = tx.Exec(sqlr, s.StorageQRCode, lastInsertId); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return 0, errr
-		}
-		return 0, err
-	}
-
-	// committing changes
-	if err = tx.Commit(); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return 0, errr
-		}
-		return 0, err
+		return
 	}
 
 	s.StorageID = sql.NullInt64{Valid: true, Int64: lastInsertId}
-	logger.Log.WithFields(logrus.Fields{"s": s}).Debug("CreateStorage")
+	logger.Log.WithFields(logrus.Fields{"s": s}).Debug("CreateUpdateStorage")
 
 	return
 

@@ -11,7 +11,7 @@ import (
 )
 
 // GetPrecautionaryStatements return the precautionary statements matching the search criteria
-func (db *SQLiteDataStore) GetPrecautionaryStatements(p Dbselectparam) ([]PrecautionaryStatement, int, error) {
+func (db *SQLiteDataStore) GetPrecautionaryStatements(p SelectFilter) ([]PrecautionaryStatement, int, error) {
 
 	var (
 		err                              error
