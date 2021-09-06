@@ -337,27 +337,31 @@ func (env *Env) UpdateStorageHandler(w http.ResponseWriter, r *http.Request) *mo
 			Code:    http.StatusInternalServerError}
 	}
 
-	updateds.StorageModificationDate = time.Now()
-	updateds.StorageBarecode = s.StorageBarecode
-	updateds.StorageQuantity = s.StorageQuantity
-	updateds.Supplier = s.Supplier
-	updateds.UnitQuantity = s.UnitQuantity
-	updateds.StorageComment = s.StorageComment
-	updateds.StoreLocation = s.StoreLocation
-	updateds.PersonID = c.PersonID
-	updateds.StorageEntryDate = s.StorageEntryDate
-	updateds.StorageExitDate = s.StorageExitDate
-	updateds.StorageOpeningDate = s.StorageOpeningDate
-	updateds.StorageExpirationDate = s.StorageExpirationDate
-	updateds.StorageReference = s.StorageReference
-	updateds.StorageBatchNumber = s.StorageBatchNumber
-	updateds.StorageToDestroy = s.StorageToDestroy
-	updateds.StorageNumberOfBag = s.StorageNumberOfBag
-	updateds.StorageNumberOfCarton = s.StorageNumberOfCarton
-	updateds.StorageNumberOfUnit = s.StorageNumberOfUnit
+	s.StorageModificationDate = time.Now()
+	s.StorageID = updateds.StorageID
+	s.PersonID = c.PersonID
+
+	// updateds.StorageModificationDate = time.Now()
+	// updateds.StorageBarecode = s.StorageBarecode
+	// updateds.StorageQuantity = s.StorageQuantity
+	// updateds.Supplier = s.Supplier
+	// updateds.UnitQuantity = s.UnitQuantity
+	// updateds.StorageComment = s.StorageComment
+	// updateds.StoreLocation = s.StoreLocation
+	// updateds.PersonID = c.PersonID
+	// updateds.StorageEntryDate = s.StorageEntryDate
+	// updateds.StorageExitDate = s.StorageExitDate
+	// updateds.StorageOpeningDate = s.StorageOpeningDate
+	// updateds.StorageExpirationDate = s.StorageExpirationDate
+	// updateds.StorageReference = s.StorageReference
+	// updateds.StorageBatchNumber = s.StorageBatchNumber
+	// updateds.StorageToDestroy = s.StorageToDestroy
+	// updateds.StorageNumberOfBag = s.StorageNumberOfBag
+	// updateds.StorageNumberOfCarton = s.StorageNumberOfCarton
+	// updateds.StorageNumberOfUnit = s.StorageNumberOfUnit
 	logger.Log.WithFields(logrus.Fields{"updateds": updateds}).Debug("UpdateStorageHandler")
 
-	if _, err := env.DB.CreateUpdateStorage(updateds, 0, true); err != nil {
+	if _, err := env.DB.CreateUpdateStorage(s, 0, true); err != nil {
 		return &models.AppError{
 			Error:   err,
 			Message: "update storage error",
@@ -366,7 +370,7 @@ func (env *Env) UpdateStorageHandler(w http.ResponseWriter, r *http.Request) *mo
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	if err = json.NewEncoder(w).Encode([]models.Storage{updateds}); err != nil {
+	if err = json.NewEncoder(w).Encode([]models.Storage{s}); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
 			Message: err.Error(),

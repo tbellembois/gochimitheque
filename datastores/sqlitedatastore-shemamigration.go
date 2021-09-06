@@ -1,6 +1,6 @@
 package datastores
 
-var versionToMigration = []string{migrationOne, migrationTwo, migrationThree, migrationFour}
+var versionToMigration = []string{migrationOne, migrationTwo, migrationThree, migrationFour, migrationFive}
 
 var migrationOne = `BEGIN TRANSACTION;
 
@@ -447,6 +447,17 @@ DROP TABLE storage;
 ALTER TABLE new_storage RENAME TO storage; 
 
 PRAGMA user_version=4;
+COMMIT;
+PRAGMA foreign_keys=on;
+`
+var migrationFive = `PRAGMA foreign_keys=off;
+
+BEGIN TRANSACTION;
+
+INSERT INTO unit (unit_label, unit_multiplier, unit_type) 
+VALUES ("%", 1, "concentration"), ("X", 1, "concentration");
+
+PRAGMA user_version=5;
 COMMIT;
 PRAGMA foreign_keys=on;
 `
