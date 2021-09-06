@@ -80,7 +80,7 @@ func (db *SQLiteDataStore) GetSuppliers(p SelectFilter) ([]Supplier, int, error)
 		return nil, 0, err
 	}
 
-	if err = db.Select(&supplier, sqlr, args...); err != nil {
+	if err = db.Get(&supplier, sqlr, args...); err != nil && err != sql.ErrNoRows {
 		return nil, 0, err
 	}
 
@@ -271,8 +271,8 @@ func (db *SQLiteDataStore) GetSupplierRefs(p SelectFilterSupplierRef) ([]Supplie
 	if selectSql, selectArgs, err = joinClause.Select(
 		goqu.I("supplierref_id"),
 		goqu.I("supplierref_label"),
-		goqu.I("supplier_id").As("supplier.supplier_id"),
-		goqu.I("supplier_label").As("supplier.supplier_label"),
+		goqu.I("supplier_id").As(goqu.C("supplier.supplier_id")),
+		goqu.I("supplier_label").As(goqu.C("supplier.supplier_label")),
 	).Order(
 		goqu.L("INSTR(supplierref_label, \"?\")", exactSearch).Asc(),
 		goqu.C("supplierref_label").Asc(),

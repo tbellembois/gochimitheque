@@ -80,7 +80,7 @@ func (db *SQLiteDataStore) GetProducers(p SelectFilter) ([]Producer, int, error)
 		return nil, 0, err
 	}
 
-	if err = db.Select(&producer, sqlr, args...); err != nil {
+	if err = db.Get(&producer, sqlr, args...); err != nil && err != sql.ErrNoRows {
 		return nil, 0, err
 	}
 
@@ -271,8 +271,8 @@ func (db *SQLiteDataStore) GetProducerRefs(p SelectFilterProducerRef) ([]Produce
 	if selectSql, selectArgs, err = joinClause.Select(
 		goqu.I("producerref_id"),
 		goqu.I("producerref_label"),
-		goqu.I("producer_id").As("producer.producer_id"),
-		goqu.I("producer_label").As("producer.producer_label"),
+		goqu.I("producer_id").As(goqu.C("producer.producer_id")),
+		goqu.I("producer_label").As(goqu.C("producer.producer_label")),
 	).Order(
 		goqu.L("INSTR(producerref_label, \"?\")", exactSearch).Asc(),
 		goqu.C("producerref_label").Asc(),
