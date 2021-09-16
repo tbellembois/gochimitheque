@@ -419,13 +419,37 @@ func (db *SQLiteDataStore) CreateEntity(e Entity) (lastInsertId int64, err error
 			return
 		}
 
-		args = []interface{}{m.PersonID, "w", "products", e.EntityID}
-		if _, err = tx.Exec(sqlr, args...); err != nil {
+		if sqlr, args, err = dialect.From(goqu.T("permission")).Insert().Rows(
+			goqu.Record{
+				"person":               m.PersonID,
+				"permission_perm_name": "w",
+				"permission_item_name": "products",
+				"permission_entity_id": e.EntityID,
+			},
+		).OnConflict(goqu.DoNothing()).ToSQL(); err != nil {
+			logger.Log.Errorf("error preparing inserting manager new permissions w products -1: %v", err)
 			return
 		}
 
-		args = []interface{}{m.PersonID, "w", "rproducts", e.EntityID}
 		if _, err = tx.Exec(sqlr, args...); err != nil {
+			logger.Log.Errorf("error inserting manager new permissions w products -1: %v", err)
+			return
+		}
+
+		if sqlr, args, err = dialect.From(goqu.T("permission")).Insert().Rows(
+			goqu.Record{
+				"person":               m.PersonID,
+				"permission_perm_name": "w",
+				"permission_item_name": "rproducts",
+				"permission_entity_id": e.EntityID,
+			},
+		).OnConflict(goqu.DoNothing()).ToSQL(); err != nil {
+			logger.Log.Errorf("error preparing inserting manager new permissions w rproducts -1: %v", err)
+			return
+		}
+
+		if _, err = tx.Exec(sqlr, args...); err != nil {
+			logger.Log.Errorf("error inserting manager new permissions w products -1: %v", err)
 			return
 		}
 
@@ -446,7 +470,7 @@ func (db *SQLiteDataStore) UpdateEntity(e Entity) (err error) {
 	tableEntity := goqu.T("entity")
 
 	if tx, err = db.Begin(); err != nil {
-		return err
+		return
 	}
 
 	defer func() {
@@ -475,11 +499,12 @@ func (db *SQLiteDataStore) UpdateEntity(e Entity) (err error) {
 	).Where(
 		goqu.I("entity_id").Eq(e.EntityID),
 	).ToSQL(); err != nil {
-		logger.Log.Error(err)
+		logger.Log.Errorf("error preparing updating entity: %v", err)
 		return
 	}
 
 	if _, err = tx.Exec(sqlr, args...); err != nil {
+		logger.Log.Errorf("error updating entity: %v", err)
 		return
 	}
 
@@ -505,12 +530,13 @@ func (db *SQLiteDataStore) UpdateEntity(e Entity) (err error) {
 	).Delete()
 
 	if sqlr, args, err = dQuery.ToSQL(); err != nil {
-		logger.Log.Error(err)
-		return err
+		logger.Log.Errorf("error preparing removing former managers: %v", err)
+		return
 	}
 
 	if _, err = tx.Exec(sqlr, args...); err != nil {
-		return err
+		logger.Log.Errorf("error removing former managers: %v", err)
+		return
 	}
 
 	// Adding the new managers.
@@ -523,10 +549,12 @@ func (db *SQLiteDataStore) UpdateEntity(e Entity) (err error) {
 				"entitypeople_person_id": manager.PersonID,
 			},
 		).OnConflict(goqu.DoNothing()).ToSQL(); err != nil {
+			logger.Log.Errorf("error preparing inserting new managers: %v", err)
 			return
 		}
 
 		if _, err = tx.Exec(sqlr, args...); err != nil {
+			logger.Log.Errorf("error inserting new managers: %v", err)
 			return
 		}
 
@@ -537,10 +565,12 @@ func (db *SQLiteDataStore) UpdateEntity(e Entity) (err error) {
 				"personentities_entity_id": e.EntityID,
 			},
 		).OnConflict(goqu.DoNothing()).ToSQL(); err != nil {
+			logger.Log.Errorf("error preparing putting manager in its entity: %v", err)
 			return
 		}
 
 		if _, err = tx.Exec(sqlr, args...); err != nil {
+			logger.Log.Errorf("error putting manager in its entity: %v", err)
 			return
 		}
 
@@ -552,16 +582,18 @@ func (db *SQLiteDataStore) UpdateEntity(e Entity) (err error) {
 				"permission_entity_id": e.EntityID,
 			},
 		).ToSQL(); err != nil {
+			logger.Log.Errorf("error preparing deleting manager permissions: %v", err)
 			return
 		}
 
 		if _, err = tx.Exec(sqlr, args...); err != nil {
+			logger.Log.Errorf("error deleting manager permissions: %v", err)
 			return
 		}
 
 		// 2. inserting manager permissions
 		// added OR IGNORE bacause w/(r)products/-1 can already exists for man.PersonID
-		if sqlr, args, err = dialect.From(goqu.T("permission")).Prepared(true).Insert().Rows(
+		if sqlr, args, err = dialect.From(goqu.T("permission")).Insert().Rows(
 			goqu.Record{
 				"person":               manager.PersonID,
 				"permission_perm_name": "all",
@@ -569,20 +601,46 @@ func (db *SQLiteDataStore) UpdateEntity(e Entity) (err error) {
 				"permission_entity_id": e.EntityID,
 			},
 		).OnConflict(goqu.DoNothing()).ToSQL(); err != nil {
+			logger.Log.Errorf("error preparing inserting manager new permissions: %v", err)
 			return
 		}
 
 		if _, err = tx.Exec(sqlr, args...); err != nil {
+			logger.Log.Errorf("error inserting manager new permissions: %v", err)
 			return
 		}
 
-		args = []interface{}{manager.PersonID, "w", "products", "-1"}
-		if _, err = tx.Exec(sqlr, args...); err != nil {
+		if sqlr, args, err = dialect.From(goqu.T("permission")).Insert().Rows(
+			goqu.Record{
+				"person":               manager.PersonID,
+				"permission_perm_name": "w",
+				"permission_item_name": "products",
+				"permission_entity_id": "-1",
+			},
+		).OnConflict(goqu.DoNothing()).ToSQL(); err != nil {
+			logger.Log.Errorf("error preparing inserting manager new permissions w products -1: %v", err)
 			return
 		}
 
-		args = []interface{}{manager.PersonID, "w", "rproducts", "-1"}
 		if _, err = tx.Exec(sqlr, args...); err != nil {
+			logger.Log.Errorf("error inserting manager new permissions w products -1: %v", err)
+			return
+		}
+
+		if sqlr, args, err = dialect.From(goqu.T("permission")).Insert().Rows(
+			goqu.Record{
+				"person":               manager.PersonID,
+				"permission_perm_name": "w",
+				"permission_item_name": "rproducts",
+				"permission_entity_id": "-1",
+			},
+		).OnConflict(goqu.DoNothing()).ToSQL(); err != nil {
+			logger.Log.Errorf("error preparing inserting manager new permissions w rproducts -1: %v", err)
+			return
+		}
+
+		if _, err = tx.Exec(sqlr, args...); err != nil {
+			logger.Log.Errorf("error inserting manager new permissions w products -1: %v", err)
 			return
 		}
 
