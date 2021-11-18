@@ -76,7 +76,7 @@ then
 fi
 if [ ! -z "$CHIMITHEQUE_IMPORTV1FROM" ]
 then
-      importv1from="-importv1from"
+      importv1from="-importv1from $CHIMITHEQUE_IMPORTV1FROM"
 fi
 if [ ! -z "$CHIMITHEQUE_IMPORTFROM" ]
 then
