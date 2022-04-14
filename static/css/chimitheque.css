@@ -1,29 +1,35 @@
-@font-face {
-    font-family: 'ibm';
-    src: url('../fonts/IBMPlexSans-Regular.woff2') format('woff2'),
-         url('../fonts/IBMPlexSans-Regular.woff') format('woff');
+/* @font-face {
+    font-family: 'iosevka';
+    src: url('../fonts/iosevka-regular.woff2') format('woff2'),
+         url('../fonts/iosevka-regular.ttf ') format('truetype');
     font-weight: normal;
     font-style: normal;
-}
+} */
 @font-face {
-    font-family: 'opensans';
-    src: url('../fonts/OpenSans-Regular.ttf') format('truetype');
+    font-family: 'b612';
+    src: url('../fonts/B612-Regular.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
 }
 body {
-    font-family: opensans;
+    font-family: b612;
 }
-.bootstrap-table .fixed-table-container .fixed-table-body, .bootstrap-table .fixed-table-container {
+/* .bootstrap-table .fixed-table-container .fixed-table-body, .bootstrap-table .fixed-table-container {
     border: none;
     overflow-y: hidden;
 	height: auto !important;
-}
+} */
 .iconlabel {
-    font-family: ibm;
-    font-size: 14px;
+    font-family: b612;
+    font-size: 12px;
 }
 .verticaltext {
     writing-mode: vertical-rl;
     text-orientation: sideways;
+}
+.th-product-twodformula {
+    padding: 0px;
+}
+.th-product-twodformula > img:hover {
+    transform: scale(3);
 }

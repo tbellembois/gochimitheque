@@ -56,7 +56,7 @@ var LOCALES_FR = []byte(`
 
 [required_input]
 	one = "champs requis"
-[error_occured]
+[error_occurred]
 	one = "une erreur est survenue"
 [no_result]
 	one = "pas de résultat"
@@ -117,12 +117,16 @@ var LOCALES_FR = []byte(`
 [bt_noMatches]
 	one = "pas de résultat"
 
+[qrcode_login]
+	one = "connexion par QRCode"
 [email_placeholder]
 	one = "entrez votre email"
 [submitlogin_text]
 	one = "entrer"
 [password_placeholder]
 	one = "entrez votre mot de passe"
+[resetpassword_alert_ldap]
+	one = "vous utilisez un compte institutionnel qui ne peut être changé dans Chimithèque"
 [resetpassword_text]
 	one = "réinitialiser mon mot de passe"
 [resetpassword2_text]
@@ -225,15 +229,21 @@ var LOCALES_FR = []byte(`
 [menu_people]
 	one = "utilisateurs"
 [menu_welcomeannounce]
-	one = "changer le message de page d'accueil"
+	one = "message de page d'accueil"
 [menu_password]
 	one = "changer mon mot de passe"
+[menu_qrcode]
+	one = "gérer mon accès par QRCode"
 [menu_logout]
 	one = "déconnexion"
 [menu_about]
 	one = "à propos"
 [menu_account]
 	one = "mon compte"
+[menu_management]
+	one = "gestion"
+[menu_settings]
+	one = "paramètres"
 
 [clearsearch_text]
 	one = "supprimer tous les filtres"
@@ -336,7 +346,7 @@ var LOCALES_FR = []byte(`
 [storage_create_barecode_comment]
 	one = "si vous laissez ce champs vide, un code barre sera autogénéré"
 [storage_batchnumber_title]
-	one = "numéro de lot"
+	one = "lot"
 [storage_entrydate_title]
 	one = "date d'entrée"
 [storage_exitdate_title]
@@ -536,7 +546,7 @@ var LOCALES_FR = []byte(`
 [person_email_table_header]
 	one = "mail"
 [person_can_not_remove_entity_manager]
-	one = "cette entité ne peut pas être supprimée, l'utilisateur est un de ses managers"
+	one = "cette entité ne peut pas être supprimée, l'utilisateur est un de ses gestionnaires"
 [person_created_message]
 	one = "personne crée"
 [person_updated_message]
@@ -552,8 +562,10 @@ var LOCALES_FR = []byte(`
 [person_select_all_rw_storage]
 	one = "sélectionner tous les 'voir, modifier, créer et supprimer'"
 [person_show_password]
-  one = "afficher le champs mot de passe"
-  
+  	one = "afficher le champs mot de passe"
+[person_qrcode_regenerate]
+	one = "générer un nouveau QRcode"
+
 [permission_product]
 	one = "produits"
 [permission_rproduct]
@@ -617,10 +629,14 @@ var LOCALES_FR = []byte(`
 [entity_description_table_header]
 	one = "description"
 [entity_manager_table_header]
-	one = "responsable(s)"
+	one = "gestionnaires(s)"
 [entity_manager_placeholder]
-	one = "sélectionnez un ou plusieurs manager(s)"
-	
+	one = "sélectionnez un ou plusieurs gestionnaires"
+[entity_ldap_group]
+	one = "groupe(s) LDAP pour enrollement automatique"
+[entity_ldap_group_placeholder]
+	one = "sélectionnez un ou plusieurs groupes LDAP"
+
 [entity_nameexist_validate]
 	one = "une entité avec ce nom existe déjà"
 [person_emailexist_validate]

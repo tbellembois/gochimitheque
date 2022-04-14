@@ -27,6 +27,7 @@ block CONTENT
                         // th(data-field='product_id' data-sortable='true') ID
                         th.th-product-name(data-field='name.name_label' data-sortable='true' data-formatter='Product_nameFormatter')
                             = T("product_name_table_header", 1)
+                        th.th-product-twodformula(data-field='product_twodformula' data-sortable='false' data-formatter='Product_twodformulaFormatter')
                         th(data-field='empiricalformula.empiricalformula_label' data-sortable='true' data-formatter='Product_empiricalformulaFormatter')
                             = T("product_empiricalformula_table_header", 1)
                         th(data-field='casnumber.casnumber_label' data-sortable='true' data-formatter='Product_casnumberFormatter')

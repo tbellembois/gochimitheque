@@ -1,0 +1,30 @@
+
+include ../mixins
+block CONTENT
+    :go:func
+        Personqrcode(c ViewContainer)
+
+    .row.d-flex.flex-row.justify-content-center
+        div#qrcode.p-2
+    .row.d-flex.flex-row.justify-content-center
+        div
+            button.btn.btn-link(type='button', onclick='printPersonQRCode()')
+                span.mdi.mdi-printer.mdi-24px.iconlabel
+                    = T("storage_print_qrcode", 1)
+    .row.d-flex.flex-row.justify-content-center
+        div
+            button.btn.btn-link(type='button', onclick='Person_generateQRCode()')
+                span.mdi.mdi-reload.mdi-24px.iconlabel
+                    = T("person_qrcode_regenerate", 1)                 
+
+    script.
+        function printPersonQRCode() {
+            printJS({
+                printable: 'qrcode',
+                type: 'html',
+                documentTitle: ' ',
+                scanStyles: false,
+            })
+        }
+
+block CONTENTJS

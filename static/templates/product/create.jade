@@ -11,7 +11,7 @@ block CONTENT
             button#save.btn.btn-primary.float-right(type='button', onclick='Product_saveProduct()')
                 span.mdi.mdi-content-save.mdi-24px.iconlabel
                     = T("save", 1)
-            button.btn.btn-secondary.float-left(type='button', onclick="Menu_loadContent('product', '" + c.ProxyPath + "v/products', 'Product_list')")
+            button.btn.btn-secondary.float-left(type='button', onclick="Menu_loadContent('product', '" + c.AppURL + c.AppPath + "v/products', 'Product_list')")
                 span.mdi.mdi-close-box.mdi-24px.iconlabel
                     = T("close", 1)
 
@@ -117,14 +117,6 @@ block CONTENT
                     .form-group.col-sm-6
                         +inputselect(name="linearformula", label="linearformula_label_title")
 
-
-
-                //- .form-row.chem.collapse.float-right
-                //-         span#convertedEmpiricalFormula
-                //-         button.btn.btn-primary(type="button" onclick="Product_linearToEmpirical()")
-                //-             span.mr-sm-2.mdi.mdi-restart
-                //-             = T("empirical_formula_convert", 1 )
-
                 .form-row.chem.collapse
                     .form-group.col-sm-12
                         button.btn.btn-link(type="button" onclick="Product_noCas()")
@@ -137,7 +129,6 @@ block CONTENT
                     .form-group.col-sm-4
                         +inputselect(name="cenumber", label="cenumber_label_title")
 
-
                 .form-row.chem.collapse
                     .form-group.col-sm-6
                         +inputtext(name="product_threedformula", label="product_threedformula_title")
@@ -145,22 +136,11 @@ block CONTENT
                         +inputfile("product_twodformula_title", "product_twodformula", ".png,.jpg,.jpeg")
                         +inputhidden("product_twodformula_content", "")
 
-                //- .form-row.chem.collapse
-                //-     .form-group.col-sm-12
-                //-         +inputtext(name="product_specificity", label="product_specificity_title")
-
                 .form-row
                     .form-group.col-sm-6
                         +inputtext(name="product_msds", label="product_msds_title")
                     .form-group.col-sm-6
                         +inputtext(name="product_sheet", label="product_sheet_title")
-
-                //- .form-row
-                //-     .form-group.col-sm-6
-                //-         +inputtext(name="product_threedformula", label="product_threedformula_title")
-                //-     .form-group.col-sm-6
-                        //- +inputfile("product_threedformula_mol_title", "product_molformula")
-                        //- +inputhidden("product_molformula_content", "")
 
                 .form-row.chem.bio
                     .form-group.col-sm-6
@@ -209,7 +189,7 @@ block CONTENT
             button#save.btn.btn-primary.float-right(type='button', onclick='Product_saveProduct()')
                 span.mdi.mdi-content-save.mdi-24px.iconlabel
                     = T("save", 1)
-            button.btn.btn-secondary.float-left(type='button', onclick="Menu_loadContent('product', '" + c.ProxyPath + "v/products', 'Product_list')")
+            button.btn.btn-secondary.float-left(type='button', onclick="Menu_loadContent('product', '" + c.AppURL + c.AppPath + "v/products', 'Product_list')")
                 span.mdi.mdi-close-box.mdi-24px.iconlabel
                     = T("close", 1)
 

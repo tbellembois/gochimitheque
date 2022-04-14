@@ -1,7 +1,7 @@
 package data
 
 // TAG is the list of chemical products tags
-// They are inserted into the database during its creation
+// They are inserted into the database during its creation.
 const TAG = `
 3D Cell Culture
 Acid
@@ -60,7 +60,7 @@ Western Blot
 `
 
 // CATEGORY is the list of chemical products categories
-// They are inserted into the database during its creation
+// They are inserted into the database during its creation.
 const CATEGORY = `
 Antibody
 Cell Culture Medium & supplement
@@ -75,7 +75,7 @@ Maintenance, Calibration Reagent
 `
 
 // SUPPLIER is the list of chemical products suppliers
-// They are inserted into the database during its creation
+// They are inserted into the database during its creation.
 const SUPPLIER = `
 Abcam
 Acros Organics
@@ -125,7 +125,7 @@ VWR
 `
 
 // PRODUCER is the list of chemical products producers
-// They are inserted into the database during its creation
+// They are inserted into the database during its creation.
 const PRODUCER = `
 Abcam
 Acros Organics
@@ -168,7 +168,7 @@ Trevigen
 `
 
 // PRECAUTIONARYSTATEMENT is the list of chemical products precautionary statements
-// They are inserted into the database during its creation
+// They are inserted into the database during its creation.
 const PRECAUTIONARYSTATEMENT = `
 .Absorb spillage to prevent material damage.	P390
 .Avoid breathing dust/fume/gas/mist/vapours/spray.	P261
@@ -310,7 +310,7 @@ const PRECAUTIONARYSTATEMENT = `
 `
 
 // HAZARDSTATEMENT is the list of chemical products hazard statements
-// They are inserted into the database during its creation
+// They are inserted into the database during its creation.
 const HAZARDSTATEMENT = `
 .Can become flammable in use.	EUH209A	
 .Can become highly flammable in use or can become flammable in use.	EUH209	
@@ -413,7 +413,7 @@ const HAZARDSTATEMENT = `
 `
 
 // CMR_CAS is a list of product CAS numbers that are CMRs
-// They are inserted into the database during its creation
+// They are inserted into the database during its creation.
 const CMR_CAS = `
 100-00-5,C2 M2
 100-40-3,C2
@@ -1891,7 +1891,7 @@ const CMR_CAS = `
 `
 
 // CMR_H is a list of H phrases that are CMRs
-// They are NOT inserted into the database
+// They are NOT inserted into the database.
 var CMR_H = map[string]string{
 	"H340":   "M1",
 	"H341":   "M2",

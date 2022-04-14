@@ -1,11 +1,16 @@
 
 include ../mixins
 block CONTENT
-    img(src=c.ProxyPath + "static/img/logo_chimitheque_small.png", alt="chimitheque_logo", title="Chimithèque")
+    img(src=c.AppURL + c.AppPath + "static/img/logo_chimitheque_small.png", alt="chimitheque_logo", title="Chimithèque")
     :go:func
         Login(c ViewContainer)
     header
         form#authform
+            .row 
+                .col.offset-sm-5.col-sm-auto
+                    a(onclick="scanPersonQR();").nav-link
+                        span.mdi.mdi-qrcode.mdi-36px.iconlabel
+                            = T("qrcode_login", 1) 
             .row
                 div.col.col-sm-4.offset-sm-4
                     div.form-group
@@ -47,7 +52,7 @@ block CONTENT
         #wannounce.col.col-sm-4.offset-sm-4
 
     a(href="https://github.com/tbellembois/gochimitheque")
-        img(style="position: absolute; top: 0; right: 0; border: 0;" src=c.ProxyPath + "static/img/forkme_right_darkblue_121621.png" alt="Fork me on GitHub")
+        img(style="position: absolute; top: 0; right: 0; border: 0;" src=c.AppURL + c.AppPath + "static/img/forkme_right_darkblue_121621.png" alt="Fork me on GitHub")
 
     .fixed-bottom.row
         .col.col-sm-12.d-flex.justify-content-center

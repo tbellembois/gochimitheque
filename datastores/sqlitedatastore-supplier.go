@@ -7,24 +7,22 @@ import (
 	"github.com/doug-martin/goqu/v9"
 	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/logger"
-
-	. "github.com/tbellembois/gochimitheque/models"
+	"github.com/tbellembois/gochimitheque/models"
+	"github.com/tbellembois/gochimitheque/request"
 )
 
-// GetSuppliers return the suppliers matching the search criteria
-func (db *SQLiteDataStore) GetSuppliers(p SelectFilter) ([]Supplier, int, error) {
-
+func (db *SQLiteDataStore) GetSuppliers(f request.Filter) ([]models.Supplier, int, error) {
 	var (
 		err                              error
-		suppliers                        []Supplier
+		suppliers                        []models.Supplier
 		count                            int
-		exactSearch, countSql, selectSql string
+		exactSearch, countSQL, selectSQL string
 		countArgs, selectArgs            []interface{}
 	)
 
-	logger.Log.WithFields(logrus.Fields{"p": p}).Debug("GetSuppliers")
+	logger.Log.WithFields(logrus.Fields{"f": f}).Debug("GetSuppliers")
 
-	exactSearch = p.GetSearch()
+	exactSearch = f.Search
 	exactSearch = strings.TrimPrefix(exactSearch, "%")
 	exactSearch = strings.TrimSuffix(exactSearch, "%")
 
@@ -35,34 +33,34 @@ func (db *SQLiteDataStore) GetSuppliers(p SelectFilter) ([]Supplier, int, error)
 	joinClause := dialect.From(
 		supplierTable,
 	).Where(
-		goqu.I("supplier_label").Like(p.GetSearch()),
+		goqu.I("supplier_label").Like(f.Search),
 	)
 
-	if countSql, countArgs, err = joinClause.Select(
+	if countSQL, countArgs, err = joinClause.Select(
 		goqu.COUNT(goqu.I("supplier_id").Distinct()),
 	).ToSQL(); err != nil {
 		return nil, 0, err
 	}
-	if selectSql, selectArgs, err = joinClause.Select(
+	if selectSQL, selectArgs, err = joinClause.Select(
 		goqu.I("supplier_id"),
 		goqu.I("supplier_label"),
 	).Order(
-		goqu.L("INSTR(supplier_label, \"?\")", exactSearch).Asc(),
+		goqu.L("INSTR(supplier_label, ?)", exactSearch).Asc(),
 		goqu.C("supplier_label").Asc(),
-	).Limit(uint(p.GetLimit())).Offset(uint(p.GetOffset())).ToSQL(); err != nil {
+	).Limit(uint(f.Limit)).Offset(uint(f.Offset)).ToSQL(); err != nil {
 		return nil, 0, err
 	}
 
-	// select
-	if err = db.Select(&suppliers, selectSql, selectArgs...); err != nil {
+	// Select.
+	if err = db.Select(&suppliers, selectSQL, selectArgs...); err != nil {
 		return nil, 0, err
 	}
-	// count
-	if err = db.Get(&count, countSql, countArgs...); err != nil {
+	// Count.
+	if err = db.Get(&count, countSQL, countArgs...); err != nil {
 		return nil, 0, err
 	}
 
-	// setting the C attribute for formula matching exactly the search
+	// Setting the C attribute for formula matching exactly the search.
 	sQuery := dialect.From(supplierTable).Where(
 		goqu.I("supplier_label").Eq(exactSearch),
 	).Select(
@@ -73,7 +71,7 @@ func (db *SQLiteDataStore) GetSuppliers(p SelectFilter) ([]Supplier, int, error)
 	var (
 		sqlr     string
 		args     []interface{}
-		supplier Supplier
+		supplier models.Supplier
 	)
 	if sqlr, args, err = sQuery.ToSQL(); err != nil {
 		logger.Log.Error(err)
@@ -93,18 +91,16 @@ func (db *SQLiteDataStore) GetSuppliers(p SelectFilter) ([]Supplier, int, error)
 	logger.Log.WithFields(logrus.Fields{"suppliers": suppliers}).Debug("GetSuppliers")
 
 	return suppliers, count, nil
-
 }
 
-// GetSupplier return the formula matching the given id
-func (db *SQLiteDataStore) GetSupplier(id int) (Supplier, error) {
-
+func (db *SQLiteDataStore) GetSupplier(id int) (models.Supplier, error) {
 	var (
 		err      error
 		sqlr     string
 		args     []interface{}
-		supplier Supplier
+		supplier models.Supplier
 	)
+
 	logger.Log.WithFields(logrus.Fields{"id": id}).Debug("GetSupplier")
 
 	dialect := goqu.Dialect("sqlite3")
@@ -119,28 +115,26 @@ func (db *SQLiteDataStore) GetSupplier(id int) (Supplier, error) {
 
 	if sqlr, args, err = sQuery.ToSQL(); err != nil {
 		logger.Log.Error(err)
-		return Supplier{}, err
+		return models.Supplier{}, err
 	}
 
 	if err = db.Get(&supplier, sqlr, args...); err != nil {
-		return Supplier{}, err
+		return models.Supplier{}, err
 	}
 
 	logger.Log.WithFields(logrus.Fields{"ID": id, "supplier": supplier}).Debug("GetSupplier")
 
 	return supplier, nil
-
 }
 
-// GetSupplierByLabel return the supplier matching the given supplier
-func (db *SQLiteDataStore) GetSupplierByLabel(label string) (Supplier, error) {
-
+func (db *SQLiteDataStore) GetSupplierByLabel(label string) (models.Supplier, error) {
 	var (
 		err      error
 		sqlr     string
 		args     []interface{}
-		supplier Supplier
+		supplier models.Supplier
 	)
+
 	logger.Log.WithFields(logrus.Fields{"label": label}).Debug("GetSupplierByLabel")
 
 	dialect := goqu.Dialect("sqlite3")
@@ -155,22 +149,19 @@ func (db *SQLiteDataStore) GetSupplierByLabel(label string) (Supplier, error) {
 
 	if sqlr, args, err = sQuery.ToSQL(); err != nil {
 		logger.Log.Error(err)
-		return Supplier{}, err
+		return models.Supplier{}, err
 	}
 
 	if err = db.Get(&supplier, sqlr, args...); err != nil {
-		return Supplier{}, err
+		return models.Supplier{}, err
 	}
 
 	logger.Log.WithFields(logrus.Fields{"label": label, "supplier": supplier}).Debug("GetSupplierByLabel")
 
 	return supplier, nil
-
 }
 
-// CreateSupplier create a new supplier in the db
-func (db *SQLiteDataStore) CreateSupplier(s Supplier) (lastInsertId int64, err error) {
-
+func (db *SQLiteDataStore) CreateSupplier(s models.Supplier) (lastInsertID int64, err error) {
 	var (
 		sqlr string
 		args []interface{}
@@ -190,13 +181,17 @@ func (db *SQLiteDataStore) CreateSupplier(s Supplier) (lastInsertId int64, err e
 	defer func() {
 		if err != nil {
 			logger.Log.Error(err)
+
 			if rbErr := tx.Rollback(); rbErr != nil {
 				logger.Log.Error(rbErr)
 				err = rbErr
+
 				return
 			}
+
 			return
 		}
+
 		err = tx.Commit()
 	}()
 
@@ -214,28 +209,29 @@ func (db *SQLiteDataStore) CreateSupplier(s Supplier) (lastInsertId int64, err e
 		return
 	}
 
-	if lastInsertId, err = res.LastInsertId(); err != nil {
+	if lastInsertID, err = res.LastInsertId(); err != nil {
 		return
 	}
 
 	return
-
 }
 
-// GetSupplierRefs return the supplierrefs matching the search criteria
-func (db *SQLiteDataStore) GetSupplierRefs(p SelectFilterSupplierRef) ([]SupplierRef, int, error) {
-
+func (db *SQLiteDataStore) GetSupplierRefs(f request.Filter) ([]models.SupplierRef, int, error) {
 	var (
 		err                              error
-		supplierRefs                     []SupplierRef
+		supplierRefs                     []models.SupplierRef
 		count                            int
-		exactSearch, countSql, selectSql string
+		exactSearch, countSQL, selectSQL string
 		countArgs, selectArgs            []interface{}
 	)
 
-	logger.Log.WithFields(logrus.Fields{"p": p}).Debug("GetSupplierRefs")
+	logger.Log.WithFields(logrus.Fields{"f": f}).Debug("GetSupplierRefs")
 
-	exactSearch = p.GetSearch()
+	if f.OrderBy == "" {
+		f.OrderBy = "supplierref_id"
+	}
+
+	exactSearch = f.Search
 	exactSearch = strings.TrimPrefix(exactSearch, "%")
 	exactSearch = strings.TrimSuffix(exactSearch, "%")
 
@@ -244,10 +240,10 @@ func (db *SQLiteDataStore) GetSupplierRefs(p SelectFilterSupplierRef) ([]Supplie
 
 	// Join, where.
 	whereAnd := []goqu.Expression{
-		goqu.I("supplierref.supplierref_label").Like(p.GetSearch()),
+		goqu.I("supplierref.supplierref_label").Like(f.Search),
 	}
-	if p.GetSupplier() != -1 {
-		whereAnd = append(whereAnd, goqu.I("supplierref.supplier").Eq(p.GetSupplier()))
+	if f.Supplier != -1 {
+		whereAnd = append(whereAnd, goqu.I("supplierref.supplier").Eq(f.Supplier))
 	}
 
 	joinClause := dialect.From(
@@ -263,33 +259,33 @@ func (db *SQLiteDataStore) GetSupplierRefs(p SelectFilterSupplierRef) ([]Supplie
 		whereAnd...,
 	)
 
-	if countSql, countArgs, err = joinClause.Select(
+	if countSQL, countArgs, err = joinClause.Select(
 		goqu.COUNT(goqu.I("supplierref.supplierref_id").Distinct()),
 	).ToSQL(); err != nil {
 		return nil, 0, err
 	}
-	if selectSql, selectArgs, err = joinClause.Select(
+	if selectSQL, selectArgs, err = joinClause.Select(
 		goqu.I("supplierref_id"),
 		goqu.I("supplierref_label"),
 		goqu.I("supplier_id").As(goqu.C("supplier.supplier_id")),
 		goqu.I("supplier_label").As(goqu.C("supplier.supplier_label")),
 	).Order(
-		goqu.L("INSTR(supplierref_label, \"?\")", exactSearch).Asc(),
+		goqu.L("INSTR(supplierref_label, ?)", exactSearch).Asc(),
 		goqu.C("supplierref_label").Asc(),
-	).Limit(uint(p.GetLimit())).Offset(uint(p.GetOffset())).ToSQL(); err != nil {
+	).Limit(uint(f.Limit)).Offset(uint(f.Offset)).ToSQL(); err != nil {
 		return nil, 0, err
 	}
 
-	// select
-	if err = db.Select(&supplierRefs, selectSql, selectArgs...); err != nil {
+	// Select.
+	if err = db.Select(&supplierRefs, selectSQL, selectArgs...); err != nil {
 		return nil, 0, err
 	}
-	// count
-	if err = db.Get(&count, countSql, countArgs...); err != nil {
+	// Count.
+	if err = db.Get(&count, countSQL, countArgs...); err != nil {
 		return nil, 0, err
 	}
 
-	// setting the C attribute for formula matching exactly the search
+	// Setting the C attribute for formula matching exactly the search.
 	sQuery := dialect.From(supplierrefTable).Where(
 		goqu.I("supplierref_label").Eq(exactSearch),
 	).Select(
@@ -300,7 +296,7 @@ func (db *SQLiteDataStore) GetSupplierRefs(p SelectFilterSupplierRef) ([]Supplie
 	var (
 		sqlr string
 		args []interface{}
-		pref SupplierRef
+		pref models.SupplierRef
 	)
 	if sqlr, args, err = sQuery.ToSQL(); err != nil {
 		logger.Log.Error(err)
@@ -320,5 +316,4 @@ func (db *SQLiteDataStore) GetSupplierRefs(p SelectFilterSupplierRef) ([]Supplie
 	logger.Log.WithFields(logrus.Fields{"supplierRefs": supplierRefs}).Debug("GetSupplierRefs")
 
 	return supplierRefs, count, nil
-
 }

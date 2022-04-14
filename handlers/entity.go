@@ -7,8 +7,10 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
+	"github.com/tbellembois/gochimitheque/casbin"
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
+	"github.com/tbellembois/gochimitheque/request"
 	"github.com/tbellembois/gochimitheque/static/jade"
 )
 
@@ -16,20 +18,18 @@ import (
 	views handlers
 */
 
-// VGetEntitiesHandler handles the entity list page
+// VGetEntitiesHandler handles the entity list page.
 func (env *Env) VGetEntitiesHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-
-	c := models.ContainerFromRequestContext(r)
+	c := request.ContainerFromRequestContext(r)
 
 	jade.Entityindex(c, w)
 
 	return nil
 }
 
-// VCreateEntityHandler handles the entity creation page
+// VCreateEntityHandler handles the entity creation page.
 func (env *Env) VCreateEntityHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-
-	c := models.ContainerFromRequestContext(r)
+	c := request.ContainerFromRequestContext(r)
 
 	jade.Entitycreate(c, w)
 
@@ -40,7 +40,7 @@ func (env *Env) VCreateEntityHandler(w http.ResponseWriter, r *http.Request) *mo
 	REST handlers
 */
 
-// GetEntitiesHandler returns a json list of the entities matching the search criteria
+// GetEntitiesHandler returns a json list of the entities matching the search criteria.
 func (env *Env) GetEntitiesHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	logger.Log.Debug("GetEntitiesHandler")
 
@@ -49,23 +49,24 @@ func (env *Env) GetEntitiesHandler(w http.ResponseWriter, r *http.Request) *mode
 		aerr     *models.AppError
 		entities []models.Entity
 		count    int
-		dspe     *models.SelectFilterEntity
+		filter   *request.Filter
 	)
 
 	// retrieving the logged user id from request context
-	c := models.ContainerFromRequestContext(r)
+	c := request.ContainerFromRequestContext(r)
 
 	// init db request parameters
-	if dspe, aerr = models.NewdbselectparamEntity(r, nil); err != nil {
+	if filter, aerr = request.NewFilter(r, nil); err != nil {
 		return aerr
 	}
-	dspe.SetLoggedPersonID(c.PersonID)
 
-	if entities, count, err = env.DB.GetEntities(*dspe); err != nil {
+	filter.LoggedPersonID = c.PersonID
+
+	if entities, count, err = env.DB.GetEntities(*filter); err != nil {
 		return &models.AppError{
-			Error:   err,
-			Code:    http.StatusInternalServerError,
-			Message: "error getting the entities",
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error getting the entities",
 		}
 	}
 
@@ -82,12 +83,14 @@ func (env *Env) GetEntitiesHandler(w http.ResponseWriter, r *http.Request) *mode
 			Message: err.Error(),
 		}
 	}
+
 	return nil
 }
 
-// GetEntityStockHandler returns a json of the stock of the entity with the requested id
+// GetEntityStockHandler returns a json of the stock of the entity with the requested id.
 func (env *Env) GetEntityStockHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	vars := mux.Vars(r)
+
 	var (
 		pid int
 		p   models.Product
@@ -96,16 +99,17 @@ func (env *Env) GetEntityStockHandler(w http.ResponseWriter, r *http.Request) *m
 
 	if pid, err = strconv.Atoi(vars["id"]); err != nil {
 		return &models.AppError{
-			Error:   err,
-			Message: "id atoi conversion",
-			Code:    http.StatusBadRequest}
+			OriginalError: err,
+			Message:       "id atoi conversion",
+			Code:          http.StatusBadRequest,
+		}
 	}
 
 	if p, err = env.DB.GetProduct(pid); err != nil {
 		return &models.AppError{
-			Error:   err,
-			Code:    http.StatusInternalServerError,
-			Message: "error getting the product",
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error getting the product",
 		}
 	}
 
@@ -123,9 +127,10 @@ func (env *Env) GetEntityStockHandler(w http.ResponseWriter, r *http.Request) *m
 	return nil
 }
 
-// GetEntityHandler returns a json of the entity with the requested id
+// GetEntityHandler returns a json of the entity with the requested id.
 func (env *Env) GetEntityHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	vars := mux.Vars(r)
+
 	var (
 		id     int
 		err    error
@@ -134,18 +139,20 @@ func (env *Env) GetEntityHandler(w http.ResponseWriter, r *http.Request) *models
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
 		return &models.AppError{
-			Error:   err,
-			Message: "id atoi conversion",
-			Code:    http.StatusInternalServerError}
+			OriginalError: err,
+			Message:       "id atoi conversion",
+			Code:          http.StatusInternalServerError,
+		}
 	}
 
 	if entity, err = env.DB.GetEntity(id); err != nil {
 		return &models.AppError{
-			Error:   err,
-			Code:    http.StatusInternalServerError,
-			Message: "error getting the entity",
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error getting the entity",
 		}
 	}
+
 	logger.Log.WithFields(logrus.Fields{"entity": entity}).Debug("GetEntityHandler")
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -156,12 +163,14 @@ func (env *Env) GetEntityHandler(w http.ResponseWriter, r *http.Request) *models
 			Message: err.Error(),
 		}
 	}
+
 	return nil
 }
 
-// GetEntityPeopleHandler return the entity managers
+// GetEntityPeopleHandler return the entity managers.
 func (env *Env) GetEntityPeopleHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	vars := mux.Vars(r)
+
 	var (
 		id     int
 		err    error
@@ -170,18 +179,20 @@ func (env *Env) GetEntityPeopleHandler(w http.ResponseWriter, r *http.Request) *
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
 		return &models.AppError{
-			Error:   err,
-			Message: "id atoi conversion",
-			Code:    http.StatusInternalServerError}
+			OriginalError: err,
+			Message:       "id atoi conversion",
+			Code:          http.StatusInternalServerError,
+		}
 	}
 
 	if people, err = env.DB.GetEntityManager(id); err != nil {
 		return &models.AppError{
-			Error:   err,
-			Code:    http.StatusInternalServerError,
-			Message: "error getting the entity people",
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error getting the entity people",
 		}
 	}
+
 	logger.Log.WithFields(logrus.Fields{"people": people}).Debug("GetEntityPeopleHandler")
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -192,10 +203,11 @@ func (env *Env) GetEntityPeopleHandler(w http.ResponseWriter, r *http.Request) *
 			Message: err.Error(),
 		}
 	}
+
 	return nil
 }
 
-// CreateEntityHandler creates the entity from the request form
+// CreateEntityHandler creates the entity from the request form.
 func (env *Env) CreateEntityHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	var (
 		e   models.Entity
@@ -204,34 +216,23 @@ func (env *Env) CreateEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 
 	if err = json.NewDecoder(r.Body).Decode(&e); err != nil {
 		return &models.AppError{
-			Error:   err,
-			Message: "JSON decoding error",
-			Code:    http.StatusInternalServerError}
+			OriginalError: err,
+			Message:       "JSON decoding error",
+			Code:          http.StatusInternalServerError,
+		}
 	}
 
-	// if err = r.ParseForm(); err != nil {
-	// 	return &models.AppError{
-	// 		Error:   err,
-	// 		Message: "form parsing error",
-	// 		Code:    http.StatusBadRequest}
-	// }
-
-	// if err = globals.Decoder.Decode(&e, r.PostForm); err != nil {
-	// 	return &models.AppError{
-	// 		Error:   err,
-	// 		Message: "form decoding error",
-	// 		Code:    http.StatusBadRequest}
-	// }
 	logger.Log.WithFields(logrus.Fields{"e": e}).Debug("CreateEntityHandler")
 
 	if _, err = env.DB.CreateEntity(e); err != nil {
 		return &models.AppError{
-			Error:   err,
-			Message: "create entity error",
-			Code:    http.StatusInternalServerError}
+			OriginalError: err,
+			Message:       "create entity error",
+			Code:          http.StatusInternalServerError,
+		}
 	}
 
-	env.InitCasbinPolicy()
+	casbin.InitCasbinPolicy(env.DB)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
@@ -241,12 +242,14 @@ func (env *Env) CreateEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 			Message: err.Error(),
 		}
 	}
+
 	return nil
 }
 
-// UpdateEntityHandler updates the entity from the request form
+// UpdateEntityHandler updates the entity from the request form.
 func (env *Env) UpdateEntityHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	vars := mux.Vars(r)
+
 	var (
 		id          int
 		err         error
@@ -255,52 +258,45 @@ func (env *Env) UpdateEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 
 	if err = json.NewDecoder(r.Body).Decode(&e); err != nil {
 		return &models.AppError{
-			Error:   err,
-			Message: "JSON decoding error",
-			Code:    http.StatusInternalServerError}
+			OriginalError: err,
+			Message:       "JSON decoding error",
+			Code:          http.StatusInternalServerError,
+		}
 	}
 
-	// if err := r.ParseForm(); err != nil {
-	// 	return &models.AppError{
-	// 		Error:   err,
-	// 		Message: "form parsing error",
-	// 		Code:    http.StatusBadRequest}
-	// }
-
-	// if err := globals.Decoder.Decode(&e, r.PostForm); err != nil {
-	// 	return &models.AppError{
-	// 		Error:   err,
-	// 		Message: "form decoding error",
-	// 		Code:    http.StatusBadRequest}
-	// }
 	logger.Log.WithFields(logrus.Fields{"e": e}).Debug("UpdateEntityHandler")
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
 		return &models.AppError{
-			Error:   err,
-			Message: "id atoi conversion",
-			Code:    http.StatusInternalServerError}
+			OriginalError: err,
+			Message:       "id atoi conversion",
+			Code:          http.StatusInternalServerError,
+		}
 	}
 
 	if updatede, err = env.DB.GetEntity(id); err != nil {
 		return &models.AppError{
-			Error:   err,
-			Message: "get entity error",
-			Code:    http.StatusInternalServerError}
+			OriginalError: err,
+			Message:       "get entity error",
+			Code:          http.StatusInternalServerError,
+		}
 	}
 	updatede.EntityName = e.EntityName
 	updatede.EntityDescription = e.EntityDescription
 	updatede.Managers = e.Managers
+	updatede.LDAPGroups = e.LDAPGroups
+
 	logger.Log.WithFields(logrus.Fields{"updatede": updatede}).Debug("UpdateEntityHandler")
 
 	if err = env.DB.UpdateEntity(updatede); err != nil {
 		return &models.AppError{
-			Error:   err,
-			Message: "update entity error",
-			Code:    http.StatusInternalServerError}
+			OriginalError: err,
+			Message:       "update entity error",
+			Code:          http.StatusInternalServerError,
+		}
 	}
 
-	env.InitCasbinPolicy()
+	casbin.InitCasbinPolicy(env.DB)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
@@ -310,12 +306,14 @@ func (env *Env) UpdateEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 			Message: err.Error(),
 		}
 	}
+
 	return nil
 }
 
-// DeleteEntityHandler deletes the entity with the requested id
+// DeleteEntityHandler deletes the entity with the requested id.
 func (env *Env) DeleteEntityHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	vars := mux.Vars(r)
+
 	var (
 		id  int
 		err error
@@ -323,17 +321,21 @@ func (env *Env) DeleteEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
 		return &models.AppError{
-			Error:   err,
-			Message: "id atoi conversion",
-			Code:    http.StatusInternalServerError}
+			OriginalError: err,
+			Message:       "id atoi conversion",
+			Code:          http.StatusInternalServerError,
+		}
 	}
+
 	logger.Log.WithFields(logrus.Fields{"id": id}).Debug("DeleteEntityHandler")
 
 	if err := env.DB.DeleteEntity(id); err != nil {
 		return &models.AppError{
-			Error:   err,
-			Message: "delete entity error",
-			Code:    http.StatusInternalServerError}
+			OriginalError: err,
+			Message:       "delete entity error",
+			Code:          http.StatusInternalServerError,
+		}
 	}
+
 	return nil
 }

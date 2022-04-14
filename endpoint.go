@@ -5,8 +5,7 @@ import (
 	"github.com/justinas/alice"
 )
 
-func buildEndpoints() (router *mux.Router) {
-
+func buildEndpoints(appFullURL string) (router *mux.Router) {
 	router = mux.NewRouter()
 
 	commonChain := alice.New(env.ContextMiddleware, env.HeadersMiddleware, env.LogingMiddleware)
@@ -16,10 +15,10 @@ func buildEndpoints() (router *mux.Router) {
 	router.Handle("/menu", commonChain.Then(env.AppMiddleware(env.VMenuHandler))).Methods("GET")
 	router.Handle("/search", commonChain.Then(env.AppMiddleware(env.VSearchHandler))).Methods("GET")
 	router.Handle("/get-token", commonChain.Then(env.AppMiddleware(env.GetTokenHandler))).Methods("POST")
+	router.Handle("/delete-token", commonChain.Then(env.AppMiddleware(env.DeleteTokenHandler))).Methods("GET")
 	router.Handle("/reset-password", commonChain.Then(env.AppMiddleware(env.ResetPasswordHandler))).Methods("POST")
 	router.Handle("/reset", commonChain.Then(env.AppMiddleware(env.RequestResetPasswordHandler))).Methods("GET")
 	router.Handle("/captcha", commonChain.Then(env.AppMiddleware(env.CaptchaHandler))).Methods("GET")
-	router.Handle("/delete-token", commonChain.Then(env.AppMiddleware(env.DeleteTokenHandler))).Methods("GET")
 	router.Handle("/about", commonChain.Then(env.AppMiddleware(env.AboutHandler))).Methods("GET")
 
 	// products public
@@ -27,8 +26,8 @@ func buildEndpoints() (router *mux.Router) {
 		router.Handle("/e/{item:products}", commonChain.Then(env.AppMiddleware(env.GetExposedProductsHandler))).Methods("GET")
 	}
 
-	// developper tests
-	router.Handle("/v/test", securechain.Then(env.AppMiddleware(env.VTestHandler))).Methods("GET")
+	// ping handler returns pong only if the request is correctly authenticated (ie. with a valid JWT token)
+	router.Handle("/{item:ping}", securechain.Then(env.AppMiddleware(env.VPingHandler))).Methods("GET")
 
 	// home page
 	router.Handle("/", commonChain.Then(env.AppMiddleware(env.HomeHandler))).Methods("GET")
@@ -62,6 +61,7 @@ func buildEndpoints() (router *mux.Router) {
 	router.Handle("/{view:v}/{item:people}", securechain.Then(env.AppMiddleware(env.VGetPeopleHandler))).Methods("GET")
 	router.Handle("/{view:vc}/{item:people}", securechain.Then(env.AppMiddleware(env.VCreatePersonHandler))).Methods("GET")
 	router.Handle("/{view:vu}/{item:peoplepass}", securechain.Then(env.AppMiddleware(env.VUpdatePersonPasswordHandler))).Methods("GET")
+	router.Handle("/{view:vu}/{item:peopleqrcode}", securechain.Then(env.AppMiddleware(env.VUpdatePersonQRCodeHandler))).Methods("GET")
 	router.Handle("/{item:people}", securechain.Then(env.AppMiddleware(env.GetPeopleHandler))).Methods("GET")
 	router.Handle("/{item:people}/{id}", securechain.Then(env.AppMiddleware(env.GetPersonHandler))).Methods("GET")
 	router.Handle("/{item:people}/{id}/entities", securechain.Then(env.AppMiddleware(env.GetPersonEntitiesHandler))).Methods("GET")
@@ -71,6 +71,8 @@ func buildEndpoints() (router *mux.Router) {
 	router.Handle("/{item:people}", securechain.Then(env.AppMiddleware(env.CreatePersonHandler))).Methods("POST")
 	router.Handle("/{item:people}/{id}", securechain.Then(env.AppMiddleware(env.DeletePersonHandler))).Methods("DELETE")
 	router.Handle("/{item:peoplep}", securechain.Then(env.AppMiddleware(env.UpdatePersonpHandler))).Methods("POST")
+	router.Handle("/{item:people}/isldap/{email}", commonChain.Then(env.AppMiddleware(env.IsPersonLDAPHandler))).Methods("GET")
+	router.Handle("/{item:people}/generateqrcode/{id}", securechain.Then(env.AppMiddleware(env.GenerateQRCodeHandler))).Methods("GET")
 
 	router.Handle("/f/{view:v}/{item:people}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 	router.Handle("/f/{view:vc}/{item:people}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
@@ -82,6 +84,10 @@ func buildEndpoints() (router *mux.Router) {
 	router.Handle("/f/{item:people}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT")
 	router.Handle("/f/{item:people}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("POST")
 	router.Handle("/f/{item:people}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE")
+
+	// ldap groups
+	router.Handle("/{item:ldapgroup}", securechain.Then(env.AppMiddleware(env.GetLDAPGroupsHandler))).Methods("GET")
+
 	// store locations
 	router.Handle("/{view:v}/{item:storelocations}", securechain.Then(env.AppMiddleware(env.VGetStoreLocationsHandler))).Methods("GET")
 	router.Handle("/{view:vc}/{item:storelocations}", securechain.Then(env.AppMiddleware(env.VCreateStoreLocationHandler))).Methods("GET")
@@ -99,7 +105,6 @@ func buildEndpoints() (router *mux.Router) {
 	router.Handle("/f/{item:storelocations}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("POST")
 	router.Handle("/f/{item:storelocations}/{id}", securechain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE")
 
-	// TODO: merge with wasm code
 	router.Handle("/{item:products}/l2eformula/{f}", securechain.Then(env.AppMiddleware(env.ConvertProductEmpiricalToLinearFormulaHandler))).Methods("GET")
 	router.Handle("/{view:v}/{item:products}", securechain.Then(env.AppMiddleware(env.VGetProductsHandler))).Methods("GET")
 	router.Handle("/{view:vc}/{item:products}", securechain.Then(env.AppMiddleware(env.VCreateProductHandler))).Methods("GET")
@@ -193,5 +198,4 @@ func buildEndpoints() (router *mux.Router) {
 	router.Handle("/{item:download}/{id}", securechain.Then(env.AppMiddleware(env.DownloadExportHandler))).Methods("GET")
 
 	return router
-
 }

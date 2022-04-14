@@ -9,7 +9,6 @@ import (
 
 // FakeHandler return true.
 func (env *Env) FakeHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
 	if err := json.NewEncoder(w).Encode("true"); err != nil {
@@ -20,5 +19,4 @@ func (env *Env) FakeHandler(w http.ResponseWriter, r *http.Request) *models.AppE
 	}
 
 	return nil
-
 }

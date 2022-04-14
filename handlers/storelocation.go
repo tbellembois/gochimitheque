@@ -10,6 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
+	"github.com/tbellembois/gochimitheque/request"
 	"github.com/tbellembois/gochimitheque/static/jade"
 )
 
@@ -17,20 +18,18 @@ import (
 	views handlers
 */
 
-// VGetStoreLocationsHandler handles the store location list page
+// VGetStoreLocationsHandler handles the store location list page.
 func (env *Env) VGetStoreLocationsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-
-	c := models.ContainerFromRequestContext(r)
+	c := request.ContainerFromRequestContext(r)
 
 	jade.Storelocationindex(c, w)
 
 	return nil
 }
 
-// VCreateStoreLocationHandler handles the store location creation page
+// VCreateStoreLocationHandler handles the store location creation page.
 func (env *Env) VCreateStoreLocationHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-
-	c := models.ContainerFromRequestContext(r)
+	c := request.ContainerFromRequestContext(r)
 
 	jade.Storelocationcreate(c, w)
 
@@ -41,38 +40,40 @@ func (env *Env) VCreateStoreLocationHandler(w http.ResponseWriter, r *http.Reque
 	REST handlers
 */
 
-// GetStoreLocationsHandler returns a json list of the store locations matching the search criteria
+// GetStoreLocationsHandler godoc
+// @Summary Get store locations. Only store locations visible by the authenticated user are returned.
+// @tags storelocation
+// @Produce json
+// @Success 200 {object} models.StoreLocationsResp
+// @Failure 500
+// @Failure 403
+// @Router /storelocations/ [get].
 func (env *Env) GetStoreLocationsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	logger.Log.Debug("GetStoreLocationsHandler")
 
 	var (
-		err   error
-		aerr  *models.AppError
-		dspsl *models.SelectFilterStoreLocation
+		err    error
+		aerr   *models.AppError
+		filter *request.Filter
 	)
 
 	// init db request parameters
-	if dspsl, aerr = models.NewdbselectparamStoreLocation(r, nil); err != nil {
+	if filter, aerr = request.NewFilter(r, nil); err != nil {
 		return aerr
 	}
 
-	storelocations, count, err := env.DB.GetStoreLocations(*dspsl)
+	storelocations, count, err := env.DB.GetStoreLocations(*filter)
 	if err != nil {
 		return &models.AppError{
-			Error:   err,
-			Code:    http.StatusInternalServerError,
-			Message: "error getting the store locations",
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error getting the store locations",
 		}
-	}
-
-	type resp struct {
-		Rows  []models.StoreLocation `json:"rows"`
-		Total int                    `json:"total"`
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
-	if err = json.NewEncoder(w).Encode(resp{Rows: storelocations, Total: count}); err != nil {
+	if err = json.NewEncoder(w).Encode(models.StoreLocationsResp{Rows: storelocations, Total: count}); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
 			Message: err.Error(),
@@ -81,9 +82,10 @@ func (env *Env) GetStoreLocationsHandler(w http.ResponseWriter, r *http.Request)
 	return nil
 }
 
-// GetStoreLocationHandler returns a json of the store location with the requested id
+// GetStoreLocationHandler returns a json of the store location with the requested id.
 func (env *Env) GetStoreLocationHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	vars := mux.Vars(r)
+
 	var (
 		id  int
 		err error
@@ -91,19 +93,21 @@ func (env *Env) GetStoreLocationHandler(w http.ResponseWriter, r *http.Request) 
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
 		return &models.AppError{
-			Error:   err,
-			Message: "id atoi conversion",
-			Code:    http.StatusInternalServerError}
+			OriginalError: err,
+			Message:       "id atoi conversion",
+			Code:          http.StatusInternalServerError,
+		}
 	}
 
 	storelocation, err := env.DB.GetStoreLocation(id)
 	if err != nil {
 		return &models.AppError{
-			Error:   err,
-			Code:    http.StatusInternalServerError,
-			Message: "error getting the store location",
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error getting the store location",
 		}
 	}
+
 	logger.Log.WithFields(logrus.Fields{"storelocation": storelocation}).Debug("GetStoreLocationHandler")
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -117,9 +121,10 @@ func (env *Env) GetStoreLocationHandler(w http.ResponseWriter, r *http.Request) 
 	return nil
 }
 
-// CreateStoreLocationHandler creates the store location from the request form
+// CreateStoreLocationHandler creates the store location from the request form.
 func (env *Env) CreateStoreLocationHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	logger.Log.Debug("CreateStoreLocationHandler")
+
 	var (
 		sl  models.StoreLocation
 		err error
@@ -128,18 +133,20 @@ func (env *Env) CreateStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 
 	if err = json.NewDecoder(r.Body).Decode(&sl); err != nil {
 		return &models.AppError{
-			Error:   err,
-			Message: "JSON decoding error",
-			Code:    http.StatusInternalServerError}
+			OriginalError: err,
+			Message:       "JSON decoding error",
+			Code:          http.StatusInternalServerError,
+		}
 	}
 
 	logger.Log.WithFields(logrus.Fields{"sl": sl}).Debug("CreateStoreLocationHandler")
 
 	if id, err = env.DB.CreateStoreLocation(sl); err != nil {
 		return &models.AppError{
-			Error:   err,
-			Message: "create store location error",
-			Code:    http.StatusInternalServerError}
+			OriginalError: err,
+			Message:       "create store location error",
+			Code:          http.StatusInternalServerError,
+		}
 	}
 	sl.StoreLocationID = sql.NullInt64{Valid: true, Int64: id}
 
@@ -154,9 +161,10 @@ func (env *Env) CreateStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 	return nil
 }
 
-// UpdateStoreLocationHandler updates the store location from the request form
+// UpdateStoreLocationHandler updates the store location from the request form.
 func (env *Env) UpdateStoreLocationHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	vars := mux.Vars(r)
+
 	var (
 		id  int
 		err error
@@ -165,66 +173,44 @@ func (env *Env) UpdateStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 
 	if err = json.NewDecoder(r.Body).Decode(&sl); err != nil {
 		return &models.AppError{
-			Error:   err,
-			Message: "JSON decoding error",
-			Code:    http.StatusInternalServerError}
+			OriginalError: err,
+			Message:       "JSON decoding error",
+			Code:          http.StatusInternalServerError,
+		}
 	}
 
-	// if err := r.ParseForm(); err != nil {
-	// 	return &models.AppError{
-	// 		Error:   err,
-	// 		Message: "form parsing error",
-	// 		Code:    http.StatusBadRequest}
-	// }
-	// if err := globals.Decoder.Decode(&sl, r.PostForm); err != nil {
-	// 	return &models.AppError{
-	// 		Error:   err,
-	// 		Message: "form decoding error",
-	// 		Code:    http.StatusBadRequest}
-	// }
-	// // processing storelocation not processed by Decode
-	// if r.FormValue("storelocation.storelocation.storelocation_id") != "" {
-	// 	var slid int
-	// 	slname := r.FormValue("storelocation.storelocation.storelocation_name")
-	// 	if slid, err = strconv.Atoi(r.FormValue("storelocation.storelocation.storelocation_id")); err != nil {
-	// 		return &models.AppError{
-	// 			Error:   err,
-	// 			Message: "slid atoi conversion",
-	// 			Code:    http.StatusInternalServerError}
-	// 	}
-	// 	sl.StoreLocation = &models.StoreLocation{
-	// 		StoreLocationID:   sql.NullInt64{Valid: true, Int64: int64(slid)},
-	// 		StoreLocationName: sql.NullString{Valid: true, String: slname},
-	// 	}
-	// }
 	logger.Log.WithFields(logrus.Fields{"sl": sl}).Debug("UpdateStoreLocationHandler")
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
 		return &models.AppError{
-			Error:   err,
-			Message: "id atoi conversion",
-			Code:    http.StatusInternalServerError}
+			OriginalError: err,
+			Message:       "id atoi conversion",
+			Code:          http.StatusInternalServerError,
+		}
 	}
 
 	updatedsl, err := env.DB.GetStoreLocation(id)
 	if err != nil {
 		return &models.AppError{
-			Error:   err,
-			Message: "get store location error",
-			Code:    http.StatusInternalServerError}
+			OriginalError: err,
+			Message:       "get store location error",
+			Code:          http.StatusInternalServerError,
+		}
 	}
 	updatedsl.StoreLocationName = sl.StoreLocationName
 	updatedsl.StoreLocationColor = sl.StoreLocationColor
 	updatedsl.StoreLocationCanStore = sl.StoreLocationCanStore
 	updatedsl.StoreLocation = sl.StoreLocation
 	updatedsl.Entity = sl.Entity
+
 	logger.Log.WithFields(logrus.Fields{"updatedsl": updatedsl}).Debug("UpdateStoreLocationHandler")
 
 	if err := env.DB.UpdateStoreLocation(updatedsl); err != nil {
 		return &models.AppError{
-			Error:   err,
-			Message: "update store location error",
-			Code:    http.StatusInternalServerError}
+			OriginalError: err,
+			Message:       "update store location error",
+			Code:          http.StatusInternalServerError,
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -238,9 +224,10 @@ func (env *Env) UpdateStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 	return nil
 }
 
-// DeleteStoreLocationHandler deletes the store location with the requested id
+// DeleteStoreLocationHandler deletes the store location with the requested id.
 func (env *Env) DeleteStoreLocationHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	vars := mux.Vars(r)
+
 	var (
 		id  int
 		err error
@@ -248,9 +235,10 @@ func (env *Env) DeleteStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
 		return &models.AppError{
-			Error:   err,
-			Message: "id atoi conversion",
-			Code:    http.StatusInternalServerError}
+			OriginalError: err,
+			Message:       "id atoi conversion",
+			Code:          http.StatusInternalServerError,
+		}
 	}
 
 	if err = env.DB.DeleteStoreLocation(id); err != nil {

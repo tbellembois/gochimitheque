@@ -1,24 +1,17 @@
-FROM golang:1.17-buster
+FROM golang:1.18.1-alpine as builder
 LABEL author="Thomas Bellembois"
-ARG GIT_COMMIT
-ENV ENV_GIT_COMMIT=$GIT_COMMIT
+ARG BuildID
+ENV BuildID=${BuildID}
 
-#
-# Build prepare.
-#
+# Install GCC and git.
+RUN apk add build-base git
 
 # ref. go.mod gochimitheque-wasm
-RUN mkdir -p /home/thbellem/workspace
-RUN ln -s /go /home/thbellem/workspace/workspace_go
+RUN mkdir -p /home/thbellem/workspace \
+    && ln -s /go /home/thbellem/workspace/workspace_go
 
-# Creating DB volume directory.
-RUN mkdir /data && chown www-data /data
-
-# Creating www directory.
-RUN mkdir /var/www-data && chown www-data /var/www-data
-
-# Installing Jade command.
-RUN go get -v github.com/Joker/jade/cmd/jade@master
+# Installing dependencies.
+RUN go install github.com/Joker/jade/cmd/jade@master
 
 #
 # Sources.
@@ -34,7 +27,6 @@ COPY ./bind-gochimitheque-utils ./gochimitheque-utils
 # Copying Chimithèque sources.
 WORKDIR /go/src/github.com/tbellembois/gochimitheque/
 COPY . .
-COPY .git/ ./.git/
 
 #
 # Build.
@@ -42,40 +34,49 @@ COPY .git/ ./.git/
 
 # Building wasm module.
 WORKDIR /go/src/github.com/tbellembois/gochimitheque-wasm
-RUN GOOS=js GOARCH=wasm go get -v -d ./...
-RUN GOOS=js GOARCH=wasm go build -o wasm .
+RUN GOOS=js GOARCH=wasm go get -v -d ./... \
+    && GOOS=js GOARCH=wasm go build -o wasm .
 
 # Copying and compress WASM module into sources.
-RUN cp /go/src/github.com/tbellembois/gochimitheque-wasm/wasm /go/src/github.com/tbellembois/gochimitheque/wasm/
-RUN gzip -9 -v -c /go/src/github.com/tbellembois/gochimitheque/wasm/wasm > /go/src/github.com/tbellembois/gochimitheque/wasm/wasm.gz
-RUN rm /go/src/github.com/tbellembois/gochimitheque/wasm/wasm
+RUN cp /go/src/github.com/tbellembois/gochimitheque-wasm/wasm /go/src/github.com/tbellembois/gochimitheque/wasm/ \
+    && gzip -9 -v -c /go/src/github.com/tbellembois/gochimitheque/wasm/wasm > /go/src/github.com/tbellembois/gochimitheque/wasm/wasm.gz \
+    && rm /go/src/github.com/tbellembois/gochimitheque/wasm/wasm
 
 # Installing Chimithèque dependencies.
 WORKDIR /go/src/github.com/tbellembois/gochimitheque/
-RUN go get -v -d ./...
 
 # Generating code.
 RUN go generate
 
 # Building Chimithèque.
-# docker build --build-arg GIT_COMMIT=2.0.7 -t tbellembois/gochimitheque:2.0.7 .
-RUN if [ ! -z "$ENV_GIT_COMMIT" ]; then export GIT_COMMIT=$ENV_GIT_COMMIT; else export GIT_COMMIT=$(git rev-list -1 HEAD); fi; echo "version=$GIT_COMMIT" ;go build -ldflags "-X main.GitCommit=$GIT_COMMIT"
+# docker build --build-arg BuildID=2.0.7 -t tbellembois/gochimitheque:2.0.7 .
+RUN if [ -z $BuildID ]; then BuildID=$(date "+%Y%m%d"); fi; echo "BuildID=$BuildID"; go build -ldflags "-X main.BuildID=$BuildID"
 
 #
 # Install.
 #
 
-# Installing Chimithèque.
-RUN cp /go/src/github.com/tbellembois/gochimitheque/gochimitheque /var/www-data/ \
-    && chown www-data /var/www-data/gochimitheque \
+FROM golang:1.18beta2-alpine
+
+RUN apk add bash && rm -Rf /var/cache/apk
+
+# Ensure www-data user exists.
+RUN set -x ; \
+  addgroup -g 82 -S www-data ; \
+  adduser -u 82 -D -S -G www-data www-data && exit 0 ; exit 1 \
+  && mkdir /data \
+  && chown www-data /data \
+  && chmod 700 /data \
+  && mkdir /var/www-data \
+  && chown www-data /var/www-data
+
+COPY --from=builder /go/src/github.com/tbellembois/gochimitheque/gochimitheque /var/www-data/
+RUN chown www-data /var/www-data/gochimitheque \
     && chmod +x /var/www-data/gochimitheque
 
 #
 # Final work.
 #
-
-# Cleaning up sources.
-RUN rm -Rf /go/src/*
 
 # Copying entrypoint.
 COPY docker/entrypoint.sh /
@@ -89,5 +90,5 @@ RUN chmod 644 /usr/local/share/ca-certificates/terena.crt && update-ca-certifica
 USER www-data
 WORKDIR /var/www-data
 ENTRYPOINT [ "/entrypoint.sh" ]
-VOLUME ["/data"]
+VOLUME [ "/data" ]
 EXPOSE 8081

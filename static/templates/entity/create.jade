@@ -6,7 +6,7 @@ block CONTENT
 
     +titleicon("store", "entity_create_title")
 
-    .card.mx-auto.w-50
+    .card.mx-auto.w-75
         .card-body
             form#entity
                 .form-group.row
@@ -18,6 +18,9 @@ block CONTENT
                 .form-group.row
                     .form-group.col-sm-12
                         +inputselect(name="managers", label="entity_manager_table_header", ismultiple=true)
+                .form-group.row#EntityLDAPGroup.collapse.hide
+                    .form-group.col-sm-12
+                        +inputselect(name="ldapgroups", label="entity_ldap_group", ismultiple=true)
 
             button#save.btn.btn-primary.float-right(type='button', onclick='Entity_saveEntity()')
                 span.mdi.mdi-content-save.mdi-24px.iconlabel

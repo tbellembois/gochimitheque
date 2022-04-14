@@ -1,14 +1,11 @@
-// +build go1.16,linux,amd64
+//go:build go1.18 && linux && amd64
 
-//go:generate jade -writer -basedir static/templates -d ./static/jade welcomeannounce/index.jade home/index.jade login/index.jade about/index.jade entity/index.jade entity/create.jade product/index.jade product/create.jade storage/index.jade storage/create.jade storelocation/index.jade storelocation/create.jade person/index.jade person/create.jade person/pupdate.jade search.jade menu.jade
+//go:generate jade -writer -basedir static/templates -d ./static/jade welcomeannounce/index.jade home/index.jade login/index.jade about/index.jade entity/index.jade entity/create.jade product/index.jade product/create.jade storage/index.jade storage/create.jade storelocation/index.jade storelocation/create.jade person/index.jade person/create.jade person/password.jade person/qrcode.jade search.jade menu.jade
 //go:generate go run . -genlocalejs
 package main
 
 // compile with:
-// development version:
-// GIT_COMMIT=$(git rev-list -1 HEAD) && go build -ldflags "-X main.GitCommit=$GIT_COMMIT"
-// production version:
-// GIT_COMMIT="v2.0.6" && go build -ldflags "-X main.GitCommit=$GIT_COMMIT"
+// BuildID="v2.0.8" && go build -ldflags "-X main.BuildID=$BuildID".
 import (
 	"database/sql"
 	"embed"
@@ -21,8 +18,10 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
+	"github.com/tbellembois/gochimitheque/casbin"
 	"github.com/tbellembois/gochimitheque/datastores"
 	"github.com/tbellembois/gochimitheque/handlers"
+	"github.com/tbellembois/gochimitheque/ldap"
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/mailer"
 	"github.com/tbellembois/gochimitheque/models"
@@ -33,13 +32,13 @@ var (
 	env handlers.Env
 
 	// Starting parameters and commands.
-	paramListenPort,
 	paramDBPath,
 	paramAdminList,
 	paramLogFile,
-	commandImportV1From,
 	commandImportFrom,
-	commandMailTest *string
+	commandMailTest,
+	commandLDAPSearchUserTest,
+	commandLDAPSearchGroupTest *string
 	paramPublicProductsEndpoint,
 	commandResetAdminPassword,
 	commandUpdateQRCode,
@@ -47,10 +46,8 @@ var (
 	commandVersion,
 	commandGenLocaleJS,
 	paramDisableCache *bool
-	GitCommit string
+	BuildID string
 
-	//go:embed models/model.conf
-	embedModel string
 	//go:embed wasm/*
 	embedWasmBox embed.FS
 	//go:embed static/*
@@ -60,27 +57,37 @@ var (
 // TimeTrack displays the run time of the function "name"
 // from the start time "start"
 // use: defer utils.TimeTrack(time.Now(), "GetProducts")
-// at the begining of the function to track
+// at the beginning of the function to track
 // func TimeTrack(start time.Time, name string) {
 // 	elapsed := time.Since(start)
 // 	logger.Log.Debug(fmt.Sprintf("%s took %s", name, elapsed))
 // }
 
 func init() {
-
 	env = handlers.NewEnv()
 
 	// Configuration parameters.
-	flagListenPort := flag.String("listenport", "8081", "the port to listen")
 	flagDBPath := flag.String("dbpath", "./", "the application sqlite directory path")
-	flagProxyURL := flag.String("proxyurl", "", "the application url (without the path) if behind a proxy, with NO trailing /")
-	flagProxyPath := flag.String("proxypath", "/", "the application path if behind a proxy, with the trailing /")
+	flagAppURL := flag.String("appurl", "http://localhost:8081", "the application url (without the path), with NO trailing /")
+	flagAppPath := flag.String("apppath", "/", "the application path with the trailing /")
+	flagDockerPort := flag.Int("dockerport", 0, "application listen port while running in docker")
+
 	flagMailServerAddress := flag.String("mailserveraddress", "localhost", "the mail server address")
-	flagMailServerPort := flag.String("mailserverport", "25", "the mail server port")
-	flagMailServerSender := flag.String("mailserversender", "", "the mail server sender")
-	flagMailServerUseTLS := flag.Bool("mailserverusetls", false, "use TLS? (optional)")
-	flagMailServerTLSSkipVerify := flag.Bool("mailservertlsskipverify", false, "skip TLS verification? (optional)")
+	flagMailServerPort := flag.String("mailserverport", "25", "the SMTP server port")
+	flagMailServerSender := flag.String("mailserversender", "", "the SMTP server sender")
+	flagMailServerUseTLS := flag.Bool("mailserverusetls", false, "use SMTP TLS? (optional)")
+	flagMailServerTLSSkipVerify := flag.Bool("mailservertlsskipverify", false, "skip SMTP TLS verification? (optional)")
 	flagPublicProductsEndpoint := flag.Bool("enablepublicproductsendpoint", false, "enable public products endpoint (optional)")
+
+	flagLDAPServerURL := flag.String("ldapserverurl", "", "the LDAP server address - ex: ldaps://192.168.1.50:636/ou=users,dc=foo,dc=local")
+	flagLDAPServerUsername := flag.String("ldapserverusername", "", "the LDAP server username - ex: CN=adminro,OU=FOO,OU=local,OU=users,DC=foo,DC=local")
+	flagLDAPServerPassword := flag.String("ldapserverpassword", "", "the LDAP server password")
+	flagLDAPGroupSearchBaseDN := flag.String("ldapgroupsearchbasedn", "", "the LDAP group search base DN - ex: OU=groups,DC=foo,DC=local")
+	flagLDAPGroupSearchFilter := flag.String("ldapgroupsearchfilter", "", "the LDAP group search filter - ex: (cn=%s)")
+	flagLDAPUserSearchBaseDN := flag.String("ldapusersearchbasedn", "", "the LDAP user search base DN - ex: OU=users,DC=foo,DC=local")
+	flagLDAPUserSearchFilter := flag.String("ldapusersearchfilter", "", "the LDAP user search filter - ex: (&(mail=%s)(objectclass=user))")
+	flagAutoCreateUser := flag.Bool("autocreateuser", false, "auto create user if proxy authentication is used")
+
 	flagAdminList := flag.String("admins", "", "the additional admins (comma separated email adresses) (optional) ")
 	flagLogFile := flag.String("logfile", "", "log to the given file (optional)")
 	flagDebug := flag.Bool("debug", false, "debug (verbose log), default is error")
@@ -90,17 +97,27 @@ func init() {
 	flagResetAdminPassword := flag.Bool("resetadminpassword", false, "reset the admin password to `chimitheque`")
 	flagUpdateQRCode := flag.Bool("updateqrcode", false, "regenerate storages QR codes")
 	flagVersion := flag.Bool("version", false, "display application version")
-	flagMailTest := flag.String("mailtest", "", "send a test mail")
-	flagImportV1From := flag.String("importv1from", "", "full path of the directory containing the Chimithèque v1 CSV to import")
 	flagImportFrom := flag.String("importfrom", "", "base URL of the external Chimithèque instance (running with -enablepublicproductsendpoint) to import products from")
 	flagGenLocaleJS := flag.Bool("genlocalejs", false, "generate JS locales (developper target)")
 
+	flagMailTest := flag.String("mailtest", "", "send a test mail")
+	flagLDAPSearchUserTest := flag.String("ldapsearchusertest", "", "test an LDAP user search")
+	flagLDAPSearchGroupTest := flag.String("ldapsearchgrouptest", "", "test an LDAP group search")
+
 	flag.Parse()
 
-	paramListenPort = flagListenPort
+	env.AppURL = *flagAppURL
+	env.AppPath = *flagAppPath
+	env.DockerPort = *flagDockerPort
+	env.AutoCreateUser = *flagAutoCreateUser
+	ldap.LDAPServerURL = *flagLDAPServerURL
+	ldap.LDAPServerUsername = *flagLDAPServerUsername
+	ldap.LDAPServerPassword = *flagLDAPServerPassword
+	ldap.LDAPGroupSearchBaseDN = *flagLDAPGroupSearchBaseDN
+	ldap.LDAPGroupSearchFilter = *flagLDAPGroupSearchFilter
+	ldap.LDAPUserSearchBaseDN = *flagLDAPUserSearchBaseDN
+	ldap.LDAPUserSearchFilter = *flagLDAPUserSearchFilter
 	paramDBPath = flagDBPath
-	env.ProxyURL = *flagProxyURL
-	env.ProxyPath = *flagProxyPath
 	mailer.MailServerAddress = *flagMailServerAddress
 	mailer.MailServerPort = *flagMailServerPort
 	mailer.MailServerSender = *flagMailServerSender
@@ -115,27 +132,18 @@ func init() {
 	commandResetAdminPassword = flagResetAdminPassword
 	commandUpdateQRCode = flagUpdateQRCode
 	commandVersion = flagVersion
-	commandMailTest = flagMailTest
-	commandImportV1From = flagImportV1From
 	commandImportFrom = flagImportFrom
 	commandGenLocaleJS = flagGenLocaleJS
 
-	if env.ProxyURL != "" {
-		env.ApplicationFullURL = env.ProxyURL + env.ProxyPath
-	} else {
-		env.ApplicationFullURL = "http://localhost:" + *paramListenPort
-	}
+	commandMailTest = flagMailTest
+	commandLDAPSearchUserTest = flagLDAPSearchUserTest
+	commandLDAPSearchGroupTest = flagLDAPSearchGroupTest
 
-	if GitCommit == "" {
-		env.BuildID = "developer"
-	} else {
-		env.BuildID = GitCommit
-	}
-
+	env.AppFullURL = env.AppURL + env.AppPath
+	env.BuildID = BuildID
 }
 
 func initLogger() {
-
 	var err error
 
 	if *paramDebug {
@@ -145,30 +153,36 @@ func initLogger() {
 	}
 
 	if *paramLogFile != "" {
-
 		var commandLineLogFile *os.File
-		if commandLineLogFile, err = os.OpenFile(*paramLogFile, os.O_WRONLY|os.O_CREATE, 0755); err != nil {
+
+		if commandLineLogFile, err = os.OpenFile(*paramLogFile, os.O_WRONLY|os.O_CREATE, 0o755); err != nil {
 			logger.Log.Fatal(err)
 		} else {
 			logger.Log.SetOutput(commandLineLogFile)
 		}
-		//defer commandLineLogFile.Close()
-
 	}
 
 	var internalServerErrorLogFile *os.File
-	if internalServerErrorLogFile, err = os.OpenFile(path.Join(*paramDBPath, "server_errors.log"), os.O_WRONLY|os.O_CREATE, 0755); err != nil {
+
+	if internalServerErrorLogFile, err = os.OpenFile(path.Join(*paramDBPath, "server_errors.log"), os.O_WRONLY|os.O_CREATE, 0o755); err != nil {
 		logger.Log.Fatal(err)
 	} else {
 		logger.LogInternal.SetOutput(internalServerErrorLogFile)
 		logger.LogInternal.SetReportCaller(true)
 	}
-	//defer internalServerErrorLogFile.Close()
+}
+
+func initLDAP() {
+
+	var err error
+
+	if env.LDAPConnection, err = ldap.Connect(); err != nil {
+		logger.Log.Fatal(err)
+	}
 
 }
 
 func initDB() {
-
 	var (
 		err       error
 		datastore datastores.Datastore
@@ -189,11 +203,9 @@ func initDB() {
 	datastore.Maintenance()
 
 	env.DB = datastore
-
 }
 
 func initAdmins() {
-
 	var (
 		err           error
 		p             models.Person
@@ -212,9 +224,10 @@ func initAdmins() {
 
 	// Cleaning former admins.
 	for _, fa := range formerAdmins {
-
 		isStillAdmin = false
+
 		logger.Log.Info("former admin: " + fa.PersonEmail)
+
 		for _, ca := range currentAdmins {
 			if ca == fa.PersonEmail {
 				isStillAdmin = true
@@ -226,11 +239,9 @@ func initAdmins() {
 				logger.Log.Fatal(err)
 			}
 		}
-
 	}
 	// Setting up new ones.
 	if len(currentAdmins) > 0 {
-
 		for _, ca := range currentAdmins {
 			logger.Log.Info("additional admin: " + ca)
 			if p, err = env.DB.GetPersonByEmail(ca); err != nil {
@@ -245,26 +256,27 @@ func initAdmins() {
 				logger.Log.Fatal(err)
 			}
 		}
-
 	}
-
 }
 
 func initStaticResources(router *mux.Router) {
-
-	env.CasbinModel = embedModel
-
 	http.Handle("/wasm/", http.FileServer(http.FS(embedWasmBox)))
 	http.Handle("/static/", http.FileServer(http.FS(embedStaticBox)))
 	http.Handle("/", router)
-
 }
 
+// @title Chimithèque API
+// @version 2.0
+// @description Chemical product management application.
+// @contact.name Thomas Bellembois
+// @contact.url https://github.com/tbellembois
+// @contact.email thomas.bellembois@gmail.com
+// @license.name GNU General Public License v3.0
+// @license.url https://www.gnu.org/licenses/gpl-3.0.html
+// @host localhost:8081
+// @BasePath /.
 func main() {
-
-	var (
-		err error
-	)
+	var err error
 
 	// Basic commands.
 	if *commandVersion {
@@ -279,90 +291,126 @@ func main() {
 
 	initLogger()
 
+	logger.Log.WithFields(logrus.Fields{
+		"commandResetAdminPassword": commandResetAdminPassword,
+		"commandUpdateQRCode":       commandUpdateQRCode,
+		"commandVersion":            commandVersion,
+		"commandMailTest":           commandMailTest,
+		"commandImportFrom":         commandImportFrom,
+		"commandGenLocaleJS":        commandGenLocaleJS,
+	}).Debug("main")
+
 	logger.Log.Debugf("- env: %+v", env)
 	logger.Log.Info("- application version: " + env.BuildID)
-	logger.Log.Info("- application endpoint: " + env.ApplicationFullURL)
+	logger.Log.Info("- application endpoint: " + env.AppFullURL)
 
 	initDB()
 
+	initLDAP()
+
 	// Advanced commands.
-	if *commandImportV1From != "" {
-
-		logger.Log.Info("- import from Chimithèque v1 csv into database")
-		err := env.DB.ImportV1(*commandImportV1From)
-		if err != nil {
-			logger.Log.Error("an error occured: " + err.Error())
-			os.Exit(1)
-		}
-		os.Exit(0)
-
-	}
-
 	if *commandImportFrom != "" {
-
 		logger.Log.Info("- import from URL into database")
 		err := env.DB.Import(*commandImportFrom)
 		if err != nil {
-			logger.Log.Error("an error occured: " + err.Error())
+			logger.Log.Error("an error occurred: " + err.Error())
 			os.Exit(1)
 		}
-		os.Exit(0)
 
+		os.Exit(0)
 	}
 
 	if *commandResetAdminPassword {
-
 		logger.Log.Info("- reseting admin password to `chimitheque`")
 		a, err := env.DB.GetPersonByEmail("admin@chimitheque.fr")
 		if err != nil {
-			logger.Log.Error("an error occured: " + err.Error())
+			logger.Log.Error("an error occurred: " + err.Error())
 			os.Exit(1)
 		}
 		a.PersonPassword = "chimitheque"
 		err = env.DB.UpdatePersonPassword(a)
 		if err != nil {
-			logger.Log.Error("an error occured: " + err.Error())
+			logger.Log.Error("an error occurred: " + err.Error())
 			os.Exit(1)
 		}
-		os.Exit(0)
 
+		os.Exit(0)
 	}
 
 	if *commandUpdateQRCode {
-
 		logger.Log.Info("- updating storages QR codes")
 		err := env.DB.UpdateAllQRCodes()
 		if err != nil {
-			logger.Log.Error("an error occured: " + err.Error())
+			logger.Log.Error("an error occurred: " + err.Error())
 			os.Exit(1)
 		}
-		os.Exit(0)
 
+		os.Exit(0)
 	}
 
 	if *commandMailTest != "" {
-
 		logger.Log.Info("- sending a mail to " + *commandMailTest)
 		err := mailer.TestMail(*commandMailTest)
 		if err != nil {
-			logger.Log.Error("an error occured: " + err.Error())
+			logger.Log.Error("an error occurred: " + err.Error())
 			os.Exit(1)
 		}
-		os.Exit(0)
 
+		os.Exit(0)
+	}
+
+	if *commandLDAPSearchUserTest != "" {
+		logger.Log.Info("- searching user in LDAP: " + *commandLDAPSearchUserTest)
+		result, err := ldap.TestSearchUser(*commandLDAPSearchUserTest)
+		if err != nil {
+			logger.Log.Error("an error occurred: " + err.Error())
+			os.Exit(1)
+		}
+
+		if result.NbResults > 0 {
+			logger.Log.Info(fmt.Sprintf("%+v", result.R.Entries[0]))
+			for _, a := range result.R.Entries[0].Attributes {
+				logger.Log.Info(fmt.Sprintf("- %s: %s", a.Name, a.Values))
+			}
+		}
+
+		os.Exit(0)
+	}
+
+	if *commandLDAPSearchGroupTest != "" {
+		logger.Log.Info("- searching group in LDAP: " + *commandLDAPSearchGroupTest)
+		result, err := ldap.TestSearchGroup(*commandLDAPSearchGroupTest)
+		if err != nil {
+			logger.Log.Error("an error occurred: " + err.Error())
+			os.Exit(1)
+		}
+
+		if result.NbResults > 0 {
+			for _, a := range result.R.Entries {
+				logger.Log.Info(fmt.Sprintf("- %v", a))
+			}
+		}
+
+		os.Exit(0)
 	}
 
 	initAdmins()
 
-	router := buildEndpoints()
+	router := buildEndpoints(env.AppFullURL)
 
 	initStaticResources(router)
 
-	env.InitCasbinPolicy()
+	env.Enforcer = casbin.InitCasbinPolicy(env.DB)
 
-	logger.Log.Info("- application running")
-	if err = http.ListenAndServe(":"+*paramListenPort, nil); err != nil {
-		panic("error running the server")
+	var listenAddr string
+	if env.DockerPort != 0 {
+		listenAddr = fmt.Sprintf(":%d", env.DockerPort)
+	} else {
+		listenAddr = strings.Split(env.AppURL, "//")[1]
 	}
 
+	logger.Log.Infof("- application listening on %s", listenAddr)
+	if err = http.ListenAndServe(listenAddr, nil); err != nil {
+		panic("error running the server:" + err.Error())
+	}
 }

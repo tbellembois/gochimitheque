@@ -14,28 +14,27 @@ import (
 
 var (
 	// MailServerAddress is the SMTP server address
-	// such as smtp.univ.fr
+	// such as smtp.univ.fr.
 	MailServerAddress string
 	// MailServerSender is the username used
-	// to send mails
+	// to send mails.
 	MailServerSender string
-	// MailServerPort is the SMTP server port
+	// MailServerPort is the SMTP server port.
 	MailServerPort string
 	// MailServerUseTLS specify if a TLS SMTP connection
-	// should be used
+	// should be used.
 	MailServerUseTLS bool
-	// MailServerTLSSkipVerify bypass the SMTP TLS verification
+	// MailServerTLSSkipVerify bypass the SMTP TLS verification.
 	MailServerTLSSkipVerify bool
 )
 
-// TestMail send a mail to "to"
+// TestMail send a mail to "to".
 func TestMail(to string) error {
 	return SendMail(to, "test mail from Chimithèque", "your mail configuration seems ok")
 }
 
-// SendMail send a mail
+// SendMail send a mail.
 func SendMail(to string, subject string, body string) error {
-
 	var (
 		e         error
 		tlsconfig *tls.Config
@@ -61,7 +60,8 @@ func SendMail(to string, subject string, body string) error {
 		"globals.MailServerUseTLS":        MailServerUseTLS,
 		"globals.MailServerTLSSkipVerify": MailServerTLSSkipVerify,
 		"subject":                         subject,
-		"to":                              to}).Debug("sendMail")
+		"to":                              to,
+	}).Debug("sendMail")
 
 	if MailServerUseTLS {
 		// tls
@@ -73,6 +73,7 @@ func SendMail(to string, subject string, body string) error {
 			return e
 		}
 		defer tlsconn.Close()
+
 		if client, e = smtp.NewClient(tlsconn, MailServerAddress+":"+MailServerPort); e != nil {
 			return e
 		}
@@ -85,31 +86,39 @@ func SendMail(to string, subject string, body string) error {
 
 	// to && from
 	logger.Log.Debug("setting sender")
+
 	if e = client.Mail(MailServerSender); e != nil {
 		return e
 	}
+
 	logger.Log.Debug("setting recipient")
+
 	if e = client.Rcpt(to); e != nil {
 		return e
 	}
+
 	// data
 	logger.Log.Debug("setting body")
+
 	if smtpw, e = client.Data(); e != nil {
 		return e
 	}
 
 	// send message
 	logger.Log.Debug("sending message")
+
 	buf := bytes.NewBufferString(message)
+
 	if n, e = buf.WriteTo(smtpw); e != nil {
 		return e
 	}
+
 	smtpw.Close()
+
 	logger.Log.WithFields(logrus.Fields{"n": n}).Debug("sendMail")
 
 	// send quit command
 	logger.Log.Debug("setting quit command")
-	_ = client.Quit()
 
-	return nil
+	return client.Quit()
 }

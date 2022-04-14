@@ -1,21 +1,17 @@
 package models
 
-type PermKey struct {
-	View string
-	Item string
-	Verb string
-	Id   string
-}
-type PermValue struct {
-	Type string
-	Item string
-	Id   string
+// Permission represent who is able to do what on something.
+type Permission struct {
+	PermissionID       int    `db:"permission_id" json:"permission_id"`
+	PermissionPermName string `db:"permission_perm_name" json:"permission_perm_name" schema:"permission_perm_name"` // ex: r
+	PermissionItemName string `db:"permission_item_name" json:"permission_item_name" schema:"permission_item_name"` // ex: entity
+	PermissionEntityID int    `db:"permission_entity_id" json:"permission_entity_id" schema:"permission_entity_id"` // ex: 8
+	Person             `db:"person" json:"person"`
 }
 
-type CasbinJSON struct {
-	PType string
-	V0    string
-	V1    string
-	V2    string
-	V3    string
+// Equal tests the permission equality.
+func (p1 Permission) Equal(p2 Permission) bool {
+	return (p1.PermissionPermName == p2.PermissionPermName &&
+		p1.PermissionItemName == p2.PermissionItemName &&
+		p1.PermissionEntityID == p2.PermissionEntityID)
 }

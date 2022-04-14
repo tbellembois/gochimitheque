@@ -7,22 +7,26 @@ import (
 	"github.com/doug-martin/goqu/v9"
 	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/logger"
-	. "github.com/tbellembois/gochimitheque/models"
+	"github.com/tbellembois/gochimitheque/models"
+	"github.com/tbellembois/gochimitheque/request"
 )
 
 // GetEntities select the entities matching p
 // and visible by the connected user.
-func (db *SQLiteDataStore) GetEntities(p SelectFilterEntity) ([]Entity, int, error) {
-
+func (db *SQLiteDataStore) GetEntities(f request.Filter) ([]models.Entity, int, error) {
 	var (
 		err                   error
-		entities              []Entity
+		entities              []models.Entity
 		count                 int
-		countSql, selectSql   string
+		countSQL, selectSQL   string
 		countArgs, selectArgs []interface{}
 	)
 
-	logger.Log.WithFields(logrus.Fields{"p": p}).Debug("GetEntities")
+	logger.Log.WithFields(logrus.Fields{"f": f}).Debug("GetEntities")
+
+	if f.OrderBy == "" {
+		f.OrderBy = "entity_id"
+	}
 
 	dialect := goqu.Dialect("sqlite3")
 	entityTable := goqu.T("entity")
@@ -31,9 +35,10 @@ func (db *SQLiteDataStore) GetEntities(p SelectFilterEntity) ([]Entity, int, err
 	personentitiesTable := goqu.T("personentities")
 
 	// Prepare orderby/order clause.
-	orderByClause := p.GetOrderBy()
+	orderByClause := f.OrderBy
 	orderClause := goqu.I(orderByClause).Asc()
-	if strings.ToLower(p.GetOrder()) == "desc" {
+
+	if strings.ToLower(f.Order) == "desc" {
 		orderClause = goqu.I(orderByClause).Desc()
 	}
 
@@ -45,35 +50,36 @@ func (db *SQLiteDataStore) GetEntities(p SelectFilterEntity) ([]Entity, int, err
 		goqu.T("permission").As("perm"),
 		goqu.On(
 			goqu.Ex{
-				"perm.person":               p.GetLoggedPersonID(),
+				"perm.person":               f.LoggedPersonID,
 				"perm.permission_item_name": []string{"all", "entities"},
 				"perm.permission_perm_name": []string{"all", "r", "w"},
 				"perm.permission_entity_id": []interface{}{-1, goqu.I("e.entity_id")},
 			},
 		),
 	).Where(
-		goqu.I("e.entity_name").Like(p.GetSearch()),
+		goqu.I("e.entity_name").Like(f.Search),
 	)
 
-	if countSql, countArgs, err = joinClause.Select(
+	if countSQL, countArgs, err = joinClause.Select(
 		goqu.COUNT(goqu.I("e.entity_id").Distinct()),
 	).ToSQL(); err != nil {
 		return nil, 0, err
 	}
-	if selectSql, selectArgs, err = joinClause.Select(
+
+	if selectSQL, selectArgs, err = joinClause.Select(
 		goqu.I("e.entity_id"),
 		goqu.I("e.entity_name"),
 		goqu.I("e.entity_description"),
-	).GroupBy(goqu.I("e.entity_id")).Order(orderClause).Limit(uint(p.GetLimit())).Offset(uint(p.GetOffset())).ToSQL(); err != nil {
+	).GroupBy(goqu.I("e.entity_id")).Order(orderClause).Limit(uint(f.Limit)).Offset(uint(f.Offset)).ToSQL(); err != nil {
 		return nil, 0, err
 	}
 
-	// select
-	if err = db.Select(&entities, selectSql, selectArgs...); err != nil {
+	// Select.
+	if err = db.Select(&entities, selectSQL, selectArgs...); err != nil {
 		return nil, 0, err
 	}
-	// count
-	if err = db.Get(&count, countSql, countArgs...); err != nil {
+	// Count.
+	if err = db.Get(&count, countSQL, countArgs...); err != nil {
 		return nil, 0, err
 	}
 
@@ -81,7 +87,6 @@ func (db *SQLiteDataStore) GetEntities(p SelectFilterEntity) ([]Entity, int, err
 	// Getting the entity managers.
 	//
 	for i, entity := range entities {
-
 		sQuery := dialect.From(personTable).Join(
 			goqu.T("entitypeople"),
 			goqu.On(
@@ -107,6 +112,7 @@ func (db *SQLiteDataStore) GetEntities(p SelectFilterEntity) ([]Entity, int, err
 			sqlr string
 			args []interface{}
 		)
+
 		if sqlr, args, err = sQuery.ToSQL(); err != nil {
 			logger.Log.Error(err)
 			return nil, 0, err
@@ -115,14 +121,12 @@ func (db *SQLiteDataStore) GetEntities(p SelectFilterEntity) ([]Entity, int, err
 		if err = db.Select(&entities[i].Managers, sqlr, args...); err != nil {
 			return nil, 0, err
 		}
-
 	}
 
 	//
 	// Getting entities number of store locations.
 	//
 	for i, entity := range entities {
-
 		sQuery := dialect.From(storelocationTable).Where(
 			goqu.I("entity").Eq(entity.EntityID),
 		).Select(
@@ -133,6 +137,7 @@ func (db *SQLiteDataStore) GetEntities(p SelectFilterEntity) ([]Entity, int, err
 			sqlr string
 			args []interface{}
 		)
+
 		if sqlr, args, err = sQuery.ToSQL(); err != nil {
 			logger.Log.Error(err)
 			return nil, 0, err
@@ -141,14 +146,12 @@ func (db *SQLiteDataStore) GetEntities(p SelectFilterEntity) ([]Entity, int, err
 		if err = db.Get(&entities[i].EntitySLC, sqlr, args...); err != nil {
 			return nil, 0, err
 		}
-
 	}
 
 	//
 	// Getting entities number of members.
 	//
 	for i, entity := range entities {
-
 		sQuery := dialect.From(personentitiesTable).Where(
 			goqu.I("personentities_entity_id").Eq(entity.EntityID),
 		).Select(
@@ -159,6 +162,7 @@ func (db *SQLiteDataStore) GetEntities(p SelectFilterEntity) ([]Entity, int, err
 			sqlr string
 			args []interface{}
 		)
+
 		if sqlr, args, err = sQuery.ToSQL(); err != nil {
 			logger.Log.Error(err)
 			return nil, 0, err
@@ -167,28 +171,28 @@ func (db *SQLiteDataStore) GetEntities(p SelectFilterEntity) ([]Entity, int, err
 		if err = db.Get(&entities[i].EntityPC, sqlr, args...); err != nil {
 			return nil, 0, err
 		}
-
 	}
 
 	logger.Log.WithFields(logrus.Fields{"entities": entities, "count": count}).Debug("GetEntities")
-	return entities, count, nil
 
+	return entities, count, nil
 }
 
 // GetEntity select the entity by id.
-func (db *SQLiteDataStore) GetEntity(id int) (Entity, error) {
-
+func (db *SQLiteDataStore) GetEntity(id int) (models.Entity, error) {
 	var (
 		err    error
 		sqlr   string
 		args   []interface{}
-		entity Entity
+		entity models.Entity
 	)
+
 	logger.Log.WithFields(logrus.Fields{"id": id}).Debug("GetEntity")
 
 	dialect := goqu.Dialect("sqlite3")
 	tableEntity := goqu.T("entity")
 	tablePerson := goqu.T("person")
+	tableEntityLDAPGroups := goqu.T("entityldapgroups")
 
 	sQuery := dialect.From(tableEntity.As("e")).Where(
 		goqu.I("e.entity_id").Eq(id),
@@ -200,11 +204,11 @@ func (db *SQLiteDataStore) GetEntity(id int) (Entity, error) {
 
 	if sqlr, args, err = sQuery.ToSQL(); err != nil {
 		logger.Log.Error(err)
-		return Entity{}, err
+		return models.Entity{}, err
 	}
 
 	if err = db.Get(&entity, sqlr, args...); err != nil {
-		return Entity{}, err
+		return models.Entity{}, err
 	}
 
 	// Managers.
@@ -223,27 +227,40 @@ func (db *SQLiteDataStore) GetEntity(id int) (Entity, error) {
 
 	if sqlr, args, err = sQuery.ToSQL(); err != nil {
 		logger.Log.Error(err)
-		return Entity{}, err
+		return models.Entity{}, err
 	}
 
 	if err = db.Select(&entity.Managers, sqlr, args...); err != nil {
-		return Entity{}, err
+		return models.Entity{}, err
+	}
+
+	// LDAP groups.
+	sQuery = dialect.From(tableEntityLDAPGroups).Where(
+		goqu.I("entityldapgroups.entityldapgroups_entity_id").Eq(id),
+	).Select(
+		goqu.I("entityldapgroups_ldapgroup"),
+	)
+
+	if sqlr, args, err = sQuery.ToSQL(); err != nil {
+		logger.Log.Error(err)
+		return models.Entity{}, err
+	}
+
+	if err = db.Select(&entity.LDAPGroups, sqlr, args...); err != nil {
+		return models.Entity{}, err
 	}
 
 	logger.Log.WithFields(logrus.Fields{"ID": id, "entity": entity}).Debug("GetEntity")
 
 	return entity, nil
-
 }
 
-// GetEntityManager select the entity managers.
-func (db *SQLiteDataStore) GetEntityManager(id int) ([]Person, error) {
-
+func (db *SQLiteDataStore) GetEntityManager(id int) ([]models.Person, error) {
 	var (
 		err    error
 		sqlr   string
 		args   []interface{}
-		people []Person
+		people []models.Person
 	)
 
 	dialect := goqu.Dialect("sqlite3")
@@ -262,21 +279,19 @@ func (db *SQLiteDataStore) GetEntityManager(id int) ([]Person, error) {
 
 	if sqlr, args, err = sQuery.ToSQL(); err != nil {
 		logger.Log.Error(err)
-		return []Person{}, err
+		return []models.Person{}, err
 	}
 
 	if err = db.Select(&people, sqlr, args...); err != nil {
-		return []Person{}, err
+		return []models.Person{}, err
 	}
 
 	logger.Log.WithFields(logrus.Fields{"ID": id, "people": people}).Debug("GetEntityPeople")
-	return people, nil
 
+	return people, nil
 }
 
-// DeleteEntity delete the entity by id.
 func (db *SQLiteDataStore) DeleteEntity(id int) error {
-
 	var (
 		err  error
 		sqlr string
@@ -285,8 +300,39 @@ func (db *SQLiteDataStore) DeleteEntity(id int) error {
 
 	dialect := goqu.Dialect("sqlite3")
 	tableEntity := goqu.T("entity")
+	tableEntityPeople := goqu.T("entitypeople")
+	tableEntityLDAPGroups := goqu.T("entityldapgroups")
 
-	sQuery := dialect.From(tableEntity).Where(
+	// Managers.
+	sQuery := dialect.From(tableEntityPeople).Where(
+		goqu.I("entitypeople_entity_id").Eq(id),
+	).Delete()
+
+	if sqlr, args, err = sQuery.ToSQL(); err != nil {
+		logger.Log.Error(err)
+		return err
+	}
+
+	if _, err = db.Exec(sqlr, args...); err != nil {
+		return err
+	}
+
+	// LDAP groups.
+	sQuery = dialect.From(tableEntityLDAPGroups).Where(
+		goqu.I("entityldapgroups_entity_id").Eq(id),
+	).Delete()
+
+	if sqlr, args, err = sQuery.ToSQL(); err != nil {
+		logger.Log.Error(err)
+		return err
+	}
+
+	if _, err = db.Exec(sqlr, args...); err != nil {
+		return err
+	}
+
+	// Entity.
+	sQuery = dialect.From(tableEntity).Where(
 		goqu.I("entity_id").Eq(id),
 	).Delete()
 
@@ -300,12 +346,9 @@ func (db *SQLiteDataStore) DeleteEntity(id int) error {
 	}
 
 	return nil
-
 }
 
-// CreateEntity insert e.
-func (db *SQLiteDataStore) CreateEntity(e Entity) (lastInsertId int64, err error) {
-
+func (db *SQLiteDataStore) CreateEntity(e models.Entity) (lastInsertID int64, err error) {
 	var (
 		sqlr string
 		args []interface{}
@@ -325,13 +368,17 @@ func (db *SQLiteDataStore) CreateEntity(e Entity) (lastInsertId int64, err error
 	defer func() {
 		if err != nil {
 			logger.Log.Error(err)
+
 			if rbErr := tx.Rollback(); rbErr != nil {
 				logger.Log.Error(rbErr)
 				err = rbErr
+
 				return
 			}
+
 			return
 		}
+
 		err = tx.Commit()
 	}()
 
@@ -350,14 +397,33 @@ func (db *SQLiteDataStore) CreateEntity(e Entity) (lastInsertId int64, err error
 		return
 	}
 
-	if lastInsertId, err = res.LastInsertId(); err != nil {
+	if lastInsertID, err = res.LastInsertId(); err != nil {
 		return
 	}
-	e.EntityID = int(lastInsertId)
+
+	e.EntityID = int(lastInsertID)
+
+	// Setting up the LDAP groups.
+	for _, g := range e.LDAPGroups {
+		logger.Log.WithFields(logrus.Fields{"g": g}).Debug("CreateEntity")
+
+		// Adding the managers.
+		if sqlr, args, err = dialect.Insert(goqu.T("entityldapgroups")).Rows(
+			goqu.Record{
+				"entityldapgroups_entity_id": e.EntityID,
+				"entityldapgroups_ldapgroup": g,
+			},
+		).ToSQL(); err != nil {
+			return
+		}
+
+		if _, err = tx.Exec(sqlr, args...); err != nil {
+			return
+		}
+	}
 
 	// Setting up the managers.
 	for _, m := range e.Managers {
-
 		logger.Log.WithFields(logrus.Fields{"m": m}).Debug("CreateEntity")
 
 		// Adding the managers.
@@ -452,22 +518,18 @@ func (db *SQLiteDataStore) CreateEntity(e Entity) (lastInsertId int64, err error
 			logger.Log.Errorf("error inserting manager new permissions w products -1: %v", err)
 			return
 		}
-
 	}
 
 	return
-
 }
 
-// UpdateEntity update e.
-func (db *SQLiteDataStore) UpdateEntity(e Entity) (err error) {
-
-	var (
-		tx *sql.Tx
-	)
+func (db *SQLiteDataStore) UpdateEntity(e models.Entity) (err error) {
+	var tx *sql.Tx
 
 	dialect := goqu.Dialect("sqlite3")
 	tableEntity := goqu.T("entity")
+	tableEntityPeople := goqu.T("entitypeople")
+	tableEntityLDAPGroups := goqu.T("entityldapgroups")
 
 	if tx, err = db.Begin(); err != nil {
 		return
@@ -476,13 +538,17 @@ func (db *SQLiteDataStore) UpdateEntity(e Entity) (err error) {
 	defer func() {
 		if err != nil {
 			logger.Log.Error(err)
+
 			if rbErr := tx.Rollback(); rbErr != nil {
 				logger.Log.Error(rbErr)
 				err = rbErr
+
 				return
 			}
+
 			return
 		}
+
 		err = tx.Commit()
 	}()
 
@@ -514,7 +580,6 @@ func (db *SQLiteDataStore) UpdateEntity(e Entity) (err error) {
 	}
 
 	if len(e.Managers) != 0 {
-
 		// Except those not removed.
 		var notIn []int
 		for _, manager := range e.Managers {
@@ -522,10 +587,9 @@ func (db *SQLiteDataStore) UpdateEntity(e Entity) (err error) {
 		}
 
 		whereAnd = append(whereAnd, goqu.I("entitypeople_person_id").NotIn(notIn))
-
 	}
 
-	dQuery := dialect.From(goqu.I("entitypeople")).Where(
+	dQuery := dialect.From(tableEntityPeople).Where(
 		whereAnd...,
 	).Delete()
 
@@ -541,9 +605,8 @@ func (db *SQLiteDataStore) UpdateEntity(e Entity) (err error) {
 
 	// Adding the new managers.
 	for _, manager := range e.Managers {
-
 		// Adding the manager.
-		if sqlr, args, err = dialect.Insert(goqu.T("entitypeople")).Rows(
+		if sqlr, args, err = dialect.Insert(tableEntityPeople).Rows(
 			goqu.Record{
 				"entitypeople_entity_id": e.EntityID,
 				"entitypeople_person_id": manager.PersonID,
@@ -643,16 +706,46 @@ func (db *SQLiteDataStore) UpdateEntity(e Entity) (err error) {
 			logger.Log.Errorf("error inserting manager new permissions w products -1: %v", err)
 			return
 		}
+	}
 
+	// Removing former LDAP groups.
+	dQuery = dialect.From(tableEntityLDAPGroups).Where(
+		goqu.I("entityldapgroups_entity_id").Eq(e.EntityID),
+	).Delete()
+
+	if sqlr, args, err = dQuery.ToSQL(); err != nil {
+		logger.Log.Errorf("error preparing removing LDAP groups: %v", err)
+		return
+	}
+
+	if _, err = tx.Exec(sqlr, args...); err != nil {
+		logger.Log.Errorf("error removing former LDAP groups: %v", err)
+		return
+	}
+
+	// Adding the new LDAP groups.
+	for _, group := range e.LDAPGroups {
+		// Adding the group.
+		if sqlr, args, err = dialect.Insert(tableEntityLDAPGroups).Rows(
+			goqu.Record{
+				"entityldapgroups_entity_id": e.EntityID,
+				"entityldapgroups_ldapgroup": group,
+			},
+		).ToSQL(); err != nil {
+			logger.Log.Errorf("error preparing inserting new group: %v", err)
+			return
+		}
+
+		if _, err = tx.Exec(sqlr, args...); err != nil {
+			logger.Log.Errorf("error inserting new group: %v", err)
+			return
+		}
 	}
 
 	return
-
 }
 
-// HasEntityMember returns true is the entity has members.
 func (db *SQLiteDataStore) HasEntityMember(id int) (bool, error) {
-
 	var (
 		err   error
 		sqlr  string
@@ -679,12 +772,9 @@ func (db *SQLiteDataStore) HasEntityMember(id int) (bool, error) {
 	}
 
 	return count != 0, nil
-
 }
 
-// HasEntityStorelocation returns true is the entity has no store locations.
 func (db *SQLiteDataStore) HasEntityStorelocation(id int) (bool, error) {
-
 	var (
 		err   error
 		sqlr  string
@@ -711,5 +801,4 @@ func (db *SQLiteDataStore) HasEntityStorelocation(id int) (bool, error) {
 	}
 
 	return count != 0, nil
-
 }

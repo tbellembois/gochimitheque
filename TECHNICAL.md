@@ -63,6 +63,7 @@ npm install @mdi/font
 npm install animate.css --save
 npm install print-js --save
 npm install pako
+npm install --save qr-scanner
 
 rsync -av ./node_modules/bootstrap/dist/js/bootstrap.min.js ./static/js/
 rsync -av ./node_modules/bootstrap/dist/js/bootstrap.min.js.map ./static/js/
@@ -77,6 +78,8 @@ rsync -av ./node_modules/@popperjs/core/dist/umd/popper.min.js.map ./static/js/
 rsync -av ./node_modules/select2/dist/js/select2.full.min.js ./static/js/
 rsync -av ./node_modules/print-js/dist/print.js ./static/js/
 rsync -av ./node_modules/pako/dist/pako.min.js ./static/js/
+rsync -av ./node_modules/qr-scanner/qr-scanner.umd.min.js* ./static/js/
+rsync -av ./node_modules/qr-scanner/qr-scanner-worker.min.js* ./static/js/
 
 rsync -av ./node_modules/bootstrap/dist/css/bootstrap.min.css ./static/css/
 rsync -av ./node_modules/bootstrap/dist/css/bootstrap.min.css.map ./static/css/

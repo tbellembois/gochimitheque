@@ -5,33 +5,33 @@ html
         meta(http-equiv="X-UA-Compatible", content="IE=edge")
         meta(name="viewport", content="width=device-width, initial-scale=1")
 
-        title chimitheque
+        title Chimithèque
 
-        link(href=c.ProxyPath + "static/css/animate.min.css",  rel="stylesheet" )
-        link(href=c.ProxyPath + "static/css/bootstrap-colorpicker.min.css",  rel="stylesheet" )
-        link(href=c.ProxyPath + "static/css/bootstrap-table.min.css",  rel="stylesheet" )
-        link(href=c.ProxyPath + "static/css/bootstrap-toggle.min.css",  rel="stylesheet" )
-        link(href=c.ProxyPath + "static/css/bootstrap.min.css",  rel="stylesheet" )
-        link(href=c.ProxyPath + "static/css/chimitheque.css",  rel="stylesheet" )
-        link(href=c.ProxyPath + "static/css/fontawesome.all.min.css",  rel="stylesheet" )
-        link(href=c.ProxyPath + "static/css/materialdesignicons.min.css",  rel="stylesheet" )
-        link(href=c.ProxyPath + "static/css/select2.min.css",  rel="stylesheet" )
-        link(href=c.ProxyPath + "static/css/trumbowyg.min.css",  rel="stylesheet" )
-        link(href=c.ProxyPath + "static/css/trumbowyg.colors.min.css",  rel="stylesheet" )
-        link(href=c.ProxyPath + "static/css/print.css",  rel="stylesheet" )
+        link(href=c.AppURL + c.AppPath + "static/css/animate.min.css",  rel="stylesheet" )
+        link(href=c.AppURL + c.AppPath + "static/css/bootstrap-colorpicker.min.css",  rel="stylesheet" )
+        link(href=c.AppURL + c.AppPath + "static/css/bootstrap-table.min.css",  rel="stylesheet" )
+        link(href=c.AppURL + c.AppPath + "static/css/bootstrap-toggle.min.css",  rel="stylesheet" )
+        link(href=c.AppURL + c.AppPath + "static/css/bootstrap.min.css",  rel="stylesheet" )
+        link(href=c.AppURL + c.AppPath + "static/css/chimitheque.css",  rel="stylesheet" )
+        link(href=c.AppURL + c.AppPath + "static/css/fontawesome.all.min.css",  rel="stylesheet" )
+        link(href=c.AppURL + c.AppPath + "static/css/materialdesignicons.min.css",  rel="stylesheet" )
+        link(href=c.AppURL + c.AppPath + "static/css/select2.min.css",  rel="stylesheet" )
+        link(href=c.AppURL + c.AppPath + "static/css/trumbowyg.min.css",  rel="stylesheet" )
+        link(href=c.AppURL + c.AppPath + "static/css/trumbowyg.colors.min.css",  rel="stylesheet" )
+        link(href=c.AppURL + c.AppPath + "static/css/print.css",  rel="stylesheet" )
 
-        link(rel="shortcut icon" href=c.ProxyPath + "static/img/favicon.ico" type="image/x-icon")
-        link(rel="icon" href=c.ProxyPath + "static/img/favicon.ico" type="image/x-icon")
+        link(rel="shortcut icon" href=c.AppURL + c.AppPath + "static/img/favicon.ico" type="image/x-icon")
+        link(rel="icon" href=c.AppURL + c.AppPath + "static/img/favicon.ico" type="image/x-icon")
 
-        script(src=c.ProxyPath + "static/js/jquery.min.js")
-        script(src=c.ProxyPath + "static/js/popper.min.js" )
-        script(src=c.ProxyPath + "static/js/bootstrap.min.js" )
+        script(src=c.AppURL + c.AppPath + "static/js/jquery.min.js")
+        script(src=c.AppURL + c.AppPath + "static/js/popper.min.js" )
+        script(src=c.AppURL + c.AppPath + "static/js/bootstrap.min.js" )
 
     body
         div#message
-        div#loading
-            .card.text-center.m-sm-2.p-sm-1(style="width: 18rem;")
-                object(data=c.ProxyPath + "static/img/web-assembly-logo-black.svg" style="display: block; margin: auto;" preserveAspectRatio="xMinYMin meet" width="35%" viewBox="0 0 25 25")
+        div#loading.row.h-100.justify-content-center.align-items-center
+            .card.text-center.m-sm-3.p-sm-3(style="width: 18rem;")
+                object(data=c.AppPath + "static/img/web-assembly-logo-black.svg" style="display: block; margin: auto;" preserveAspectRatio="xMinYMin meet" width="35%" viewBox="0 0 25 25")
                 .card-body
                     .card-text
                         span.mdi.mdi-loading.mdi-spin
@@ -64,17 +64,17 @@ html
         // request context
         var c = !{fmt.Sprintf("%s", json)};       
 
-    script(src=c.ProxyPath + "static/js/bootstrap-table.min.js" )
-    script(src=c.ProxyPath + "static/js/bootstrap-colorpicker.min.js" )                      
-    script(src=c.ProxyPath + "static/js/jquery.validate.min.js" )
-    script(src=c.ProxyPath + "static/js/jquery.validate.additional-methods.min.js" )
-    script(src=c.ProxyPath + "static/js/select2.full.min.js" )
-    script(src=c.ProxyPath + "static/js/print.js" )
-    script(src=c.ProxyPath + "static/js/qr-scanner.umd.min.js" )
-    script(src=c.ProxyPath + "static/js/pako.min.js" )
+    script(src=c.AppURL + c.AppPath + "static/js/bootstrap-table.min.js" )
+    script(src=c.AppURL + c.AppPath + "static/js/bootstrap-colorpicker.min.js" )                      
+    script(src=c.AppURL + c.AppPath + "static/js/jquery.validate.min.js" )
+    script(src=c.AppURL + c.AppPath + "static/js/jquery.validate.additional-methods.min.js" )
+    script(src=c.AppURL + c.AppPath + "static/js/select2.full.min.js" )
+    script(src=c.AppURL + c.AppPath + "static/js/print.js" )
+    script(src=c.AppURL + c.AppPath + "static/js/qr-scanner.umd.min.js" )
+    script(src=c.AppURL + c.AppPath + "static/js/pako.min.js" )
     
     script.
-        QrScanner.WORKER_PATH = c.ProxyPath + 'static/js/qr-scanner-worker.min.js';
+        QrScanner.WORKER_PATH = c.AppURL + c.AppPath + 'static/js/qr-scanner-worker.min.js';
         window.QrScanner = QrScanner;
 
     script.
@@ -91,12 +91,24 @@ html
                 }
             });
         }
+        function scanPersonQR() {
+            $("#video").removeClass("invisible")
+            const video = document.getElementById("qr-video");
+            window.qrScanner = new window.QrScanner(video, result => Person_scanQRdone(result));
+            QrScanner.hasCamera().then(hasCamera => {
+                if (hasCamera) {
+                    window.qrScanner.start();
+                } else {
+                    alert(Utils_translate("nocamera", c.PersonLanguage));
+                    Storage_closeQR();
+                }
+            });
+        }
         function closeQR() {
             $("div#video").addClass("invisible")
             window.qrScanner.destroy();
             window.qrScanner = null;
         }
-        // TODO: move me
         function load2dimage() {
             if (!window.FileReader) {
                 return alert('FileReader API is not supported by your browser.');
@@ -118,7 +130,7 @@ html
             }
         }
 
-    script(src=c.ProxyPath + "static/js/wasm_exec.js")
+    script(src=c.AppURL + c.AppPath + "static/js/wasm_exec.js")
     script.
 
         // https://levelup.gitconnected.com/best-practices-for-webassembly-using-golang-1-15-8dfa439827b8
@@ -126,7 +138,7 @@ html
             const go = new Go();
 
             // gzip -9 -v -c wasm > wasm.gz
-            const buffer = pako.ungzip(await (await fetch(c.ProxyPath + "wasm/wasm.gz")).arrayBuffer());
+            const buffer = pako.ungzip(await (await fetch(c.AppURL + c.AppPath + "wasm/wasm.gz")).arrayBuffer());
           
             // A fetched response might be decompressed twice on Firefox.
             // See https://bugzilla.mozilla.org/show_bug.cgi?id=610679

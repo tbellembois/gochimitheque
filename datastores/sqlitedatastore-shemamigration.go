@@ -1,6 +1,6 @@
 package datastores
 
-var versionToMigration = []string{migrationOne, migrationTwo, migrationThree, migrationFour, migrationFive}
+var versionToMigration = []string{migrationOne, migrationTwo, migrationThree, migrationFour, migrationFive, migrationSix, migrationSeven}
 
 var migrationOne = `BEGIN TRANSACTION;
 
@@ -450,6 +450,7 @@ PRAGMA user_version=4;
 COMMIT;
 PRAGMA foreign_keys=on;
 `
+
 var migrationFive = `PRAGMA foreign_keys=off;
 
 BEGIN TRANSACTION;
@@ -461,3 +462,49 @@ PRAGMA user_version=5;
 COMMIT;
 PRAGMA foreign_keys=on;
 `
+
+var migrationSix = `PRAGMA foreign_keys=off;
+
+BEGIN TRANSACTION;
+
+CREATE TABLE IF NOT EXISTS new_person(
+	person_id integer PRIMARY KEY,
+	person_email string NOT NULL,
+	person_password string NOT NULL,
+	person_aeskey string NOT NULL);
+
+INSERT INTO new_person(
+	person_id,
+	person_email,
+	person_password,
+	person_aeskey
+)
+SELECT person_id,
+	person_email,
+	person_password,
+	"32byteskeytobechangedbygocode+++"
+FROM person;
+
+DROP TABLE person;
+ALTER TABLE new_person RENAME TO person;
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_person ON person(person_email);
+
+PRAGMA user_version=6;
+COMMIT;
+PRAGMA foreign_keys=on;`
+
+var migrationSeven = `PRAGMA foreign_keys=off;
+
+BEGIN TRANSACTION;
+
+CREATE TABLE IF NOT EXISTS entityldapgroups (
+	entityldapgroups_entity_id integer NOT NULL,
+	entityldapgroups_ldapgroup string NOT NULL,
+	PRIMARY KEY(entityldapgroups_entity_id, entityldapgroups_ldapgroup),
+	FOREIGN KEY(entityldapgroups_entity_id) references entity(entity_id));
+CREATE UNIQUE INDEX IF NOT EXISTS idx_entityldapgroups ON entityldapgroups(entityldapgroups_entity_id, entityldapgroups_ldapgroup);
+
+PRAGMA user_version=7;
+COMMIT;
+PRAGMA foreign_keys=on;`

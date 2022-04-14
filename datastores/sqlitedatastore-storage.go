@@ -9,16 +9,18 @@ import (
 	"strings"
 
 	"github.com/doug-martin/goqu/v9"
-	"github.com/jmoiron/sqlx" // register sqlite3 driver
+
+	// register sqlite3 driver.
+	"github.com/jmoiron/sqlx"
 	"github.com/sirupsen/logrus"
 	qrcode "github.com/skip2/go-qrcode"
 	"github.com/tbellembois/gochimitheque/logger"
-	. "github.com/tbellembois/gochimitheque/models"
+	"github.com/tbellembois/gochimitheque/models"
+	"github.com/tbellembois/gochimitheque/request"
 )
 
 // ToogleStorageBorrowing borrow/unborrow the storage for the connected user.
-func (db *SQLiteDataStore) ToogleStorageBorrowing(s Storage) error {
-
+func (db *SQLiteDataStore) ToogleStorageBorrowing(s models.Storage) error {
 	var (
 		sqlr  string
 		count int
@@ -43,14 +45,12 @@ func (db *SQLiteDataStore) ToogleStorageBorrowing(s Storage) error {
 	}
 
 	return nil
-
 }
 
 // GetStoragesUnits return the units.
-func (db *SQLiteDataStore) GetStoragesUnits(p SelectFilterUnit) ([]Unit, int, error) {
-
+func (db *SQLiteDataStore) GetStoragesUnits(f request.Filter) ([]models.Unit, int, error) {
 	var (
-		units                              []Unit
+		units                              []models.Unit
 		count                              int
 		precreq, presreq, comreq, postsreq strings.Builder
 		cnstmt                             *sqlx.NamedStmt
@@ -58,20 +58,24 @@ func (db *SQLiteDataStore) GetStoragesUnits(p SelectFilterUnit) ([]Unit, int, er
 		err                                error
 	)
 
+	if f.OrderBy == "" {
+		f.OrderBy = "unit_id"
+	}
+
 	precreq.WriteString(" SELECT count(DISTINCT unit.unit_id)")
 	presreq.WriteString(" SELECT unit_id, unit_label, unit_type")
 
 	comreq.WriteString(" FROM unit")
 	comreq.WriteString(" WHERE unit_label LIKE :search")
 
-	if p.GetUnitType() != "" {
+	if f.UnitType != "" {
 		comreq.WriteString(" AND unit_type=:unit_type")
 	}
 
-	postsreq.WriteString(" ORDER BY unit.unit_type, unit_id  " + p.GetOrder())
+	postsreq.WriteString(" ORDER BY unit.unit_type, unit_id  " + f.Order)
 
 	// limit
-	if p.GetLimit() != ^uint64(0) {
+	if f.Limit != ^uint64(0) {
 		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
 	}
 
@@ -85,34 +89,33 @@ func (db *SQLiteDataStore) GetStoragesUnits(p SelectFilterUnit) ([]Unit, int, er
 
 	// building argument map
 	m := map[string]interface{}{
-		"search":    p.GetSearch(),
-		"order":     p.GetOrder(),
-		"limit":     p.GetLimit(),
-		"offset":    p.GetOffset(),
-		"unit_type": p.GetUnitType(),
+		"search":    f.Search,
+		"order":     f.Order,
+		"limit":     f.Limit,
+		"offset":    f.Offset,
+		"unit_type": f.UnitType,
 	}
 
-	// select
+	// Select.
 	if err = snstmt.Select(&units, m); err != nil {
 		return nil, 0, err
 	}
-	// count
+	// Count.
 	if err = cnstmt.Get(&count, m); err != nil {
 		return nil, 0, err
 	}
 
 	logger.Log.WithFields(logrus.Fields{"units": units}).Debug("GetStoragesUnits")
-	return units, count, nil
 
+	return units, count, nil
 }
 
 // GetStorages returns the storages matching the request parameters p.
 // Only storages that the logged user can see are returned given his permissions
 // and membership.
-func (db *SQLiteDataStore) GetStorages(p SelectFilterStorage) ([]Storage, int, error) {
-
+func (db *SQLiteDataStore) GetStorages(f request.Filter) ([]models.Storage, int, error) {
 	var (
-		storages                                  []Storage
+		storages                                  []models.Storage
 		count                                     int
 		precreq, presreq, comreq, postsreq, reqhc strings.Builder
 		cnstmt                                    *sqlx.NamedStmt
@@ -120,14 +123,19 @@ func (db *SQLiteDataStore) GetStorages(p SelectFilterStorage) ([]Storage, int, e
 		err                                       error
 		isadmin                                   bool
 	)
-	logger.Log.WithFields(logrus.Fields{"p": p}).Debug("GetStorages")
 
-	if strings.HasPrefix(p.GetOrderBy(), "storage_") {
-		p.SetOrderBy("s." + p.GetOrderBy())
+	logger.Log.WithFields(logrus.Fields{"f": f}).Debug("GetStorages")
+
+	if f.OrderBy == "" {
+		f.OrderBy = "storage_id"
+	} else if f.OrderBy == "product.name.name_label" {
+		f.OrderBy = "name.name_label"
+	} else if strings.HasPrefix(f.OrderBy, "storage_") {
+		f.OrderBy = fmt.Sprintf("s.%s", f.OrderBy)
 	}
 
 	// is the user an admin?
-	if isadmin, err = db.IsPersonAdmin(p.GetLoggedPersonID()); err != nil {
+	if isadmin, err = db.IsPersonAdmin(f.LoggedPersonID); err != nil {
 		return nil, 0, err
 	}
 
@@ -166,6 +174,7 @@ func (db *SQLiteDataStore) GetStorages(p SelectFilterStorage) ([]Storage, int, e
 		product.product_number_per_carton AS "product.product_number_per_carton",
 		product.product_number_per_bag AS "product.product_number_per_bag",
         producerref.producerref_id AS "product.producerref.producerref_id",
+		producerref.producerref_label AS "product.producerref.producerref_label",
 		name.name_id AS "product.name.name_id",
 		name.name_label AS "product.name.name_label",
 		casnumber.casnumber_id AS "product.casnumber.casnumber_id",
@@ -179,7 +188,7 @@ func (db *SQLiteDataStore) GetStorages(p SelectFilterStorage) ([]Storage, int, e
 		entity.entity_id AS "storelocation.entity.entity_id"
 		`)
 
-	if p.GetCasNumberCmr() {
+	if f.CasNumberCmr {
 		presreq.WriteString(`,GROUP_CONCAT(DISTINCT hazardstatement.hazardstatement_cmr) AS "product.hazardstatement_cmr"`)
 	}
 
@@ -190,12 +199,12 @@ func (db *SQLiteDataStore) GetStorages(p SelectFilterStorage) ([]Storage, int, e
 	// get product
 	comreq.WriteString(" JOIN product ON s.product = product.product_id")
 	// CMR
-	if p.GetCasNumberCmr() {
+	if f.CasNumberCmr {
 		comreq.WriteString(" LEFT JOIN producthazardstatements ON producthazardstatements.producthazardstatements_product_id = product.product_id")
 		comreq.WriteString(" LEFT JOIN hazardstatement ON producthazardstatements.producthazardstatements_hazardstatement_id = hazardstatement.hazardstatement_id")
 	}
 	// get producerref
-	if p.GetProducerRef() != -1 {
+	if f.ProducerRef != -1 {
 		comreq.WriteString(" JOIN producerref ON product.producerref = :producerref")
 	} else {
 		comreq.WriteString(" LEFT JOIN producerref ON product.producerref = producerref.producerref_id")
@@ -203,7 +212,7 @@ func (db *SQLiteDataStore) GetStorages(p SelectFilterStorage) ([]Storage, int, e
 	// get name
 	comreq.WriteString(" JOIN name ON product.name = name.name_id")
 	// get category
-	if p.GetCategory() != -1 {
+	if f.Category != -1 {
 		comreq.WriteString(" JOIN category ON product.category = :category")
 	}
 	// get signal word
@@ -221,7 +230,7 @@ func (db *SQLiteDataStore) GetStorages(p SelectFilterStorage) ([]Storage, int, e
 	// get supplier
 	comreq.WriteString(" LEFT JOIN supplier ON s.supplier = supplier.supplier_id")
 	// get borrowings
-	if p.GetBorrowing() {
+	if f.Borrowing {
 		comreq.WriteString(" JOIN borrowing ON borrowing.storage = s.storage_id AND borrowing.borrower = :personid")
 	} else {
 		comreq.WriteString(" LEFT JOIN borrowing ON s.storage_id = borrowing.storage")
@@ -231,23 +240,23 @@ func (db *SQLiteDataStore) GetStorages(p SelectFilterStorage) ([]Storage, int, e
 	// get empirical formula
 	comreq.WriteString(" LEFT JOIN empiricalformula ON product.empiricalformula = empiricalformula.empiricalformula_id")
 	// get symbols
-	if len(p.GetSymbols()) != 0 {
+	if len(f.Symbols) != 0 {
 		comreq.WriteString(" JOIN productsymbols AS ps ON ps.productsymbols_product_id = product.product_id")
 	}
 	// get hazardstatements
-	if len(p.GetHazardStatements()) != 0 {
+	if len(f.HazardStatements) != 0 {
 		comreq.WriteString(" JOIN producthazardstatements AS phs ON phs.producthazardstatements_product_id = product.product_id")
 	}
 	// get precautionarystatements
-	if len(p.GetPrecautionaryStatements()) != 0 {
+	if len(f.PrecautionaryStatements) != 0 {
 		comreq.WriteString(" JOIN productprecautionarystatements AS pps ON pps.productprecautionarystatements_product_id = product.product_id")
 	}
 	// get tags
-	if len(p.GetTags()) != 0 {
+	if len(f.Tags) != 0 {
 		comreq.WriteString(" JOIN producttags AS ptags ON ptags.producttags_product_id = product.product_id")
 	}
 	// get bookmarks
-	if p.GetBookmark() {
+	if f.Bookmark {
 		comreq.WriteString(" JOIN bookmark AS b ON b.product = product.product_id AND b.person = :personid")
 	}
 
@@ -261,34 +270,33 @@ func (db *SQLiteDataStore) GetStorages(p SelectFilterStorage) ([]Storage, int, e
 	perm.person = :personid and (perm.permission_item_name in ("all", "storages")) and (perm.permission_perm_name in ("all", "r", "w")) and (perm.permission_entity_id in (-1, e.entity_id))
 	`)
 	comreq.WriteString(" WHERE 1")
-	if len(p.GetIds()) > 0 {
+	if len(f.Ids) > 0 {
 		comreq.WriteString(" AND s.storage_id in (")
 
-		for _, id := range p.GetIds() {
+		for _, id := range f.Ids {
 			comreq.WriteString(fmt.Sprintf("%d,", id))
 		}
 		// to complete the last comma
 		comreq.WriteString("-1")
 		comreq.WriteString(" )")
-
 	}
-	if p.GetStorageToDestroy() {
+	if f.StorageToDestroy {
 		comreq.WriteString(" AND s.storage_todestroy = true")
 	}
-	if p.GetCasNumberCmr() {
+	if f.CasNumberCmr {
 		comreq.WriteString(" AND (casnumber.casnumber_cmr IS NOT NULL OR (hazardstatement_cmr IS NOT NULL AND hazardstatement_cmr != ''))")
 	}
-	if p.GetProduct() != -1 {
+	if f.Product != -1 {
 		comreq.WriteString(" AND product.product_id = :product")
 	}
-	if p.GetEntity() != -1 {
+	if f.Entity != -1 {
 		comreq.WriteString(" AND entity.entity_id = :entity")
 	}
-	if p.GetStorelocation() != -1 {
+	if f.Storelocation != -1 {
 		comreq.WriteString(" AND storelocation.storelocation_id = :storelocation")
 	}
-	if p.GetStorage() != -1 {
-		if p.GetHistory() {
+	if f.Storage != -1 {
+		if f.History {
 			comreq.WriteString(" AND (s.storage = :storage OR s.storage_id = :storage)")
 		} else {
 			comreq.WriteString(" AND (s.storage_id = :storage")
@@ -296,99 +304,108 @@ func (db *SQLiteDataStore) GetStorages(p SelectFilterStorage) ([]Storage, int, e
 			comreq.WriteString(" OR (s.storage_barecode = (SELECT storage_barecode FROM storage WHERE storage_id = :storage)))")
 		}
 	}
-	if !p.GetHistory() {
+	if !f.History {
 		comreq.WriteString(" AND s.storage IS NULL")
 	}
-	if p.GetStorageArchive() {
+	if f.StorageArchive {
 		comreq.WriteString(" AND s.storage_archive = true")
 	} else {
 		comreq.WriteString(" AND s.storage_archive = false")
 	}
 
 	// search form parameters
-	if p.GetName() != -1 {
+	if f.Name != -1 {
 		comreq.WriteString(" AND name.name_id = :name")
 	}
-	if p.GetCasNumber() != -1 {
+	if f.CasNumber != -1 {
 		comreq.WriteString(" AND casnumber.casnumber_id = :casnumber")
 	}
-	if p.GetEmpiricalFormula() != -1 {
+	if f.EmpiricalFormula != -1 {
 		comreq.WriteString(" AND empiricalformula.empiricalformula_id = :empiricalformula")
 	}
-	if p.GetStorageBarecode() != "" {
+	if f.StorageBarecode != "" {
 		comreq.WriteString(" AND s.storage_barecode LIKE :storage_barecode")
 	}
-	if p.GetStorageBatchNumber() != "" {
+	if f.StorageBatchNumber != "" {
 		comreq.WriteString(" AND s.storage_batchnumber LIKE :storage_batchnumber")
 	}
-	if p.GetCustomNamePartOf() != "" {
+	if f.CustomNamePartOf != "" {
 		comreq.WriteString(" AND name.name_label LIKE :custom_name_part_of")
 	}
-	if len(p.GetSymbols()) != 0 {
+	if len(f.Symbols) != 0 {
 		comreq.WriteString(" AND ps.productsymbols_symbol_id IN (")
-		for _, s := range p.GetSymbols() {
+
+		for _, s := range f.Symbols {
 			comreq.WriteString(fmt.Sprintf("%d,", s))
 		}
+
 		// to complete the last comma
 		comreq.WriteString("-1")
 		comreq.WriteString(" )")
 	}
-	if len(p.GetHazardStatements()) != 0 {
+	if len(f.HazardStatements) != 0 {
 		comreq.WriteString(" AND phs.producthazardstatements_hazardstatement_id IN (")
-		for _, s := range p.GetHazardStatements() {
+
+		for _, s := range f.HazardStatements {
 			comreq.WriteString(fmt.Sprintf("%d,", s))
 		}
+
 		// to complete the last comma
 		comreq.WriteString("-1")
 		comreq.WriteString(" )")
 	}
-	if len(p.GetPrecautionaryStatements()) != 0 {
+	if len(f.PrecautionaryStatements) != 0 {
 		comreq.WriteString(" AND pps.productprecautionarystatements_precautionarystatement_id IN (")
-		for _, s := range p.GetPrecautionaryStatements() {
+
+		for _, s := range f.PrecautionaryStatements {
 			comreq.WriteString(fmt.Sprintf("%d,", s))
 		}
+
 		// to complete the last comma
 		comreq.WriteString("-1")
 		comreq.WriteString(" )")
 	}
-	if len(p.GetTags()) != 0 {
+	if len(f.Tags) != 0 {
 		comreq.WriteString(" AND ptags.producttags_tag_id IN (")
-		for _, t := range p.GetTags() {
+
+		for _, t := range f.Tags {
 			comreq.WriteString(fmt.Sprintf("%d,", t))
 		}
+
 		// to complete the last comma
 		comreq.WriteString("-1")
 		comreq.WriteString(" )")
 	}
-	if p.GetSignalWord() != -1 {
+	if f.SignalWord != -1 {
 		comreq.WriteString(" AND signalword.signalword_id = :signalword")
 	}
 
 	// show bio/chem/consu
-	if !p.GetShowChem() && !p.GetShowBio() && p.GetShowConsu() {
+	switch {
+	case !f.ShowChem && !f.ShowBio && f.ShowConsu:
 		comreq.WriteString(" AND (product_number_per_carton IS NOT NULL AND product_number_per_carton != 0)")
-	} else if !p.GetShowChem() && p.GetShowBio() && !p.GetShowConsu() {
+	case !f.ShowChem && f.ShowBio && !f.ShowConsu:
 		comreq.WriteString(" AND producerref IS NOT NULL")
 		comreq.WriteString(" AND (product_number_per_carton IS NULL OR product_number_per_carton == 0)")
-	} else if !p.GetShowChem() && p.GetShowBio() && p.GetShowConsu() {
+	case !f.ShowChem && f.ShowBio && f.ShowConsu:
 		comreq.WriteString(" AND ((product_number_per_carton IS NOT NULL AND product_number_per_carton != 0)")
 		comreq.WriteString(" OR producerref IS NOT NULL)")
-	} else if p.GetShowChem() && !p.GetShowBio() && !p.GetShowConsu() {
+	case f.ShowChem && !f.ShowBio && !f.ShowConsu:
 		comreq.WriteString(" AND producerref IS NULL")
 		comreq.WriteString(" AND (product_number_per_carton IS NULL OR product_number_per_carton == 0)")
-	} else if p.GetShowChem() && !p.GetShowBio() && p.GetShowConsu() {
+	case f.ShowChem && !f.ShowBio && f.ShowConsu:
 		comreq.WriteString(" AND (producerref IS NULL")
 		comreq.WriteString(" OR (product_number_per_carton IS NOT NULL AND product_number_per_carton != 0))")
-	} else if p.GetShowChem() && p.GetShowBio() && !p.GetShowConsu() {
+	case f.ShowChem && f.ShowBio && !f.ShowConsu:
 		comreq.WriteString(" AND (product_number_per_carton IS NULL OR product_number_per_carton == 0)")
 	}
 
 	// post select request
 	postsreq.WriteString(" GROUP BY s.storage_id")
-	postsreq.WriteString(" ORDER BY " + p.GetOrderBy() + " " + p.GetOrder())
+	postsreq.WriteString(" ORDER BY " + f.OrderBy + " " + f.Order)
 
 	// limit
-	if p.GetLimit() != ^uint64(0) {
+	if f.Limit != ^uint64(0) {
 		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
 	}
 
@@ -402,37 +419,50 @@ func (db *SQLiteDataStore) GetStorages(p SelectFilterStorage) ([]Storage, int, e
 
 	// building argument map
 	m := map[string]interface{}{
-		"ids":                 p.GetIds(),
-		"search":              p.GetSearch(),
-		"personid":            p.GetLoggedPersonID(),
-		"order":               p.GetOrder(),
-		"limit":               p.GetLimit(),
-		"offset":              p.GetOffset(),
-		"entity":              p.GetEntity(),
-		"product":             p.GetProduct(),
-		"storelocation":       p.GetStorelocation(),
-		"storage":             p.GetStorage(),
-		"name":                p.GetName(),
-		"casnumber":           p.GetCasNumber(),
-		"empiricalformula":    p.GetEmpiricalFormula(),
-		"storage_barecode":    p.GetStorageBarecode(),
-		"storage_batchnumber": p.GetStorageBatchNumber(),
-		"custom_name_part_of": "%" + p.GetCustomNamePartOf() + "%",
-		"signalword":          p.GetSignalWord(),
-		"producerref":         p.GetProducerRef(),
-		"category":            p.GetCategory(),
+		"ids":                 f.Ids,
+		"search":              f.Search,
+		"personid":            f.LoggedPersonID,
+		"order":               f.Order,
+		"limit":               f.Limit,
+		"offset":              f.Offset,
+		"entity":              f.Entity,
+		"product":             f.Product,
+		"storelocation":       f.Storelocation,
+		"storage":             f.Storage,
+		"name":                f.Name,
+		"casnumber":           f.CasNumber,
+		"empiricalformula":    f.EmpiricalFormula,
+		"storage_barecode":    f.StorageBarecode,
+		"storage_batchnumber": f.StorageBatchNumber,
+		"custom_name_part_of": "%" + f.CustomNamePartOf + "%",
+		"signalword":          f.SignalWord,
+		"producerref":         f.ProducerRef,
+		"category":            f.Category,
 	}
 
 	logger.Log.Debug(presreq.String() + comreq.String() + postsreq.String())
 	logger.Log.Debug(m)
 
-	// select
+	// Select.
 	if err = snstmt.Select(&storages, m); err != nil {
 		return nil, 0, err
 	}
-	// count
+	// Count.
 	if err = cnstmt.Get(&count, m); err != nil {
 		return nil, 0, err
+	}
+
+	//
+	// getting product type
+	//
+	for i, st := range storages {
+		if st.Product.ProductNumberPerCarton.Valid {
+			storages[i].Product.ProductType = "CONS"
+		} else if st.Product.ProducerRef.ProducerRefID.Valid {
+			storages[i].Product.ProductType = "BIO"
+		} else {
+			storages[i].Product.ProductType = "CHEM"
+		}
 	}
 
 	//
@@ -440,7 +470,7 @@ func (db *SQLiteDataStore) GetStorages(p SelectFilterStorage) ([]Storage, int, e
 	//
 	for i, st := range storages {
 		// getting the total storage count
-		//logger.Log.Debug(st)
+		// logger.Log.Debug(st)
 		reqhc.Reset()
 		reqhc.WriteString("SELECT count(DISTINCT storage_id) from storage WHERE storage.storage = ?")
 		if err = db.Get(&storages[i].StorageHC, reqhc.String(), st.StorageID); err != nil {
@@ -460,30 +490,38 @@ func (db *SQLiteDataStore) GetStorages(p SelectFilterStorage) ([]Storage, int, e
 		JOIN person 
 		ON borrowing.borrower = person.person_id 
 		WHERE borrowing.storage = ?`)
-		var borrowing Borrowing
+
+		var borrowing models.Borrowing
+
 		if err = db.Get(&borrowing, reqhc.String(), st.StorageID); err != nil && err != sql.ErrNoRows {
 			return nil, 0, err
 		}
+
 		storages[i].Borrowing = &borrowing
 	}
 
 	return storages, count, nil
-
 }
 
 // GetOtherStorages returns the entity manager(s) email of the entities
 // storing the product with the id passed in the request parameters p.
-func (db *SQLiteDataStore) GetOtherStorages(p SelectFilterStorage) ([]Entity, int, error) {
-
+func (db *SQLiteDataStore) GetOtherStorages(f request.Filter) ([]models.Entity, int, error) {
 	var (
-		entities                           []Entity
+		entities                           []models.Entity
 		count                              int
 		precreq, presreq, comreq, postsreq strings.Builder
 		cnstmt                             *sqlx.NamedStmt
 		snstmt                             *sqlx.NamedStmt
 		err                                error
 	)
-	logger.Log.WithFields(logrus.Fields{"p": p}).Debug("GetOtherStorages")
+
+	logger.Log.WithFields(logrus.Fields{"f": f}).Debug("GetOtherStorages")
+
+	if f.OrderBy == "" {
+		f.OrderBy = "storage_id"
+	} else if f.OrderBy == "product.name.name_label" {
+		f.OrderBy = "name.name_label"
+	}
 
 	// pre request: select or count
 	precreq.WriteString(" SELECT count(DISTINCT e.entity_id)")
@@ -505,7 +543,7 @@ func (db *SQLiteDataStore) GetOtherStorages(p SelectFilterStorage) ([]Entity, in
 	comreq.WriteString(" JOIN person ON entitypeople.entitypeople_person_id = person.person_id")
 
 	comreq.WriteString(" WHERE 1")
-	if p.GetProduct() != -1 {
+	if f.Product != -1 {
 		comreq.WriteString(" AND storage.product = :product")
 	}
 
@@ -522,44 +560,43 @@ func (db *SQLiteDataStore) GetOtherStorages(p SelectFilterStorage) ([]Entity, in
 
 	// building argument map
 	m := map[string]interface{}{
-		"search":              p.GetSearch(),
-		"personid":            p.GetLoggedPersonID(),
-		"order":               p.GetOrder(),
-		"limit":               p.GetLimit(),
-		"offset":              p.GetOffset(),
-		"entity":              p.GetEntity(),
-		"product":             p.GetProduct(),
-		"storelocation":       p.GetStorelocation(),
-		"storage":             p.GetStorage(),
-		"name":                p.GetName(),
-		"casnumber":           p.GetCasNumber(),
-		"empiricalformula":    p.GetEmpiricalFormula(),
-		"storage_barecode":    p.GetStorageBarecode(),
-		"custom_name_part_of": "%" + p.GetCustomNamePartOf() + "%",
-		"signalword":          p.GetSignalWord(),
+		"search":              f.Search,
+		"personid":            f.LoggedPersonID,
+		"order":               f.Order,
+		"limit":               f.Limit,
+		"offset":              f.Offset,
+		"entity":              f.Entity,
+		"product":             f.Product,
+		"storelocation":       f.Storelocation,
+		"storage":             f.Storage,
+		"name":                f.Name,
+		"casnumber":           f.CasNumber,
+		"empiricalformula":    f.EmpiricalFormula,
+		"storage_barecode":    f.StorageBarecode,
+		"custom_name_part_of": "%" + f.CustomNamePartOf + "%",
+		"signalword":          f.SignalWord,
 	}
 
-	// select
+	// Select.
 	if err = snstmt.Select(&entities, m); err != nil {
 		return nil, 0, err
 	}
-	// count
+	// Count.
 	if err = cnstmt.Get(&count, m); err != nil {
 		return nil, 0, err
 	}
 
 	return entities, count, nil
-
 }
 
-// GetStorage returns the storage with id "id"
-func (db *SQLiteDataStore) GetStorage(id int) (Storage, error) {
-
+// GetStorage returns the storage with id "id".
+func (db *SQLiteDataStore) GetStorage(id int) (models.Storage, error) {
 	var (
-		storage Storage
+		storage models.Storage
 		sqlr    string
 		err     error
 	)
+
 	logger.Log.WithFields(logrus.Fields{"id": id}).Debug("GetStorage")
 
 	sqlr = `SELECT storage.storage_id,
@@ -613,19 +650,26 @@ func (db *SQLiteDataStore) GetStorage(id int) (Storage, error) {
 	JOIN name ON product.name = name.name_id
 	WHERE storage.storage_id = ?`
 	if err = db.Get(&storage, sqlr, id); err != nil {
-		return Storage{}, err
+		return models.Storage{}, err
+	}
+
+	if storage.Product.ProductNumberPerCarton.Valid {
+		storage.Product.ProductType = "CONS"
+	} else if storage.Product.ProducerRef.ProducerRefID.Valid {
+		storage.Product.ProductType = "BIO"
+	} else {
+		storage.Product.ProductType = "CHEM"
 	}
 
 	logger.Log.WithFields(logrus.Fields{"ID": id, "storage": storage}).Debug("GetStorage")
-	return storage, nil
 
+	return storage, nil
 }
 
-// GetStorageEntity returns the entity of the storage with id "id"
-func (db *SQLiteDataStore) GetStorageEntity(id int) (Entity, error) {
-
+// GetStorageEntity returns the entity of the storage with id "id".
+func (db *SQLiteDataStore) GetStorageEntity(id int) (models.Entity, error) {
 	var (
-		entity Entity
+		entity models.Entity
 		sqlr   string
 		err    error
 	)
@@ -638,55 +682,65 @@ func (db *SQLiteDataStore) GetStorageEntity(id int) (Entity, error) {
 	JOIN entity ON storelocation.entity = entity.entity_id
 	WHERE storage.storage_id = ?`
 	if err = db.Get(&entity, sqlr, id); err != nil {
-		return Entity{}, err
+		return models.Entity{}, err
 	}
 
 	logger.Log.WithFields(logrus.Fields{"ID": id, "entity": entity}).Debug("GetStorageEntity")
-	return entity, nil
 
+	return entity, nil
 }
 
-// DeleteStorage deletes the storages with the given id
+// DeleteStorage deletes the storages with the given id.
 func (db *SQLiteDataStore) DeleteStorage(id int) error {
+	logger.Log.WithFields(logrus.Fields{"id": id}).Debug("DeleteStorage")
 
 	var (
 		sqlr string
 		err  error
 	)
+
+	// Delete history first.
+	sqlr = `DELETE FROM storage 
+	WHERE storage = ?`
+	if _, err = db.Exec(sqlr, id); err != nil {
+		return err
+	}
+
 	sqlr = `DELETE FROM storage 
 	WHERE storage_id = ?`
 	if _, err = db.Exec(sqlr, id); err != nil {
 		return err
 	}
-	return nil
 
+	return nil
 }
 
-// ArchiveStorage archives the storages with the given id
+// ArchiveStorage archives the storages with the given id.
 func (db *SQLiteDataStore) ArchiveStorage(id int) error {
-
 	var (
 		sqlr string
 		err  error
 	)
+
 	sqlr = `UPDATE storage SET storage_archive = true 
 	WHERE storage_id = ?`
+
 	if _, err = db.Exec(sqlr, id); err != nil {
 		return err
 	}
+
 	sqlr = `UPDATE storage SET storage_archive = true 
 	WHERE storage.storage = ?`
+
 	if _, err = db.Exec(sqlr, id); err != nil {
 		return err
 	}
 
 	return nil
-
 }
 
-// RestoreStorage restores (unarchive) the storages with the given id
+// RestoreStorage restores (unarchive) the storages with the given id.
 func (db *SQLiteDataStore) RestoreStorage(id int) error {
-
 	var (
 		sqlr string
 		err  error
@@ -694,22 +748,23 @@ func (db *SQLiteDataStore) RestoreStorage(id int) error {
 
 	sqlr = `UPDATE storage SET storage_archive = false 
 	WHERE storage_id = ?`
+
 	if _, err = db.Exec(sqlr, id); err != nil {
 		return err
 	}
+
 	sqlr = `UPDATE storage SET storage_archive = false 
 	WHERE storage.storage = ?`
+
 	if _, err = db.Exec(sqlr, id); err != nil {
 		return err
 	}
 
 	return nil
-
 }
 
-// CreateStorage creates a new storage
-func (db *SQLiteDataStore) CreateUpdateStorage(s Storage, itemNumber int, update bool) (lastInsertId int64, err error) {
-
+// CreateStorage creates a new storage.
+func (db *SQLiteDataStore) CreateUpdateStorage(s models.Storage, itemNumber int, update bool) (lastInsertID int64, err error) {
 	var (
 		v            driver.Value
 		tx           *sql.Tx
@@ -736,10 +791,13 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s Storage, itemNumber int, update
 			if rbErr := tx.Rollback(); rbErr != nil {
 				logger.Log.Error(rbErr)
 				err = rbErr
+
 				return
 			}
+
 			return
 		}
+
 		err = tx.Commit()
 	}()
 
@@ -800,7 +858,6 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s Storage, itemNumber int, update
 	// Generating barecode if empty.
 	if !update {
 		if !(s.StorageBarecode.Valid) || s.StorageBarecode.String == "" {
-
 			//
 			// Getting the barecode prefix from the storelocation name.
 			//
@@ -810,6 +867,7 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s Storage, itemNumber int, update
 			matches := prefixRegex.FindAllStringSubmatch(s.StoreLocationName.String, -1)
 			// Building a map of matches.
 			matchesMap := map[string]string{}
+
 			if len(matches) != 0 {
 				for i, j := range matches[0] {
 					matchesMap[groupNames[i]] = j
@@ -830,7 +888,9 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s Storage, itemNumber int, update
 		JOIN storelocation on storage.storelocation = storelocation.storelocation_id 
 		WHERE product = ? AND storelocation.entity = ? AND regexp('^[_a-zA-Z]{0,5}[0-9]+\.[0-9]+$', '' || storage_barecode || '') = true
 		ORDER BY storage_barecode desc`
+
 			var rows *sql.Rows
+
 			if rows, err = tx.Query(sqlr, s.ProductID, s.EntityID); err != nil && err != sql.ErrNoRows {
 				return
 			}
@@ -839,8 +899,8 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s Storage, itemNumber int, update
 				count    = 0
 				newMinor = 0
 			)
-			for rows.Next() {
 
+			for rows.Next() {
 				var barecode string
 				if err = rows.Scan(&barecode); err != nil && err != sql.ErrNoRows {
 					return
@@ -851,6 +911,7 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s Storage, itemNumber int, update
 				matches = majorRegex.FindAllStringSubmatch(barecode, -1)
 				// Building a map of matches.
 				matchesMap = map[string]string{}
+
 				if len(matches) != 0 {
 					for i, j := range matches[0] {
 						matchesMap[groupNames[i]] = j
@@ -862,8 +923,11 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s Storage, itemNumber int, update
 					// Extracting it ones.
 					major = matchesMap["groupone"]
 				}
+
 				minor = matchesMap["grouptwo"]
+
 				var iminor int
+
 				if iminor, err = strconv.Atoi(minor); err != nil {
 					return 0, err
 				}
@@ -873,17 +937,18 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s Storage, itemNumber int, update
 				}
 
 				count++
-
 			}
 
 			if (!s.StorageIdenticalBarecode.Valid || !s.StorageIdenticalBarecode.Bool) || (s.StorageIdenticalBarecode.Valid && s.StorageIdenticalBarecode.Bool && itemNumber == 1) {
 				newMinor++
 			}
+
 			minor = strconv.Itoa(newMinor)
+
 			s.StorageBarecode.String = prefix + major + "." + minor
 			s.StorageBarecode.Valid = true
-			logger.Log.WithFields(logrus.Fields{"s.StorageBarecode.String": s.StorageBarecode.String}).Debug("CreateStorage")
 
+			logger.Log.WithFields(logrus.Fields{"s.StorageBarecode.String": s.StorageBarecode.String}).Debug("CreateStorage")
 		}
 	}
 
@@ -894,11 +959,11 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s Storage, itemNumber int, update
 			return
 		}
 		// getting the last inserted id
-		if lastInsertId, err = res.LastInsertId(); err != nil {
+		if lastInsertID, err = res.LastInsertId(); err != nil {
 			return
 		}
 		// updating the storage SupplierId (SupplierLabel already set)
-		s.Supplier.SupplierID = sql.NullInt64{Valid: true, Int64: lastInsertId}
+		s.Supplier.SupplierID = sql.NullInt64{Valid: true, Int64: lastInsertID}
 	}
 	if err != nil {
 		logger.Log.Error("supplier error - " + err.Error())
@@ -987,7 +1052,7 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s Storage, itemNumber int, update
 
 	// getting the last inserted id
 	if !update {
-		if lastInsertId, err = res.LastInsertId(); err != nil {
+		if lastInsertID, err = res.LastInsertId(); err != nil {
 			return
 		}
 	}
@@ -995,30 +1060,29 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s Storage, itemNumber int, update
 	//
 	// qrcode
 	//
-	qr := strconv.FormatInt(lastInsertId, 10)
+	qr := strconv.FormatInt(lastInsertID, 10)
 	if s.StorageQRCode, err = qrcode.Encode(qr, qrcode.Medium, 512); err != nil {
 		return
 	}
 
 	sqlr = `UPDATE storage SET storage_qrcode=? WHERE storage_id=?`
-	if _, err = tx.Exec(sqlr, s.StorageQRCode, lastInsertId); err != nil {
+	if _, err = tx.Exec(sqlr, s.StorageQRCode, lastInsertID); err != nil {
 		return
 	}
 
-	s.StorageID = sql.NullInt64{Valid: true, Int64: lastInsertId}
+	s.StorageID = sql.NullInt64{Valid: true, Int64: lastInsertID}
+
 	logger.Log.WithFields(logrus.Fields{"s": s}).Debug("CreateUpdateStorage")
 
 	return
-
 }
 
-// UpdateAllQRCodes updates the storages QRCodes
+// UpdateAllQRCodes updates the storages QRCodes.
 func (db *SQLiteDataStore) UpdateAllQRCodes() error {
-
 	var (
 		err  error
 		tx   *sqlx.Tx
-		sts  []Storage
+		sts  []models.Storage
 		png  []byte
 		sqlr string
 	)
@@ -1037,7 +1101,6 @@ func (db *SQLiteDataStore) UpdateAllQRCodes() error {
 	}
 
 	for _, s := range sts {
-
 		// generating qrcode
 		newqrcode := strconv.FormatInt(s.StorageID.Int64, 10)
 		logger.Log.Debug("  " + strconv.FormatInt(s.StorageID.Int64, 10) + " " + newqrcode)
@@ -1045,14 +1108,17 @@ func (db *SQLiteDataStore) UpdateAllQRCodes() error {
 		if png, err = qrcode.Encode(newqrcode, qrcode.Medium, 512); err != nil {
 			return err
 		}
+
 		sqlr = `UPDATE storage
 				SET storage_qrcode = ?
 				WHERE storage_id = ?`
+
 		if _, err = tx.Exec(sqlr, png, s.StorageID); err != nil {
 			logger.Log.Error("error updating storage qrcode")
 			if errr := tx.Rollback(); errr != nil {
 				return errr
 			}
+
 			return err
 		}
 	}
@@ -1065,5 +1131,4 @@ func (db *SQLiteDataStore) UpdateAllQRCodes() error {
 	}
 
 	return nil
-
 }

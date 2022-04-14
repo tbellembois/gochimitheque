@@ -3,12 +3,12 @@
 
 - [Chimithèque](#chimithèque)
   - [Team](#team)
-  - [Features](#features)
+  - [Screenshot](#screenshot)
 - [Web browser compatibility](#web-browser-compatibility)
-- [Download](#download)
+- [Links](#links)
 - [Requirements](#requirements)
 - [Quick start](#quick-start)
-  - [With Docker](#with-docker)
+  - [With Docker (recommended)](#with-docker-recommended)
   - [Without Docker](#without-docker)
   - [Connection](#connection)
 - [Production installation](#production-installation)
@@ -18,19 +18,10 @@
     - [Installation](#installation)
     - [Configuration](#configuration-1)
   - [Binary command line and Docker parameters](#binary-command-line-and-docker-parameters)
-    - [listenport](#listenport)
-    - [proxyurl, proxypath](#proxyurl-proxypath)
-    - [enablepublicproductsendpoint](#enablepublicproductsendpoint)
-    - [admins](#admins)
 - [Database backup](#database-backup)
-- [Chimithèque V2 initial database import](#chimithèque-v2-initial-database-import)
+- [Initial product database import](#initial-product-database-import)
   - [Principle](#principle)
   - [Importing from another public instance](#importing-from-another-public-instance)
-- [Chimithèque V1 database migration](#chimithèque-v1-database-migration)
-  - [Read me first !](#read-me-first-)
-  - [Export](#export)
-    - [PostgreSQL](#postgresql)
-  - [Import](#import)
 - [Upgrades](#upgrades)
   - [Classic installation](#classic-installation)
   - [Docker installation](#docker-installation)
@@ -49,51 +40,47 @@ The project was started in 2015 and has moved to Github in 2017.
 
 ## Team
 
-- *projet leader*: Delphine Pitrat - ENS-Lyon (delphine[dot]pitrat[at]ens-lyon[dot]fr)  
+- *projet leaders*: Delphine Pitrat - ENS-Lyon (delphine[dot]pitrat[at]ens-lyon[dot]fr) - Thomas Bellembois - UCA
 - *technical referent - chemistry*: Delphine Pitrat  
 - *technical referent - biology*: Antoine Goisnard Phd - University Clermont-Auvergne / IMOST lab. (antoine[dot]goinard[at]uca[dot]fr)  
-- Marie Depresle - University Clermont-Auvergne / Biomarqueur: *biology specialist*
-- Manon Roux - University Clermont-Auvergne / Biomarqueur: *chemistry specialist*
+- Marie Depresle - University Clermont-Auvergne / Biorcell3D: *biology specialist*
+- Manon Roux - University Clermont-Auvergne / Biorcell3D: *chemistry specialist*
 
-## Features
-
-- Chemical product, biological reagent and lab consumable storages
-- Simple interface
-- Easy to install (Docker or binary with no dependencies)
+## Screenshot
 
 ![screenshot](screenshot.png)
 
 # Web browser compatibility
 
-Chimithèque does NOT work with Microsoft Internet Explorer/Edge.  
+Chimithèque may NOT work with Microsoft Internet Explorer/Edge.  
 It was tested successfully with Firefox and Chrome/Chromium.
 
-# Download
+# Links
 
-Chimithèque releases can be downloaded here: <https://github.com/tbellembois/gochimitheque/releases>.
+- chimithèque binary: <https://github.com/tbellembois/gochimitheque/releases>
 
-Download the `gochimitheque` binary (in the assets section), not the source code archive.
-
-Permanent link to the latest release: <https://github.com/tbellembois/gochimitheque/releases/latest/download/gochimitheque>
+- docker image: <https://hub.docker.com/repository/docker/tbellembois/gochimitheque>
 
 # Requirements
 
-- a *Linux AMD64* machine with `Glibc2.28` minimum
-- an SMTP server (for password recovery - optionnal for the quick start)
+- a *Linux AMD64* machine
+- an SMTP server (for password recovery - optionnal for the quick start and if using LDAP)
 
 Chimithèque is statically compiled and then does not require other dependencies.
 
 # Quick start
 
-## With Docker
+## With Docker (recommended)
 
-Look at the latest tagged version at <https://hub.docker.com/repository/docker/tbellembois/gochimitheque>.
+Look at the most recent tagged version at <https://hub.docker.com/r/tbellembois/gochimitheque>.
 
 Do *NOT* use the `latest` tag as it is the development version.
 
-For example fo the `2.0.7` version:
+Do *NOT* use this method in production.
+
+For example fo the `2.0.8` version:
 ```bash
-  docker run --name chimitheque -p 127.0.0.1:8081:8081 tbellembois/gochimitheque:2.0.7
+  docker run --name chimitheque -v /tmp:/data -p 127.0.0.1:8081:8081 -e CHIMITHEQUE_DOCKERPORT=8081 tbellembois/gochimitheque:2.0.8
 ```
 
 ## Without Docker
@@ -123,7 +110,7 @@ Retrieve the Chimithèque `docker-compose.yml` file:
   wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/docker-compose.yml -O docker-compose.yml
 ```
 
-and change `[tag]` with the latest tagged stable version.
+Edit the file, it is self documented. 
 
 Create the data directories for the Nginx and Chimithèque containers:
 ```bash
@@ -181,26 +168,10 @@ It is strongly recommended to run Chimithèque behind an HTTP proxy server with 
 
 ## Binary command line and Docker parameters
 
-The following parameters can be passed to the Chimithèque binary.  
-For a Docker installation use the environment variables commented in the `docker-compose.yml` file.
+Run `gochimitheque --help` for a list of command line parameters. 
+ 
+For a Docker installation use the corresponding environment variables commented in the `docker-compose.yml` file. They are self explainatory.
 Note that some command line parameters are not mapped to Docker environment variable. This is expected.
-
-- `-listenport`: application listening port - default = `8081`
-- `-proxyurl`: proxy base URL with no trailing slash
-- `-proxypath`: proxy path - default = `/`
-- `-mailserveraddress`: SMTP server address - *REQUIRED*
-- `-mailserverport`: SMTP server port - *REQUIRED*
-- `-mailserversender`: SMTP server sender email - *REQUIRED*
-- `-mailserverusetls`: use an SMTP TLS connection - default = `false`
-- `-mailservertlsskipverify`: skip SSL verification - default = `false`
-- `-enablepublicproductsendpoint`: enable public products endpoint - default = `false`
-- `-admins`: comma separated list of administrators emails that must be present in the database
-- `-logfile`: output log file - by default logs are sent to stdout
-- `-debug`: debug mode, do not enable in production
-
-One shot commands:
-- `-resetadminpassword`: reset the `admin@chimitheque.fr` admin password to `chimitheque`
-- `-updateqrcode`: regenerate the storages QR codes
 
 > example:
 >
@@ -208,29 +179,11 @@ One shot commands:
 >
 > will run the appplication behind a proxy at the URL `https://appserver.foo.fr/chimitheque` with 2 additionnal administrators `john.bar@foo.fr` and `jean.dupont@foo.fr`
 
-### listenport
-
-You probably won't have to change this. This is the listening port of the Chimithèque binary. Change it only is you share the same HTTP proxy for other applications and if the default port is already used.
-
-### proxyurl, proxypath
-
-You should set those parameters in a production environment.
-
-If you instance is hosted at `https://myserver.foo.com/chim` then:
-- proxyurl = `https://myserver.foo.co`
-- proxypath = `/chim`
-
-Note that proxyurl has no trailing slash.
-
-### enablepublicproductsendpoint
-
-You should enable this feature because you want to be a member of the great Chimithèque community. :)
-
-### admins
-
-Comma separated list of admins emails. Account must have been created in the application before. You should limit the number of admins and set entity managers instead.
+Note about admins:
 
 A static administrator `admin@chimitheque.fr` is created during the installation. His password must be changed after the first connection.
+
+You can add a comma separated list of admins emails. Accounts must have been created in the application before. You should limit the number of admins and set entity managers instead.
 
 > example: `-admins=john.bar@foo.com,jean.dupont@foo.com`
 
@@ -248,7 +201,7 @@ Restore it with:
   cp /path/to/backup/storage.sq3 /path/to/chimitheque/storage.db
 ```
 
-# Chimithèque V2 initial database import
+# Initial product database import
 
 ## Principle
 
@@ -267,42 +220,6 @@ example:
 ```bash
     ./gochimitheque -importfrom=https://chimitheque.ens-lyon.fr
 ```
-
-# Chimithèque V1 database migration
-
-## Read me first !
-
-Product and storage archives and history are NOT imported into Chimithèque V2.  
-If you need to keep those informations keep a Chimithèque V1 instance for archive purposes.
-
-## Export
-
-Databases of the V1 version must be exported into `CSV` (with headers) to be imported in the V2 version.
-
-### PostgreSQL
-
-In PostgreSQL this can be done with the command:
-
-```bash
-    SCHEMA="public"; DB="{chimitheque-db-name}"; psql -U {chimitheque-user} -h {chimitheque-host} -p {chimitheque-port} -Atc "select tablename from pg_tables where schemaname='$SCHEMA'" $DB | while read TBL; do psql -U {chimitheque-db-name} -h {chimitheque-host} -p {chimitheque-port} -c "COPY $SCHEMA.$TBL TO STDOUT WITH CSV HEADER" $DB > $TBL.csv; done;
-```
-
-This will generate one CSV file per table.
-
-## Import
-
-You can then import to the V2 version with:
-
-```bash
-  /path/to/gochimitheque -proxyurl=https://appserver.foo.fr -importv1from=/path/to/csv
-```
-
-And then generate the QRCodes with:
-```bash
-  /path/to/gochimitheque -updateqrcode
-```
-
-This is important to specify the correct `-proxyurl` parameter as it will be used to generate the storages qr codes.
 
 # Upgrades
 

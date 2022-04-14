@@ -33,34 +33,36 @@ include mixins
 
         .col
             .row
-                .col-sm-3
+                .col-sm-6
                     +inputtext(name="s_custom_name_part_of", label="", htmltype="text", placeholder=T("s_custom_name_part_of", 1))
-                .col-sm-3
+                .col-sm-6
+                    +inputselect(name="s_name", label="", ismultiple=false, placeholder=T("s_name", 1))
+            .row    
+                .col-sm-4
                     +inputtext(name="s_storage_barecode", label="", htmltype="text", placeholder=T("s_storage_barecode", 1))
-                .col-sm-3
+                .col-sm-4
                     +inputselect(name="s_casnumber", label="", ismultiple=false, placeholder=T("s_casnumber", 1))
-                .col-sm-3
+                .col-sm-4
                     +inputselect(name="s_empiricalformula", label="", ismultiple=false, placeholder=T("s_empiricalformula", 1))
+            .row 
+                .col-sm-4
+                    +inputselect(name="s_producerref", label="", ismultiple=false, placeholder="producerref_label_title")
+                .col-sm-4
+                    +inputselect(name="s_tags", label="", ismultiple=false, placeholder="s_tags")
+                .col-sm-4
+                    +inputselect(name="s_category", label="", ismultiple=false, placeholder="s_category")
+
+
             .row.collapse#advancedsearch
                 .col-sm-12
                     .form-row
-                        .col-sm-6
-                            +inputselect(name="s_tags", label="s_tags")
-                        .col-sm-6
-                            +inputselect(name="s_category", label="s_category")
+                        .form-group.col-sm-6
+                            +inputtext(name="s_storage_batchnumber", label="storage_batchnumber_title")    
                     .form-row
-                        .col-sm-6
+                        .form-group.col-sm-6
                             +inputselect(name="s_entity", label="s_entity")
-                        .col-sm-6
-                            +inputselect(name="s_storelocation", label="s_storelocation")
-                    .form-row
-                        .col-sm-12
-                            +inputselect(name="s_name", label="s_name")
-                    .form-row
                         .form-group.col-sm-6
-                            +inputselect(name="s_producerref", label="producerref_label_title")
-                        .form-group.col-sm-6
-                            +inputtext(name="s_storage_batchnumber", label="storage_batchnumber_title")              
+                            +inputselect(name="s_storelocation", label="s_storelocation")          
                     .form-row
                         .form-group.col-sm-6
                             +inputselect(name="s_signalword", label="s_signalword")

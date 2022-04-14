@@ -12,7 +12,7 @@ block CONTENT
             button#save.btn.btn-primary.float-right(type='button', onclick='Storage_saveStorage()')
                 span.mdi.mdi-content-save.mdi-24px.iconlabel
                     = T("save", 1)
-            button.btn.btn-secondary.float-left(type='button', onclick="Menu_loadContent('product', '" + c.ProxyPath + "v/products', 'Product_list')")
+            button.btn.btn-secondary.float-left(type='button', onclick="Menu_loadContent('product', '" + c.AppURL + c.AppPath + "v/products', 'Product_list')")
                 span.mdi.mdi-close-box.mdi-24px.iconlabel
                     = T("close", 1)
 
@@ -92,7 +92,7 @@ block CONTENT
                 button#save.btn.btn-primary.float-right(type='button', onclick='Storage_saveStorage()')
                     span.mdi.mdi-content-save.mdi-24px.iconlabel
                         = T("save", 1)
-                button.btn.btn-secondary.float-left(type='button', onclick="Menu_loadContent('product', '" + c.ProxyPath + "v/products', 'Product_list')")
+                button.btn.btn-secondary.float-left(type='button', onclick="Menu_loadContent('product', '" + c.AppURL + c.AppPath + "v/products', 'Product_list')")
                     span.mdi.mdi-close-box.mdi-24px.iconlabel
                         = T("close", 1)
 

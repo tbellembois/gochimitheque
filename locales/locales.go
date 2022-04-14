@@ -12,7 +12,6 @@ var (
 )
 
 func init() {
-
 	// load translations
 	Bundle = i18n.NewBundle(language.English)
 	Bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)

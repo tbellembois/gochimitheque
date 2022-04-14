@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"context"
+	"database/sql"
+	"fmt"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -14,41 +16,49 @@ import (
 	"github.com/tbellembois/gochimitheque/locales"
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
+	"github.com/tbellembois/gochimitheque/request"
 )
 
-// AppMiddleware is the application handlers wrapper handling the "func() *models.AppError" functions
+// AppMiddleware is the application handlers wrapper handling the "func() *models.AppError" functions.
 func (env *Env) AppMiddleware(h models.AppHandlerFunc) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if e := h(w, r); e != nil {
-			if e.Error != nil {
-				logger.Log.Error(e.Message + "-" + e.Error.Error())
+
+			if e.OriginalError != nil {
+
+				logger.Log.Error(e.Message + "-" + e.OriginalError.Error())
+
 				if e.Code == http.StatusInternalServerError {
-					logger.LogInternal.Error(e.Message + "-" + e.Error.Error())
+					logger.LogInternal.Error(e.Message + "-" + e.OriginalError.Error())
 				}
+
+				http.Error(w, e.Message+"-"+e.OriginalError.Error(), e.Code)
+
 			}
-			http.Error(w, e.Message+"-"+e.Error.Error(), e.Code)
+
 		}
 	})
 }
 
-// LogingMiddleware is the application handlers wrapper logging the requests
+// LogingMiddleware is the application handlers wrapper logging the requests.
 func (env *Env) LogingMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		h.ServeHTTP(w, req)
 	})
 }
 
-// HeadersMiddleware is the application handlers wrapper managing the common response HTTP headers
+// HeadersMiddleware is the application handlers wrapper managing the common response HTTP headers.
 func (env *Env) HeadersMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		w.Header().Set("Access-Control-Allow-Methods", "*")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Accept")
 		w.Header().Set("Access-Control-Allow-Origin", "*")
+
 		h.ServeHTTP(w, req)
 	})
 }
 
-// ContextMiddleware initialize the request context and setup initial variables
+// ContextMiddleware initialize the request context and setup initial variables.
 func (env *Env) ContextMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// localization setup
@@ -57,19 +67,22 @@ func (env *Env) ContextMiddleware(h http.Handler) http.Handler {
 
 		ctx := context.WithValue(
 			r.Context(),
-			models.ChimithequeContextKey("container"),
-			models.ViewContainer{
-				ProxyPath:      env.ProxyPath,
+			request.ChimithequeContextKey("container"),
+			request.Container{
+				AppURL:         env.AppURL,
+				AppPath:        env.AppPath,
 				PersonLanguage: accept,
 				BuildID:        env.BuildID,
 				DisableCache:   env.DisableCache,
+				LDAPEnabled:    env.LDAPConnection.IsEnabled,
 			},
 		)
+
 		h.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
-// AuthenticateMiddleware check that a valid JWT token is in the request, extract and store user informations in the Go http context
+// AuthenticateMiddleware check that a valid JWT token is in the request, extract and store user informations in the Go http context.
 func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var (
@@ -85,18 +98,18 @@ func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 		)
 
 		// token regex header version
-		//tre := regexp.MustCompile("Bearer [[:alnum:]]\\.[[:alnum:]]\\.[[:alnum:]]")
+		// tre := regexp.MustCompile("Bearer [[:alnum:]]\\.[[:alnum:]]\\.[[:alnum:]]")
 		// token regex cookie version
-		//tre := regexp.MustCompile("token=[[:alnum:]]\\.[[:alnum:]]\\.[[:alnum:]]")
+		// tre := regexp.MustCompile("token=[[:alnum:]]\\.[[:alnum:]]\\.[[:alnum:]]")
 		tre := regexp.MustCompile("token=.+")
 
 		// extracting the token string from Authorization header
-		//reqToken := r.Header.Get("Authorization")
+		// reqToken := r.Header.Get("Authorization")
 		// extracting the token string from cookie
 		if reqToken, err = r.Cookie("token"); err != nil {
 			logger.Log.Debug("token not found in cookies")
-			//http.Error(w, "token not found in cookies, please log in", http.StatusUnauthorized)
-			http.Redirect(w, r, env.ApplicationFullURL+"login", 307)
+			// http.Error(w, "token not found in cookies, please log in", http.StatusUnauthorized)
+			http.Redirect(w, r, env.AppFullURL+"login", http.StatusTemporaryRedirect)
 			return
 		}
 		if !tre.MatchString(reqToken.String()) {
@@ -104,21 +117,35 @@ func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 			http.Error(w, "token has an invalid format", http.StatusUnauthorized)
 			return
 		}
+		logger.Log.WithFields(logrus.Fields{
+			"reqToken.Name":  reqToken.Name,
+			"reqToken.Value": reqToken.Value,
+		}).Debug()
+
+		// validating the token
 		// header version
-		//splitToken := strings.Split(reqToken, "Bearer ")
+		// splitToken := strings.Split(reqToken, "Bearer ")
 		// cookie version
 		splitToken := strings.Split(reqToken.String(), "token=")
 		reqTokenStr = splitToken[1]
 		token, err = jwt.Parse(reqTokenStr, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				logger.Log.Debugf("unexpected signing method: %v", token.Header["alg"])
+				http.Error(w, err.Error(), http.StatusUnauthorized)
+				return nil, nil
+			}
 			return env.TokenSignKey, nil
 		})
 		if err != nil {
+			logger.Log.Debug("parse token error")
 			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
 		// getting the claims
 		if claims, ok = token.Claims.(jwt.MapClaims); ok && token.Valid {
+			logger.Log.Debug(fmt.Sprintf("claims: %+v\n", claims))
+
 			// then the email claim
 			if cemail, ok = claims["email"]; !ok {
 				logger.Log.Debug("email not found in claims")
@@ -126,28 +153,31 @@ func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 				return
 			}
 			email = cemail.(string)
-
 		} else {
 			logger.Log.Debug("can not extract claims")
 			http.Error(w, "can not extract claims", http.StatusBadRequest)
 			return
 		}
 
+		logger.Log.Debugf("email: %s\n", email)
 		// getting the logged user
 		if person, err = env.DB.GetPersonByEmail(email); err != nil {
-			http.Error(w, "can not get logged user: "+err.Error(), http.StatusBadRequest)
+			if err == sql.ErrNoRows && env.AutoCreateUser {
+			} else {
+				http.Error(w, "can not get logged user: "+err.Error(), http.StatusBadRequest)
+			}
 		}
 
 		// getting the request context
 		ctx := r.Context()
-		ctxcontainer := ctx.Value(models.ChimithequeContextKey("container"))
-		container := ctxcontainer.(models.ViewContainer)
+		ctxcontainer := ctx.Value(request.ChimithequeContextKey("container"))
+		container := ctxcontainer.(request.Container)
 		// setting up auth person informations
 		container.PersonEmail = person.PersonEmail
 		container.PersonID = person.PersonID
 		ctx = context.WithValue(
 			r.Context(),
-			models.ChimithequeContextKey("container"),
+			request.ChimithequeContextKey("container"),
 			container,
 		)
 
@@ -155,10 +185,10 @@ func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 	})
 }
 
-// AuthorizeMiddleware check that the user extracted from the JWT token by the AuthenticateMiddleware has the permissions to access the requested resource
+// AuthorizeMiddleware check that the user extracted from the JWT token by the AuthenticateMiddleware has the permissions to access the requested resource.
 func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//defer utils.TimeTrack(time.Now(), "AuthorizeMiddleware")
+		// defer utils.TimeTrack(time.Now(), "AuthorizeMiddleware")
 
 		var (
 			personid    int    // logged person id
@@ -174,8 +204,8 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 
 		// extracting the logged user email from context
 		ctx := r.Context()
-		ctxcontainer := ctx.Value(models.ChimithequeContextKey("container"))
-		container := ctxcontainer.(models.ViewContainer)
+		ctxcontainer := ctx.Value(request.ChimithequeContextKey("container"))
+		container := ctxcontainer.(request.Container)
 		personid = container.PersonID
 		personemail = container.PersonEmail
 		// should not be necessary
@@ -197,24 +227,18 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 		itemid = vars["id"]
 
 		// action = r or w
-		if view == "v" {
+		switch {
+		case view == "v":
 			action = "r"
-		} else if view == "vc" {
+		case view == "vc":
 			action = "w"
-		} else {
+		default:
 			if r.Method == "GET" {
 				action = "r"
 			} else {
 				action = "w"
 			}
 		}
-		logger.Log.WithFields(logrus.Fields{
-			"itemid":      itemid,
-			"item":        item,
-			"view":        view,
-			"personemail": personemail,
-			"personid":    personid,
-			"action":      action}).Debug("AuthorizeMiddleware")
 
 		//
 		// pre checks
@@ -356,22 +380,22 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			"itemid":   itemid,
 			"item":     item,
 			"personid": strconv.Itoa(personid),
-			"action":   action}).Debug("AuthorizeMiddleware")
+			"action":   action,
+		}).Debug("AuthorizeMiddleware")
 
 		if permok, err = env.Enforcer.Enforce(strconv.Itoa(personid), action, item, itemid); err != nil {
 			http.Error(w, "enforcer error: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		logger.Log.WithFields(logrus.Fields{
+			"permok": permok,
+		}).Debug("AuthorizeMiddleware")
+
 		if !permok {
 			logger.Log.WithFields(logrus.Fields{"unauthorized": "!permok"}).Debug("AuthorizeMiddleware")
-			if r.RequestURI == env.ProxyPath || r.RequestURI == "" {
-				// redirect on login page for the root of the application
-				http.Redirect(w, r, env.ApplicationFullURL+"login", 307)
-			} else {
-				// else sending a 403
-				http.Error(w, "forbidden", http.StatusForbidden)
-				return
-			}
+			http.Error(w, "forbidden", http.StatusForbidden)
+			return
 		}
 
 		h.ServeHTTP(w, r)

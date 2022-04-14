@@ -7,15 +7,16 @@ import (
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/sqlite3"
 	"github.com/jmoiron/sqlx"
+	"github.com/sirupsen/logrus"
 	"github.com/steambap/captcha"
 	"github.com/tbellembois/gochimitheque/logger"
-	. "github.com/tbellembois/gochimitheque/models"
+	"github.com/tbellembois/gochimitheque/models"
+	"github.com/tbellembois/gochimitheque/request"
 	"golang.org/x/crypto/bcrypt"
 )
 
 // ValidateCaptcha validate the text entered with the given token.
 func (db *SQLiteDataStore) ValidateCaptcha(token string, text string) (bool, error) {
-
 	var (
 		err   error
 		sqlr  string
@@ -43,13 +44,11 @@ func (db *SQLiteDataStore) ValidateCaptcha(token string, text string) (bool, err
 	}
 
 	return count != 0, nil
-
 }
 
 // InsertCaptcha generates and stores a unique captcha with a token
 // to be validated by a user, and returns the token.
 func (db *SQLiteDataStore) InsertCaptcha(token string, data *captcha.Data) (err error) {
-
 	var (
 		sqlr string
 		args []interface{}
@@ -72,37 +71,44 @@ func (db *SQLiteDataStore) InsertCaptcha(token string, data *captcha.Data) (err 
 	}
 
 	return
-
 }
 
 // GetPeople select the people matching p
 // and visible by the connected user.
-func (db *SQLiteDataStore) GetPeople(p SelectFilterPerson) ([]Person, int, error) {
-
+func (db *SQLiteDataStore) GetPeople(f request.Filter) ([]models.Person, int, error) {
 	var err error
+
+	logger.Log.WithFields(logrus.Fields{"f": f}).Debug("GetPeople")
+
+	if f.OrderBy == "" {
+		f.OrderBy = "person_id"
+	}
 
 	dialect := goqu.Dialect("sqlite3")
 	tablePerson := goqu.T("person")
 	tableEntity := goqu.T("entity")
 
 	// Build orderby/order clause.
-	orderByClause := p.GetOrderBy()
+	orderByClause := f.OrderBy
 	orderClause := goqu.I(orderByClause).Asc()
-	if strings.ToLower(p.GetOrder()) == "desc" {
+
+	if strings.ToLower(f.Order) == "desc" {
 		orderClause = goqu.I(orderByClause).Desc()
 	}
 
 	// Is the logged user an admin?
 	// We need to handle admins to see people with no entities.
 	var isadmin bool
-	if isadmin, err = db.IsPersonAdmin(p.GetLoggedPersonID()); err != nil {
+
+	if isadmin, err = db.IsPersonAdmin(f.LoggedPersonID); err != nil {
 		return nil, 0, err
 	}
 
 	// Build join clause.
 	var joinClause *goqu.SelectDataset
-	if p.GetEntity() != -1 {
 
+	switch {
+	case f.Entity != -1:
 		joinClause = dialect.From(tablePerson.As("p"), tableEntity.As("e")).Join(
 			goqu.T("personentities"),
 			goqu.On(
@@ -114,13 +120,11 @@ func (db *SQLiteDataStore) GetPeople(p SelectFilterPerson) ([]Person, int, error
 			goqu.T("entity"),
 			goqu.On(
 				goqu.Ex{
-					"personentities.personentities_entity_id": p.GetEntity(),
+					"personentities.personentities_entity_id": f.Entity,
 				},
 			),
 		)
-
-	} else if !isadmin {
-
+	case !isadmin:
 		joinClause = dialect.From(tablePerson.As("p"), tableEntity.As("e")).Join(
 			goqu.T("personentities"),
 			goqu.On(
@@ -139,30 +143,28 @@ func (db *SQLiteDataStore) GetPeople(p SelectFilterPerson) ([]Person, int, error
 			goqu.T("permission").As("perm"),
 			goqu.On(
 				goqu.Ex{
-					"perm.person":               p.GetLoggedPersonID(),
+					"perm.person":               f.LoggedPersonID,
 					"perm.permission_item_name": []string{"all", "people"},
 					"perm.permission_perm_name": []string{"all", "r", "w"},
 					"perm.permission_entity_id": []interface{}{-1, goqu.I("e.entity_id")},
 				},
 			),
 		)
-
-	} else {
-
+	default:
 		joinClause = dialect.From(tablePerson.As("p"), tableEntity.As("e"))
-
 	}
 
 	joinClause = joinClause.Where(
-		goqu.I("p.person_email").Like(p.GetSearch()),
+		goqu.I("p.person_email").Like(f.Search),
 	)
 
 	// Building final count.
 	var (
-		countSql  string
+		countSQL  string
 		countArgs []interface{}
 	)
-	if countSql, countArgs, err = joinClause.Select(
+
+	if countSQL, countArgs, err = joinClause.Select(
 		goqu.COUNT(goqu.I("p.person_id").Distinct()),
 	).ToSQL(); err != nil {
 		return nil, 0, err
@@ -170,36 +172,35 @@ func (db *SQLiteDataStore) GetPeople(p SelectFilterPerson) ([]Person, int, error
 
 	// Building final select.
 	var (
-		selectSql  string
+		selectSQL  string
 		selectArgs []interface{}
 	)
-	if selectSql, selectArgs, err = joinClause.Select(
+
+	if selectSQL, selectArgs, err = joinClause.Select(
 		goqu.I("p.person_id"),
 		goqu.I("p.person_email"),
-	).GroupBy(goqu.I("p.person_id")).Order(orderClause).Limit(uint(p.GetLimit())).Offset(uint(p.GetOffset())).ToSQL(); err != nil {
+	).GroupBy(goqu.I("p.person_id")).Order(orderClause).Limit(uint(f.Limit)).Offset(uint(f.Offset)).ToSQL(); err != nil {
 		return nil, 0, err
 	}
 
 	var (
-		people []Person
+		people []models.Person
 		count  int
 	)
 
-	if err = db.Select(&people, selectSql, selectArgs...); err != nil {
+	if err = db.Select(&people, selectSQL, selectArgs...); err != nil {
 		return nil, 0, err
 	}
 
-	if err = db.Get(&count, countSql, countArgs...); err != nil {
+	if err = db.Get(&count, countSQL, countArgs...); err != nil {
 		return nil, 0, err
 	}
 
 	return people, count, nil
-
 }
 
 // GetPerson select the person by id.
-func (db *SQLiteDataStore) GetPerson(id int) (Person, error) {
-
+func (db *SQLiteDataStore) GetPerson(id int) (models.Person, error) {
 	dialect := goqu.Dialect("sqlite3")
 	tablePerson := goqu.T("person")
 
@@ -209,30 +210,31 @@ func (db *SQLiteDataStore) GetPerson(id int) (Person, error) {
 		goqu.I("person_id"),
 		goqu.I("person_email"),
 		goqu.I("person_password"),
+		goqu.I("person_aeskey"),
 	)
 
 	var (
 		err    error
 		sqlr   string
 		args   []interface{}
-		person Person
+		person models.Person
 	)
 
 	if sqlr, args, err = sQuery.ToSQL(); err != nil {
 		logger.Log.Error(err)
-		return Person{}, err
+		return models.Person{}, err
 	}
 
 	if err = db.Get(&person, sqlr, args...); err != nil {
-		return Person{}, err
+		return models.Person{}, err
 	}
 
 	return person, nil
-
 }
 
 // GetPersonByEmail select the person by email.
-func (db *SQLiteDataStore) GetPersonByEmail(email string) (Person, error) {
+func (db *SQLiteDataStore) GetPersonByEmail(email string) (models.Person, error) {
+	email = strings.ToLower(email)
 
 	dialect := goqu.Dialect("sqlite3")
 	tablePerson := goqu.T("person")
@@ -243,31 +245,30 @@ func (db *SQLiteDataStore) GetPersonByEmail(email string) (Person, error) {
 		goqu.I("person_id"),
 		goqu.I("person_email"),
 		goqu.I("person_password"),
+		goqu.I("person_aeskey"),
 	)
 
 	var (
 		err    error
 		sqlr   string
 		args   []interface{}
-		person Person
+		person models.Person
 	)
 
 	if sqlr, args, err = sQuery.ToSQL(); err != nil {
 		logger.Log.Error(err)
-		return Person{}, err
+		return models.Person{}, err
 	}
 
 	if err = db.Get(&person, sqlr, args...); err != nil {
-		return Person{}, err
+		return models.Person{}, err
 	}
 
 	return person, nil
-
 }
 
 // GetPersonPermissions return person permissions.
-func (db *SQLiteDataStore) GetPersonPermissions(id int) ([]Permission, error) {
-
+func (db *SQLiteDataStore) GetPersonPermissions(id int) ([]models.Permission, error) {
 	dialect := goqu.Dialect("sqlite3")
 	tablePermission := goqu.T("permission")
 
@@ -284,7 +285,7 @@ func (db *SQLiteDataStore) GetPersonPermissions(id int) ([]Permission, error) {
 		err         error
 		sqlr        string
 		args        []interface{}
-		permissions []Permission
+		permissions []models.Permission
 	)
 
 	if sqlr, args, err = sQuery.ToSQL(); err != nil {
@@ -297,12 +298,10 @@ func (db *SQLiteDataStore) GetPersonPermissions(id int) ([]Permission, error) {
 	}
 
 	return permissions, nil
-
 }
 
 // GetPersonManageEntities returns the entities the person if manager of.
-func (db *SQLiteDataStore) GetPersonManageEntities(id int) ([]Entity, error) {
-
+func (db *SQLiteDataStore) GetPersonManageEntities(id int) ([]models.Entity, error) {
 	dialect := goqu.Dialect("sqlite3")
 	tableEntity := goqu.T("entity")
 
@@ -321,7 +320,7 @@ func (db *SQLiteDataStore) GetPersonManageEntities(id int) ([]Entity, error) {
 		err      error
 		sqlr     string
 		args     []interface{}
-		entities []Entity
+		entities []models.Entity
 	)
 
 	if sqlr, args, err = sQuery.ToSQL(); err != nil {
@@ -334,13 +333,11 @@ func (db *SQLiteDataStore) GetPersonManageEntities(id int) ([]Entity, error) {
 	}
 
 	return entities, nil
-
 }
 
 // GetPeople select the person entities
 // and visible by the connected user.
-func (db *SQLiteDataStore) GetPersonEntities(loggedPersonID int, personId int) ([]Entity, error) {
-
+func (db *SQLiteDataStore) GetPersonEntities(loggedPersonID int, personID int) ([]models.Entity, error) {
 	var err error
 
 	dialect := goqu.Dialect("sqlite3")
@@ -350,6 +347,7 @@ func (db *SQLiteDataStore) GetPersonEntities(loggedPersonID int, personId int) (
 
 	// Is the logged user an admin?
 	var isadmin bool
+
 	if isadmin, err = db.IsPersonAdmin(loggedPersonID); err != nil {
 		return nil, err
 	}
@@ -357,7 +355,6 @@ func (db *SQLiteDataStore) GetPersonEntities(loggedPersonID int, personId int) (
 	// Build join clause.
 	var joinClause *goqu.SelectDataset
 	if !isadmin {
-
 		joinClause = dialect.From(
 			tableEntity.As("e"),
 			tablePerson.As("p"),
@@ -367,43 +364,43 @@ func (db *SQLiteDataStore) GetPersonEntities(loggedPersonID int, personId int) (
 			goqu.On(
 				goqu.Or(
 					goqu.And(
-						goqu.I("perm.person").Eq(personId),
+						goqu.I("perm.person").Eq(personID),
 						goqu.I("perm.permission_item_name").Eq("all"),
 						goqu.I("perm.permission_perm_name").Eq("all"),
 						goqu.I("perm.permission_entity_id").Eq(goqu.I("e.entity_id")),
 					),
 					goqu.And(
-						goqu.I("perm.person").Eq(personId),
+						goqu.I("perm.person").Eq(personID),
 						goqu.I("perm.permission_item_name").Eq("all"),
 						goqu.I("perm.permission_perm_name").Eq("all"),
 						goqu.I("perm.permission_entity_id").Eq(-1),
 					),
 					goqu.And(
-						goqu.I("perm.person").Eq(personId),
+						goqu.I("perm.person").Eq(personID),
 						goqu.I("perm.permission_item_name").Eq("all"),
 						goqu.I("perm.permission_perm_name").Eq("r"),
 						goqu.I("perm.permission_entity_id").Eq(-1),
 					),
 					goqu.And(
-						goqu.I("perm.person").Eq(personId),
+						goqu.I("perm.person").Eq(personID),
 						goqu.I("perm.permission_item_name").Eq("entities"),
 						goqu.I("perm.permission_perm_name").Eq("all"),
 						goqu.I("perm.permission_entity_id").Eq(goqu.I("e.entity_id")),
 					),
 					goqu.And(
-						goqu.I("perm.person").Eq(personId),
+						goqu.I("perm.person").Eq(personID),
 						goqu.I("perm.permission_item_name").Eq("entities"),
 						goqu.I("perm.permission_perm_name").Eq("all"),
 						goqu.I("perm.permission_entity_id").Eq(-1),
 					),
 					goqu.And(
-						goqu.I("perm.person").Eq(personId),
+						goqu.I("perm.person").Eq(personID),
 						goqu.I("perm.permission_item_name").Eq("entities"),
 						goqu.I("perm.permission_perm_name").Eq("r"),
 						goqu.I("perm.permission_entity_id").Eq(-1),
 					),
 					goqu.And(
-						goqu.I("perm.person").Eq(personId),
+						goqu.I("perm.person").Eq(personID),
 						goqu.I("perm.permission_item_name").Eq("entities"),
 						goqu.I("perm.permission_perm_name").Eq("r"),
 						goqu.I("perm.permission_entity_id").Eq(goqu.I("e.entity_id")),
@@ -411,20 +408,17 @@ func (db *SQLiteDataStore) GetPersonEntities(loggedPersonID int, personId int) (
 				),
 			),
 		)
-
 	} else {
-
 		joinClause = dialect.From(
 			tableEntity.As("e"),
 			tablePerson.As("p"),
 			tablePersonentities.As("pe"),
 		)
-
 	}
 
 	joinClause = joinClause.Where(
 		goqu.Ex{
-			"pe.personentities_person_id": personId,
+			"pe.personentities_person_id": personID,
 			"e.entity_id":                 goqu.I("pe.personentities_entity_id"),
 		},
 	).GroupBy(goqu.I("e.entity_id")).Order(goqu.I("e.entity_name").Asc())
@@ -432,7 +426,7 @@ func (db *SQLiteDataStore) GetPersonEntities(loggedPersonID int, personId int) (
 	var (
 		sqlr     string
 		args     []interface{}
-		entities []Entity
+		entities []models.Entity
 	)
 
 	if sqlr, args, err = joinClause.Select(
@@ -449,12 +443,10 @@ func (db *SQLiteDataStore) GetPersonEntities(loggedPersonID int, personId int) (
 	}
 
 	return entities, nil
-
 }
 
 // DoesPersonBelongsTo returns true if the person belongs to the entities.
-func (db *SQLiteDataStore) DoesPersonBelongsTo(id int, entities []Entity) (bool, error) {
-
+func (db *SQLiteDataStore) DoesPersonBelongsTo(id int, entities []models.Entity) (bool, error) {
 	var (
 		err   error
 		sqlr  string
@@ -489,12 +481,10 @@ func (db *SQLiteDataStore) DoesPersonBelongsTo(id int, entities []Entity) (bool,
 	}
 
 	return count != 0, nil
-
 }
 
-// DeletePerson deletes the person with id "id"
+// DeletePerson deletes the person with id "id".
 func (db *SQLiteDataStore) DeletePerson(id int) (err error) {
-
 	var (
 		sqlr string
 		args []interface{}
@@ -513,18 +503,23 @@ func (db *SQLiteDataStore) DeletePerson(id int) (err error) {
 	defer func() {
 		if err != nil {
 			logger.Log.Error(err)
+
 			if rbErr := tx.Rollback(); rbErr != nil {
 				logger.Log.Error(rbErr)
 				err = rbErr
+
 				return
 			}
+
 			return
 		}
+
 		err = tx.Commit()
 	}()
 
 	// Getting the admin.
-	var admin Person
+	var admin models.Person
+
 	if admin, err = db.GetPersonByEmail("admin@chimitheque.fr"); err != nil {
 		return err
 	}
@@ -643,12 +638,10 @@ func (db *SQLiteDataStore) DeletePerson(id int) (err error) {
 	}
 
 	return
-
 }
 
-// CreatePerson creates the given person
-func (db *SQLiteDataStore) CreatePerson(p Person) (lastInsertId int64, err error) {
-
+// CreatePerson creates the given person.
+func (db *SQLiteDataStore) CreatePerson(p models.Person) (lastInsertID int64, err error) {
 	var (
 		sqlr string
 		args []interface{}
@@ -666,20 +659,25 @@ func (db *SQLiteDataStore) CreatePerson(p Person) (lastInsertId int64, err error
 	defer func() {
 		if err != nil {
 			logger.Log.Error(err)
+
 			if rbErr := tx.Rollback(); rbErr != nil {
 				logger.Log.Error(rbErr)
 				err = rbErr
+
 				return
 			}
+
 			return
 		}
+
 		err = tx.Commit()
 	}()
 
 	iQuery := dialect.Insert(tablePerson).Rows(
 		goqu.Record{
-			"person_email":    p.PersonEmail,
+			"person_email":    strings.ToLower(p.PersonEmail),
 			"person_password": p.PersonPassword,
+			"person_aeskey":   p.PersonAESKey,
 		},
 	)
 
@@ -691,14 +689,14 @@ func (db *SQLiteDataStore) CreatePerson(p Person) (lastInsertId int64, err error
 		return
 	}
 
-	if lastInsertId, err = res.LastInsertId(); err != nil {
+	if lastInsertID, err = res.LastInsertId(); err != nil {
 		return
 	}
-	p.PersonID = int(lastInsertId)
+
+	p.PersonID = int(lastInsertID)
 
 	// Inserting entity membership.
 	for _, entity := range p.Entities {
-
 		if sqlr, args, err = dialect.Insert(goqu.T("personentities")).Rows(
 			goqu.Record{
 				"personentities_person_id": p.PersonID,
@@ -726,7 +724,6 @@ func (db *SQLiteDataStore) CreatePerson(p Person) (lastInsertId int64, err error
 		if _, err = tx.Exec(sqlr, args...); err != nil {
 			return
 		}
-
 	}
 
 	// Inserting permissions.
@@ -735,12 +732,10 @@ func (db *SQLiteDataStore) CreatePerson(p Person) (lastInsertId int64, err error
 	}
 
 	return
-
 }
 
 // UpdatePersonPassword updates the given person password.
-func (db *SQLiteDataStore) UpdatePersonPassword(p Person) error {
-
+func (db *SQLiteDataStore) UpdatePersonPassword(p models.Person) error {
 	var (
 		err   error
 		sqlr  string
@@ -771,13 +766,40 @@ func (db *SQLiteDataStore) UpdatePersonPassword(p Person) error {
 	}
 
 	return nil
+}
 
+// UpdatePersonAESKey updates the given person AES key.
+func (db *SQLiteDataStore) UpdatePersonAESKey(p models.Person) error {
+	var (
+		err  error
+		sqlr string
+		args []interface{}
+	)
+
+	dialect := goqu.Dialect("sqlite3")
+	tablePerson := goqu.T("person")
+
+	if sqlr, args, err = dialect.Update(tablePerson).Set(
+		goqu.Record{
+			"person_aeskey": p.PersonAESKey,
+		},
+	).Where(
+		goqu.I("person_id").Eq(p.PersonID),
+	).ToSQL(); err != nil {
+		logger.Log.Error(err)
+		return err
+	}
+
+	if _, err = db.Exec(sqlr, args...); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // UpdatePerson updates the given person.
 // The password is not updated.
-func (db *SQLiteDataStore) UpdatePerson(p Person) (err error) {
-
+func (db *SQLiteDataStore) UpdatePerson(p models.Person) (err error) {
 	var (
 		sqlr string
 		args []interface{}
@@ -794,19 +816,23 @@ func (db *SQLiteDataStore) UpdatePerson(p Person) (err error) {
 	defer func() {
 		if err != nil {
 			logger.Log.Error(err)
+
 			if rbErr := tx.Rollback(); rbErr != nil {
 				logger.Log.Error(rbErr)
 				err = rbErr
+
 				return
 			}
+
 			return
 		}
+
 		err = tx.Commit()
 	}()
 
 	if sqlr, args, err = dialect.Update(tablePerson).Set(
 		goqu.Record{
-			"person_email": p.PersonEmail,
+			"person_email": strings.ToLower(p.PersonEmail),
 		},
 	).Where(
 		goqu.I("person_id").Eq(p.PersonID),
@@ -845,7 +871,6 @@ func (db *SQLiteDataStore) UpdatePerson(p Person) (err error) {
 
 	// Updating person entities.
 	for _, entity := range p.Entities {
-
 		if sqlr, args, err = dialect.Insert(goqu.T("personentities")).Rows(
 			goqu.Record{
 				"personentities_person_id": p.PersonID,
@@ -873,7 +898,6 @@ func (db *SQLiteDataStore) UpdatePerson(p Person) (err error) {
 		if _, err = tx.Exec(sqlr, args...); err != nil {
 			return
 		}
-
 	}
 
 	// Inserting permissions.
@@ -882,12 +906,10 @@ func (db *SQLiteDataStore) UpdatePerson(p Person) (err error) {
 	}
 
 	return
-
 }
 
 // GetAdmins returns the administrators.
-func (db *SQLiteDataStore) GetAdmins() ([]Person, error) {
-
+func (db *SQLiteDataStore) GetAdmins() ([]models.Person, error) {
 	dialect := goqu.Dialect("sqlite3")
 	tablePerson := goqu.T("person")
 
@@ -911,7 +933,7 @@ func (db *SQLiteDataStore) GetAdmins() ([]Person, error) {
 		err    error
 		sqlr   string
 		args   []interface{}
-		people []Person
+		people []models.Person
 	)
 
 	if sqlr, args, err = sQuery.ToSQL(); err != nil {
@@ -924,13 +946,11 @@ func (db *SQLiteDataStore) GetAdmins() ([]Person, error) {
 	}
 
 	return people, nil
-
 }
 
 // HasPersonReadRestrictedProductPermission returns true if the person
 // can read restricted products.
 func (db *SQLiteDataStore) HasPersonReadRestrictedProductPermission(id int) (bool, error) {
-
 	var (
 		err   error
 		sqlr  string
@@ -967,12 +987,10 @@ func (db *SQLiteDataStore) HasPersonReadRestrictedProductPermission(id int) (boo
 	}
 
 	return count != 0, nil
-
 }
 
 // IsPersonAdmin returns true is the person is an admin.
 func (db *SQLiteDataStore) IsPersonAdmin(id int) (bool, error) {
-
 	var (
 		err   error
 		sqlr  string
@@ -1006,12 +1024,10 @@ func (db *SQLiteDataStore) IsPersonAdmin(id int) (bool, error) {
 	}
 
 	return count != 0, nil
-
 }
 
 // UnsetPersonAdmin unset the person admin permissions.
 func (db *SQLiteDataStore) UnsetPersonAdmin(id int) error {
-
 	dialect := goqu.Dialect("sqlite3")
 	tablePermission := goqu.T("permission")
 
@@ -1040,12 +1056,10 @@ func (db *SQLiteDataStore) UnsetPersonAdmin(id int) error {
 	}
 
 	return nil
-
 }
 
 // SetPersonAdmin set the person an admin.
 func (db *SQLiteDataStore) SetPersonAdmin(id int) error {
-
 	var (
 		err  error
 		sqlr string
@@ -1071,12 +1085,10 @@ func (db *SQLiteDataStore) SetPersonAdmin(id int) error {
 	}
 
 	return nil
-
 }
 
 // IsPersonManager returns true is the person is a manager.
 func (db *SQLiteDataStore) IsPersonManager(id int) (bool, error) {
-
 	var (
 		err   error
 		sqlr  string
@@ -1103,11 +1115,9 @@ func (db *SQLiteDataStore) IsPersonManager(id int) (bool, error) {
 	}
 
 	return count != 0, nil
-
 }
 
-func (db *SQLiteDataStore) insertPermissions(p Person, tx *sqlx.Tx) error {
-
+func (db *SQLiteDataStore) insertPermissions(p models.Person, tx *sqlx.Tx) error {
 	var (
 		sqlr string
 		args []interface{}
@@ -1117,8 +1127,19 @@ func (db *SQLiteDataStore) insertPermissions(p Person, tx *sqlx.Tx) error {
 	dialect := goqu.Dialect("sqlite3")
 	tablePermission := goqu.T("permission")
 
-	for _, perm := range p.Permissions {
+	if len(p.Permissions) == 0 {
+		// Inserting default permission.
+		p.Permissions = append(p.Permissions, &models.Permission{
+			PermissionPermName: "r",
+			PermissionItemName: "products",
+			PermissionEntityID: -1,
+			Person: models.Person{
+				PersonID: p.PersonID,
+			},
+		})
+	}
 
+	for _, perm := range p.Permissions {
 		iQuery := dialect.Insert(tablePermission).Rows(
 			goqu.Record{
 				"person":               p.PersonID,
@@ -1135,7 +1156,6 @@ func (db *SQLiteDataStore) insertPermissions(p Person, tx *sqlx.Tx) error {
 		if _, err = tx.Exec(sqlr, args...); err != nil {
 			return err
 		}
-
 	}
 
 	return nil

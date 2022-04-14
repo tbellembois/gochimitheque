@@ -56,8 +56,8 @@ var LOCALES_EN = []byte(`
 
 [required_input]
 	one = "required input"
-[error_occured]
-	one = "an error occured"
+[error_occurred]
+	one = "an error occurred"
 [no_result]
 	one = "no result"
 [no_item]
@@ -117,12 +117,16 @@ var LOCALES_EN = []byte(`
 [bt_noMatches]
 	one = "no matches"
 
+[qrcode_login]
+	one = "log in with a QRCode"
 [email_placeholder]
 	one = "enter your email"
 [submitlogin_text]
 	one = "enter"
 [password_placeholder]
 	one = "enter your password"
+[resetpassword_alert_ldap]
+	one = "you are using a corporate account that can not be changed in Chimithèque"
 [resetpassword_text]
 	one = "reset password"
 [resetpassword2_text]
@@ -225,15 +229,21 @@ var LOCALES_EN = []byte(`
 [menu_people]
 	one = "people"
 [menu_welcomeannounce]
-	one = "change the login message"
+	one = "login page message"
 [menu_password]
 	one = "change my password"
+[menu_qrcode]
+	one = "manage my QRCode access"
 [menu_logout]
 	one = "logout"
 [menu_about]
 	one = "about"
 [menu_account]
 	one = "my account"
+[menu_management]
+	one = "management"
+[menu_settings]
+	one = "settings"
 
 [clearsearch_text]
 	one = "reset filters"
@@ -336,7 +346,7 @@ var LOCALES_EN = []byte(`
 [storage_create_barecode_comment]
 	one = "if you leave this field empty a barecode will be auto-generated"
 [storage_batchnumber_title]
-	one = "batch number"
+	one = "batch"
 [storage_entrydate_title]
 	one = "entry date"
 [storage_exitdate_title]
@@ -552,8 +562,10 @@ var LOCALES_EN = []byte(`
 [person_select_all_rw_storage]
 	one = "select all 'view, modify, create and delete'"
 [person_show_password]
-  one = "show password field"
-  
+	one = "show password field"
+[person_qrcode_regenerate]
+	one = "generate a new QRcode"
+
 [permission_product]
 	one = "products"
 [permission_rproduct]
@@ -620,6 +632,10 @@ var LOCALES_EN = []byte(`
 	one = "manager(s)"
 [entity_manager_placeholder]
 	one = "select manager(s)"
+[entity_ldap_group]
+	one = "LDAP group(s) for auto-enrolment"
+[entity_ldap_group_placeholder]
+	one = "select LDAP group(s)"
 
 [entity_nameexist_validate]
 	one = "entity with this name already present" 

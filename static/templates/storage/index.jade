@@ -60,8 +60,12 @@ block CONTENT
                         //th(data-field='storage_modificationdate' data-formatter='dateFormatter' data-sortable='true') modification date
                         th(data-field='product.name.name_label' data-formatter='Storage_productFormatter' data-sortable='true')
                             = T("storage_product_table_header", 1)
+                        th(data-field='storage_batchnumber' data-formatter='Storage_batchnumberFormatter' data-sortable='true')
+                            = T("storage_batchnumber_title", 1)
                         th(data-field='storelocation.storelocation_fullpath' data-sortable='true' data-formatter='Storage_storelocationFormatter')
                             = T("storage_storelocation_table_header", 1)
+                        th(data-field='storage_modificationdate' data-sortable='true' data-formatter='Storage_modificationdateFormatter')
+                            = T("modified", 1)
                         th(data-field='storage_quantity' data-formatter='Storage_quantityFormatter')
                             = T("storage_quantity_table_header", 1)
                         th.th-storage-barecode(data-field='storage_barecode' data-formatter='Storage_barecodeFormatter' data-sortable='true')

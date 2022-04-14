@@ -13,7 +13,6 @@ import (
 
 // DownloadExportHandler serve the export files.
 func (env *Env) DownloadExportHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-
 	var (
 		fileID string
 		ok     bool
@@ -24,19 +23,21 @@ func (env *Env) DownloadExportHandler(w http.ResponseWriter, r *http.Request) *m
 
 	if fileID, ok = vars["id"]; !ok {
 		return &models.AppError{
-			Error:   err,
-			Message: "no query file id",
-			Code:    http.StatusBadRequest}
+			OriginalError: err,
+			Message:       "no query file id",
+			Code:          http.StatusBadRequest,
+		}
 	}
 
 	fileFullPath := path.Join(os.TempDir(), "chimitheque-"+fileID)
 
 	var fileData []byte
+
 	if fileData, err = ioutil.ReadFile(fileFullPath); err != nil {
 		return &models.AppError{
-			Error:   err,
-			Code:    http.StatusInternalServerError,
-			Message: "error reading the file",
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error reading the file",
 		}
 	}
 
@@ -47,9 +48,9 @@ func (env *Env) DownloadExportHandler(w http.ResponseWriter, r *http.Request) *m
 	b := bytes.NewBuffer(fileData)
 	if _, err = b.WriteTo(w); err != nil {
 		return &models.AppError{
-			Error:   err,
-			Code:    http.StatusInternalServerError,
-			Message: "error streaming the file",
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error streaming the file",
 		}
 	}
 
@@ -61,5 +62,4 @@ func (env *Env) DownloadExportHandler(w http.ResponseWriter, r *http.Request) *m
 	}
 
 	return nil
-
 }
