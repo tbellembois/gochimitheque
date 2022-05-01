@@ -494,7 +494,7 @@ func (env *Env) CreatePersonHandler(w http.ResponseWriter, r *http.Request) *mod
 		logger.Log.Errorf("error sending email %s", err.Error())
 	}
 
-	casbin.InitCasbinPolicy(env.DB)
+	env.Enforcer = casbin.InitCasbinPolicy(env.DB)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
@@ -653,7 +653,7 @@ func (env *Env) UpdatePersonHandler(w http.ResponseWriter, r *http.Request) *mod
 		}
 	}
 
-	casbin.InitCasbinPolicy(env.DB)
+	env.Enforcer = casbin.InitCasbinPolicy(env.DB)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)

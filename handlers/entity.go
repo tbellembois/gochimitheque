@@ -232,7 +232,7 @@ func (env *Env) CreateEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 		}
 	}
 
-	casbin.InitCasbinPolicy(env.DB)
+	env.Enforcer = casbin.InitCasbinPolicy(env.DB)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
@@ -296,7 +296,7 @@ func (env *Env) UpdateEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 		}
 	}
 
-	casbin.InitCasbinPolicy(env.DB)
+	env.Enforcer = casbin.InitCasbinPolicy(env.DB)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)

@@ -478,7 +478,7 @@ func (env *Env) GetTokenHandler(w http.ResponseWriter, r *http.Request) *models.
 					}
 				}
 
-				casbin.InitCasbinPolicy(env.DB)
+				env.Enforcer = casbin.InitCasbinPolicy(env.DB)
 			} else {
 				return &models.AppError{
 					Code:          http.StatusInternalServerError,
