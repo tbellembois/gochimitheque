@@ -1107,6 +1107,7 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p models.Product, update bool) (l
 			if res, err = tx.Exec(sqlr, strings.ToUpper(syn.NameLabel)); err != nil {
 				return
 			}
+
 			// getting the last inserted id
 			if lastInsertID, err = res.LastInsertId(); err != nil {
 				return

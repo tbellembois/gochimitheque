@@ -80,6 +80,7 @@ func GetByMany[T models.Searchable](searchable T, db *sqlx.DB, filter *request.F
 	}
 
 	if err = db.Get(&t, sqlr, args...); err != nil && err != sql.ErrNoRows {
+		logger.Log.Error(err)
 		return
 	}
 	err = nil
@@ -120,7 +121,8 @@ func GetByID[T models.Searchable](searchable T, db *sqlx.DB, ID int) (t T, err e
 		return
 	}
 
-	if err = db.Get(&t, sqlr, args...); err != nil {
+	if err = db.Get(&t, sqlr, args...); err != nil && err != sql.ErrNoRows {
+		logger.Log.Error(err)
 		return
 	}
 
@@ -153,11 +155,14 @@ func GetByText[T models.Searchable](searchable T, db *sqlx.DB, text string) (t T
 		return
 	}
 
-	if err = db.Get(&t, sqlr, args...); err != nil {
+	logger.Log.WithFields(logrus.Fields{"sqlr": sqlr, "args": args}).Debug("GetByText")
+
+	if err = db.Get(&t, sqlr, args...); err != nil && err != sql.ErrNoRows {
+		logger.Log.Error(err)
 		return
 	}
 
-	logger.Log.WithFields(logrus.Fields{"text": text, "t": t}).Debug("GetByID")
+	logger.Log.WithFields(logrus.Fields{"text": text, "t": t}).Debug("GetByText")
 
 	return
 }

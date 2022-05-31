@@ -802,7 +802,7 @@ func (db *SQLiteDataStore) Import(url string) error {
 		var name models.Name
 
 		// if name, err = db.GetNameByLabel(strings.ToUpper(p.Name.NameLabel)); err != nil && err != sql.ErrNoRows {
-		if name, err = GetByText(models.Name{}, db.DB, p.Name.NameLabel); err != nil && err != sql.ErrNoRows {
+		if name, err = GetByText(models.Name{}, db.DB, strings.ToUpper(p.Name.NameLabel)); err != nil && err != sql.ErrNoRows {
 			logger.Log.Error("can not get product name " + err.Error())
 			return err
 		}
@@ -812,7 +812,11 @@ func (db *SQLiteDataStore) Import(url string) error {
 			// to automatically insert it into the db
 			p.Name.NameID = -1
 		} else {
-			p.Name = name
+			// p.Name = name
+			// do not insert products with existing name
+			notimported++
+
+			continue
 		}
 
 		// synonyms
@@ -821,37 +825,41 @@ func (db *SQLiteDataStore) Import(url string) error {
 			newSyn       []models.Name
 			ok           bool
 		)
+
 		// duplicate names map
 		processedSyn = make(map[string]string)
 		processedSyn[p.Name.NameLabel] = ""
 
-		for _, syn := range p.Synonyms {
+		for i := range p.Synonyms {
+
+			logger.Log.WithFields(logrus.Fields{"synonym": p.Synonyms[i]}).Debug("Import")
+
 			// duplicates hunting
-			if _, ok = processedSyn[syn.NameLabel]; ok {
-				logger.Log.Debug("leaving duplicate synonym " + syn.NameLabel)
+			if _, ok = processedSyn[p.Synonyms[i].NameLabel]; ok {
+				logger.Log.Debug("leaving duplicate synonym " + p.Synonyms[i].NameLabel)
 
 				continue
 			}
 
-			processedSyn[syn.NameLabel] = ""
+			processedSyn[p.Synonyms[i].NameLabel] = ""
 
 			// synonym already exist ?
-			var syn2 models.Name
+			var syn models.Name
 
 			// if syn2, err = db.GetNameByLabel(strings.ToUpper(syn.NameLabel)); err != nil {
-			if syn2, err = GetByText(models.Name{}, db.DB, p.Name.NameLabel); err != nil {
+			if syn, err = GetByText(models.Name{}, db.DB, strings.ToUpper(p.Synonyms[i].NameLabel)); err != nil {
 				if err != sql.ErrNoRows {
 					logger.Log.Error("can not get product synonym " + err.Error())
 					return err
 				}
 			}
 			// new synonym
-			if syn2 == (models.Name{}) {
+			if syn == (models.Name{}) {
 				// setting synonym id to -1 for the CreateProduct method
 				// to automatically insert it into the db
-				newSyn = append(newSyn, models.Name{NameID: -1, NameLabel: syn.NameLabel})
+				newSyn = append(newSyn, models.Name{NameID: -1, NameLabel: p.Synonyms[i].NameLabel})
 			} else {
-				newSyn = append(newSyn, syn2)
+				newSyn = append(newSyn, syn)
 			}
 		}
 
