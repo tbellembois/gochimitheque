@@ -1,10 +1,10 @@
-FROM golang:1.18.1-alpine as builder
+FROM golang:1.18.2-bullseye as builder
 LABEL author="Thomas Bellembois"
 ARG BuildID
 ENV BuildID=${BuildID}
 
 # Install GCC and git.
-RUN apk add build-base git
+# RUN apk add build-base git
 
 # ref. go.mod gochimitheque-wasm
 RUN mkdir -p /home/thbellem/workspace \
@@ -56,22 +56,21 @@ RUN if [ -z $BuildID ]; then BuildID=$(date "+%Y%m%d"); fi; echo "BuildID=$Build
 # Install.
 #
 
-FROM golang:1.18beta2-alpine
+FROM golang:1.18.2-bullseye
 
-RUN apk add bash && rm -Rf /var/cache/apk
+RUN rm -Rf /var/cache/apk
 
 # Ensure www-data user exists.
-RUN set -x ; \
-  addgroup -g 82 -S www-data ; \
-  adduser -u 82 -D -S -G www-data www-data && exit 0 ; exit 1 \
+RUN addgroup --gid 82 --system chimitheque \
+  && adduser --uid 82 --system --ingroup chimitheque chimitheque \
   && mkdir /data \
-  && chown www-data /data \
+  && chown chimitheque /data \
   && chmod 700 /data \
   && mkdir /var/www-data \
-  && chown www-data /var/www-data
+  && chown chimitheque /var/www-data
 
 COPY --from=builder /go/src/github.com/tbellembois/gochimitheque/gochimitheque /var/www-data/
-RUN chown www-data /var/www-data/gochimitheque \
+RUN chown chimitheque /var/www-data/gochimitheque \
     && chmod +x /var/www-data/gochimitheque
 
 #
@@ -87,7 +86,7 @@ ADD docker/terena.crt /usr/local/share/ca-certificates/terena.crt
 RUN chmod 644 /usr/local/share/ca-certificates/terena.crt && update-ca-certificates
 
 # Container configuration.
-USER www-data
+USER chimitheque
 WORKDIR /var/www-data
 ENTRYPOINT [ "/entrypoint.sh" ]
 VOLUME [ "/data" ]
