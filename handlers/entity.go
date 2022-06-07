@@ -76,7 +76,7 @@ func (env *Env) GetEntitiesHandler(w http.ResponseWriter, r *http.Request) *mode
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(resp{Rows: entities, Total: count}); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -116,7 +116,7 @@ func (env *Env) GetEntityStockHandler(w http.ResponseWriter, r *http.Request) *m
 	m := env.DB.ComputeStockEntity(p, r)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(m); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -156,7 +156,7 @@ func (env *Env) GetEntityHandler(w http.ResponseWriter, r *http.Request) *models
 	logger.Log.WithFields(logrus.Fields{"entity": entity}).Debug("GetEntityHandler")
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(entity); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -196,7 +196,7 @@ func (env *Env) GetEntityPeopleHandler(w http.ResponseWriter, r *http.Request) *
 	logger.Log.WithFields(logrus.Fields{"people": people}).Debug("GetEntityPeopleHandler")
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(people); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -235,7 +235,7 @@ func (env *Env) CreateEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 	env.Enforcer = casbin.InitCasbinPolicy(env.DB)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(e); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -299,7 +299,7 @@ func (env *Env) UpdateEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 	env.Enforcer = casbin.InitCasbinPolicy(env.DB)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(updatede); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,

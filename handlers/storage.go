@@ -75,7 +75,7 @@ func (env *Env) ToogleStorageBorrowingHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(s); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -119,7 +119,7 @@ func (env *Env) GetStoragesUnitsHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(models.UnitsResp{Rows: units, Total: count}); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -166,7 +166,7 @@ func (env *Env) GetStoragesSuppliersHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(resp{Rows: suppliers, Total: count}); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -209,7 +209,7 @@ func (env *Env) GetOtherStoragesHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(resp{Rows: entities, Total: count, ExportFN: exportfn}); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -265,7 +265,7 @@ func (env *Env) GetStoragesHandler(w http.ResponseWriter, r *http.Request) *mode
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(resp{Rows: storages, Total: count, ExportFN: exportfn}); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -314,7 +314,7 @@ func (env *Env) GetStorageHandler(w http.ResponseWriter, r *http.Request) *model
 	logger.Log.WithFields(logrus.Fields{"storage": storage}).Debug("GetStorageHandler")
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(storage); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -380,7 +380,7 @@ func (env *Env) UpdateStorageHandler(w http.ResponseWriter, r *http.Request) *mo
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode([]models.Storage{s}); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -529,7 +529,7 @@ func (env *Env) CreateStorageHandler(w http.ResponseWriter, r *http.Request) *mo
 	s.StorageID = sql.NullInt64{Valid: true, Int64: id}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(result); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,

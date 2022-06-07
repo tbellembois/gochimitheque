@@ -13,7 +13,13 @@ type AppError struct {
 }
 
 func (e *AppError) Error() string {
-	return fmt.Sprintf("%s %s", e.OriginalError.Error(), e.Message)
+	originalError := ""
+
+	if e.OriginalError != nil {
+		originalError = e.OriginalError.Error()
+	}
+
+	return fmt.Sprintf("%s %s", originalError, e.Message)
 }
 
 // AppHandlerFunc is an HandlerFunc returning an AppError.

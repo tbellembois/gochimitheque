@@ -36,6 +36,9 @@ func (env *Env) AppMiddleware(h models.AppHandlerFunc) http.Handler {
 
 			}
 
+			logger.Log.Error(e.Error())
+			http.Error(w, e.Error(), e.Code)
+
 		}
 	})
 }
@@ -313,6 +316,17 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 				if itemidInt, err = strconv.Atoi(itemid); err != nil {
 					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Debug("AuthorizeMiddleware")
 					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+				// can not delete store location with children
+				c, e := env.DB.GetStoreLocationChildren(itemidInt)
+				if e != nil {
+					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
+					http.Error(w, e.Error(), http.StatusInternalServerError)
+					return
+				}
+				if len(c) != 0 {
+					http.Error(w, "can not delete store location with children", http.StatusUnauthorized)
 					return
 				}
 				// we can not delete a non empty store location

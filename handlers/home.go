@@ -60,7 +60,7 @@ func (env *Env) GetWelcomeAnnounceHandler(w http.ResponseWriter, r *http.Request
 	logger.Log.WithFields(logrus.Fields{"wa": wa}).Debug("GetWelcomeAnnounceHandler")
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(wa); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -107,7 +107,7 @@ func (env *Env) UpdateWelcomeAnnounceHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(wa); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,

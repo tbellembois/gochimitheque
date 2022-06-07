@@ -20,7 +20,6 @@ import (
 
 func sendResponse(w http.ResponseWriter, response string) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
 
 	err := json.NewEncoder(w).Encode(response)
 	if err != nil {
@@ -245,7 +244,7 @@ func (env *Env) FormatProductEmpiricalFormulaHandler(w http.ResponseWriter, r *h
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 	} else {
-		w.WriteHeader(http.StatusOK)
+
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")

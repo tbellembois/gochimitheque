@@ -282,6 +282,7 @@ func (db *SQLiteDataStore) DeleteStoreLocation(id int) error {
 	}
 
 	if _, err = db.Exec(sqlr, args...); err != nil {
+		logger.Log.Error(err)
 		return err
 	}
 

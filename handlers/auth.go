@@ -133,7 +133,6 @@ func (env *Env) CaptchaHandler(w http.ResponseWriter, r *http.Request) *models.A
 	cd.Image = base64.StdEncoding.EncodeToString(b.Bytes())
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
 
 	if e = json.NewEncoder(w).Encode(cd); e != nil {
 		return &models.AppError{
@@ -305,8 +304,6 @@ func (env *Env) ResetPasswordHandler(w http.ResponseWriter, r *http.Request) *mo
 			Message:       "error sending the reinitialization mail",
 		}
 	}
-
-	w.WriteHeader(http.StatusOK)
 
 	return nil
 }
@@ -530,7 +527,7 @@ func (env *Env) GetTokenHandler(w http.ResponseWriter, r *http.Request) *models.
 	}
 
 	// Write the token to the browser window.
-	// w.WriteHeader(http.StatusOK)
+	//
 	// w.Write([]byte(tokenString))
 	// Write the token in a cookie.
 	// further readings: https://www.calhoun.io/securing-cookies-in-go/
@@ -551,7 +548,6 @@ func (env *Env) GetTokenHandler(w http.ResponseWriter, r *http.Request) *models.
 	http.SetCookie(w, &cemail)
 	http.SetCookie(w, &cid)
 
-	w.WriteHeader(http.StatusOK)
 	if _, err = w.Write([]byte(tokenString)); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,

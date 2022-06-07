@@ -87,7 +87,7 @@ func (env *Env) GetProductsProducerRefsHandler(w http.ResponseWriter, r *http.Re
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(resp{Rows: prefs, Total: count}); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -127,7 +127,7 @@ func (env *Env) GetProductsSupplierRefsHandler(w http.ResponseWriter, r *http.Re
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(resp{Rows: srefs, Total: count}); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -169,7 +169,7 @@ func (env *Env) GetProductsCategoriesHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(resp{Rows: cats, Total: count}); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -211,7 +211,7 @@ func (env *Env) GetProductsTagsHandler(w http.ResponseWriter, r *http.Request) *
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(resp{Rows: tags, Total: count}); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -251,7 +251,7 @@ func (env *Env) GetProductsProducersHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(resp{Rows: prs, Total: count}); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -291,7 +291,7 @@ func (env *Env) GetProductsSuppliersHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(resp{Rows: srs, Total: count}); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -353,7 +353,7 @@ func (env *Env) ToogleProductBookmarkHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(product); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -415,7 +415,7 @@ func (env *Env) GetProductsCasNumbersHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(resp{Rows: casnumbers, Total: count}); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -457,7 +457,7 @@ func (env *Env) GetProductsCeNumbersHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(resp{Rows: cenumbers, Total: count}); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -499,7 +499,7 @@ func (env *Env) GetProductsPhysicalStatesHandler(w http.ResponseWriter, r *http.
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(resp{Rows: pstates, Total: count}); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -541,7 +541,7 @@ func (env *Env) GetProductsSignalWordsHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(resp{Rows: swords, Total: count}); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -583,7 +583,7 @@ func (env *Env) GetProductsClassOfCompoundsHandler(w http.ResponseWriter, r *htt
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(resp{Rows: cocs, Total: count}); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -625,7 +625,7 @@ func (env *Env) GetProductsEmpiricalFormulasHandler(w http.ResponseWriter, r *ht
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(resp{Rows: eformulas, Total: count}); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -667,7 +667,7 @@ func (env *Env) GetProductsLinearFormulasHandler(w http.ResponseWriter, r *http.
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(resp{Rows: lformulas, Total: count}); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -708,7 +708,7 @@ func (env *Env) GetProductsEmpiricalFormulaHandler(w http.ResponseWriter, r *htt
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(ef); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -749,7 +749,7 @@ func (env *Env) GetProductsCasNumberHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(cas); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -790,7 +790,7 @@ func (env *Env) GetProductsSignalWordHandler(w http.ResponseWriter, r *http.Requ
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(signalword); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -832,7 +832,7 @@ func (env *Env) GetProductsSymbolsHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(resp{Rows: symbols, Total: count}); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -873,7 +873,7 @@ func (env *Env) GetProductsSymbolHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(symbol); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -915,7 +915,7 @@ func (env *Env) GetProductsHazardStatementsHandler(w http.ResponseWriter, r *htt
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(resp{Rows: hs, Total: count}); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -956,7 +956,7 @@ func (env *Env) GetProductsHazardStatementHandler(w http.ResponseWriter, r *http
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(hs); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -998,7 +998,7 @@ func (env *Env) GetProductsPrecautionaryStatementsHandler(w http.ResponseWriter,
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(resp{Rows: ps, Total: count}); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -1039,7 +1039,7 @@ func (env *Env) GetProductsPrecautionaryStatementHandler(w http.ResponseWriter, 
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(ps); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -1084,7 +1084,7 @@ func (env *Env) GetProductsNamesHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(resp{Rows: names, Total: count}); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -1125,7 +1125,7 @@ func (env *Env) GetProductsNameHandler(w http.ResponseWriter, r *http.Request) *
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(name); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -1167,7 +1167,7 @@ func (env *Env) GetProductsSynonymsHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(resp{Rows: synonyms, Total: count}); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -1206,7 +1206,7 @@ func (env *Env) GetExposedProductsHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(resp{Rows: products, Total: count}); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -1262,7 +1262,7 @@ func (env *Env) GetProductsHandler(w http.ResponseWriter, r *http.Request) *mode
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(resp{Rows: products, Total: count, ExportFN: exportfn}); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -1301,7 +1301,7 @@ func (env *Env) GetProductHandler(w http.ResponseWriter, r *http.Request) *model
 	logger.Log.WithFields(logrus.Fields{"product": product}).Debug("GetProductHandler")
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(product); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -1349,7 +1349,7 @@ func (env *Env) CreateProductHandler(w http.ResponseWriter, r *http.Request) *mo
 	p.ProductID = int(pid)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(p); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -1444,7 +1444,7 @@ func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *mo
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(updatedp); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -1495,7 +1495,7 @@ func (env *Env) ConvertProductEmpiricalToLinearFormulaHandler(w http.ResponseWri
 	l2ef = convert.LinearToEmpiricalFormula(vars["f"])
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(l2ef); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -1534,7 +1534,7 @@ func (env *Env) CreateSupplierHandler(w http.ResponseWriter, r *http.Request) *m
 	sup.SupplierID = sql.NullInt64{Valid: true, Int64: id}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(sup); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -1572,7 +1572,7 @@ func (env *Env) CreateProducerHandler(w http.ResponseWriter, r *http.Request) *m
 	pr.ProducerID = sql.NullInt64{Valid: true, Int64: id}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(pr); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,

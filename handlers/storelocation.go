@@ -72,7 +72,7 @@ func (env *Env) GetStoreLocationsHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(models.StoreLocationsResp{Rows: storelocations, Total: count}); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -111,7 +111,7 @@ func (env *Env) GetStoreLocationHandler(w http.ResponseWriter, r *http.Request) 
 	logger.Log.WithFields(logrus.Fields{"storelocation": storelocation}).Debug("GetStoreLocationHandler")
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(storelocation); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -151,7 +151,7 @@ func (env *Env) CreateStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 	sl.StoreLocationID = sql.NullInt64{Valid: true, Int64: id}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(sl); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -214,7 +214,7 @@ func (env *Env) UpdateStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(updatedsl); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -247,5 +247,6 @@ func (env *Env) DeleteStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 			Message: err.Error(),
 		}
 	}
+
 	return nil
 }

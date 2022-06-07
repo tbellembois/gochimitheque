@@ -92,7 +92,7 @@ func (env *Env) GetLDAPGroupsHandler(w http.ResponseWriter, r *http.Request) *mo
 	result, err = env.LDAPConnection.SearchGroup(strings.ReplaceAll(filter.Search, "%", "*"))
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(result); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -132,7 +132,7 @@ func (env *Env) GetPeopleHandler(w http.ResponseWriter, r *http.Request) *models
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(resp{Rows: people, Total: count}); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -209,7 +209,7 @@ func (env *Env) GenerateQRCodeHandler(w http.ResponseWriter, r *http.Request) *m
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(person); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -261,7 +261,7 @@ func (env *Env) IsPersonLDAPHandler(w http.ResponseWriter, r *http.Request) *mod
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(result); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -323,7 +323,7 @@ func (env *Env) GetPersonHandler(w http.ResponseWriter, r *http.Request) *models
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(person); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -360,7 +360,7 @@ func (env *Env) GetPersonManageEntitiesHandler(w http.ResponseWriter, r *http.Re
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(entities); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -399,7 +399,7 @@ func (env *Env) GetPersonEntitiesHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(entities); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -436,7 +436,7 @@ func (env *Env) GetPersonPermissionsHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(permissions); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -497,7 +497,7 @@ func (env *Env) CreatePersonHandler(w http.ResponseWriter, r *http.Request) *mod
 	env.Enforcer = casbin.InitCasbinPolicy(env.DB)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(p); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -551,7 +551,7 @@ func (env *Env) UpdatePersonpHandler(w http.ResponseWriter, r *http.Request) *mo
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(updatedp); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
@@ -656,7 +656,7 @@ func (env *Env) UpdatePersonHandler(w http.ResponseWriter, r *http.Request) *mod
 	env.Enforcer = casbin.InitCasbinPolicy(env.DB)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
+
 	if err = json.NewEncoder(w).Encode(updatedp); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,

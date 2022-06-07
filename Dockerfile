@@ -1,4 +1,4 @@
-FROM golang:1.18.2-bullseye as builder
+FROM golang:1.18.3-bullseye as builder
 LABEL author="Thomas Bellembois"
 ARG BuildID
 ENV BuildID=${BuildID}
@@ -56,7 +56,7 @@ RUN if [ -z $BuildID ]; then BuildID=$(date "+%Y%m%d"); fi; echo "BuildID=$Build
 # Install.
 #
 
-FROM golang:1.18.2-bullseye
+FROM golang:1.18.3-bullseye
 
 RUN rm -Rf /var/cache/apk
 
