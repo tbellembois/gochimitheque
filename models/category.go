@@ -9,8 +9,10 @@ type Category struct {
 	CategoryLabel sql.NullString `db:"category_label" json:"category_label" schema:"category_label" `
 }
 
-func (category Category) SetC(count int) {
+func (category Category) SetC(count int) Searchable {
 	category.C = count
+
+	return category
 }
 
 func (category Category) GetTableName() string {

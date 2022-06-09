@@ -7,8 +7,10 @@ type Tag struct {
 	TagLabel string `db:"tag_label" json:"tag_label" schema:"tag_label"`
 }
 
-func (tag Tag) SetC(count int) {
+func (tag Tag) SetC(count int) Searchable {
 	tag.C = count
+
+	return tag
 }
 
 func (tag Tag) GetTableName() string {

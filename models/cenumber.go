@@ -9,8 +9,10 @@ type CeNumber struct {
 	CeNumberLabel sql.NullString `db:"cenumber_label" json:"cenumber_label" schema:"cenumber_label" `
 }
 
-func (cenumber CeNumber) SetC(count int) {
+func (cenumber CeNumber) SetC(count int) Searchable {
 	cenumber.C = count
+
+	return cenumber
 }
 
 func (cenumber CeNumber) GetTableName() string {

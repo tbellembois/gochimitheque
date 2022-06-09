@@ -10,8 +10,10 @@ type PhysicalState struct {
 	PhysicalStateLabel sql.NullString `db:"physicalstate_label" json:"physicalstate_label" schema:"physicalstate_label" `
 }
 
-func (physicalstate PhysicalState) SetC(count int) {
+func (physicalstate PhysicalState) SetC(count int) Searchable {
 	physicalstate.C = count
+
+	return physicalstate
 }
 
 func (physicalstate PhysicalState) GetTableName() string {

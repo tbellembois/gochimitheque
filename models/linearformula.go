@@ -9,8 +9,10 @@ type LinearFormula struct {
 	LinearFormulaLabel sql.NullString `db:"linearformula_label" json:"linearformula_label" schema:"linearformula_label" `
 }
 
-func (linearformula LinearFormula) SetC(count int) {
+func (linearformula LinearFormula) SetC(count int) Searchable {
 	linearformula.C = count
+
+	return linearformula
 }
 
 func (linearformula LinearFormula) GetTableName() string {

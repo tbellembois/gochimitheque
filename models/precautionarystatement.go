@@ -7,7 +7,8 @@ type PrecautionaryStatement struct {
 	PrecautionaryStatementReference string `db:"precautionarystatement_reference" json:"precautionarystatement_reference" schema:"precautionarystatement_reference"`
 }
 
-func (ps PrecautionaryStatement) SetC(count int) {
+func (ps PrecautionaryStatement) SetC(count int) Searchable {
+	return ps
 }
 
 func (ps PrecautionaryStatement) GetTableName() string {

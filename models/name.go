@@ -7,8 +7,10 @@ type Name struct {
 	NameLabel string `db:"name_label" json:"name_label" schema:"name_label"`
 }
 
-func (name Name) SetC(count int) {
+func (name Name) SetC(count int) Searchable {
 	name.C = count
+
+	return name
 }
 
 func (name Name) GetTableName() string {

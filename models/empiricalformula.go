@@ -9,8 +9,10 @@ type EmpiricalFormula struct {
 	EmpiricalFormulaLabel sql.NullString `db:"empiricalformula_label" json:"empiricalformula_label" schema:"empiricalformula_label" `
 }
 
-func (empiricalformula EmpiricalFormula) SetC(count int) {
+func (empiricalformula EmpiricalFormula) SetC(count int) Searchable {
 	empiricalformula.C = count
+
+	return empiricalformula
 }
 
 func (empiricalformula EmpiricalFormula) GetTableName() string {

@@ -10,8 +10,10 @@ type CasNumber struct {
 	CasNumberCMR   sql.NullString `db:"casnumber_cmr" json:"casnumber_cmr" schema:"casnumber_cmr" `
 }
 
-func (casnumber CasNumber) SetC(count int) {
+func (casnumber CasNumber) SetC(count int) Searchable {
 	casnumber.C = count
+
+	return casnumber
 }
 
 func (casnumber CasNumber) GetTableName() string {

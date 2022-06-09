@@ -7,7 +7,8 @@ type Symbol struct {
 	SymbolImage string `db:"symbol_image" json:"symbol_image" schema:"symbol_image"`
 }
 
-func (symbol Symbol) SetC(count int) {
+func (symbol Symbol) SetC(count int) Searchable {
+	return symbol
 }
 
 func (symbol Symbol) GetTableName() string {

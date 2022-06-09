@@ -8,8 +8,10 @@ type ClassOfCompound struct {
 	ClassOfCompoundLabel string `db:"classofcompound_label" json:"classofcompound_label" schema:"classofcompound_label" `
 }
 
-func (coc ClassOfCompound) SetC(count int) {
+func (coc ClassOfCompound) SetC(count int) Searchable {
 	coc.C = count
+
+	return coc
 }
 
 func (coc ClassOfCompound) GetTableName() string {

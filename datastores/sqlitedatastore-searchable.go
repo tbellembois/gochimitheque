@@ -83,11 +83,12 @@ func GetByMany[T models.Searchable](searchable T, db *sqlx.DB, filter *request.F
 		logger.Log.Error(err)
 		return
 	}
+
 	err = nil
 
 	for i, c := range ts {
 		if c.GetID() == t.GetID() {
-			ts[i].SetC(1)
+			ts[i] = (ts[i].SetC(1)).(T)
 		}
 	}
 

@@ -10,7 +10,8 @@ type HazardStatement struct {
 	HazardStatementCMR       sql.NullString `db:"hazardstatement_cmr" json:"hazardstatement_cmr" schema:"hazardstatement_cmr" `
 }
 
-func (hs HazardStatement) SetC(count int) {
+func (hs HazardStatement) SetC(count int) Searchable {
+	return hs
 }
 
 func (hs HazardStatement) GetTableName() string {

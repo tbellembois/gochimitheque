@@ -1,7 +1,7 @@
 package models
 
 type Searchable interface {
-	SetC(int)
+	SetC(int) Searchable
 	GetTableName() string
 	GetIDFieldName() string
 	GetTextFieldName() string
