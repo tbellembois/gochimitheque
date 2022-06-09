@@ -119,12 +119,12 @@ func matchStorage(datastore datastores.Datastore, personID string, itemID string
 	)
 
 	if pid, err = strconv.Atoi(personID); err != nil {
-		logger.Log.Error("matchStorage: " + err.Error())
+		logger.Log.Error("matchStorage - pid: " + err.Error())
 		return false
 	}
 
 	if iid, err = strconv.Atoi(itemID); err != nil {
-		logger.Log.Error("matchStorage: " + err.Error())
+		logger.Log.Error("matchStorage - iid: " + err.Error())
 		return false
 	}
 

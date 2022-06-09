@@ -200,7 +200,7 @@ func (db *SQLiteDataStore) computeStockStorelocationNoUnit(p models.Product, s *
 		storelocationChildren []models.StoreLocation
 		err                   error
 		sqlrNotNull, sqlrNull string
-		args                  []interface{}
+		argsNotNull, argsNull []interface{}
 	)
 
 	dialect := goqu.Dialect("sqlite3")
@@ -221,7 +221,7 @@ func (db *SQLiteDataStore) computeStockStorelocationNoUnit(p models.Product, s *
 		goqu.SUM(goqu.I("storage.storage_quantity")),
 	)
 
-	if sqlrNotNull, args, err = sQueryNotNull.ToSQL(); err != nil {
+	if sqlrNotNull, argsNotNull, err = sQueryNotNull.ToSQL(); err != nil {
 		logger.Log.Error(err)
 		return 0
 	}
@@ -240,7 +240,7 @@ func (db *SQLiteDataStore) computeStockStorelocationNoUnit(p models.Product, s *
 		goqu.COUNT(goqu.I("storage.storage_id").Distinct()),
 	)
 
-	if sqlrNull, args, err = sQueryNull.ToSQL(); err != nil {
+	if sqlrNull, argsNull, err = sQueryNull.ToSQL(); err != nil {
 		logger.Log.Error(err)
 		return 0
 	}
@@ -251,12 +251,12 @@ func (db *SQLiteDataStore) computeStockStorelocationNoUnit(p models.Product, s *
 		resultNull, resultNotNull, nullableFloat64 sql.NullFloat64
 	)
 
-	if err = db.Get(&resultNull, sqlrNotNull, args...); err != nil && err != sql.ErrNoRows {
+	if err = db.Get(&resultNotNull, sqlrNotNull, argsNotNull...); err != nil && err != sql.ErrNoRows {
 		logger.Log.Error(err)
 		return 0
 	}
 
-	if err = db.Get(&resultNotNull, sqlrNull, args...); err != nil && err != sql.ErrNoRows {
+	if err = db.Get(&resultNull, sqlrNull, argsNull...); err != nil && err != sql.ErrNoRows {
 		logger.Log.Error(err)
 		return 0
 	}

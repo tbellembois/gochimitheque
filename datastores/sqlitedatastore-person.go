@@ -972,7 +972,10 @@ func (db *SQLiteDataStore) HasPersonReadRestrictedProductPermission(id int) (boo
 					goqu.I("permission.permission_item_name").Eq("all"),
 					goqu.I("permission_entity_id").Eq(-1),
 				),
-				goqu.I("permission.permission_item_name").Eq("rproducts"),
+				goqu.And(
+					goqu.I("permission.permission_perm_name").Neq("n"),
+					goqu.I("permission.permission_item_name").Eq("rproducts"),
+				),
 			),
 		),
 	)
