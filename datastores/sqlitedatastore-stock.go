@@ -199,7 +199,7 @@ func (db *SQLiteDataStore) computeStockStorelocationNoUnit(p models.Product, s *
 		totalStock            float64
 		storelocationChildren []models.StoreLocation
 		err                   error
-		sqlr                  string
+		sqlrNotNull, sqlrNull string
 		args                  []interface{}
 	)
 
@@ -207,13 +207,13 @@ func (db *SQLiteDataStore) computeStockStorelocationNoUnit(p models.Product, s *
 	t := goqu.T("storage")
 
 	// Getting the store location current stock.
-	sQuery := dialect.From(t).LeftJoin(
-		goqu.T("unit"),
-		goqu.On(goqu.Ex{"storage.unit_quantity": goqu.I("unit.unit_id")}),
-	).Where(
+	sQueryNotNull := dialect.From(t).Where(
 		goqu.I("storage.storelocation").Eq(s.Storelocation.StoreLocationID.Int64),
 		goqu.I("storage.storage").IsNull(),
-		goqu.I("storage.storage_quantity").IsNotNull(),
+		goqu.And(
+			goqu.I("storage.storage_quantity").IsNotNull(),
+			goqu.I("storage.storage_quantity").Neq(0),
+		),
 		goqu.I("storage.storage_archive").IsFalse(),
 		goqu.I("storage.product").Eq(p.ProductID),
 		goqu.I("storage.unit_quantity").IsNull(),
@@ -221,18 +221,48 @@ func (db *SQLiteDataStore) computeStockStorelocationNoUnit(p models.Product, s *
 		goqu.SUM(goqu.I("storage.storage_quantity")),
 	)
 
-	if sqlr, args, err = sQuery.ToSQL(); err != nil {
+	if sqlrNotNull, args, err = sQueryNotNull.ToSQL(); err != nil {
 		logger.Log.Error(err)
 		return 0
 	}
 
-	var nullableFloat64 sql.NullFloat64
+	sQueryNull := dialect.From(t).Where(
+		goqu.I("storage.storelocation").Eq(s.Storelocation.StoreLocationID.Int64),
+		goqu.I("storage.storage").IsNull(),
+		goqu.Or(
+			goqu.I("storage.storage_quantity").IsNull(),
+			goqu.I("storage.storage_quantity").Eq(0),
+		),
+		goqu.I("storage.storage_archive").IsFalse(),
+		goqu.I("storage.product").Eq(p.ProductID),
+		goqu.I("storage.unit_quantity").IsNull(),
+	).Select(
+		goqu.COUNT(goqu.I("storage.storage_id").Distinct()),
+	)
+
+	if sqlrNull, args, err = sQueryNull.ToSQL(); err != nil {
+		logger.Log.Error(err)
+		return 0
+	}
 
 	mu.Lock()
-	if err = db.Get(&nullableFloat64, sqlr, args...); err != nil && err != sql.ErrNoRows {
+
+	var (
+		resultNull, resultNotNull, nullableFloat64 sql.NullFloat64
+	)
+
+	if err = db.Get(&resultNull, sqlrNotNull, args...); err != nil && err != sql.ErrNoRows {
 		logger.Log.Error(err)
 		return 0
 	}
+
+	if err = db.Get(&resultNotNull, sqlrNull, args...); err != nil && err != sql.ErrNoRows {
+		logger.Log.Error(err)
+		return 0
+	}
+
+	nullableFloat64 = sql.NullFloat64{Valid: true, Float64: resultNotNull.Float64 + resultNull.Float64}
+
 	mu.Unlock()
 
 	// totalStock is initialized with currentStock
