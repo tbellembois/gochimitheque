@@ -190,7 +190,7 @@ var LOCALES_FR = []byte(`
 [s_producerref]
 	one = "numéro référence fabriquant"
 [s_name]
-	one = "nom exact"
+	one = "nom ou synonyme exact"
 [s_casnumber]
 	one = "numéro CAS"
 [s_empiricalformula]

@@ -19,6 +19,11 @@ body {
     overflow-y: hidden;
 	height: auto !important;
 } */
+div.fixed-table-body {
+    overflow-x: auto;
+    overflow-y: auto;
+    height: auto !important;
+}
 .iconlabel {
     font-family: b612;
     font-size: 12px;

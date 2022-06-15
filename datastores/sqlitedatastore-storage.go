@@ -974,54 +974,104 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s models.Storage, itemNumber int,
 	insertCols := goqu.Record{}
 	if s.StorageComment.Valid {
 		insertCols["storage_comment"] = s.StorageComment.String
+	} else {
+		insertCols["storage_comment"] = nil
 	}
+
 	if s.StorageQuantity.Valid {
 		insertCols["storage_quantity"] = s.StorageQuantity.Float64
+	} else {
+		insertCols["storage_quantity"] = nil
 	}
+
 	if s.StorageBarecode.Valid {
 		insertCols["storage_barecode"] = s.StorageBarecode.String
+	} else {
+		insertCols["storage_barecode"] = nil
 	}
+
 	if s.UnitQuantity.UnitID.Valid {
 		insertCols["unit_quantity"] = s.UnitQuantity.UnitID.Int64
+	} else {
+		insertCols["unit_quantity"] = nil
 	}
+
 	if s.SupplierID.Valid {
 		insertCols["supplier"] = s.SupplierID.Int64
+	} else {
+		insertCols["supplier"] = nil
 	}
+
 	if s.StorageEntryDate.Valid {
 		insertCols["storage_entrydate"] = s.StorageEntryDate.Time
+	} else {
+		insertCols["storage_entrydate"] = nil
 	}
+
 	if s.StorageExitDate.Valid {
 		insertCols["storage_exitdate"] = s.StorageExitDate.Time
+	} else {
+		insertCols["storage_exitdate"] = nil
 	}
+
 	if s.StorageOpeningDate.Valid {
 		insertCols["storage_openingdate"] = s.StorageOpeningDate.Time
+	} else {
+		insertCols["storage_openingdate"] = nil
 	}
+
 	if s.StorageExpirationDate.Valid {
 		insertCols["storage_expirationdate"] = s.StorageExpirationDate.Time
+	} else {
+		insertCols["storage_expirationdate"] = nil
 	}
+
 	if s.StorageReference.Valid {
 		insertCols["storage_reference"] = s.StorageReference.String
+	} else {
+		insertCols["storage_reference"] = nil
 	}
+
 	if s.StorageBatchNumber.Valid {
 		insertCols["storage_batchnumber"] = s.StorageBatchNumber.String
+	} else {
+		insertCols["storage_batchnumber"] = nil
 	}
+
 	if s.StorageToDestroy.Valid {
 		insertCols["storage_todestroy"] = s.StorageToDestroy.Bool
+	} else {
+		insertCols["storage_todestroy"] = nil
 	}
+
 	if s.StorageConcentration.Valid {
 		insertCols["storage_concentration"] = int(s.StorageConcentration.Int64)
+	} else {
+		insertCols["storage_concentration"] = nil
 	}
+
 	if s.StorageNumberOfBag.Valid {
 		insertCols["storage_number_of_bag"] = int(s.StorageNumberOfBag.Int64)
+	} else {
+		insertCols["storage_number_of_bag"] = nil
 	}
+
 	if s.StorageNumberOfCarton.Valid {
 		insertCols["storage_number_of_carton"] = int(s.StorageNumberOfCarton.Int64)
+	} else {
+		insertCols["storage_number_of_carton"] = nil
 	}
+
 	if s.StorageNumberOfUnit.Valid {
 		insertCols["storage_number_of_unit"] = int(s.StorageNumberOfUnit.Int64)
+	} else {
+		insertCols["storage_number_of_unit"] = nil
 	}
+
 	if s.UnitConcentration.UnitID.Valid {
 		insertCols["unit_concentration"] = int(s.UnitConcentration.UnitID.Int64)
+	} else {
+		insertCols["unit_concentration"] = nil
 	}
 
 	insertCols["person"] = s.PersonID

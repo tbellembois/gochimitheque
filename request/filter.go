@@ -3,6 +3,7 @@ package request
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/tbellembois/gochimitheque/models"
 )
@@ -357,7 +358,7 @@ func NewFilter(r *http.Request, f func(string) (string, error)) (filter *Filter,
 	}
 
 	if custom_name_part_of, ok := r.URL.Query()["custom_name_part_of"]; ok {
-		filter.CustomNamePartOf = "%" + custom_name_part_of[0] + "%"
+		filter.CustomNamePartOf = "%" + strings.ToUpper(custom_name_part_of[0]) + "%"
 	}
 
 	if product_specificity, ok := r.URL.Query()["product_specificity"]; ok {

@@ -1264,70 +1264,134 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p models.Product, update bool) (l
 
 	if p.ProductSpecificity.Valid {
 		insertCols["product_specificity"] = p.ProductSpecificity.String
+	} else {
+		insertCols["product_specificity"] = nil
 	}
+
 	if p.ProductMSDS.Valid {
 		insertCols["product_msds"] = p.ProductMSDS.String
+	} else {
+		insertCols["product_msds"] = nil
 	}
+
 	if p.ProductSheet.Valid {
 		insertCols["product_sheet"] = p.ProductSheet.String
+	} else {
+		insertCols["product_sheet"] = nil
 	}
+
 	if p.ProductTemperature.Valid {
 		insertCols["product_temperature"] = int(p.ProductTemperature.Int64)
+	} else {
+		insertCols["product_temperature"] = nil
 	}
+
 	if p.ProductRestricted.Valid {
 		insertCols["product_restricted"] = p.ProductRestricted.Bool
+	} else {
+		insertCols["product_restricted"] = false
 	}
+
 	if p.ProductRadioactive.Valid {
 		insertCols["product_radioactive"] = p.ProductRadioactive.Bool
+	} else {
+		insertCols["product_radioactive"] = false
 	}
 
 	if p.Category.CategoryID.Valid {
 		insertCols["category"] = int(p.Category.CategoryID.Int64)
+	} else {
+		insertCols["category"] = nil
 	}
+
 	if p.UnitTemperature.UnitID.Valid {
 		insertCols["unit_temperature"] = int(p.UnitTemperature.UnitID.Int64)
+	} else {
+		insertCols["unit_temperature"] = nil
 	}
+
 	if p.ProductThreeDFormula.Valid {
 		insertCols["product_threedformula"] = p.ProductThreeDFormula.String
+	} else {
+		insertCols["product_threedformula"] = nil
 	}
+
 	if p.ProductTwoDFormula.Valid {
 		insertCols["product_twodformula"] = p.ProductTwoDFormula.String
+	} else {
+		insertCols["product_twodformula"] = nil
 	}
+
 	if p.ProductDisposalComment.Valid {
 		insertCols["product_disposalcomment"] = p.ProductDisposalComment.String
+	} else {
+		insertCols["product_disposalcomment"] = nil
 	}
+
 	if p.ProductRemark.Valid {
 		insertCols["product_remark"] = p.ProductRemark.String
+	} else {
+		insertCols["product_remark"] = nil
 	}
+
 	if p.ProductNumberPerCarton.Valid {
 		insertCols["product_number_per_carton"] = p.ProductNumberPerCarton.Int64
+	} else {
+		insertCols["product_number_per_carton"] = nil
 	}
+
 	if p.ProductNumberPerBag.Valid {
 		insertCols["product_number_per_bag"] = p.ProductNumberPerBag.Int64
+	} else {
+		insertCols["product_number_per_bag"] = nil
 	}
+
 	if p.EmpiricalFormulaID.Valid {
 		insertCols["empiricalformula"] = int(p.EmpiricalFormulaID.Int64)
+	} else {
+		insertCols["empiricalformula"] = nil
 	}
+
 	if p.LinearFormulaID.Valid {
 		insertCols["linearformula"] = int(p.LinearFormulaID.Int64)
+	} else {
+		insertCols["linearformula"] = nil
 	}
+
 	if p.PhysicalStateID.Valid {
 		insertCols["physicalstate"] = int(p.PhysicalStateID.Int64)
+	} else {
+		insertCols["physicalstate"] = nil
 	}
+
 	if p.SignalWordID.Valid {
 		insertCols["signalword"] = int(p.SignalWordID.Int64)
+	} else {
+		insertCols["signalword"] = nil
 	}
+
 	if p.CasNumberID.Valid {
 		insertCols["casnumber"] = int(p.CasNumberID.Int64)
+	} else {
+		insertCols["casnumber"] = nil
 	}
+
 	if p.CeNumberID.Valid {
 		insertCols["cenumber"] = int(p.CeNumberID.Int64)
+	} else {
+		insertCols["cenumber"] = nil
 	}
+
 	if p.ProducerRefID.Valid {
 		insertCols["producerref"] = int(p.ProducerRefID.Int64)
+	} else {
+		insertCols["producerref"] = nil
 	}
+
 	if p.ProductMolFormula.Valid {
 		insertCols["product_molformula"] = p.ProductMolFormula.String
+	} else {
+		insertCols["product_molformula"] = nil
 	}
 
 	insertCols["name"] = p.NameID
