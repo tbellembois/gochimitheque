@@ -269,6 +269,7 @@ func (env *Env) ValidateProductCasNumberHandler(w http.ResponseWriter, r *http.R
 		resp       string
 		cas        models.CasNumber
 		nbProducts int
+		products   []models.Product
 		aerr       *models.AppError
 		filter     *request.Filter
 		productID  int
@@ -328,15 +329,21 @@ func (env *Env) ValidateProductCasNumberHandler(w http.ResponseWriter, r *http.R
 			filter.ProductSpecificity = r.Form.Get("product_specificity")
 
 			// getting the products matching the cas and specificity
-			if _, nbProducts, err = env.DB.GetProducts(*filter, false); err != nil {
+			if products, nbProducts, err = env.DB.GetProducts(*filter, false); err != nil {
 				logger.Log.Error("GetProducts error")
 				resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "casnumber_validate_wrongcas", PluralCount: 1})
 				sendResponse(w, resp)
 				return nil
 			}
 
+			logger.Log.Debug(nbProducts)
+
 			if nbProducts != 0 {
-				resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "casnumber_validate_casspecificity", PluralCount: 1})
+				if filter.ProductSpecificity == "" && products[0].ProductSpecificity.Valid && products[0].ProductSpecificity.String != "" {
+
+				} else {
+					resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "casnumber_validate_casspecificity", PluralCount: 1})
+				}
 			}
 		}
 	}
