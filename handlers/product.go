@@ -12,7 +12,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque-utils/convert"
-	"github.com/tbellembois/gochimitheque-utils/sort"
 	"github.com/tbellembois/gochimitheque/datastores"
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
@@ -604,7 +603,7 @@ func (env *Env) GetProductsEmpiricalFormulasHandler(w http.ResponseWriter, r *ht
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r, sort.SortEmpiricalFormula); aerr != nil {
+	if filter, aerr = request.NewFilter(r, convert.ToEmpiricalFormula); aerr != nil {
 		return aerr
 	}
 
@@ -1432,7 +1431,7 @@ func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *mo
 	updatedp.ProductTemperature = p.ProductTemperature
 	updatedp.UnitTemperature = p.UnitTemperature
 
-	logger.Log.WithFields(logrus.Fields{"updatedp": updatedp}).Debug("UpdateProductHandler")
+	logger.Log.WithFields(logrus.Fields{"updatedp": fmt.Sprintf("%+v", updatedp)}).Debug("UpdateProductHandler")
 
 	sanitizeProduct(&updatedp)
 	if _, err := env.DB.CreateUpdateProduct(updatedp, true); err != nil {
@@ -1492,7 +1491,7 @@ func (env *Env) ConvertProductEmpiricalToLinearFormulaHandler(w http.ResponseWri
 		err  error
 	)
 
-	l2ef = convert.LinearToEmpiricalFormula(vars["f"])
+	l2ef, _ = convert.ToEmpiricalFormula(vars["f"])
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 

@@ -9,7 +9,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/sirupsen/logrus"
-	"github.com/tbellembois/gochimitheque-utils/sort"
+	"github.com/tbellembois/gochimitheque-utils/convert"
 	"github.com/tbellembois/gochimitheque-utils/validator"
 	"github.com/tbellembois/gochimitheque/datastores"
 	"github.com/tbellembois/gochimitheque/locales"
@@ -212,7 +212,7 @@ func (env *Env) ValidateProductEmpiricalFormulaHandler(w http.ResponseWriter, r 
 	}
 
 	// validating it
-	_, err = sort.SortEmpiricalFormula(r.Form.Get("empiricalformula"))
+	_, err = convert.ToEmpiricalFormula(r.Form.Get("empiricalformula"))
 	if err != nil {
 		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "empiricalformula_validate", PluralCount: 1})
 	} else {
@@ -239,7 +239,7 @@ func (env *Env) FormatProductEmpiricalFormulaHandler(w http.ResponseWriter, r *h
 		}
 	}
 	// validating it
-	resp, err = sort.SortEmpiricalFormula(r.Form.Get("empiricalformula"))
+	resp, err = convert.ToEmpiricalFormula(r.Form.Get("empiricalformula"))
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)

@@ -1029,6 +1029,7 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p models.Product, update bool) (l
 	defer func() {
 		if err != nil {
 			logger.Log.Error(err)
+
 			if rbErr := tx.Rollback(); rbErr != nil {
 				logger.Log.Error(rbErr)
 				err = rbErr
@@ -1075,6 +1076,7 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p models.Product, update bool) (l
 		// updating the product CeNumberID (CeNumberLabel already set)
 		p.CeNumber.CeNumberID = sql.NullInt64{Valid: true, Int64: lastInsertID}
 	}
+
 	if err != nil {
 		logger.Log.Error("cenumber error - " + err.Error())
 		return
@@ -1318,9 +1320,10 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p models.Product, update bool) (l
 
 	if p.ProductTwoDFormula.Valid {
 		insertCols["product_twodformula"] = p.ProductTwoDFormula.String
-	} else {
-		insertCols["product_twodformula"] = nil
 	}
+	// } else {
+	// 	insertCols["product_twodformula"] = nil
+	// }
 
 	if p.ProductDisposalComment.Valid {
 		insertCols["product_disposalcomment"] = p.ProductDisposalComment.String

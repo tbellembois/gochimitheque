@@ -1,12 +1,12 @@
 module github.com/tbellembois/gochimitheque
 
-go 1.18
+go 1.19
 
-replace github.com/tbellembois/gochimitheque-utils v0.0.0 => /home/thbellem/workspace/workspace_go/src/github.com/tbellembois/gochimitheque-utils
+// replace github.com/tbellembois/gochimitheque-utils v0.0.0 => /home/thbellem/workspace/workspace_go/src/github.com/tbellembois/gochimitheque-utils
 
 require (
-	github.com/BurntSushi/toml v1.1.0
-	github.com/casbin/casbin/v2 v2.47.1
+	github.com/BurntSushi/toml v1.2.0
+	github.com/casbin/casbin/v2 v2.52.2
 	github.com/dchest/authcookie v0.0.0-20190824115100-f900d2294c8e // indirect
 	github.com/dchest/passwordreset v0.0.0-20190826080013-4518b1f41006
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
@@ -16,25 +16,25 @@ require (
 	github.com/justinas/alice v1.2.0
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/nicksnyder/go-i18n/v2 v2.2.0
-	github.com/sirupsen/logrus v1.8.1
+	github.com/sirupsen/logrus v1.9.0
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/steambap/captcha v1.4.1
-	github.com/tbellembois/gochimitheque-utils v0.0.0
-	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e
-	golang.org/x/image v0.0.0-20220413100746-70e8d0d3baa9 // indirect
-	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
+	golang.org/x/crypto v0.0.0-20220817201139-bc19a97f63c8
+	golang.org/x/image v0.0.0-20220722155232-062f8c9fd539 // indirect
+	golang.org/x/sys v0.0.0-20220818161305-2296e01440c6 // indirect
 	golang.org/x/text v0.3.7
 )
 
 require (
 	github.com/casbin/json-adapter/v2 v2.0.0
-	github.com/go-ldap/ldap/v3 v3.4.3
+	github.com/go-ldap/ldap/v3 v3.4.4
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/russross/blackfriday/v2 v2.1.0
+	github.com/tbellembois/gochimitheque-utils v0.0.0-20220621091505-298058e092a2
 )
 
 require (
-	github.com/Azure/go-ntlmssp v0.0.0-20211209120228-48547f28849e // indirect
+	github.com/Azure/go-ntlmssp v0.0.0-20220621081337-cb9428e4ac1e // indirect
 	github.com/Joker/hpp v1.0.0 // indirect
 	github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible // indirect
 	github.com/go-asn1-ber/asn1-ber v1.5.4 // indirect
@@ -42,7 +42,7 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 replace gopkg.in/russross/blackfriday.v2 => github.com/russross/blackfriday/v2 v2.0.1
