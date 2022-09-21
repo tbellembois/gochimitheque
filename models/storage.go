@@ -3,7 +3,6 @@ package models
 import (
 	"database/sql"
 	"encoding/csv"
-	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
@@ -112,7 +111,7 @@ func StoragesToCSV(sts []Storage) (string, error) {
 	}
 
 	// create a temp file
-	if tmpFile, err = ioutil.TempFile(os.TempDir(), "chimitheque-"); err != nil {
+	if tmpFile, err = os.CreateTemp(os.TempDir(), "chimitheque-"); err != nil {
 		logger.Log.Error("cannot create temporary file", err)
 		return "", err
 	}

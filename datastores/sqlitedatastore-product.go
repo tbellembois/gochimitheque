@@ -488,11 +488,12 @@ func (db *SQLiteDataStore) GetProducts(f request.Filter, public bool) ([]models.
 
 	go func() {
 		for i, pr := range products {
-			if pr.ProductNumberPerCarton.Valid {
+			switch {
+			case pr.ProductNumberPerCarton.Valid:
 				products[i].ProductType = "CONS"
-			} else if pr.ProducerRef.ProducerRefID.Valid {
+			case pr.ProducerRef.ProducerRefID.Valid:
 				products[i].ProductType = "BIO"
-			} else {
+			default:
 				products[i].ProductType = "CHEM"
 			}
 		}
@@ -773,7 +774,6 @@ func (db *SQLiteDataStore) GetProducts(f request.Filter, public bool) ([]models.
 				if err = db.Get(&products[i].ProductTSC, reqtsc.String(), pr.ProductID); err != nil {
 					logger.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts:goroutine:TSC")
 				}
-
 			}
 
 			wg.Done()
@@ -948,11 +948,12 @@ func (db *SQLiteDataStore) GetProduct(id int) (models.Product, error) {
 		return product, err
 	}
 
-	if product.ProductNumberPerCarton.Valid {
+	switch {
+	case product.ProductNumberPerCarton.Valid:
 		product.ProductType = "CONS"
-	} else if product.ProducerRef.ProducerRefID.Valid {
+	case product.ProducerRef.ProducerRefID.Valid:
 		product.ProductType = "BIO"
-	} else {
+	default:
 		product.ProductType = "CHEM"
 	}
 
@@ -969,6 +970,12 @@ func (db *SQLiteDataStore) DeleteProduct(id int) error {
 	)
 
 	logger.Log.WithFields(logrus.Fields{"id": id}).Debug("DeleteProduct")
+
+	// deleting bookmarks
+	sqlr = `DELETE FROM bookmark WHERE bookmark.product = (?)`
+	if _, err = db.Exec(sqlr, id); err != nil {
+		return err
+	}
 
 	// deleting symbols
 	sqlr = `DELETE FROM productsymbols WHERE productsymbols.productsymbols_product_id = (?)`

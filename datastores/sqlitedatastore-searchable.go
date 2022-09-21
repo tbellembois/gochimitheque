@@ -14,7 +14,6 @@ import (
 )
 
 func GetByMany[T models.Searchable](searchable T, db *sqlx.DB, filter *request.Filter) (ts []T, count int, err error) {
-
 	var (
 		exactSearch, countSQL, selectSQL string
 		countArgs, selectArgs            []interface{}
@@ -95,24 +94,22 @@ func GetByMany[T models.Searchable](searchable T, db *sqlx.DB, filter *request.F
 	logger.Log.WithFields(logrus.Fields{"ts": ts}).Debug("GetByMany")
 
 	return
-
 }
 
-func GetByID[T models.Searchable](searchable T, db *sqlx.DB, ID int) (t T, err error) {
-
+func GetByID[T models.Searchable](searchable T, db *sqlx.DB, id int) (t T, err error) {
 	var (
 		sqlr string
 		args []interface{}
 	)
 
-	logger.Log.WithFields(logrus.Fields{"ID": ID}).Debug("GetByID")
+	logger.Log.WithFields(logrus.Fields{"ID": id}).Debug("GetByID")
 
 	dialect := goqu.Dialect("sqlite3")
 
 	sQuery := dialect.From(
 		searchable.GetTableName(),
 	).Where(
-		goqu.I(searchable.GetIDFieldName()).Eq(ID),
+		goqu.I(searchable.GetIDFieldName()).Eq(id),
 	).Select(
 		goqu.I("*"),
 	)
@@ -127,13 +124,12 @@ func GetByID[T models.Searchable](searchable T, db *sqlx.DB, ID int) (t T, err e
 		return
 	}
 
-	logger.Log.WithFields(logrus.Fields{"ID": ID, "t": t}).Debug("GetByID")
+	logger.Log.WithFields(logrus.Fields{"ID": id, "t": t}).Debug("GetByID")
 
 	return
 }
 
 func GetByText[T models.Searchable](searchable T, db *sqlx.DB, text string) (t T, err error) {
-
 	var (
 		sqlr string
 		args []interface{}

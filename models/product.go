@@ -3,7 +3,6 @@ package models
 import (
 	"database/sql"
 	"encoding/csv"
-	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
@@ -155,7 +154,7 @@ func ProductsToCSV(prs []Product) string {
 	}
 
 	// create a temp file
-	tmpFile, err := ioutil.TempFile(os.TempDir(), "chimitheque-")
+	tmpFile, err := os.CreateTemp(os.TempDir(), "chimitheque-")
 	if err != nil {
 		logger.Log.Error("cannot create temporary file", err)
 	}

@@ -6,6 +6,7 @@ var schema = `
 	PRAGMA encoding = "UTF-8"; 
 	PRAGMA temp_store = 2;
 	PRAGMA journal_mode = WAL;
+	PRAGMA wal_autocheckpoint;
 	PRAGMA temp_store = MEMORY;
 
 	CREATE TABLE IF NOT EXISTS welcomeannounce(
