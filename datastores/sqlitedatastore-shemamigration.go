@@ -1,6 +1,6 @@
 package datastores
 
-var versionToMigration = []string{migrationOne, migrationTwo, migrationThree, migrationFour, migrationFive, migrationSix, migrationSeven}
+var versionToMigration = []string{migrationOne, migrationTwo, migrationThree, migrationFour, migrationFive, migrationSix, migrationSeven, migrationEight}
 
 var migrationOne = `BEGIN TRANSACTION;
 
@@ -506,5 +506,22 @@ CREATE TABLE IF NOT EXISTS entityldapgroups (
 CREATE UNIQUE INDEX IF NOT EXISTS idx_entityldapgroups ON entityldapgroups(entityldapgroups_entity_id, entityldapgroups_ldapgroup);
 
 PRAGMA user_version=7;
+COMMIT;
+PRAGMA foreign_keys=on;`
+
+var migrationEight = `PRAGMA foreign_keys=off;
+
+BEGIN TRANSACTION;
+
+INSERT INTO hazardstatement (hazardstatement_label, hazardstatement_reference) VALUES ('.May cause endocrine disruption in humans.', 'EUH380');
+INSERT INTO hazardstatement (hazardstatement_label, hazardstatement_reference) VALUES ('.Suspected of causing endocrine disruption in humans.', 'EUH381');
+INSERT INTO hazardstatement (hazardstatement_label, hazardstatement_reference) VALUES ('.May cause endocrine disruption in the environment.', 'EUH430');
+INSERT INTO hazardstatement (hazardstatement_label, hazardstatement_reference) VALUES ('.Suspected of causing endocrine disruption in the environment.', 'EUH431');
+INSERT INTO hazardstatement (hazardstatement_label, hazardstatement_reference) VALUES ('.Accumulates in the environment and living organisms including in humans.', 'EUH440');
+INSERT INTO hazardstatement (hazardstatement_label, hazardstatement_reference) VALUES ('.Strongly accumulates in the environment and living organisms including in humans.', 'EUH441');
+INSERT INTO hazardstatement (hazardstatement_label, hazardstatement_reference) VALUES ('.Can cause long-lasting and diffuse contamination of water resources.', 'EUH450');
+INSERT INTO hazardstatement (hazardstatement_label, hazardstatement_reference) VALUES ('.Can cause very long-lasting and diffuse contamination of water resources.', 'EUH451');
+
+PRAGMA user_version=8;
 COMMIT;
 PRAGMA foreign_keys=on;`

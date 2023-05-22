@@ -6,7 +6,7 @@ go 1.20
 
 require (
 	github.com/BurntSushi/toml v1.2.1
-	github.com/casbin/casbin/v2 v2.61.1
+	github.com/casbin/casbin/v2 v2.69.0
 	github.com/dchest/authcookie v0.0.0-20190824115100-f900d2294c8e // indirect
 	github.com/dchest/passwordreset v0.0.0-20190826080013-4518b1f41006
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
@@ -16,13 +16,13 @@ require (
 	github.com/justinas/alice v1.2.0
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/nicksnyder/go-i18n/v2 v2.2.1
-	github.com/sirupsen/logrus v1.9.0
+	github.com/sirupsen/logrus v1.9.2
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/steambap/captcha v1.4.1
-	golang.org/x/crypto v0.5.0
-	golang.org/x/image v0.3.0 // indirect
-	golang.org/x/sys v0.5.0 // indirect
-	golang.org/x/text v0.6.0
+	golang.org/x/crypto v0.9.0
+	golang.org/x/image v0.7.0 // indirect
+	golang.org/x/sys v0.8.0 // indirect
+	golang.org/x/text v0.9.0
 )
 
 require (
@@ -40,7 +40,7 @@ require (
 	github.com/go-asn1-ber/asn1-ber v1.5.4 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	golang.org/x/net v0.5.0 // indirect
+	golang.org/x/net v0.10.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
