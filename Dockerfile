@@ -81,9 +81,11 @@ RUN chown chimitheque /var/www-data/gochimitheque \
 COPY docker/entrypoint.sh /
 RUN chmod +x /entrypoint.sh
 
-# Adding ENS-Lyon CA certificates.
+# Adding CA certificates.
 ADD docker/terena.crt /usr/local/share/ca-certificates/terena.crt
-RUN chmod 644 /usr/local/share/ca-certificates/terena.crt && update-ca-certificates
+ADD docker/USERTrust_RSA_Certification_Authority.crt /usr/local/share/ca-certificates/USERTrust_RSA_Certification_Authority.crt
+
+RUN chmod 644 /usr/local/share/ca-certificates/* && update-ca-certificates
 
 # Container configuration.
 USER chimitheque
