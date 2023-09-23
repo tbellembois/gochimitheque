@@ -1,4 +1,4 @@
-//go:build go1.20 && linux && amd64
+//go:build go1.21 && linux && amd64
 
 //go:generate jade -writer -basedir static/templates -d ./static/jade welcomeannounce/index.jade home/index.jade login/index.jade about/index.jade entity/index.jade entity/create.jade product/index.jade product/create.jade storage/index.jade storage/create.jade storelocation/index.jade storelocation/create.jade person/index.jade person/create.jade person/password.jade person/qrcode.jade search.jade menu.jade
 //go:generate go run . -genlocalejs
