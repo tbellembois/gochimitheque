@@ -67,7 +67,9 @@ RUN addgroup --gid 82 --system chimitheque \
   && chown chimitheque /data \
   && chmod 700 /data \
   && mkdir /var/www-data \
-  && chown chimitheque /var/www-data
+  && chown chimitheque /var/www-data \
+  && chown chimitheque /var/log \
+  && chmod 755 /var/log
 
 COPY --from=builder /go/src/github.com/tbellembois/gochimitheque/gochimitheque /var/www-data/
 RUN chown chimitheque /var/www-data/gochimitheque \
