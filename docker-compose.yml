@@ -45,10 +45,10 @@ services:
             - CHIMITHEQUE_LOGFILE=/var/log/chimitheque.log
             # LDAP server parameters
             - CHIMITHEQUE_LDAPSERVERURL=ldaps://ldapserver.foo.fr/ou=users,dc=foo,dc=fr
-            - CHIMITHEQUE_LDAPSERVERUSERNAME=CN=admin,OU=users,OU=local,DC=users,DC=fr
+            - CHIMITHEQUE_LDAPSERVERUSERNAME=(CN=admin,OU=users,OU=local,DC=users,DC=fr)
             - CHIMITHEQUE_LDAPSERVERPASSWORD=password
-            - CHIMITHEQUE_LDAPUSERSEARCHBASEDN=OU=users,DC=foo,DC=fr
-            - CHIMITHEQUE_LDAPGROUPSEARCHBASEDN=OU=users,DC=foo,DC=fr
+            - CHIMITHEQUE_LDAPUSERSEARCHBASEDN=(OU=users,DC=foo,DC=fr)
+            - CHIMITHEQUE_LDAPGROUPSEARCHBASEDN=(OU=users,DC=foo,DC=fr)
             # memberOf attribute must be provided by the LDAP server
             - CHIMITHEQUE_LDAPUSERSEARCHFILTER=(&(mail=%s)(objectclass=user))
             # cn attribute must be provided by the LDAP server
@@ -65,6 +65,7 @@ services:
         #     - CHIMITHEQUE_IMPORTFROM=https://chimitheque.ens-lyon.fr
         volumes:
             - /data/docker-chimitheque/chimitheque-db:/data
+            - /data/docker-chimitheque/chimitheque-log:/var/log
         networks:
             - chimitheque
         depends_on:

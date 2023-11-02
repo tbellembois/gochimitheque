@@ -117,7 +117,8 @@ Create the data directories for the Nginx and Chimithèque containers:
   mkdir -p /data/docker-nginx/nginx-auth/certs
   mkdir -p /data/docker-nginx/nginx-templates
   mkdir -p /data/docker-chimitheque/chimitheque-db
-  chmod o+rwx /data/docker-chimitheque
+  mkdir -p /data/docker-chimitheque/chimitheque-log
+  chmod -R o+rwx /data/docker-chimitheque
 ```
 
 Retrieve the Nginx configuration:
