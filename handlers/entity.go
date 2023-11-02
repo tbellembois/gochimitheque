@@ -56,7 +56,7 @@ func (env *Env) GetEntitiesHandler(w http.ResponseWriter, r *http.Request) *mode
 	c := request.ContainerFromRequestContext(r)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r, nil); err != nil {
+	if filter, aerr = request.NewFilter(r); err != nil {
 		return aerr
 	}
 

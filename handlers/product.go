@@ -67,7 +67,7 @@ func (env *Env) GetProductsProducerRefsHandler(w http.ResponseWriter, r *http.Re
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r, nil); err != nil {
+	if filter, aerr = request.NewFilter(r); err != nil {
 		return aerr
 	}
 
@@ -107,7 +107,7 @@ func (env *Env) GetProductsSupplierRefsHandler(w http.ResponseWriter, r *http.Re
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r, nil); err != nil {
+	if filter, aerr = request.NewFilter(r); err != nil {
 		return aerr
 	}
 
@@ -147,7 +147,7 @@ func (env *Env) GetProductsCategoriesHandler(w http.ResponseWriter, r *http.Requ
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r, nil); err != nil {
+	if filter, aerr = request.NewFilter(r); err != nil {
 		return aerr
 	}
 
@@ -189,7 +189,7 @@ func (env *Env) GetProductsTagsHandler(w http.ResponseWriter, r *http.Request) *
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r, nil); err != nil {
+	if filter, aerr = request.NewFilter(r); err != nil {
 		return aerr
 	}
 
@@ -231,7 +231,7 @@ func (env *Env) GetProductsProducersHandler(w http.ResponseWriter, r *http.Reque
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r, nil); err != nil {
+	if filter, aerr = request.NewFilter(r); err != nil {
 		return aerr
 	}
 
@@ -271,7 +271,7 @@ func (env *Env) GetProductsSuppliersHandler(w http.ResponseWriter, r *http.Reque
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r, nil); err != nil {
+	if filter, aerr = request.NewFilter(r); err != nil {
 		return aerr
 	}
 
@@ -373,7 +373,7 @@ func (env *Env) GetProductsCasNumbersHandler(w http.ResponseWriter, r *http.Requ
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r, nil); err != nil {
+	if filter, aerr = request.NewFilter(r); err != nil {
 		return aerr
 	}
 
@@ -435,7 +435,7 @@ func (env *Env) GetProductsCeNumbersHandler(w http.ResponseWriter, r *http.Reque
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r, nil); err != nil {
+	if filter, aerr = request.NewFilter(r); err != nil {
 		return aerr
 	}
 
@@ -477,7 +477,7 @@ func (env *Env) GetProductsPhysicalStatesHandler(w http.ResponseWriter, r *http.
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r, nil); err != nil {
+	if filter, aerr = request.NewFilter(r); err != nil {
 		return aerr
 	}
 
@@ -519,7 +519,7 @@ func (env *Env) GetProductsSignalWordsHandler(w http.ResponseWriter, r *http.Req
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r, nil); err != nil {
+	if filter, aerr = request.NewFilter(r); err != nil {
 		return aerr
 	}
 
@@ -561,7 +561,7 @@ func (env *Env) GetProductsClassOfCompoundsHandler(w http.ResponseWriter, r *htt
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r, nil); err != nil {
+	if filter, aerr = request.NewFilter(r); err != nil {
 		return aerr
 	}
 
@@ -602,8 +602,19 @@ func (env *Env) GetProductsEmpiricalFormulasHandler(w http.ResponseWriter, r *ht
 		filter *request.Filter
 	)
 
+	// convert search to empirical formula
+	if _, ok := r.URL.Query()["search"]; ok {
+		if r.URL.Query()["search"][0], err = convert.ToEmpiricalFormula(r.URL.Query()["search"][0]); err != nil {
+			return &models.AppError{
+				OriginalError: err,
+				Code:          http.StatusBadRequest,
+				Message:       "ToEmpiricalFormula conversion failed",
+			}
+		}
+	}
+
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r, convert.ToEmpiricalFormula); aerr != nil {
+	if filter, aerr = request.NewFilter(r); aerr != nil {
 		return aerr
 	}
 
@@ -645,7 +656,7 @@ func (env *Env) GetProductsLinearFormulasHandler(w http.ResponseWriter, r *http.
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r, nil); err != nil {
+	if filter, aerr = request.NewFilter(r); err != nil {
 		return aerr
 	}
 
@@ -810,7 +821,7 @@ func (env *Env) GetProductsSymbolsHandler(w http.ResponseWriter, r *http.Request
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r, nil); err != nil {
+	if filter, aerr = request.NewFilter(r); err != nil {
 		return aerr
 	}
 
@@ -893,7 +904,7 @@ func (env *Env) GetProductsHazardStatementsHandler(w http.ResponseWriter, r *htt
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r, nil); err != nil {
+	if filter, aerr = request.NewFilter(r); err != nil {
 		return aerr
 	}
 
@@ -976,7 +987,7 @@ func (env *Env) GetProductsPrecautionaryStatementsHandler(w http.ResponseWriter,
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r, nil); err != nil {
+	if filter, aerr = request.NewFilter(r); err != nil {
 		return aerr
 	}
 
@@ -1058,11 +1069,13 @@ func (env *Env) GetProductsNamesHandler(w http.ResponseWriter, r *http.Request) 
 		filter *request.Filter
 	)
 
-	// init db request parameters
-	toUpperWrapper := func(s string) (string, error) {
-		return strings.ToUpper(s), nil
+	// convert search to uppercase
+	if _, ok := r.URL.Query()["search"]; ok {
+		r.URL.Query()["search"][0] = strings.ToUpper(r.URL.Query()["search"][0])
 	}
-	if filter, aerr = request.NewFilter(r, toUpperWrapper); err != nil {
+
+	// init db request parameters
+	if filter, aerr = request.NewFilter(r); err != nil {
 		return aerr
 	}
 
@@ -1145,7 +1158,7 @@ func (env *Env) GetProductsSynonymsHandler(w http.ResponseWriter, r *http.Reques
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r, nil); err != nil {
+	if filter, aerr = request.NewFilter(r); err != nil {
 		return aerr
 	}
 
@@ -1187,7 +1200,7 @@ func (env *Env) GetExposedProductsHandler(w http.ResponseWriter, r *http.Request
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r, nil); err != nil {
+	if filter, aerr = request.NewFilter(r); err != nil {
 		return aerr
 	}
 	products, count, err := env.DB.GetProducts(*filter, true)
@@ -1233,7 +1246,7 @@ func (env *Env) GetProductsHandler(w http.ResponseWriter, r *http.Request) *mode
 		exportfn string
 	)
 
-	if filter, aerr = request.NewFilter(r, nil); err != nil {
+	if filter, aerr = request.NewFilter(r); err != nil {
 		return aerr
 	}
 

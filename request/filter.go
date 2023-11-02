@@ -111,7 +111,7 @@ type Filter struct {
 
 // }
 
-func NewFilter(r *http.Request, f func(string) (string, error)) (filter *Filter, apperr *models.AppError) {
+func NewFilter(r *http.Request) (filter *Filter, apperr *models.AppError) {
 	var err error
 
 	// Init defaults.
@@ -145,21 +145,25 @@ func NewFilter(r *http.Request, f func(string) (string, error)) (filter *Filter,
 	c := ContainerFromRequestContext(r)
 	filter.LoggedPersonID = c.PersonID
 
-	if s, ok := r.URL.Query()["search"]; ok {
-		if f != nil && s[0] != "" {
-			fs, err := f(s[0])
-			if err != nil {
-				return nil, &models.AppError{
-					OriginalError: err,
-					Code:          http.StatusBadRequest,
-					Message:       "error calling f",
-				}
-			}
+	// if s, ok := r.URL.Query()["search"]; ok {
+	// 	if f != nil && s[0] != "" {
+	// 		fs, err := f(s[0])
+	// 		if err != nil {
+	// 			return nil, &models.AppError{
+	// 				OriginalError: err,
+	// 				Code:          http.StatusBadRequest,
+	// 				Message:       "error calling f",
+	// 			}
+	// 		}
 
-			filter.Search = "%" + fs + "%"
-		} else {
-			filter.Search = "%" + s[0] + "%"
-		}
+	// 		filter.Search = "%" + fs + "%"
+	// 	} else {
+	// 		filter.Search = "%" + s[0] + "%"
+	// 	}
+	// }
+
+	if s, ok := r.URL.Query()["search"]; ok {
+		filter.Search = "%" + s[0] + "%"
 	}
 
 	if o, ok := r.URL.Query()["order"]; ok {

@@ -105,7 +105,7 @@ func (env *Env) GetStoragesUnitsHandler(w http.ResponseWriter, r *http.Request) 
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r, nil); err != nil {
+	if filter, aerr = request.NewFilter(r); err != nil {
 		return aerr
 	}
 
@@ -147,7 +147,7 @@ func (env *Env) GetStoragesSuppliersHandler(w http.ResponseWriter, r *http.Reque
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r, nil); err != nil {
+	if filter, aerr = request.NewFilter(r); err != nil {
 		return aerr
 	}
 
@@ -189,7 +189,7 @@ func (env *Env) GetOtherStoragesHandler(w http.ResponseWriter, r *http.Request) 
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r, nil); err != nil {
+	if filter, aerr = request.NewFilter(r); err != nil {
 		return aerr
 	}
 
@@ -232,7 +232,7 @@ func (env *Env) GetStoragesHandler(w http.ResponseWriter, r *http.Request) *mode
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r, nil); err != nil {
+	if filter, aerr = request.NewFilter(r); err != nil {
 		return aerr
 	}
 

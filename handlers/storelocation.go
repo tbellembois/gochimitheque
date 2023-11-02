@@ -58,7 +58,7 @@ func (env *Env) GetStoreLocationsHandler(w http.ResponseWriter, r *http.Request)
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r, nil); err != nil {
+	if filter, aerr = request.NewFilter(r); err != nil {
 		return aerr
 	}
 

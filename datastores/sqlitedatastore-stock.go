@@ -321,7 +321,7 @@ func (db *SQLiteDataStore) ComputeStockEntity(p models.Product, r *http.Request)
 		filter *request.Filter
 	)
 
-	if filter, aerr = request.NewFilter(r, nil); aerr != nil {
+	if filter, aerr = request.NewFilter(r); aerr != nil {
 		logger.Log.Error(aerr.Error())
 		return []models.StoreLocation{}
 	}

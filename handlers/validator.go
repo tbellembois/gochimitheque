@@ -46,7 +46,7 @@ func (env *Env) ValidatePersonEmailHandler(w http.ResponseWriter, r *http.Reques
 	c := request.ContainerFromRequestContext(r)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r, nil); aerr != nil {
+	if filter, aerr = request.NewFilter(r); aerr != nil {
 		logger.Log.Error("NewdbselectparamPerson error")
 		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "person_emailexist_validate", PluralCount: 1})
 		sendResponse(w, resp)
@@ -127,7 +127,7 @@ func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request
 	c := request.ContainerFromRequestContext(r)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r, nil); aerr != nil {
+	if filter, aerr = request.NewFilter(r); aerr != nil {
 		logger.Log.Error("NewdbselectparamEntity error")
 		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "entity_nameexist_validate", PluralCount: 1})
 		sendResponse(w, resp)
@@ -315,7 +315,7 @@ func (env *Env) ValidateProductCasNumberHandler(w http.ResponseWriter, r *http.R
 
 		if err != sql.ErrNoRows {
 			// init db request parameters
-			if filter, aerr = request.NewFilter(r, nil); aerr != nil {
+			if filter, aerr = request.NewFilter(r); aerr != nil {
 				logger.Log.Error("NewdbselectparamProduct error")
 				resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "casnumber_validate_wrongcas", PluralCount: 1})
 				sendResponse(w, resp)

@@ -77,7 +77,7 @@ func (env *Env) GetLDAPGroupsHandler(w http.ResponseWriter, r *http.Request) *mo
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r, nil); aerr != nil {
+	if filter, aerr = request.NewFilter(r); aerr != nil {
 		return aerr
 	}
 
@@ -113,7 +113,7 @@ func (env *Env) GetPeopleHandler(w http.ResponseWriter, r *http.Request) *models
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r, nil); aerr != nil {
+	if filter, aerr = request.NewFilter(r); aerr != nil {
 		return aerr
 	}
 
