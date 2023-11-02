@@ -604,19 +604,29 @@ func (env *Env) GetProductsEmpiricalFormulasHandler(w http.ResponseWriter, r *ht
 
 	// convert search to empirical formula
 	if _, ok := r.URL.Query()["search"]; ok {
-		if r.URL.Query()["search"][0], err = convert.ToEmpiricalFormula(r.URL.Query()["search"][0]); err != nil {
+		var converted_search string
+
+		if converted_search, err = convert.ToEmpiricalFormula(r.URL.Query()["search"][0]); err != nil {
 			return &models.AppError{
 				OriginalError: err,
 				Code:          http.StatusBadRequest,
 				Message:       "ToEmpiricalFormula conversion failed",
 			}
 		}
+
+		logger.Log.Debug("GetProductsEmpiricalFormulasHandler: converted_search=" + converted_search)
+
+		q := r.URL.Query()
+		q.Set("search", converted_search)
+		r.URL.RawQuery = q.Encode()
 	}
 
 	// init db request parameters
 	if filter, aerr = request.NewFilter(r); aerr != nil {
 		return aerr
 	}
+
+	logger.Log.Debug("GetProductsEmpiricalFormulasHandler: filter.Search=" + filter.Search)
 
 	// eformulas, count, err := env.DB.GetEmpiricalFormulas(*filter)
 	eformulas, count, err := datastores.GetByMany(models.EmpiricalFormula{}, env.DB.GetDB(), filter)
@@ -1071,13 +1081,18 @@ func (env *Env) GetProductsNamesHandler(w http.ResponseWriter, r *http.Request) 
 
 	// convert search to uppercase
 	if _, ok := r.URL.Query()["search"]; ok {
-		r.URL.Query()["search"][0] = strings.ToUpper(r.URL.Query()["search"][0])
-	}
+		converted_search := strings.ToUpper(r.URL.Query()["search"][0])
 
+		q := r.URL.Query()
+		q.Set("search", converted_search)
+		r.URL.RawQuery = q.Encode()
+	}
 	// init db request parameters
 	if filter, aerr = request.NewFilter(r); err != nil {
 		return aerr
 	}
+
+	logger.Log.Debug("GetProductsNamesHandler: filter.Search=" + filter.Search)
 
 	// names, count, err := env.DB.GetNames(*filter)
 	names, count, err := datastores.GetByMany(models.Name{}, env.DB.GetDB(), filter)
