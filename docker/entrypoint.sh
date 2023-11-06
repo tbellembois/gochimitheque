@@ -150,6 +150,11 @@ then
       echo $importfrom
 fi
 
+command="/var/www-data/chimitheque_utils_service"
+echo "command:"
+echo $command
+$command &
+
 command="/var/www-data/gochimitheque -dbpath /data $listenport $appurl $apppath $dockerport $ldapserverurl $ldapserverusername $ldapserverpassword $ldapgroupsearchbasedn $ldapgroupsearchfilter $ldapusersearchbasedn $ldapusersearchfilter $autocreateuser $mailserveraddress $mailserverport $mailserversender $mailserverusetls $mailservertlsskipverify $enablepublicproductsendpoint $admins $logfile $debug $resetAdminPassword $updateQRCode $mailTest $importfrom"
 echo "command:"
 echo $command

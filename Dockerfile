@@ -6,6 +6,12 @@ ENV BuildID=${BuildID}
 # Install GCC and git.
 # RUN apk add build-base git
 
+# Install zeromq repository and library.
+RUN echo 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/release-stable/Debian_11/ /' | tee /etc/apt/sources.list.d/network:messaging:zeromq:release-stable.list
+RUN curl -fsSL https://download.opensuse.org/repositories/network:messaging:zeromq:release-stable/Debian_11/Release.key | gpg --dearmor | tee /etc/apt/trusted.gpg.d/network_messaging_zeromq_release-stable.gpg > /dev/null
+RUN apt -y update
+RUN apt -y install libzmq3-dev
+
 # ref. go.mod gochimitheque-wasm
 RUN mkdir -p /home/thbellem/workspace \
     && ln -s /go /home/thbellem/workspace/workspace_go
@@ -52,11 +58,31 @@ RUN go generate
 # docker build --build-arg BuildID=2.0.7 -t tbellembois/gochimitheque:2.0.7 .
 RUN if [ -z $BuildID ]; then BuildID=$(date "+%Y%m%d"); fi; echo "BuildID=$BuildID"; go build -ldflags "-X main.BuildID=$BuildID"
 
+# Install Rust.
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -sSf | sh -s -- -y
+ENV PATH="$PATH:/root/.cargo/bin"
+
+# Get sources.
+WORKDIR /go/src/rust
+RUN git clone https://github.com/tbellembois/chimitheque_types.git
+RUN git clone https://github.com/tbellembois/chimitheque_utils.git
+RUN git clone https://github.com/tbellembois/chimitheque_utils_service.git
+
+# Compile.
+WORKDIR /go/src/rust/chimitheque_utils_service
+RUN cargo build --release
+
 #
 # Install.
 #
 
 FROM golang:1.21-bullseye
+
+# Install zeromq repository and library.
+RUN echo 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/release-stable/Debian_11/ /' | tee /etc/apt/sources.list.d/network:messaging:zeromq:release-stable.list
+RUN curl -fsSL https://download.opensuse.org/repositories/network:messaging:zeromq:release-stable/Debian_11/Release.key | gpg --dearmor | tee /etc/apt/trusted.gpg.d/network_messaging_zeromq_release-stable.gpg > /dev/null
+RUN apt -y update
+RUN apt -y install libzmq3-dev
 
 RUN rm -Rf /var/cache/apk
 
@@ -74,6 +100,10 @@ RUN addgroup --gid 82 --system chimitheque \
 COPY --from=builder /go/src/github.com/tbellembois/gochimitheque/gochimitheque /var/www-data/
 RUN chown chimitheque /var/www-data/gochimitheque \
     && chmod +x /var/www-data/gochimitheque
+
+COPY --from=builder /go/src/rust/chimitheque_utils_service/target/release/chimitheque_utils_service /var/www-data/
+RUN chown chimitheque /var/www-data/chimitheque_utils_service \
+    && chmod +x /var/www-data/chimitheque_utils_service
 
 #
 # Final work.
