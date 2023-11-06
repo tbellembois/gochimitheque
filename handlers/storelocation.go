@@ -12,6 +12,7 @@ import (
 	"github.com/tbellembois/gochimitheque/models"
 	"github.com/tbellembois/gochimitheque/request"
 	"github.com/tbellembois/gochimitheque/static/jade"
+	"github.com/tbellembois/gochimitheque/zmqclient"
 )
 
 /*
@@ -53,16 +54,21 @@ func (env *Env) GetStoreLocationsHandler(w http.ResponseWriter, r *http.Request)
 
 	var (
 		err    error
-		aerr   *models.AppError
-		filter *request.Filter
+		filter zmqclient.Filter
 	)
 
+	c := request.ContainerFromRequestContext(r)
+
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r); err != nil {
-		return aerr
+	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.Request_filter",
+		}
 	}
 
-	storelocations, count, err := env.DB.GetStoreLocations(*filter)
+	storelocations, count, err := env.DB.GetStoreLocations(filter, c.PersonID)
 	if err != nil {
 		return &models.AppError{
 			OriginalError: err,

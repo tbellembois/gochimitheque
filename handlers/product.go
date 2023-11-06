@@ -11,12 +11,12 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
-	"github.com/tbellembois/gochimitheque-utils/convert"
 	"github.com/tbellembois/gochimitheque/datastores"
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
 	"github.com/tbellembois/gochimitheque/request"
 	"github.com/tbellembois/gochimitheque/static/jade"
+	"github.com/tbellembois/gochimitheque/zmqclient"
 )
 
 func sanitizeProduct(p *models.Product) {
@@ -62,16 +62,22 @@ func (env *Env) GetProductsProducerRefsHandler(w http.ResponseWriter, r *http.Re
 
 	var (
 		err    error
-		aerr   *models.AppError
-		filter *request.Filter
+		filter zmqclient.Filter
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r); err != nil {
-		return aerr
+	// if filter, aerr = request.NewFilter(r); err != nil {
+	// 	return aerr
+	// }
+	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.Request_filter",
+		}
 	}
 
-	prefs, count, err := env.DB.GetProducerRefs(*filter)
+	prefs, count, err := env.DB.GetProducerRefs(filter)
 	if err != nil {
 		return &models.AppError{
 			OriginalError: err,
@@ -102,16 +108,19 @@ func (env *Env) GetProductsSupplierRefsHandler(w http.ResponseWriter, r *http.Re
 
 	var (
 		err    error
-		aerr   *models.AppError
-		filter *request.Filter
+		filter zmqclient.Filter
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r); err != nil {
-		return aerr
+	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.Request_filter",
+		}
 	}
 
-	srefs, count, err := env.DB.GetSupplierRefs(*filter)
+	srefs, count, err := env.DB.GetSupplierRefs(filter)
 	if err != nil {
 		return &models.AppError{
 			OriginalError: err,
@@ -142,13 +151,16 @@ func (env *Env) GetProductsCategoriesHandler(w http.ResponseWriter, r *http.Requ
 
 	var (
 		err    error
-		aerr   *models.AppError
-		filter *request.Filter
+		filter zmqclient.Filter
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r); err != nil {
-		return aerr
+	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.Request_filter",
+		}
 	}
 
 	// cats, count, err := env.DB.GetCategories(*filter)
@@ -184,13 +196,16 @@ func (env *Env) GetProductsTagsHandler(w http.ResponseWriter, r *http.Request) *
 
 	var (
 		err    error
-		aerr   *models.AppError
-		filter *request.Filter
+		filter zmqclient.Filter
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r); err != nil {
-		return aerr
+	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.Request_filter",
+		}
 	}
 
 	// tags, count, err := env.DB.GetTags(*filter)
@@ -226,16 +241,19 @@ func (env *Env) GetProductsProducersHandler(w http.ResponseWriter, r *http.Reque
 
 	var (
 		err    error
-		aerr   *models.AppError
-		filter *request.Filter
+		filter zmqclient.Filter
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r); err != nil {
-		return aerr
+	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.Request_filter",
+		}
 	}
 
-	prs, count, err := env.DB.GetProducers(*filter)
+	prs, count, err := env.DB.GetProducers(filter)
 	if err != nil {
 		return &models.AppError{
 			OriginalError: err,
@@ -266,16 +284,19 @@ func (env *Env) GetProductsSuppliersHandler(w http.ResponseWriter, r *http.Reque
 
 	var (
 		err    error
-		aerr   *models.AppError
-		filter *request.Filter
+		filter zmqclient.Filter
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r); err != nil {
-		return aerr
+	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.Request_filter",
+		}
 	}
 
-	srs, count, err := env.DB.GetSuppliers(*filter)
+	srs, count, err := env.DB.GetSuppliers(filter)
 	if err != nil {
 		return &models.AppError{
 			OriginalError: err,
@@ -368,13 +389,16 @@ func (env *Env) GetProductsCasNumbersHandler(w http.ResponseWriter, r *http.Requ
 
 	var (
 		err    error
-		aerr   *models.AppError
-		filter *request.Filter
+		filter zmqclient.Filter
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r); err != nil {
-		return aerr
+	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.Request_filter",
+		}
 	}
 
 	// copy/paste CAS can send wrong separators (ie "-")
@@ -430,13 +454,16 @@ func (env *Env) GetProductsCeNumbersHandler(w http.ResponseWriter, r *http.Reque
 
 	var (
 		err    error
-		aerr   *models.AppError
-		filter *request.Filter
+		filter zmqclient.Filter
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r); err != nil {
-		return aerr
+	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.Request_filter",
+		}
 	}
 
 	// cenumbers, count, err := env.DB.GetCeNumbers(*filter)
@@ -472,13 +499,16 @@ func (env *Env) GetProductsPhysicalStatesHandler(w http.ResponseWriter, r *http.
 
 	var (
 		err    error
-		aerr   *models.AppError
-		filter *request.Filter
+		filter zmqclient.Filter
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r); err != nil {
-		return aerr
+	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.Request_filter",
+		}
 	}
 
 	// pstates, count, err := env.DB.GetPhysicalStates(*filter)
@@ -514,13 +544,16 @@ func (env *Env) GetProductsSignalWordsHandler(w http.ResponseWriter, r *http.Req
 
 	var (
 		err    error
-		aerr   *models.AppError
-		filter *request.Filter
+		filter zmqclient.Filter
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r); err != nil {
-		return aerr
+	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.Request_filter",
+		}
 	}
 
 	// swords, count, err := env.DB.GetSignalWords(*filter)
@@ -556,13 +589,16 @@ func (env *Env) GetProductsClassOfCompoundsHandler(w http.ResponseWriter, r *htt
 
 	var (
 		err    error
-		aerr   *models.AppError
-		filter *request.Filter
+		filter zmqclient.Filter
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r); err != nil {
-		return aerr
+	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.Request_filter",
+		}
 	}
 
 	// cocs, count, err := env.DB.GetClassesOfCompound(*filter)
@@ -598,19 +634,18 @@ func (env *Env) GetProductsEmpiricalFormulasHandler(w http.ResponseWriter, r *ht
 
 	var (
 		err    error
-		aerr   *models.AppError
-		filter *request.Filter
+		filter zmqclient.Filter
 	)
 
 	// convert search to empirical formula
 	if _, ok := r.URL.Query()["search"]; ok {
 		var converted_search string
 
-		if converted_search, err = convert.ToEmpiricalFormula(r.URL.Query()["search"][0]); err != nil {
+		if converted_search, err = zmqclient.Empirical_formula(r.URL.Query()["search"][0]); err != nil {
 			return &models.AppError{
 				OriginalError: err,
 				Code:          http.StatusBadRequest,
-				Message:       "ToEmpiricalFormula conversion failed",
+				Message:       "error calling zmqclient.Empirical_formula",
 			}
 		}
 
@@ -622,8 +657,12 @@ func (env *Env) GetProductsEmpiricalFormulasHandler(w http.ResponseWriter, r *ht
 	}
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r); aerr != nil {
-		return aerr
+	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.Request_filter",
+		}
 	}
 
 	logger.Log.Debug("GetProductsEmpiricalFormulasHandler: filter.Search=" + filter.Search)
@@ -661,13 +700,16 @@ func (env *Env) GetProductsLinearFormulasHandler(w http.ResponseWriter, r *http.
 
 	var (
 		err    error
-		aerr   *models.AppError
-		filter *request.Filter
+		filter zmqclient.Filter
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r); err != nil {
-		return aerr
+	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.Request_filter",
+		}
 	}
 
 	// lformulas, count, err := env.DB.GetLinearFormulas(*filter)
@@ -826,13 +868,16 @@ func (env *Env) GetProductsSymbolsHandler(w http.ResponseWriter, r *http.Request
 
 	var (
 		err    error
-		aerr   *models.AppError
-		filter *request.Filter
+		filter zmqclient.Filter
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r); err != nil {
-		return aerr
+	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.Request_filter",
+		}
 	}
 
 	// symbols, count, err := env.DB.GetSymbols(*filter)
@@ -909,13 +954,16 @@ func (env *Env) GetProductsHazardStatementsHandler(w http.ResponseWriter, r *htt
 
 	var (
 		err    error
-		aerr   *models.AppError
-		filter *request.Filter
+		filter zmqclient.Filter
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r); err != nil {
-		return aerr
+	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.Request_filter",
+		}
 	}
 
 	// hs, count, err := env.DB.GetHazardStatements(*filter)
@@ -992,13 +1040,16 @@ func (env *Env) GetProductsPrecautionaryStatementsHandler(w http.ResponseWriter,
 
 	var (
 		err    error
-		aerr   *models.AppError
-		filter *request.Filter
+		filter zmqclient.Filter
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r); err != nil {
-		return aerr
+	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.Request_filter",
+		}
 	}
 
 	// ps, count, err := env.DB.GetPrecautionaryStatements(*filter)
@@ -1075,8 +1126,7 @@ func (env *Env) GetProductsNamesHandler(w http.ResponseWriter, r *http.Request) 
 
 	var (
 		err    error
-		aerr   *models.AppError
-		filter *request.Filter
+		filter zmqclient.Filter
 	)
 
 	// convert search to uppercase
@@ -1088,8 +1138,12 @@ func (env *Env) GetProductsNamesHandler(w http.ResponseWriter, r *http.Request) 
 		r.URL.RawQuery = q.Encode()
 	}
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r); err != nil {
-		return aerr
+	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.Request_filter",
+		}
 	}
 
 	logger.Log.Debug("GetProductsNamesHandler: filter.Search=" + filter.Search)
@@ -1168,13 +1222,16 @@ func (env *Env) GetProductsSynonymsHandler(w http.ResponseWriter, r *http.Reques
 
 	var (
 		err    error
-		aerr   *models.AppError
-		filter *request.Filter
+		filter zmqclient.Filter
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r); err != nil {
-		return aerr
+	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.Request_filter",
+		}
 	}
 
 	// synonyms, count, err := env.DB.GetNames(*filter)
@@ -1209,16 +1266,25 @@ func (env *Env) GetExposedProductsHandler(w http.ResponseWriter, r *http.Request
 	logger.Log.Debug("GetExposedProductsHandler")
 
 	var (
-		err    error
-		aerr   *models.AppError
-		filter *request.Filter
+		err error
+		// aerr   *models.AppError
+		filter zmqclient.Filter
 	)
 
-	// init db request parameters
-	if filter, aerr = request.NewFilter(r); err != nil {
-		return aerr
+	// if filter, aerr = request.NewFilter(r); err != nil {
+	// 	return aerr
+	// }
+	c := request.ContainerFromRequestContext(r)
+
+	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.Request_filter",
+		}
 	}
-	products, count, err := env.DB.GetProducts(*filter, true)
+
+	products, count, err := env.DB.GetProducts(filter, c.PersonID, true)
 	if err != nil {
 		return &models.AppError{
 			OriginalError: err,
@@ -1255,17 +1321,27 @@ func (env *Env) GetProductsHandler(w http.ResponseWriter, r *http.Request) *mode
 	logger.Log.Debug("GetProductsHandler")
 
 	var (
-		err      error
-		aerr     *models.AppError
-		filter   *request.Filter
+		err error
+		//aerr     *models.AppError
+		filter   zmqclient.Filter
 		exportfn string
 	)
 
-	if filter, aerr = request.NewFilter(r); err != nil {
-		return aerr
+	// if filter, aerr = request.NewFilter(r); err != nil {
+	// 	return aerr
+	// }
+
+	c := request.ContainerFromRequestContext(r)
+
+	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.Request_filter",
+		}
 	}
 
-	products, count, err := env.DB.GetProducts(*filter, false)
+	products, count, err := env.DB.GetProducts(filter, c.PersonID, false)
 	if err != nil {
 		return &models.AppError{
 			OriginalError: err,
@@ -1519,7 +1595,7 @@ func (env *Env) ConvertProductEmpiricalToLinearFormulaHandler(w http.ResponseWri
 		err  error
 	)
 
-	l2ef, _ = convert.ToEmpiricalFormula(vars["f"])
+	l2ef, _ = zmqclient.Empirical_formula(vars["f"])
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 

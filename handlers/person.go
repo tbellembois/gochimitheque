@@ -20,6 +20,7 @@ import (
 	"github.com/tbellembois/gochimitheque/models"
 	"github.com/tbellembois/gochimitheque/request"
 	"github.com/tbellembois/gochimitheque/static/jade"
+	"github.com/tbellembois/gochimitheque/zmqclient"
 )
 
 /*
@@ -71,14 +72,20 @@ func (env *Env) GetLDAPGroupsHandler(w http.ResponseWriter, r *http.Request) *mo
 
 	var (
 		err    error
-		aerr   *models.AppError
-		filter *request.Filter
+		filter zmqclient.Filter
 		result *ldap.LDAPSearchResult
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r); aerr != nil {
-		return aerr
+	// if filter, aerr = request.NewFilter(r); aerr != nil {
+	// 	return aerr
+	// }
+	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.Request_filter",
+		}
 	}
 
 	if env.LDAPConnection, err = ldap.Connect(); err != nil {
@@ -89,7 +96,13 @@ func (env *Env) GetLDAPGroupsHandler(w http.ResponseWriter, r *http.Request) *mo
 		}
 	}
 
-	result, err = env.LDAPConnection.SearchGroup(strings.ReplaceAll(filter.Search, "%", "*"))
+	if result, err = env.LDAPConnection.SearchGroup(strings.ReplaceAll(filter.Search, "%", "*")); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Message:       "LDAP search",
+			Code:          http.StatusInternalServerError,
+		}
+	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
@@ -108,16 +121,24 @@ func (env *Env) GetPeopleHandler(w http.ResponseWriter, r *http.Request) *models
 
 	var (
 		err    error
-		aerr   *models.AppError
-		filter *request.Filter
+		filter zmqclient.Filter
 	)
 
+	c := request.ContainerFromRequestContext(r)
+
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r); aerr != nil {
-		return aerr
+	// if filter, aerr = request.NewFilter(r); aerr != nil {
+	// 	return aerr
+	// }
+	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.Request_filter",
+		}
 	}
 
-	people, count, err := env.DB.GetPeople(*filter)
+	people, count, err := env.DB.GetPeople(filter, c.PersonID)
 	if err != nil {
 		return &models.AppError{
 			OriginalError: err,

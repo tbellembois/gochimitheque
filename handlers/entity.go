@@ -12,6 +12,7 @@ import (
 	"github.com/tbellembois/gochimitheque/models"
 	"github.com/tbellembois/gochimitheque/request"
 	"github.com/tbellembois/gochimitheque/static/jade"
+	"github.com/tbellembois/gochimitheque/zmqclient"
 )
 
 /*
@@ -46,23 +47,27 @@ func (env *Env) GetEntitiesHandler(w http.ResponseWriter, r *http.Request) *mode
 
 	var (
 		err      error
-		aerr     *models.AppError
 		entities []models.Entity
 		count    int
-		filter   *request.Filter
+		filter   zmqclient.Filter
 	)
 
 	// retrieving the logged user id from request context
 	c := request.ContainerFromRequestContext(r)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r); err != nil {
-		return aerr
+	// if filter, aerr = request.NewFilter(r); err != nil {
+	// 	return aerr
+	// }
+	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.Request_filter",
+		}
 	}
 
-	filter.LoggedPersonID = c.PersonID
-
-	if entities, count, err = env.DB.GetEntities(*filter); err != nil {
+	if entities, count, err = env.DB.GetEntities(filter, c.PersonID); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,

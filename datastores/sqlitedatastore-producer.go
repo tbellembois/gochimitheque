@@ -8,10 +8,10 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
-	"github.com/tbellembois/gochimitheque/request"
+	"github.com/tbellembois/gochimitheque/zmqclient"
 )
 
-func (db *SQLiteDataStore) GetProducers(f request.Filter) ([]models.Producer, int, error) {
+func (db *SQLiteDataStore) GetProducers(f zmqclient.Filter) ([]models.Producer, int, error) {
 	var (
 		err                              error
 		producers                        []models.Producer
@@ -218,7 +218,7 @@ func (db *SQLiteDataStore) CreateProducer(p models.Producer) (lastInsertID int64
 	return
 }
 
-func (db *SQLiteDataStore) GetProducerRefs(f request.Filter) ([]models.ProducerRef, int, error) {
+func (db *SQLiteDataStore) GetProducerRefs(f zmqclient.Filter) ([]models.ProducerRef, int, error) {
 	var (
 		err                              error
 		producerRefs                     []models.ProducerRef
@@ -244,7 +244,7 @@ func (db *SQLiteDataStore) GetProducerRefs(f request.Filter) ([]models.ProducerR
 	whereAnd := []goqu.Expression{
 		goqu.I("producerref.producerref_label").Like(f.Search),
 	}
-	if f.Producer != -1 {
+	if f.Producer != 0 {
 		whereAnd = append(whereAnd, goqu.I("producerref.producer").Eq(f.Producer))
 	}
 

@@ -10,6 +10,7 @@ import (
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
 	"github.com/tbellembois/gochimitheque/request"
+	"github.com/tbellembois/gochimitheque/zmqclient"
 )
 
 type SyncStoreLocation struct {
@@ -311,22 +312,27 @@ func (db *SQLiteDataStore) ComputeStockEntity(p models.Product, r *http.Request)
 		entities           []models.Entity
 		eids               []int
 		err                error
-		aerr               *models.AppError
 		sqlr               string
 		args               []interface{}
 	)
 
 	// Getting the entities (GetEntities returns only entities the connected user can see).
 	var (
-		filter *request.Filter
+		filter zmqclient.Filter
 	)
 
-	if filter, aerr = request.NewFilter(r); aerr != nil {
-		logger.Log.Error(aerr.Error())
+	c := request.ContainerFromRequestContext(r)
+
+	// if filter, aerr = request.NewFilter(r); aerr != nil {
+	// 	logger.Log.Error(aerr.Error())
+	// 	return []models.StoreLocation{}
+	// }
+	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+		logger.Log.Error(err)
 		return []models.StoreLocation{}
 	}
 
-	if entities, _, err = db.GetEntities(*filter); err != nil {
+	if entities, _, err = db.GetEntities(filter, c.PersonID); err != nil {
 		logger.Log.Error(err)
 		return []models.StoreLocation{}
 	}

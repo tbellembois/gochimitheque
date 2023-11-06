@@ -8,10 +8,10 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
-	"github.com/tbellembois/gochimitheque/request"
+	"github.com/tbellembois/gochimitheque/zmqclient"
 )
 
-func (db *SQLiteDataStore) GetSuppliers(f request.Filter) ([]models.Supplier, int, error) {
+func (db *SQLiteDataStore) GetSuppliers(f zmqclient.Filter) ([]models.Supplier, int, error) {
 	var (
 		err                              error
 		suppliers                        []models.Supplier
@@ -216,7 +216,7 @@ func (db *SQLiteDataStore) CreateSupplier(s models.Supplier) (lastInsertID int64
 	return
 }
 
-func (db *SQLiteDataStore) GetSupplierRefs(f request.Filter) ([]models.SupplierRef, int, error) {
+func (db *SQLiteDataStore) GetSupplierRefs(f zmqclient.Filter) ([]models.SupplierRef, int, error) {
 	var (
 		err                              error
 		supplierRefs                     []models.SupplierRef
@@ -242,7 +242,7 @@ func (db *SQLiteDataStore) GetSupplierRefs(f request.Filter) ([]models.SupplierR
 	whereAnd := []goqu.Expression{
 		goqu.I("supplierref.supplierref_label").Like(f.Search),
 	}
-	if f.Supplier != -1 {
+	if f.Supplier != 0 {
 		whereAnd = append(whereAnd, goqu.I("supplierref.supplier").Eq(f.Supplier))
 	}
 

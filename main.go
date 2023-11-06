@@ -16,6 +16,8 @@ import (
 	"path"
 	"strings"
 
+	zmq "github.com/pebbe/zmq4"
+
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/casbin"
@@ -26,6 +28,7 @@ import (
 	"github.com/tbellembois/gochimitheque/mailer"
 	"github.com/tbellembois/gochimitheque/models"
 	"github.com/tbellembois/gochimitheque/static/localejs"
+	"github.com/tbellembois/gochimitheque/zmqclient"
 )
 
 var (
@@ -141,6 +144,12 @@ func init() {
 
 	env.AppFullURL = env.AppURL + env.AppPath
 	env.BuildID = BuildID
+
+	var err error
+	if zmqclient.Zctx, err = zmq.NewContext(); err != nil {
+		panic(err)
+	}
+
 }
 
 func initLogger() {

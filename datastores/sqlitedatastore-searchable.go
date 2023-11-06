@@ -10,10 +10,10 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
-	"github.com/tbellembois/gochimitheque/request"
+	"github.com/tbellembois/gochimitheque/zmqclient"
 )
 
-func GetByMany[T models.Searchable](searchable T, db *sqlx.DB, filter *request.Filter) (ts []T, count int, err error) {
+func GetByMany[T models.Searchable](searchable T, db *sqlx.DB, filter zmqclient.Filter) (ts []T, count int, err error) {
 	var (
 		exactSearch, countSQL, selectSQL string
 		countArgs, selectArgs            []interface{}

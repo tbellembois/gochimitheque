@@ -1,6 +1,6 @@
 module github.com/tbellembois/gochimitheque
 
-go 1.20
+go 1.21
 
 // replace github.com/tbellembois/gochimitheque-utils => /home/thbellem/workspace/workspace_go/src/github.com/tbellembois/gochimitheque-utils
 
@@ -30,7 +30,6 @@ require (
 	github.com/go-ldap/ldap/v3 v3.4.6
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/russross/blackfriday/v2 v2.1.0
-	github.com/tbellembois/gochimitheque-utils v0.0.0-20221125140514-6e4c4a07ea3b
 )
 
 require (
@@ -40,6 +39,7 @@ require (
 	github.com/go-asn1-ber/asn1-ber v1.5.5 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/google/uuid v1.4.0 // indirect
+	github.com/pebbe/zmq4 v1.2.10 // indirect
 	github.com/tidwall/gjson v1.17.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect

@@ -14,6 +14,7 @@ import (
 	"github.com/tbellembois/gochimitheque/models"
 	"github.com/tbellembois/gochimitheque/request"
 	"github.com/tbellembois/gochimitheque/static/jade"
+	"github.com/tbellembois/gochimitheque/zmqclient"
 )
 
 /*
@@ -100,16 +101,19 @@ func (env *Env) GetStoragesUnitsHandler(w http.ResponseWriter, r *http.Request) 
 
 	var (
 		err    error
-		aerr   *models.AppError
-		filter *request.Filter
+		filter zmqclient.Filter
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r); err != nil {
-		return aerr
+	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.Request_filter",
+		}
 	}
 
-	units, count, err := env.DB.GetStoragesUnits(*filter)
+	units, count, err := env.DB.GetStoragesUnits(filter)
 	if err != nil {
 		return &models.AppError{
 			OriginalError: err,
@@ -142,16 +146,19 @@ func (env *Env) GetStoragesSuppliersHandler(w http.ResponseWriter, r *http.Reque
 
 	var (
 		err    error
-		aerr   *models.AppError
-		filter *request.Filter
+		filter zmqclient.Filter
 	)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r); err != nil {
-		return aerr
+	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.Request_filter",
+		}
 	}
 
-	suppliers, count, err := env.DB.GetSuppliers(*filter)
+	suppliers, count, err := env.DB.GetSuppliers(filter)
 	if err != nil {
 		return &models.AppError{
 			OriginalError: err,
@@ -183,17 +190,22 @@ func (env *Env) GetOtherStoragesHandler(w http.ResponseWriter, r *http.Request) 
 
 	var (
 		err      error
-		aerr     *models.AppError
-		filter   *request.Filter
+		filter   zmqclient.Filter
 		exportfn string
 	)
 
+	c := request.ContainerFromRequestContext(r)
+
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r); err != nil {
-		return aerr
+	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.Request_filter",
+		}
 	}
 
-	entities, count, err := env.DB.GetOtherStorages(*filter)
+	entities, count, err := env.DB.GetOtherStorages(filter, c.PersonID)
 	if err != nil {
 		return &models.AppError{
 			OriginalError: err,
@@ -226,17 +238,22 @@ func (env *Env) GetStoragesHandler(w http.ResponseWriter, r *http.Request) *mode
 
 	var (
 		err      error
-		aerr     *models.AppError
-		filter   *request.Filter
+		filter   zmqclient.Filter
 		exportfn string
 	)
 
+	c := request.ContainerFromRequestContext(r)
+
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r); err != nil {
-		return aerr
+	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.Request_filter",
+		}
 	}
 
-	storages, count, err := env.DB.GetStorages(*filter)
+	storages, count, err := env.DB.GetStorages(filter, c.PersonID)
 	if err != nil {
 		return &models.AppError{
 			OriginalError: err,

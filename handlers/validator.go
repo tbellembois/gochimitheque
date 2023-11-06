@@ -9,13 +9,12 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/sirupsen/logrus"
-	"github.com/tbellembois/gochimitheque-utils/convert"
-	"github.com/tbellembois/gochimitheque-utils/validator"
 	"github.com/tbellembois/gochimitheque/datastores"
 	"github.com/tbellembois/gochimitheque/locales"
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
 	"github.com/tbellembois/gochimitheque/request"
+	"github.com/tbellembois/gochimitheque/zmqclient"
 )
 
 func sendResponse(w http.ResponseWriter, response string) {
@@ -32,12 +31,11 @@ func sendResponse(w http.ResponseWriter, response string) {
 func (env *Env) ValidatePersonEmailHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	var (
 		err      error
-		aerr     *models.AppError
 		res      bool
 		resp     string
 		person   models.Person
 		personID int
-		filter   *request.Filter
+		filter   zmqclient.Filter
 	)
 
 	vars := mux.Vars(r)
@@ -46,14 +44,18 @@ func (env *Env) ValidatePersonEmailHandler(w http.ResponseWriter, r *http.Reques
 	c := request.ContainerFromRequestContext(r)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r); aerr != nil {
-		logger.Log.Error("NewdbselectparamPerson error")
+	// if filter, aerr = request.NewFilter(r); aerr != nil {
+	// 	logger.Log.Error("NewdbselectparamPerson error")
+	// 	resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "person_emailexist_validate", PluralCount: 1})
+	// 	sendResponse(w, resp)
+	// 	return nil
+	// }
+	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+		logger.Log.Error("error calling zmqclient.Request_filter")
 		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "person_emailexist_validate", PluralCount: 1})
 		sendResponse(w, resp)
 		return nil
 	}
-
-	filter.LoggedPersonID = c.PersonID
 
 	// converting the id
 	if personID, err = strconv.Atoi(vars["id"]); err != nil {
@@ -74,7 +76,7 @@ func (env *Env) ValidatePersonEmailHandler(w http.ResponseWriter, r *http.Reques
 	filter.Search = r.Form.Get("person_email")
 
 	// getting the people matching the email
-	people, count, err := env.DB.GetPeople(*filter)
+	people, count, err := env.DB.GetPeople(filter, c.PersonID)
 	if err != nil {
 		logger.Log.Error("GetPeople error")
 		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "person_emailexist_validate", PluralCount: 1})
@@ -109,32 +111,35 @@ func (env *Env) ValidatePersonEmailHandler(w http.ResponseWriter, r *http.Reques
 }
 
 // ValidateEntityNameHandler checks that the entity name does not already exist
-// if an id != -1 is given is the request the validator ignore the name of the entity with this id.
+// if an id != 0 is given is the request the validator ignore the name of the entity with this id.
 func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	vars := mux.Vars(r)
 
 	var (
 		err      error
-		aerr     *models.AppError
 		res      bool
 		resp     string
 		entity   models.Entity
 		entityID int
-		filter   *request.Filter
+		filter   zmqclient.Filter
 	)
 
 	// retrieving the logged user id from request context
 	c := request.ContainerFromRequestContext(r)
 
 	// init db request parameters
-	if filter, aerr = request.NewFilter(r); aerr != nil {
-		logger.Log.Error("NewdbselectparamEntity error")
+	// if filter, aerr = request.NewFilter(r); aerr != nil {
+	// 	logger.Log.Error("NewdbselectparamEntity error")
+	// 	resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "entity_nameexist_validate", PluralCount: 1})
+	// 	sendResponse(w, resp)
+	// 	return nil
+	// }
+	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+		logger.Log.Error("error calling zmqclient.Request_filter")
 		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "entity_nameexist_validate", PluralCount: 1})
 		sendResponse(w, resp)
 		return nil
 	}
-
-	filter.LoggedPersonID = c.PersonID
 
 	// converting the id
 	if entityID, err = strconv.Atoi(vars["id"]); err != nil {
@@ -155,7 +160,7 @@ func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request
 	filter.Search = r.Form.Get("entity_name")
 
 	// getting the entities matching the name
-	entities, count, err := env.DB.GetEntities(*filter)
+	entities, count, err := env.DB.GetEntities(filter, c.PersonID)
 	if err != nil {
 		logger.Log.Error("GetEntities error")
 		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "entity_nameexist_validate", PluralCount: 1})
@@ -212,7 +217,7 @@ func (env *Env) ValidateProductEmpiricalFormulaHandler(w http.ResponseWriter, r 
 	}
 
 	// validating it
-	_, err = convert.ToEmpiricalFormula(r.Form.Get("empiricalformula"))
+	_, err = zmqclient.Empirical_formula(r.Form.Get("empiricalformula"))
 	if err != nil {
 		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "empiricalformula_validate", PluralCount: 1})
 	} else {
@@ -239,12 +244,10 @@ func (env *Env) FormatProductEmpiricalFormulaHandler(w http.ResponseWriter, r *h
 		}
 	}
 	// validating it
-	resp, err = convert.ToEmpiricalFormula(r.Form.Get("empiricalformula"))
+	resp, err = zmqclient.Empirical_formula(r.Form.Get("empiricalformula"))
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-	} else {
-
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -270,10 +273,11 @@ func (env *Env) ValidateProductCasNumberHandler(w http.ResponseWriter, r *http.R
 		cas        models.CasNumber
 		nbProducts int
 		products   []models.Product
-		aerr       *models.AppError
-		filter     *request.Filter
+		filter     zmqclient.Filter
 		productID  int
 	)
+
+	c := request.ContainerFromRequestContext(r)
 
 	// getting the cas number
 	if err = r.ParseForm(); err != nil {
@@ -286,7 +290,7 @@ func (env *Env) ValidateProductCasNumberHandler(w http.ResponseWriter, r *http.R
 	logger.Log.WithFields(logrus.Fields{"casnumber": r.Form.Get("casnumber")}).Debug("ValidateProductCasNumberHandler")
 
 	// validating it
-	v := validator.IsCasNumber(r.Form.Get("casnumber"))
+	v, _ := zmqclient.Is_cas_number(r.Form.Get("casnumber"))
 
 	if v {
 		resp = "true"
@@ -315,11 +319,15 @@ func (env *Env) ValidateProductCasNumberHandler(w http.ResponseWriter, r *http.R
 
 		if err != sql.ErrNoRows {
 			// init db request parameters
-			if filter, aerr = request.NewFilter(r); aerr != nil {
-				logger.Log.Error("NewdbselectparamProduct error")
+			// if filter, aerr = request.NewFilter(r); aerr != nil {
+			// 	logger.Log.Error("NewdbselectparamProduct error")
+			// 	resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "casnumber_validate_wrongcas", PluralCount: 1})
+			// 	sendResponse(w, resp)
+			// 	return nil
+			// }
+			if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
 				resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "casnumber_validate_wrongcas", PluralCount: 1})
 				sendResponse(w, resp)
-				return nil
 			}
 
 			if cas.CasNumberID.Valid {
@@ -329,7 +337,7 @@ func (env *Env) ValidateProductCasNumberHandler(w http.ResponseWriter, r *http.R
 			filter.ProductSpecificity = r.Form.Get("product_specificity")
 
 			// getting the products matching the cas and specificity
-			if products, nbProducts, err = env.DB.GetProducts(*filter, false); err != nil {
+			if products, nbProducts, err = env.DB.GetProducts(filter, c.PersonID, false); err != nil {
 				logger.Log.Error("GetProducts error")
 				resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "casnumber_validate_wrongcas", PluralCount: 1})
 				sendResponse(w, resp)
@@ -371,7 +379,7 @@ func (env *Env) ValidateProductCeNumberHandler(w http.ResponseWriter, r *http.Re
 	logger.Log.WithFields(logrus.Fields{"cenumber": r.Form.Get("cenumber")}).Debug("ValidateProductCeNumberHandler")
 
 	// validating it
-	v := validator.IsCeNumber(r.Form.Get("cenumber"))
+	v, _ := zmqclient.Is_ce_number(r.Form.Get("cenumber"))
 
 	if v {
 		resp = "true"

@@ -14,7 +14,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
-	"github.com/tbellembois/gochimitheque/request"
+	"github.com/tbellembois/gochimitheque/zmqclient"
 )
 
 // IsProductBookmark returns true if there is a bookmark for the product pr for the person pe.
@@ -133,7 +133,7 @@ func (db *SQLiteDataStore) DeleteProductBookmark(pr models.Product, pe models.Pe
 }
 
 // GetProducts return the products matching the search criteria.
-func (db *SQLiteDataStore) GetProducts(f request.Filter, public bool) ([]models.Product, int, error) {
+func (db *SQLiteDataStore) GetProducts(f zmqclient.Filter, person_id int, public bool) ([]models.Product, int, error) {
 	// defer TimeTrack(time.Now(), "GetProducts")
 	var (
 		products                           []models.Product
@@ -147,7 +147,7 @@ func (db *SQLiteDataStore) GetProducts(f request.Filter, public bool) ([]models.
 		wg                                 sync.WaitGroup
 	)
 
-	logger.Log.WithFields(logrus.Fields{"f": f}).Debug("GetProducts")
+	logger.Log.WithFields(logrus.Fields{"f": fmt.Sprintf("%+v", f)}).Debug("GetProducts")
 
 	if f.OrderBy == "" {
 		f.OrderBy = "product_id"
@@ -155,11 +155,11 @@ func (db *SQLiteDataStore) GetProducts(f request.Filter, public bool) ([]models.
 
 	if !public {
 		// is the user an admin?
-		if isadmin, err = db.IsPersonAdmin(f.LoggedPersonID); err != nil {
+		if isadmin, err = db.IsPersonAdmin(person_id); err != nil {
 			return nil, 0, err
 		}
 		// has the person rproducts permission?
-		if rperm, err = db.HasPersonReadRestrictedProductPermission(f.LoggedPersonID); err != nil {
+		if rperm, err = db.HasPersonReadRestrictedProductPermission(person_id); err != nil {
 			return nil, 0, err
 		}
 	} else {
@@ -229,7 +229,7 @@ func (db *SQLiteDataStore) GetProducts(f request.Filter, public bool) ([]models.
 	// get name
 	comreq.WriteString(" JOIN name ON p.name = name.name_id")
 	// get category
-	if f.Category != -1 {
+	if f.Category != 0 {
 		comreq.WriteString(" JOIN category ON p.category = :category")
 	} else {
 		comreq.WriteString(" LEFT JOIN category ON p.category = category.category_id")
@@ -237,7 +237,7 @@ func (db *SQLiteDataStore) GetProducts(f request.Filter, public bool) ([]models.
 	// get unit_temperature
 	comreq.WriteString(" LEFT JOIN unit ut ON p.unit_temperature = ut.unit_id")
 	// get producerref
-	if f.ProducerRef != -1 {
+	if f.ProducerRef != 0 {
 		comreq.WriteString(" JOIN producerref ON p.producerref = :producerref")
 	} else {
 		comreq.WriteString(" LEFT JOIN producerref ON p.producerref = producerref.producerref_id")
@@ -263,7 +263,7 @@ func (db *SQLiteDataStore) GetProducts(f request.Filter, public bool) ([]models.
 	// get storages, store locations and entities
 	comreq.WriteString(" LEFT JOIN storage ON storage.product = p.product_id")
 
-	if f.Entity != -1 || f.Storelocation != -1 || f.StorageBarecode != "" {
+	if f.Entity != 0 || f.Storelocation != 0 || f.StorageBarecode != "" {
 		comreq.WriteString(" JOIN storelocation ON storage.storelocation = storelocation.storelocation_id")
 		comreq.WriteString(" JOIN entity ON storelocation.entity = entity.entity_id")
 	}
@@ -280,7 +280,7 @@ func (db *SQLiteDataStore) GetProducts(f request.Filter, public bool) ([]models.
 		comreq.WriteString(" JOIN productsymbols AS ps ON ps.productsymbols_product_id = p.product_id")
 	}
 	// get synonyms
-	if f.Name != -1 {
+	if f.Name != 0 {
 		comreq.WriteString(" JOIN productsynonyms AS psyn ON psyn.productsynonyms_product_id = p.product_id")
 	}
 	// get hazardstatements
@@ -315,15 +315,15 @@ func (db *SQLiteDataStore) GetProducts(f request.Filter, public bool) ([]models.
 		comreq.WriteString(" AND (casnumber.casnumber_cmr IS NOT NULL OR (hazardstatement_cmr IS NOT NULL AND hazardstatement_cmr != ''))")
 	}
 
-	if f.Product != -1 {
+	if f.Product != 0 {
 		comreq.WriteString(" AND p.product_id = :product")
 	}
 
-	if f.Entity != -1 {
+	if f.Entity != 0 {
 		comreq.WriteString(" AND entity.entity_id = :entity")
 	}
 
-	if f.Storelocation != -1 {
+	if f.Storelocation != 0 {
 		comreq.WriteString(" AND storelocation.storelocation_id = :storelocation")
 	}
 
@@ -332,16 +332,16 @@ func (db *SQLiteDataStore) GetProducts(f request.Filter, public bool) ([]models.
 	}
 
 	// search form parameters
-	if f.Name != -1 {
+	if f.Name != 0 {
 		comreq.WriteString(" AND (name.name_id = :name")
 		comreq.WriteString(" OR psyn.productsynonyms_name_id = :name)")
 	}
 
-	if f.CasNumber != -1 {
+	if f.CasNumber != 0 {
 		comreq.WriteString(" AND casnumber.casnumber_id = :casnumber")
 	}
 
-	if f.EmpiricalFormula != -1 {
+	if f.EmpiricalFormula != 0 {
 		comreq.WriteString(" AND empiricalformula.empiricalformula_id = :empiricalformula")
 	}
 
@@ -404,7 +404,7 @@ func (db *SQLiteDataStore) GetProducts(f request.Filter, public bool) ([]models.
 		comreq.WriteString(" )")
 	}
 
-	if f.SignalWord != -1 {
+	if f.SignalWord != 0 {
 		comreq.WriteString(" AND signalword.signalword_id = :signalword")
 	}
 
@@ -456,7 +456,7 @@ func (db *SQLiteDataStore) GetProducts(f request.Filter, public bool) ([]models.
 	// building argument map
 	m := map[string]interface{}{
 		"search":              f.Search,
-		"personid":            f.LoggedPersonID,
+		"personid":            person_id,
 		"order":               f.Order,
 		"limit":               f.Limit,
 		"offset":              f.Offset,
@@ -479,6 +479,10 @@ func (db *SQLiteDataStore) GetProducts(f request.Filter, public bool) ([]models.
 	if err = snstmt.Select(&products, m); err != nil {
 		return nil, 0, err
 	}
+
+	logger.Log.WithFields(logrus.Fields{"select req": presreq.String() + comreq.String() + postsreq.String()}).Debug("GetProducts")
+	logger.Log.WithFields(logrus.Fields{"m": m}).Debug("GetProducts")
+
 	// Count.
 	if err = cnstmt.Get(&count, m); err != nil {
 		return nil, 0, err
@@ -762,11 +766,11 @@ func (db *SQLiteDataStore) GetProducts(f request.Filter, public bool) ([]models.
 					reqasc.WriteString(" (personentities.personentities_person_id = ?)")
 					reqasc.WriteString(" WHERE storage.product = ? AND storage.storage_archive == true")
 
-					if err = db.Get(&products[i].ProductSC, reqsc.String(), f.LoggedPersonID, pr.ProductID); err != nil {
+					if err = db.Get(&products[i].ProductSC, reqsc.String(), person_id, pr.ProductID); err != nil {
 						logger.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts:goroutine:SC")
 					}
 
-					if err = db.Get(&products[i].ProductASC, reqasc.String(), f.LoggedPersonID, pr.ProductID); err != nil {
+					if err = db.Get(&products[i].ProductASC, reqasc.String(), person_id, pr.ProductID); err != nil {
 						logger.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts:goroutine:ASC")
 					}
 				}

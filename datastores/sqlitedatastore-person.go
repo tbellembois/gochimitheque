@@ -11,7 +11,7 @@ import (
 	"github.com/steambap/captcha"
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
-	"github.com/tbellembois/gochimitheque/request"
+	"github.com/tbellembois/gochimitheque/zmqclient"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -75,7 +75,7 @@ func (db *SQLiteDataStore) InsertCaptcha(token string, data *captcha.Data) (err 
 
 // GetPeople select the people matching p
 // and visible by the connected user.
-func (db *SQLiteDataStore) GetPeople(f request.Filter) ([]models.Person, int, error) {
+func (db *SQLiteDataStore) GetPeople(f zmqclient.Filter, person_id int) ([]models.Person, int, error) {
 	var err error
 
 	logger.Log.WithFields(logrus.Fields{"f": f}).Debug("GetPeople")
@@ -100,7 +100,7 @@ func (db *SQLiteDataStore) GetPeople(f request.Filter) ([]models.Person, int, er
 	// We need to handle admins to see people with no entities.
 	var isadmin bool
 
-	if isadmin, err = db.IsPersonAdmin(f.LoggedPersonID); err != nil {
+	if isadmin, err = db.IsPersonAdmin(person_id); err != nil {
 		return nil, 0, err
 	}
 
@@ -108,7 +108,7 @@ func (db *SQLiteDataStore) GetPeople(f request.Filter) ([]models.Person, int, er
 	var joinClause *goqu.SelectDataset
 
 	switch {
-	case f.Entity != -1:
+	case f.Entity != 0:
 		joinClause = dialect.From(tablePerson.As("p"), tableEntity.As("e")).Join(
 			goqu.T("personentities"),
 			goqu.On(
@@ -143,7 +143,7 @@ func (db *SQLiteDataStore) GetPeople(f request.Filter) ([]models.Person, int, er
 			goqu.T("permission").As("perm"),
 			goqu.On(
 				goqu.Ex{
-					"perm.person":               f.LoggedPersonID,
+					"perm.person":               person_id,
 					"perm.permission_item_name": []string{"all", "people"},
 					"perm.permission_perm_name": []string{"all", "r", "w"},
 					"perm.permission_entity_id": []interface{}{-1, goqu.I("e.entity_id")},

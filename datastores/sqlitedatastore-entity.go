@@ -8,12 +8,12 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
-	"github.com/tbellembois/gochimitheque/request"
+	"github.com/tbellembois/gochimitheque/zmqclient"
 )
 
 // GetEntities select the entities matching p
 // and visible by the connected user.
-func (db *SQLiteDataStore) GetEntities(f request.Filter) ([]models.Entity, int, error) {
+func (db *SQLiteDataStore) GetEntities(f zmqclient.Filter, person_id int) ([]models.Entity, int, error) {
 	var (
 		err                   error
 		entities              []models.Entity
@@ -50,7 +50,7 @@ func (db *SQLiteDataStore) GetEntities(f request.Filter) ([]models.Entity, int, 
 		goqu.T("permission").As("perm"),
 		goqu.On(
 			goqu.Ex{
-				"perm.person":               f.LoggedPersonID,
+				"perm.person":               person_id,
 				"perm.permission_item_name": []string{"all", "entities"},
 				"perm.permission_perm_name": []string{"all", "r", "w"},
 				"perm.permission_entity_id": []interface{}{-1, goqu.I("e.entity_id")},

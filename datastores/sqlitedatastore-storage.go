@@ -16,7 +16,7 @@ import (
 	qrcode "github.com/skip2/go-qrcode"
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
-	"github.com/tbellembois/gochimitheque/request"
+	"github.com/tbellembois/gochimitheque/zmqclient"
 )
 
 // ToogleStorageBorrowing borrow/unborrow the storage for the connected user.
@@ -48,7 +48,7 @@ func (db *SQLiteDataStore) ToogleStorageBorrowing(s models.Storage) error {
 }
 
 // GetStoragesUnits return the units.
-func (db *SQLiteDataStore) GetStoragesUnits(f request.Filter) ([]models.Unit, int, error) {
+func (db *SQLiteDataStore) GetStoragesUnits(f zmqclient.Filter) ([]models.Unit, int, error) {
 	var (
 		units                              []models.Unit
 		count                              int
@@ -113,7 +113,7 @@ func (db *SQLiteDataStore) GetStoragesUnits(f request.Filter) ([]models.Unit, in
 // GetStorages returns the storages matching the request parameters p.
 // Only storages that the logged user can see are returned given his permissions
 // and membership.
-func (db *SQLiteDataStore) GetStorages(f request.Filter) ([]models.Storage, int, error) {
+func (db *SQLiteDataStore) GetStorages(f zmqclient.Filter, person_id int) ([]models.Storage, int, error) {
 	var (
 		storages                                  []models.Storage
 		count                                     int
@@ -135,7 +135,7 @@ func (db *SQLiteDataStore) GetStorages(f request.Filter) ([]models.Storage, int,
 	}
 
 	// is the user an admin?
-	if isadmin, err = db.IsPersonAdmin(f.LoggedPersonID); err != nil {
+	if isadmin, err = db.IsPersonAdmin(person_id); err != nil {
 		return nil, 0, err
 	}
 
@@ -204,7 +204,7 @@ func (db *SQLiteDataStore) GetStorages(f request.Filter) ([]models.Storage, int,
 		comreq.WriteString(" LEFT JOIN hazardstatement ON producthazardstatements.producthazardstatements_hazardstatement_id = hazardstatement.hazardstatement_id")
 	}
 	// get producerref
-	if f.ProducerRef != -1 {
+	if f.ProducerRef != 0 {
 		comreq.WriteString(" JOIN producerref ON product.producerref = :producerref")
 	} else {
 		comreq.WriteString(" LEFT JOIN producerref ON product.producerref = producerref.producerref_id")
@@ -212,7 +212,7 @@ func (db *SQLiteDataStore) GetStorages(f request.Filter) ([]models.Storage, int,
 	// get name
 	comreq.WriteString(" JOIN name ON product.name = name.name_id")
 	// get category
-	if f.Category != -1 {
+	if f.Category != 0 {
 		comreq.WriteString(" JOIN category ON product.category = :category")
 	}
 	// get signal word
@@ -286,16 +286,16 @@ func (db *SQLiteDataStore) GetStorages(f request.Filter) ([]models.Storage, int,
 	if f.CasNumberCmr {
 		comreq.WriteString(" AND (casnumber.casnumber_cmr IS NOT NULL OR (hazardstatement_cmr IS NOT NULL AND hazardstatement_cmr != ''))")
 	}
-	if f.Product != -1 {
+	if f.Product != 0 {
 		comreq.WriteString(" AND product.product_id = :product")
 	}
-	if f.Entity != -1 {
+	if f.Entity != 0 {
 		comreq.WriteString(" AND entity.entity_id = :entity")
 	}
-	if f.Storelocation != -1 {
+	if f.Storelocation != 0 {
 		comreq.WriteString(" AND storelocation.storelocation_id = :storelocation")
 	}
-	if f.Storage != -1 {
+	if f.Storage != 0 {
 		if f.History {
 			comreq.WriteString(" AND (s.storage = :storage OR s.storage_id = :storage)")
 		} else {
@@ -314,13 +314,13 @@ func (db *SQLiteDataStore) GetStorages(f request.Filter) ([]models.Storage, int,
 	}
 
 	// search form parameters
-	if f.Name != -1 {
+	if f.Name != 0 {
 		comreq.WriteString(" AND name.name_id = :name")
 	}
-	if f.CasNumber != -1 {
+	if f.CasNumber != 0 {
 		comreq.WriteString(" AND casnumber.casnumber_id = :casnumber")
 	}
-	if f.EmpiricalFormula != -1 {
+	if f.EmpiricalFormula != 0 {
 		comreq.WriteString(" AND empiricalformula.empiricalformula_id = :empiricalformula")
 	}
 	if f.StorageBarecode != "" {
@@ -376,7 +376,7 @@ func (db *SQLiteDataStore) GetStorages(f request.Filter) ([]models.Storage, int,
 		comreq.WriteString("-1")
 		comreq.WriteString(" )")
 	}
-	if f.SignalWord != -1 {
+	if f.SignalWord != 0 {
 		comreq.WriteString(" AND signalword.signalword_id = :signalword")
 	}
 
@@ -421,7 +421,7 @@ func (db *SQLiteDataStore) GetStorages(f request.Filter) ([]models.Storage, int,
 	m := map[string]interface{}{
 		"ids":                 f.Ids,
 		"search":              f.Search,
-		"personid":            f.LoggedPersonID,
+		"personid":            person_id,
 		"order":               f.Order,
 		"limit":               f.Limit,
 		"offset":              f.Offset,
@@ -505,7 +505,7 @@ func (db *SQLiteDataStore) GetStorages(f request.Filter) ([]models.Storage, int,
 
 // GetOtherStorages returns the entity manager(s) email of the entities
 // storing the product with the id passed in the request parameters p.
-func (db *SQLiteDataStore) GetOtherStorages(f request.Filter) ([]models.Entity, int, error) {
+func (db *SQLiteDataStore) GetOtherStorages(f zmqclient.Filter, person_id int) ([]models.Entity, int, error) {
 	var (
 		entities                           []models.Entity
 		count                              int
@@ -543,7 +543,7 @@ func (db *SQLiteDataStore) GetOtherStorages(f request.Filter) ([]models.Entity, 
 	comreq.WriteString(" JOIN person ON entitypeople.entitypeople_person_id = person.person_id")
 
 	comreq.WriteString(" WHERE 1")
-	if f.Product != -1 {
+	if f.Product != 0 {
 		comreq.WriteString(" AND storage.product = :product")
 	}
 
@@ -561,7 +561,7 @@ func (db *SQLiteDataStore) GetOtherStorages(f request.Filter) ([]models.Entity, 
 	// building argument map
 	m := map[string]interface{}{
 		"search":              f.Search,
-		"personid":            f.LoggedPersonID,
+		"personid":            person_id,
 		"order":               f.Order,
 		"limit":               f.Limit,
 		"offset":              f.Offset,

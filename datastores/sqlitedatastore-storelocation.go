@@ -11,7 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
-	"github.com/tbellembois/gochimitheque/request"
+	"github.com/tbellembois/gochimitheque/zmqclient"
 )
 
 // Return the store location full path.
@@ -63,7 +63,7 @@ func (db *SQLiteDataStore) buildFullPath(s models.StoreLocation, tx *sqlx.Tx) st
 
 // GetStoreLocations select the store locations matching p
 // and visible by the connected user.
-func (db *SQLiteDataStore) GetStoreLocations(f request.Filter) ([]models.StoreLocation, int, error) {
+func (db *SQLiteDataStore) GetStoreLocations(f zmqclient.Filter, person_id int) ([]models.StoreLocation, int, error) {
 	logger.Log.WithFields(logrus.Fields{"f": f}).Debug("GetStoreLocations")
 
 	if f.OrderBy == "" {
@@ -98,7 +98,7 @@ func (db *SQLiteDataStore) GetStoreLocations(f request.Filter) ([]models.StoreLo
 		goqu.T("permission").As("perm"),
 		goqu.On(
 			goqu.Ex{
-				"perm.person":               f.LoggedPersonID,
+				"perm.person":               person_id,
 				"perm.permission_item_name": []string{"all", "storages"},
 				"perm.permission_perm_name": []string{"r", "w", "all"},
 				"perm.permission_entity_id": []interface{}{-1, goqu.I("entity.entity_id")},
@@ -110,7 +110,7 @@ func (db *SQLiteDataStore) GetStoreLocations(f request.Filter) ([]models.StoreLo
 	whereAnd := []goqu.Expression{
 		goqu.I("s.storelocation_name").Like(f.Search),
 	}
-	if f.Entity != -1 {
+	if f.Entity != 0 {
 		whereAnd = append(whereAnd, goqu.I("s.entity").Eq(f.Entity))
 	}
 	if f.StoreLocationCanStore {
@@ -150,10 +150,10 @@ func (db *SQLiteDataStore) GetStoreLocations(f request.Filter) ([]models.StoreLo
 		return nil, 0, err
 	}
 
-	// logger.Log.Debug(selectSql)
-	// logger.Log.Debug(selectArgs)
-	// logger.Log.Debug(countSql)
-	// logger.Log.Debug(countArgs)
+	logger.Log.Debug(selectSQL)
+	logger.Log.Debug(selectArgs)
+	logger.Log.Debug(countSQL)
+	logger.Log.Debug(countArgs)
 
 	var (
 		storelocations []models.StoreLocation
