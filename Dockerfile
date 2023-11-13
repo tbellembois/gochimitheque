@@ -3,8 +3,9 @@ LABEL author="Thomas Bellembois"
 ARG BuildID
 ENV BuildID=${BuildID}
 
-# Install GCC and git.
-# RUN apk add build-base git
+#
+# Prepare.
+#
 
 # Install zeromq repository and library.
 RUN echo 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/release-stable/Debian_11/ /' | tee /etc/apt/sources.list.d/network:messaging:zeromq:release-stable.list
@@ -12,51 +13,50 @@ RUN curl -fsSL https://download.opensuse.org/repositories/network:messaging:zero
 RUN apt -y update
 RUN apt -y install libzmq3-dev
 
-# ref. go.mod gochimitheque-wasm
+# Create base directory.
 RUN mkdir -p /home/thbellem/workspace \
     && ln -s /go /home/thbellem/workspace/workspace_go
 
-# Installing dependencies.
+# Install Jade.
 RUN go install github.com/Joker/jade/cmd/jade@master
 
 #
-# Sources.
+# Chimithèque sources.
 #
 
-# Getting wasm module sources.
-WORKDIR /go/src/github.com/tbellembois/
+# WASM: copy sources.
 # sudo mount --bind ~/workspace/workspace_go/src/github.com/tbellembois/gochimitheque-wasm ./bind-gochimitheque-wasm
-# sudo mount --bind ~/workspace/workspace_go/src/github.com/tbellembois/gochimitheque-utils ./bind-gochimitheque-utils
+WORKDIR /go/src/github.com/tbellembois/
 COPY ./bind-gochimitheque-wasm ./gochimitheque-wasm
-COPY ./bind-gochimitheque-utils ./gochimitheque-utils
 
-# Copying Chimithèque sources.
+# BACKEND: copy sources.
 WORKDIR /go/src/github.com/tbellembois/gochimitheque/
 COPY . .
 
 #
-# Build.
+# Chimithèque build.
 #
 
-# Building wasm module.
+# WASM: build.
 WORKDIR /go/src/github.com/tbellembois/gochimitheque-wasm
 RUN GOOS=js GOARCH=wasm go get -v -d ./... \
     && GOOS=js GOARCH=wasm go build -o wasm .
 
-# Copying and compress WASM module into sources.
+# WASM: copy and compress.
 RUN cp /go/src/github.com/tbellembois/gochimitheque-wasm/wasm /go/src/github.com/tbellembois/gochimitheque/wasm/ \
     && gzip -9 -v -c /go/src/github.com/tbellembois/gochimitheque/wasm/wasm > /go/src/github.com/tbellembois/gochimitheque/wasm/wasm.gz \
     && rm /go/src/github.com/tbellembois/gochimitheque/wasm/wasm
 
-# Installing Chimithèque dependencies.
+# BACKEND: generate code.
 WORKDIR /go/src/github.com/tbellembois/gochimitheque/
-
-# Generating code.
 RUN go generate
 
-# Building Chimithèque.
-# docker build --build-arg BuildID=2.0.7 -t tbellembois/gochimitheque:2.0.7 .
+# BACKEND: build.
 RUN if [ -z $BuildID ]; then BuildID=$(date "+%Y%m%d"); fi; echo "BuildID=$BuildID"; go build -ldflags "-X main.BuildID=$BuildID"
+
+#
+# Chimithèque utils sources.
+#
 
 # Install Rust.
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -sSf | sh -s -- -y
@@ -73,7 +73,7 @@ WORKDIR /go/src/rust/chimitheque_utils_service
 RUN cargo build --release
 
 #
-# Install.
+# Final image.
 #
 
 FROM golang:1.21-bullseye
@@ -104,10 +104,6 @@ RUN chown chimitheque /var/www-data/gochimitheque \
 COPY --from=builder /go/src/rust/chimitheque_utils_service/target/release/chimitheque_utils_service /var/www-data/
 RUN chown chimitheque /var/www-data/chimitheque_utils_service \
     && chmod +x /var/www-data/chimitheque_utils_service
-
-#
-# Final work.
-#
 
 # Copying entrypoint.
 COPY docker/entrypoint.sh /

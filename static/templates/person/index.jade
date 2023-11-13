@@ -36,16 +36,9 @@ block CONTENT
                         .row
                             .col-sm-6
                                 +inputtext(name="person_email", label="person_email_title")
-                                // hidden feature
-                                #hidden_person_password.collapse
-                                    +inputtext(name="person_password", label="person_password_title")
                             .col-sm-6
                                 +inputselect(name="entities", label="person_entity_title", ismultiple=true)
                         .row
-                            .col-sm-6
-                              a(onclick='showPassword();' href="#")
-                                span.mdi.mdi-lock
-                                  = T("person_show_password", 1 )
                             .col-sm-6
                                 button#selectAllEntity.btn.btn-outline-primary(type="button" onclick="Person_selectAllEntity();")
                                     span.mdi.mdi-check-all.iconlabel
@@ -86,13 +79,7 @@ block CONTENT
                                         input.perm.permr.permrrproducts#permrrproducts-1(name="permrproducts-1" value="none" label="r" perm_name="r" item_name="rproducts" entity_id="-1" type="radio")
                                         label.form-check-label(for="permrrproducts-1").ml-sm-1.pr-sm-1.pl-sm-1.text-secondary.border.border-secondary.rounded(title=T("permission_rproduct", 1 ))
                                             span.mdi.mdi-check.mdi-18px
-                                    //- .form-check.form-check-inline
-                                    //-     input.perm.permw.permwrproducts#permwrproducts-1(name="permrproducts-1" value="none" label="rw" perm_name="w" item_name="rproducts" entity_id="-1" type="radio")
-                                    //-     label.form-check-label(for="permwrproducts-1").ml-sm-1.pr-sm-1.pl-sm-1.text-secondary.border.border-secondary.rounded(title=T("permission_crud", 1 ))
-                                    //-         span.mdi.mdi-eye.mdi-18px
-                                    //-         span.mdi.mdi-creation.mdi-18px
-                                    //-         span.mdi.mdi-pencil-outline.mdi-18px
-                                    //-         span.mdi.mdi-delete.mdi-18px
+                       
                     #selectAllPermissions.row.collapse.hide
                         .col-sm-2
                         .col-sm-10
@@ -107,14 +94,7 @@ block CONTENT
                                     span.mdi.mdi-check-all.iconlabel
                      
                     #permissions
-
-                        //- .blockquote-footer
-                        //-     span.mdi.mdi-close.mdi-18px no permission
-                        //-     span.mdi.mdi-eye.mdi-18px view
-                        //-     span.mdi.mdi-creation.mdi-18px create
-                        //-     span.mdi.mdi-pencil-outline.mdi-18px update
-                        //-     span.mdi.mdi-delete.mdi-18px delete
-                        
+                       
                     button#save.btn.btn-primary.float-right(type='button', onclick='Person_savePerson()')
                         span.mdi.mdi-content-save.mdi-24px.iconlabel
                             = T("save", 1)
@@ -124,9 +104,6 @@ block CONTENT
                             
 block CONTENTJS
     script.
-        function showPassword() {
-            $("#hidden_person_password").fadeIn()
-        }
         window.operateEvents = {
             "click .delete": function (e, value, row, index) {
                 Person_operateEventsDelete(e, value, row, index)

@@ -71,6 +71,8 @@ var LOCALES_FR = []byte(`
 
 [empirical_formula_convert]
 	one = "convertir en formule brute"
+[empirical_formula_convert_failed]
+	one = "impossible de trouver la formule brute"
 [no_empirical_formula]
 	one = "pas de formule brute"
 [no_cas_number]
@@ -116,6 +118,15 @@ var LOCALES_FR = []byte(`
 	one = "rechercher"
 [bt_noMatches]
 	one = "pas de résultat"
+
+[login_openid]
+	one = "Connexion OpenID"
+[login_openid_text]
+	one = "Cliquez sur 'Je m'identifie' ci-dessous"
+[login_openid_link]
+	one = "Je m'identifie"
+[login_forbidden]
+	one = "Votre compte n'a pas été encore validé par un gestionnaire d'entité"
 
 [qrcode_login]
 	one = "connexion par QRCode"

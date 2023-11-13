@@ -71,6 +71,8 @@ var LOCALES_EN = []byte(`
 
 [empirical_formula_convert]
 	one = "convert to empirical formula"
+[empirical_formula_convert_failed]
+	one = "can not find the empirical formula"
 [no_empirical_formula]
 	one = "no empirical formula"
 [no_cas_number]
@@ -116,6 +118,15 @@ var LOCALES_EN = []byte(`
 	one = "search"
 [bt_noMatches]
 	one = "no matches"
+
+[login_openid]
+	one = "OpenID connection"
+[login_openid_text]
+	one = "CLick on 'Enter' below"
+[login_openid_link]
+	one = "Sign in"
+[login_forbidden]
+	one = "Your account has not been approved by an entity manager"
 
 [qrcode_login]
 	one = "log in with a QRCode"

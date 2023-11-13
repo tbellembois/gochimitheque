@@ -14,7 +14,6 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/mattn/go-sqlite3"
 	"github.com/sirupsen/logrus"
-	"github.com/tbellembois/gochimitheque/aes"
 	"github.com/tbellembois/gochimitheque/data"
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
@@ -409,30 +408,15 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	if c == 0 {
 		logger.Log.Info("  inserting admin user")
 
-		var aeskey string
-
-		if aeskey, err = aes.GenerateAESKey(); err != nil {
-			return err
-		}
-
 		admin = &models.Person{
-			PersonEmail:  "admin@chimitheque.fr",
-			Permissions:  []*models.Permission{{PermissionPermName: "all", PermissionItemName: "all", PermissionEntityID: -1}},
-			PersonAESKey: aeskey,
+			PersonEmail: "admin@chimitheque.fr",
+			Permissions: []*models.Permission{{PermissionPermName: "all", PermissionItemName: "all", PermissionEntityID: -1}},
 		}
 
-		var insertID int64
-
-		if insertID, err = db.CreatePerson(*admin); err != nil {
+		if _, err = db.CreatePerson(*admin); err != nil {
 			return err
 		}
 
-		admin.PersonPassword = "chimitheque"
-		admin.PersonID = int(insertID)
-
-		if err = db.UpdatePersonPassword(*admin); err != nil {
-			return err
-		}
 	}
 
 	// inserting sample entity
@@ -470,66 +454,6 @@ func (db *SQLiteDataStore) Maintenance() {
 		sqlr string
 		tx   *sql.Tx
 	)
-
-	//
-	// Changing default user aes keys.
-	//
-	if tx, err = db.Begin(); err != nil {
-		logger.Log.Error(err)
-
-		return
-	}
-
-	var people []models.Person
-
-	sqlr = `SELECT person_id, person_email, person_password, person_aeskey 
-	FROM person 
-	WHERE person_aeskey="32byteskeytobechangedbygocode+++";`
-
-	if err = db.Select(&people, sqlr); err != nil {
-		logger.Log.Error(err)
-
-		return
-	}
-
-	for _, person := range people {
-		var key string
-
-		if key, err = aes.GenerateAESKey(); err != nil {
-			logger.Log.Error(err)
-
-			if errr := tx.Rollback(); errr != nil {
-				logger.Log.Error(err)
-
-				return
-			}
-
-			return
-		}
-
-		sqlr = `UPDATE person SET person_aeskey=? WHERE person_id=?;`
-		if _, err = tx.Exec(sqlr, key, person.PersonID); err != nil {
-			logger.Log.Error(err)
-
-			if errr := tx.Rollback(); errr != nil {
-				logger.Log.Error(err)
-
-				return
-			}
-
-			return
-		}
-	}
-
-	if err = tx.Commit(); err != nil {
-		logger.Log.Error(err)
-
-		if errr := tx.Rollback(); errr != nil {
-			logger.Log.Error(errr)
-
-			return
-		}
-	}
 
 	//
 	// Cleaning up casnumber labels duplicates.

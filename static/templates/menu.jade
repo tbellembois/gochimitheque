@@ -3,7 +3,7 @@
 
 nav.navbar.navbar-expand-lg.navbar-light
     a.navbar-brand(href="#", title="product list", onclick="$('#advancedsearch').collapse('hide'); Menu_loadContent('product', '" + c.AppURL + c.AppPath + "v/products', 'Product_list')")
-        img(src=c.AppURL + c.AppPath + "static/img/logo_chimitheque_simple.png", alt="chimitheque_logo", title="Chimithèque")
+        img(src=c.AppURL + c.AppPath + "static/img/logo_chimitheque_simple.svg", width="50px" alt="chimitheque_logo", title="Chimithèque")
     button.navbar-toggler(
                         type="button"
                         data-toggle="collapse" 
@@ -87,12 +87,6 @@ nav.navbar.navbar-expand-lg.navbar-light
                     a.dropdown-item(href="#", onclick="localStorage.clear(); document.cookie='token=; expires=Thu, 01 Jan 1970 00:00:00 UTC;'; window.location.replace('" + c.AppURL + c.AppPath + "delete-token')")
                         span.mdi.mdi-logout.mdi-24px.iconlabel
                             = T("menu_logout", 1 )
-                    a#menu_password.dropdown-item(href="#", onclick="Menu_loadContent('person', '" + c.AppURL + c.AppPath + "vu/peoplepass', 'PersonPass_list')").collapse
-                        span.mdi.mdi-account-key.mdi-24px.iconlabel
-                            = T("menu_password", 1)
-                    a.dropdown-item(href="#", onclick="Menu_loadContent('person', '" + c.AppURL + c.AppPath + "vu/peopleqrcode', 'PersonQRCode_list')")
-                        span.mdi.mdi-qrcode.mdi-24px.iconlabel
-                            = T("menu_qrcode", 1)
                     a.dropdown-item(href="#", onclick="Menu_loadContent('about', '" + c.AppURL + c.AppPath + "about', 'About_list')")
                         span.mdi.mdi-information.mdi-24px.iconlabel
                             = T("menu_about", 1 )

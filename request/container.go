@@ -17,7 +17,6 @@ type Container struct {
 	AppPath        string `json:"AppPath"`
 	BuildID        string `json:"BuildID"`
 	DisableCache   bool   `json:"DisableCache"`
-	LDAPEnabled    bool   `json:"LDAPEnabled"`
 }
 
 // ContainerFromRequestContext returns a ViewContainer from the request context

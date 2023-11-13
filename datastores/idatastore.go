@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/steambap/captcha"
 	"github.com/tbellembois/gochimitheque/models"
 	"github.com/tbellembois/gochimitheque/zmqclient"
 )
@@ -89,8 +88,6 @@ type Datastore interface {
 	DoesPersonBelongsTo(id int, entities []models.Entity) (bool, error)
 	CreatePerson(p models.Person) (int64, error)
 	UpdatePerson(p models.Person) error
-	UpdatePersonPassword(p models.Person) error
-	UpdatePersonAESKey(p models.Person) error
 	DeletePerson(id int) error
 	GetAdmins() ([]models.Person, error)
 	IsPersonAdmin(id int) (bool, error)
@@ -98,8 +95,4 @@ type Datastore interface {
 	SetPersonAdmin(id int) error
 	IsPersonManager(id int) (bool, error)
 	HasPersonReadRestrictedProductPermission(id int) (bool, error)
-
-	// captcha
-	InsertCaptcha(string, *captcha.Data) error
-	ValidateCaptcha(token string, text string) (bool, error)
 }

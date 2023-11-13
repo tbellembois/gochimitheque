@@ -201,6 +201,45 @@ func (env *Env) ValidateProductNameHandler(w http.ResponseWriter, r *http.Reques
 	return nil
 }
 
+// FormatProductEmpiricalFormulaHandler returns the sorted formula.
+func (env *Env) FormatProductEmpiricalFormulaHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+
+	type EmpiricalFormulaData struct {
+		EmpiricalFormula string `json:"empiricalformula"`
+	}
+
+	var (
+		resp                 string
+		empiricalFormulaData EmpiricalFormulaData
+		err                  error
+	)
+
+	if err = json.NewDecoder(r.Body).Decode(&empiricalFormulaData); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Message:       "JSON decoding error",
+			Code:          http.StatusInternalServerError,
+		}
+	}
+
+	// validating it
+	resp, err = zmqclient.Empirical_formula(empiricalFormulaData.EmpiricalFormula)
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	if err = json.NewEncoder(w).Encode(resp); err != nil {
+		return &models.AppError{
+			Code:    http.StatusInternalServerError,
+			Message: err.Error(),
+		}
+	}
+
+	return nil
+}
+
 // ValidateProductEmpiricalFormulaHandler checks that the product empirical formula is valid.
 func (env *Env) ValidateProductEmpiricalFormulaHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	var (
@@ -225,39 +264,6 @@ func (env *Env) ValidateProductEmpiricalFormulaHandler(w http.ResponseWriter, r 
 	}
 
 	sendResponse(w, resp)
-	return nil
-}
-
-// FormatProductEmpiricalFormulaHandler returns the sorted formula.
-func (env *Env) FormatProductEmpiricalFormulaHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	var (
-		err  error
-		resp string
-	)
-
-	// getting the empirical formula
-	if err = r.ParseForm(); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "form parsing",
-			Code:          http.StatusInternalServerError,
-		}
-	}
-	// validating it
-	resp, err = zmqclient.Empirical_formula(r.Form.Get("empiricalformula"))
-
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-	}
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	if err = json.NewEncoder(w).Encode(resp); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
-
 	return nil
 }
 

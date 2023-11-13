@@ -3,13 +3,10 @@ package handlers
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"net/http"
-	"regexp"
 	"strconv"
-	"strings"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/gorilla/mux"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/sirupsen/logrus"
@@ -77,7 +74,6 @@ func (env *Env) ContextMiddleware(h http.Handler) http.Handler {
 				PersonLanguage: accept,
 				BuildID:        env.BuildID,
 				DisableCache:   env.DisableCache,
-				LDAPEnabled:    env.LDAPConnection.IsEnabled,
 			},
 		)
 
@@ -85,89 +81,49 @@ func (env *Env) ContextMiddleware(h http.Handler) http.Handler {
 	})
 }
 
-// AuthenticateMiddleware check that a valid JWT token is in the request, extract and store user informations in the Go http context.
+// AuthenticateMiddleware check that a valid token is in the request.
 func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
 		var (
-			email       string
-			cemail      interface{}
-			claims      jwt.MapClaims
-			ok          bool
-			person      models.Person
-			err         error
-			reqToken    *http.Cookie
-			reqTokenStr string
-			token       *jwt.Token
+			rawToken *http.Cookie
+			err      error
 		)
 
-		// token regex header version
-		// tre := regexp.MustCompile("Bearer [[:alnum:]]\\.[[:alnum:]]\\.[[:alnum:]]")
-		// token regex cookie version
-		// tre := regexp.MustCompile("token=[[:alnum:]]\\.[[:alnum:]]\\.[[:alnum:]]")
-		tre := regexp.MustCompile("token=.+")
-
-		// extracting the token string from Authorization header
-		// reqToken := r.Header.Get("Authorization")
-		// extracting the token string from cookie
-		if reqToken, err = r.Cookie("token"); err != nil {
+		if rawToken, err = r.Cookie("token"); err != nil || rawToken == nil {
 			logger.Log.Debug("token not found in cookies")
-			// http.Error(w, "token not found in cookies, please log in", http.StatusUnauthorized)
-			http.Redirect(w, r, env.AppFullURL+"login", http.StatusTemporaryRedirect)
+			http.Error(w, "token not found in cookies, please log in", http.StatusUnauthorized)
 			return
 		}
-		if !tre.MatchString(reqToken.String()) {
-			logger.Log.Debug("token has an invalid format")
-			http.Error(w, "token has an invalid format", http.StatusUnauthorized)
+
+		var idtoken *oidc.IDToken
+		if idtoken, err = env.OIDCVerifier.Verify(context.Background(), rawToken.Value); err != nil || idtoken == nil {
+			http.Error(w, "failed to verify ID Token: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		var claims struct {
+			Email         string `json:"email"`
+			EmailVerified bool   `json:"email_verified"`
+		}
+
+		if err := idtoken.Claims(&claims); err != nil {
+			http.Error(w, "error getting claims from token"+err.Error(), http.StatusBadRequest)
 			return
 		}
 		logger.Log.WithFields(logrus.Fields{
-			"reqToken.Name":  reqToken.Name,
-			"reqToken.Value": reqToken.Value,
-		}).Debug()
+			"claims": claims,
+		}).Debug("AuthenticateMiddleware")
 
-		// validating the token
-		// header version
-		// splitToken := strings.Split(reqToken, "Bearer ")
-		// cookie version
-		splitToken := strings.Split(reqToken.String(), "token=")
-		reqTokenStr = splitToken[1]
-		token, err = jwt.Parse(reqTokenStr, func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				logger.Log.Debugf("unexpected signing method: %v", token.Header["alg"])
-				http.Error(w, err.Error(), http.StatusUnauthorized)
-				return nil, nil
-			}
-			return env.TokenSignKey, nil
-		})
-		if err != nil {
-			logger.Log.Debug("parse token error")
-			http.Error(w, err.Error(), http.StatusUnauthorized)
-			return
-		}
-
-		// getting the claims
-		if claims, ok = token.Claims.(jwt.MapClaims); ok && token.Valid {
-			logger.Log.Debug(fmt.Sprintf("claims: %+v\n", claims))
-
-			// then the email claim
-			if cemail, ok = claims["email"]; !ok {
-				logger.Log.Debug("email not found in claims")
-				http.Error(w, "email not found in claims", http.StatusBadRequest)
-				return
-			}
-			email = cemail.(string)
-		} else {
-			logger.Log.Debug("can not extract claims")
-			http.Error(w, "can not extract claims", http.StatusBadRequest)
-			return
-		}
-
-		logger.Log.Debugf("email: %s\n", email)
-		// getting the logged user
-		if person, err = env.DB.GetPersonByEmail(email); err != nil {
+		// getting the user id
+		var (
+			person models.Person
+		)
+		if person, err = env.DB.GetPersonByEmail(claims.Email); err != nil {
 			if err == sql.ErrNoRows && env.AutoCreateUser {
 			} else {
 				http.Error(w, "can not get logged user: "+err.Error(), http.StatusBadRequest)
+				return
 			}
 		}
 
@@ -175,9 +131,11 @@ func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 		ctx := r.Context()
 		ctxcontainer := ctx.Value(request.ChimithequeContextKey("container"))
 		container := ctxcontainer.(request.Container)
+
 		// setting up auth person informations
-		container.PersonEmail = person.PersonEmail
+		container.PersonEmail = claims.Email
 		container.PersonID = person.PersonID
+
 		ctx = context.WithValue(
 			r.Context(),
 			request.ChimithequeContextKey("container"),
@@ -259,7 +217,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 				}
 				// a user can not edit himself
 				if itemidInt == personid {
-					http.Error(w, "can not edit/delete yourself", http.StatusUnauthorized)
+					http.Error(w, "can not edit/delete yourself", http.StatusBadRequest)
 					return
 				}
 				// we can not edit an admin
@@ -270,7 +228,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 					return
 				}
 				if a {
-					http.Error(w, "can not delete an admin", http.StatusUnauthorized)
+					http.Error(w, "can not delete an admin", http.StatusBadRequest)
 					return
 				}
 			}
@@ -286,7 +244,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 				}
 				// a user can not delete himself
 				if itemidInt == personid {
-					http.Error(w, "can not edit/delete yourself", http.StatusUnauthorized)
+					http.Error(w, "can not edit/delete yourself", http.StatusBadRequest)
 					return
 				}
 				// we can not delete a manager
@@ -297,7 +255,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 					return
 				}
 				if m {
-					http.Error(w, "can not delete a manager", http.StatusUnauthorized)
+					http.Error(w, "can not delete a manager", http.StatusBadRequest)
 					return
 				}
 				// we can not delete an admin
@@ -308,7 +266,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 					return
 				}
 				if a {
-					http.Error(w, "can not delete an admin", http.StatusUnauthorized)
+					http.Error(w, "can not delete an admin", http.StatusBadRequest)
 					return
 				}
 			case "storelocations":
@@ -326,7 +284,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 					return
 				}
 				if len(c) != 0 {
-					http.Error(w, "can not delete store location with children", http.StatusUnauthorized)
+					http.Error(w, "can not delete store location with children", http.StatusBadRequest)
 					return
 				}
 				// we can not delete a non empty store location
@@ -337,7 +295,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 					return
 				}
 				if !m {
-					http.Error(w, "can not delete a non empty store location", http.StatusUnauthorized)
+					http.Error(w, "can not delete a non empty store location", http.StatusBadRequest)
 					return
 				}
 			case "products":
@@ -354,7 +312,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 					return
 				}
 				if c != 0 {
-					http.Error(w, "can not delete a product with storages", http.StatusUnauthorized)
+					http.Error(w, "can not delete a product with storages", http.StatusBadRequest)
 					return
 				}
 			case "entities":
@@ -369,20 +327,20 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 					n, e2 := env.DB.HasEntityStorelocation(itemidInt)
 					if e1 != nil {
 						logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
-						http.Error(w, e1.Error(), http.StatusUnauthorized)
+						http.Error(w, e1.Error(), http.StatusBadRequest)
 						return
 					}
 					if e2 != nil {
 						logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
-						http.Error(w, e2.Error(), http.StatusUnauthorized)
+						http.Error(w, e2.Error(), http.StatusBadRequest)
 						return
 					}
 					if m {
-						http.Error(w, "can not delete an entity with members", http.StatusUnauthorized)
+						http.Error(w, "can not delete an entity with members", http.StatusBadRequest)
 						return
 					}
 					if n {
-						http.Error(w, "can not delete an entity with store locations", http.StatusUnauthorized)
+						http.Error(w, "can not delete an entity with store locations", http.StatusBadRequest)
 						return
 					}
 				}

@@ -1,71 +1,31 @@
-
 include ../mixins
 block CONTENT
-    img(src=c.AppURL + c.AppPath + "static/img/logo_chimitheque_small.png", alt="chimitheque_logo", title="Chimithèque")
+    img(src=c.AppURL + c.AppPath + "static/img/logo_chimitheque.svg", alt="chimitheque_logo", title="Chimithèque")
     :go:func
         Login(c ViewContainer)
     header
-        form#authform
-            .row 
-                .col.offset-sm-5.col-sm-auto
-                    a(onclick="scanPersonQR();").nav-link
-                        span.mdi.mdi-qrcode.mdi-36px.iconlabel
-                            = T("qrcode_login", 1) 
-            .row
-                div.col.col-sm-4.offset-sm-4
-                    div.form-group
-                        label(for="person_email")
-                        - var a, b = "email_placeholder", 1
-                        input.form-control#person_email(type="email" 
-                                                        aria-describedby="emailHelp" 
-                                                        placeholder=T(a,b)
-                                                        name="person_email")
-                    div.form-group
-                        label(for="person_password")
-                        - a, b = "password_placeholder", 1
-                        input.form-control#person_password(type="password" 
-                                                        aria-describedby="passwordHelp" 
-                                                        placeholder=T(a,b) 
-                                                        name="person_password")
-            .row
-                .col.offset-sm-4.col-sm-2
-                    a#gettoken(href="#" onclick="Login_getToken();")
-                        span.mdi.mdi-36px.mdi-login.iconlabel
-                            = T("submitlogin_text", 1) 
-                .col.col-sm-2
-                    p.text-right
-                        a#getcaptcha(href="#" onclick="Login_getCaptcha();")
-                            span.mdi.mdi-36px.mdi-lock-reset.iconlabel
-                                = T("resetpassword_text", 1) 
-        
-        form#captcha
-            .row.invisible#captcha-row
-                div.col.col-sm-12.d-flex.justify-content-center.mt-sm-4.mb-sm-2
-                    img#captcha-img
-                div.col.col-sm-12.d-flex.justify-content-center.mb-sm-4
-                    input#captcha_uid(type="hidden" name="captcha_uid")
-                    input#captcha_text(type="text" name="captcha_text")
-                    a#resetpassword(href="#" onclick="Login_resetPassword();")
-                        span.mdi.mdi-36px.mdi-lock-reset.iconlabel
-                            = T("resetpassword2_text", 1) 
+        .row
+            div.card.mx-auto.text-center(style="width: 18rem; border: none;")
+                img(src=c.AppURL + c.AppPath + "static/img/openid.svg", alt="openid")
+                .card-body 
+                    h5.card-title
+                        //- = T("login_openid", 1 )
+                    p.card-text 
+                        //- = T("login_openid_text", 1 )
+                    a(href=c.AppURL + c.AppPath + "get-token")
+                        = T("login_openid_link", 1 )
 
-        #wannounce.col.col-sm-4.offset-sm-4
+            #wannounce.col.col-sm-8.offset-sm-2.mt-5
 
     a(href="https://github.com/tbellembois/gochimitheque")
-        img(style="position: absolute; top: 0; right: 0; border: 0;" src=c.AppURL + c.AppPath + "static/img/forkme_right_darkblue_121621.png" alt="Fork me on GitHub")
+        img(style="position: absolute; top: 0; right: 0; border: 0;" src=c.AppURL + c.AppPath + "static/img/forkme_github.png" alt="Fork me on GitHub")
 
     .fixed-bottom.row
         .col.col-sm-12.d-flex.justify-content-center
     .fixed-bottom.flex-row-reverse
-        //- p.blockquote-footer.text-right
-        //-     i 
-        //-         = T("logo_information1", 1) 
-        //-     a(title="mon-aloevera [at] hotmail [dot] com")
-        //-     b Katia Varet.
 
 block CONTENTJS
     script.
         $(document).ready(function () {
             Login_getAnnounce();
         })
-    

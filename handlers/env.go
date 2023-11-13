@@ -5,8 +5,9 @@ import (
 	"errors"
 
 	"github.com/casbin/casbin/v2"
+	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/tbellembois/gochimitheque/datastores"
-	"github.com/tbellembois/gochimitheque/ldap"
+	"golang.org/x/oauth2"
 )
 
 // https://github.com/northbright/Notes/blob/master/jwt/generate_hmac_secret_key_for_jwt.md
@@ -49,8 +50,12 @@ type Env struct {
 	BuildID string
 	// DisableCache disables the views cache
 	DisableCache bool
-	// LDAP connection
-	LDAPConnection *ldap.LDAPConnection
+
+	// OIDC parameters
+	OIDCProvider *oidc.Provider
+	OIDCVerifier *oidc.IDTokenVerifier
+	OIDCConfig   *oidc.Config
+	OAuth2Config oauth2.Config
 }
 
 func NewEnv() Env {

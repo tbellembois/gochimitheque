@@ -8,70 +8,10 @@ import (
 	_ "github.com/doug-martin/goqu/v9/dialect/sqlite3"
 	"github.com/jmoiron/sqlx"
 	"github.com/sirupsen/logrus"
-	"github.com/steambap/captcha"
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
 	"github.com/tbellembois/gochimitheque/zmqclient"
-	"golang.org/x/crypto/bcrypt"
 )
-
-// ValidateCaptcha validate the text entered with the given token.
-func (db *SQLiteDataStore) ValidateCaptcha(token string, text string) (bool, error) {
-	var (
-		err   error
-		sqlr  string
-		args  []interface{}
-		count int
-	)
-
-	dialect := goqu.Dialect("sqlite3")
-	tableCaptcha := goqu.T("captcha")
-
-	sQuery := dialect.From(tableCaptcha).Select(
-		goqu.COUNT("*"),
-	).Where(
-		goqu.I("captcha_token").Eq(token),
-		goqu.I("captcha_text").Eq(text),
-	)
-
-	if sqlr, args, err = sQuery.ToSQL(); err != nil {
-		logger.Log.Error(err)
-		return false, err
-	}
-
-	if err = db.Get(&count, sqlr, args...); err != nil {
-		return false, err
-	}
-
-	return count != 0, nil
-}
-
-// InsertCaptcha generates and stores a unique captcha with a token
-// to be validated by a user, and returns the token.
-func (db *SQLiteDataStore) InsertCaptcha(token string, data *captcha.Data) (err error) {
-	var (
-		sqlr string
-		args []interface{}
-	)
-
-	dialect := goqu.Dialect("sqlite3")
-	tableCaptcha := goqu.T("captcha")
-
-	if sqlr, args, err = dialect.Insert(tableCaptcha).Rows(
-		goqu.Record{
-			"captcha_token": token,
-			"captcha_text":  data.Text,
-		},
-	).ToSQL(); err != nil {
-		return
-	}
-
-	if _, err = db.Exec(sqlr, args...); err != nil {
-		return
-	}
-
-	return
-}
 
 // GetPeople select the people matching p
 // and visible by the connected user.
@@ -209,8 +149,6 @@ func (db *SQLiteDataStore) GetPerson(id int) (models.Person, error) {
 	).Select(
 		goqu.I("person_id"),
 		goqu.I("person_email"),
-		goqu.I("person_password"),
-		goqu.I("person_aeskey"),
 	)
 
 	var (
@@ -244,8 +182,6 @@ func (db *SQLiteDataStore) GetPersonByEmail(email string) (models.Person, error)
 	).Select(
 		goqu.I("person_id"),
 		goqu.I("person_email"),
-		goqu.I("person_password"),
-		goqu.I("person_aeskey"),
 	)
 
 	var (
@@ -675,9 +611,7 @@ func (db *SQLiteDataStore) CreatePerson(p models.Person) (lastInsertID int64, er
 
 	iQuery := dialect.Insert(tablePerson).Rows(
 		goqu.Record{
-			"person_email":    strings.ToLower(p.PersonEmail),
-			"person_password": p.PersonPassword,
-			"person_aeskey":   p.PersonAESKey,
+			"person_email": strings.ToLower(p.PersonEmail),
 		},
 	)
 
@@ -732,69 +666,6 @@ func (db *SQLiteDataStore) CreatePerson(p models.Person) (lastInsertID int64, er
 	}
 
 	return
-}
-
-// UpdatePersonPassword updates the given person password.
-func (db *SQLiteDataStore) UpdatePersonPassword(p models.Person) error {
-	var (
-		err   error
-		sqlr  string
-		args  []interface{}
-		hpass []byte
-	)
-
-	if hpass, err = bcrypt.GenerateFromPassword([]byte(p.PersonPassword), bcrypt.DefaultCost); err != nil {
-		return err
-	}
-
-	dialect := goqu.Dialect("sqlite3")
-	tablePerson := goqu.T("person")
-
-	if sqlr, args, err = dialect.Update(tablePerson).Set(
-		goqu.Record{
-			"person_password": hpass,
-		},
-	).Where(
-		goqu.I("person_id").Eq(p.PersonID),
-	).ToSQL(); err != nil {
-		logger.Log.Error(err)
-		return err
-	}
-
-	if _, err = db.Exec(sqlr, args...); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// UpdatePersonAESKey updates the given person AES key.
-func (db *SQLiteDataStore) UpdatePersonAESKey(p models.Person) error {
-	var (
-		err  error
-		sqlr string
-		args []interface{}
-	)
-
-	dialect := goqu.Dialect("sqlite3")
-	tablePerson := goqu.T("person")
-
-	if sqlr, args, err = dialect.Update(tablePerson).Set(
-		goqu.Record{
-			"person_aeskey": p.PersonAESKey,
-		},
-	).Where(
-		goqu.I("person_id").Eq(p.PersonID),
-	).ToSQL(); err != nil {
-		logger.Log.Error(err)
-		return err
-	}
-
-	if _, err = db.Exec(sqlr, args...); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 // UpdatePerson updates the given person.

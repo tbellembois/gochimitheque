@@ -16,6 +16,10 @@ import (
 	"path"
 	"strings"
 
+	"github.com/coreos/go-oidc/v3/oidc"
+	"golang.org/x/net/context"
+	"golang.org/x/oauth2"
+
 	zmq "github.com/pebbe/zmq4"
 
 	"github.com/gorilla/mux"
@@ -23,9 +27,7 @@ import (
 	"github.com/tbellembois/gochimitheque/casbin"
 	"github.com/tbellembois/gochimitheque/datastores"
 	"github.com/tbellembois/gochimitheque/handlers"
-	"github.com/tbellembois/gochimitheque/ldap"
 	"github.com/tbellembois/gochimitheque/logger"
-	"github.com/tbellembois/gochimitheque/mailer"
 	"github.com/tbellembois/gochimitheque/models"
 	"github.com/tbellembois/gochimitheque/static/localejs"
 	"github.com/tbellembois/gochimitheque/zmqclient"
@@ -39,16 +41,12 @@ var (
 	paramAdminList,
 	paramLogFile,
 	commandImportFrom,
-	commandMailTest,
-	commandLDAPSearchUserTest,
-	commandLDAPSearchGroupTest *string
+	commandMailTest *string
 	paramPublicProductsEndpoint,
-	commandResetAdminPassword,
 	commandUpdateQRCode,
 	paramDebug,
 	commandVersion,
-	commandGenLocaleJS,
-	paramDisableCache *bool
+	commandGenLocaleJS *bool
 	BuildID string
 
 	//go:embed wasm/*
@@ -75,77 +73,54 @@ func init() {
 	flagAppPath := flag.String("apppath", "/", "the application path with the trailing /")
 	flagDockerPort := flag.Int("dockerport", 0, "application listen port while running in docker")
 
-	flagMailServerAddress := flag.String("mailserveraddress", "localhost", "the mail server address")
-	flagMailServerPort := flag.String("mailserverport", "25", "the SMTP server port")
-	flagMailServerSender := flag.String("mailserversender", "", "the SMTP server sender")
-	flagMailServerUseTLS := flag.Bool("mailserverusetls", false, "use SMTP TLS? (optional)")
-	flagMailServerTLSSkipVerify := flag.Bool("mailservertlsskipverify", false, "skip SMTP TLS verification? (optional)")
 	flagPublicProductsEndpoint := flag.Bool("enablepublicproductsendpoint", false, "enable public products endpoint (optional)")
-
-	flagLDAPServerURL := flag.String("ldapserverurl", "", "the LDAP server address - ex: ldaps://192.168.1.50:636/ou=users,dc=foo,dc=local")
-	flagLDAPServerUsername := flag.String("ldapserverusername", "", "the LDAP server username - ex: CN=adminro,OU=FOO,OU=local,OU=users,DC=foo,DC=local")
-	flagLDAPServerPassword := flag.String("ldapserverpassword", "", "the LDAP server password")
-	flagLDAPGroupSearchBaseDN := flag.String("ldapgroupsearchbasedn", "", "the LDAP group search base DN - ex: OU=groups,DC=foo,DC=local")
-	flagLDAPGroupSearchFilter := flag.String("ldapgroupsearchfilter", "", "the LDAP group search filter - ex: (cn=%s)")
-	flagLDAPUserSearchBaseDN := flag.String("ldapusersearchbasedn", "", "the LDAP user search base DN - ex: OU=users,DC=foo,DC=local")
-	flagLDAPUserSearchFilter := flag.String("ldapusersearchfilter", "", "the LDAP user search filter - ex: (&(mail=%s)(objectclass=user))")
-	flagAutoCreateUser := flag.Bool("autocreateuser", false, "auto create user if proxy authentication is used")
-
 	flagAdminList := flag.String("admins", "", "the additional admins (comma separated email adresses) (optional) ")
 	flagLogFile := flag.String("logfile", "", "log to the given file (optional)")
 	flagDebug := flag.Bool("debug", false, "debug (verbose log), default is error")
-	flagDisableCache := flag.Bool("disablecache", false, "disable the cache (development only)")
 
 	// One shot commands.
-	flagResetAdminPassword := flag.Bool("resetadminpassword", false, "reset the admin password to `chimitheque`")
 	flagUpdateQRCode := flag.Bool("updateqrcode", false, "regenerate storages QR codes")
 	flagVersion := flag.Bool("version", false, "display application version")
 	flagImportFrom := flag.String("importfrom", "", "base URL of the external Chimithèque instance (running with -enablepublicproductsendpoint) to import products from")
 	flagGenLocaleJS := flag.Bool("genlocalejs", false, "generate JS locales (developper target)")
-
-	flagMailTest := flag.String("mailtest", "", "send a test mail")
-	flagLDAPSearchUserTest := flag.String("ldapsearchusertest", "", "test an LDAP user search")
-	flagLDAPSearchGroupTest := flag.String("ldapsearchgrouptest", "", "test an LDAP group search")
 
 	flag.Parse()
 
 	env.AppURL = *flagAppURL
 	env.AppPath = *flagAppPath
 	env.DockerPort = *flagDockerPort
-	env.AutoCreateUser = *flagAutoCreateUser
-	ldap.LDAPServerURL = *flagLDAPServerURL
-	ldap.LDAPServerUsername = *flagLDAPServerUsername
-	ldap.LDAPServerPassword = *flagLDAPServerPassword
-	ldap.LDAPGroupSearchBaseDN = *flagLDAPGroupSearchBaseDN
-	ldap.LDAPGroupSearchFilter = *flagLDAPGroupSearchFilter
-	ldap.LDAPUserSearchBaseDN = *flagLDAPUserSearchBaseDN
-	ldap.LDAPUserSearchFilter = *flagLDAPUserSearchFilter
+
+	var err error
+	if env.OIDCProvider, err = oidc.NewProvider(context.Background(), "http://localhost:7001"); err != nil {
+		panic(err)
+	}
+	env.OIDCConfig = &oidc.Config{
+		ClientID: "43cad0947da6e5aaaa44",
+	}
+	env.OIDCVerifier = env.OIDCProvider.Verifier(env.OIDCConfig)
+	env.OAuth2Config = oauth2.Config{
+		ClientID:     "43cad0947da6e5aaaa44",
+		ClientSecret: "3b81adc9db9ad4c05bc2517165c2a1186c0dd5c0",
+		Endpoint:     env.OIDCProvider.Endpoint(),
+		RedirectURL:  "http://localhost:8081/callback",
+		Scopes:       []string{oidc.ScopeOpenID, "profile", "email"},
+	}
+
 	paramDBPath = flagDBPath
-	mailer.MailServerAddress = *flagMailServerAddress
-	mailer.MailServerPort = *flagMailServerPort
-	mailer.MailServerSender = *flagMailServerSender
-	mailer.MailServerUseTLS = *flagMailServerUseTLS
-	mailer.MailServerTLSSkipVerify = *flagMailServerTLSSkipVerify
+
 	paramPublicProductsEndpoint = flagPublicProductsEndpoint
 	paramAdminList = flagAdminList
 	paramLogFile = flagLogFile
 	paramDebug = flagDebug
-	paramDisableCache = flagDisableCache
 
-	commandResetAdminPassword = flagResetAdminPassword
 	commandUpdateQRCode = flagUpdateQRCode
 	commandVersion = flagVersion
 	commandImportFrom = flagImportFrom
 	commandGenLocaleJS = flagGenLocaleJS
 
-	commandMailTest = flagMailTest
-	commandLDAPSearchUserTest = flagLDAPSearchUserTest
-	commandLDAPSearchGroupTest = flagLDAPSearchGroupTest
-
 	env.AppFullURL = env.AppURL + env.AppPath
 	env.BuildID = BuildID
 
-	var err error
 	if zmqclient.Zctx, err = zmq.NewContext(); err != nil {
 		panic(err)
 	}
@@ -179,16 +154,6 @@ func initLogger() {
 		logger.LogInternal.SetOutput(internalServerErrorLogFile)
 		logger.LogInternal.SetReportCaller(true)
 	}
-}
-
-func initLDAP() {
-
-	var err error
-
-	if env.LDAPConnection, err = ldap.Connect(); err != nil {
-		logger.Log.Fatal(err)
-	}
-
 }
 
 func initDB() {
@@ -301,12 +266,11 @@ func main() {
 	initLogger()
 
 	logger.Log.WithFields(logrus.Fields{
-		"commandResetAdminPassword": commandResetAdminPassword,
-		"commandUpdateQRCode":       commandUpdateQRCode,
-		"commandVersion":            commandVersion,
-		"commandMailTest":           commandMailTest,
-		"commandImportFrom":         commandImportFrom,
-		"commandGenLocaleJS":        commandGenLocaleJS,
+		"commandUpdateQRCode": commandUpdateQRCode,
+		"commandVersion":      commandVersion,
+		"commandMailTest":     commandMailTest,
+		"commandImportFrom":   commandImportFrom,
+		"commandGenLocaleJS":  commandGenLocaleJS,
 	}).Debug("main")
 
 	logger.Log.Debugf("- env: %+v", env)
@@ -315,29 +279,10 @@ func main() {
 
 	initDB()
 
-	initLDAP()
-
 	// Advanced commands.
 	if *commandImportFrom != "" {
 		logger.Log.Info("- import from URL into database")
 		err := env.DB.Import(*commandImportFrom)
-		if err != nil {
-			logger.Log.Error("an error occurred: " + err.Error())
-			os.Exit(1)
-		}
-
-		os.Exit(0)
-	}
-
-	if *commandResetAdminPassword {
-		logger.Log.Info("- reseting admin password to `chimitheque`")
-		a, err := env.DB.GetPersonByEmail("admin@chimitheque.fr")
-		if err != nil {
-			logger.Log.Error("an error occurred: " + err.Error())
-			os.Exit(1)
-		}
-		a.PersonPassword = "chimitheque"
-		err = env.DB.UpdatePersonPassword(a)
 		if err != nil {
 			logger.Log.Error("an error occurred: " + err.Error())
 			os.Exit(1)
@@ -352,52 +297,6 @@ func main() {
 		if err != nil {
 			logger.Log.Error("an error occurred: " + err.Error())
 			os.Exit(1)
-		}
-
-		os.Exit(0)
-	}
-
-	if *commandMailTest != "" {
-		logger.Log.Info("- sending a mail to " + *commandMailTest)
-		err := mailer.TestMail(*commandMailTest)
-		if err != nil {
-			logger.Log.Error("an error occurred: " + err.Error())
-			os.Exit(1)
-		}
-
-		os.Exit(0)
-	}
-
-	if *commandLDAPSearchUserTest != "" {
-		logger.Log.Info("- searching user in LDAP: " + *commandLDAPSearchUserTest)
-		result, err := ldap.TestSearchUser(*commandLDAPSearchUserTest)
-		if err != nil {
-			logger.Log.Error("an error occurred: " + err.Error())
-			os.Exit(1)
-		}
-
-		if result.NbResults > 0 {
-			logger.Log.Info(fmt.Sprintf("%+v", result.R.Entries[0]))
-			for _, a := range result.R.Entries[0].Attributes {
-				logger.Log.Info(fmt.Sprintf("- %s: %s", a.Name, a.Values))
-			}
-		}
-
-		os.Exit(0)
-	}
-
-	if *commandLDAPSearchGroupTest != "" {
-		logger.Log.Info("- searching group in LDAP: " + *commandLDAPSearchGroupTest)
-		result, err := ldap.TestSearchGroup(*commandLDAPSearchGroupTest)
-		if err != nil {
-			logger.Log.Error("an error occurred: " + err.Error())
-			os.Exit(1)
-		}
-
-		if result.NbResults > 0 {
-			for _, a := range result.R.Entries {
-				logger.Log.Info(fmt.Sprintf("- %v", a))
-			}
 		}
 
 		os.Exit(0)

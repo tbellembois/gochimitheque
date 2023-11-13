@@ -1,6 +1,6 @@
 package datastores
 
-var versionToMigration = []string{migrationOne, migrationTwo, migrationThree, migrationFour, migrationFive, migrationSix, migrationSeven, migrationEight}
+var versionToMigration = []string{migrationOne, migrationTwo, migrationThree, migrationFour, migrationFive, migrationSix, migrationSeven, migrationEight, migrationNine}
 
 var migrationOne = `BEGIN TRANSACTION;
 
@@ -524,4 +524,12 @@ INSERT INTO hazardstatement (hazardstatement_label, hazardstatement_reference) V
 
 PRAGMA user_version=8;
 COMMIT;
+PRAGMA foreign_keys=on;`
+
+var migrationNine = `PRAGMA foreign_keys=off;
+
+ALTER TABLE person DROP COLUMN person_password;
+ALTER TABLE person DROP COLUMN person_aeskey;
+
+PRAGMA user_version=9;
 PRAGMA foreign_keys=on;`
