@@ -5,22 +5,23 @@
 package main
 
 // compile with:
-// BuildID="v2.0.8" && go build -ldflags "-X main.BuildID=$BuildID".
+// BuildID="v2.1.0" && go build -ldflags "-X main.BuildID=$BuildID".
 import (
 	"database/sql"
 	"embed"
+	"errors"
 	"flag"
 	"fmt"
 	"net/http"
 	"os"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/coreos/go-oidc/v3/oidc"
+	zmq "github.com/pebbe/zmq4"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
-
-	zmq "github.com/pebbe/zmq4"
 
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
@@ -38,8 +39,7 @@ var (
 
 	// Starting parameters and commands.
 	paramDBPath,
-	paramAdminList,
-	paramLogFile *string
+	paramAdminList *string
 	paramPublicProductsEndpoint,
 	commandUpdateQRCode,
 	paramDebug,
@@ -53,15 +53,6 @@ var (
 	embedStaticBox embed.FS
 )
 
-// TimeTrack displays the run time of the function "name"
-// from the start time "start"
-// use: defer utils.TimeTrack(time.Now(), "GetProducts")
-// at the beginning of the function to track
-// func TimeTrack(start time.Time, name string) {
-// 	elapsed := time.Since(start)
-// 	logger.Log.Debug(fmt.Sprintf("%s took %s", name, elapsed))
-// }
-
 func init() {
 	env = handlers.NewEnv()
 
@@ -71,9 +62,12 @@ func init() {
 	flagAppPath := flag.String("apppath", "/", "the application path with the trailing /")
 	flagDockerPort := flag.Int("dockerport", 0, "application listen port while running in docker")
 
+	flagOIDCISSUER := flag.String("oidcissuer", "http://localhost:8000", "the OIDC issuer URL")
+	flagOIDCClientID := flag.String("oidcclientid", "", "the OIDC client ID")
+	flagOIDCClientSecret := flag.String("oidcclientsecret", "", "the OIDC client secret")
+
 	flagPublicProductsEndpoint := flag.Bool("enablepublicproductsendpoint", false, "enable public products endpoint (optional)")
 	flagAdminList := flag.String("admins", "", "the additional admins (comma separated email adresses) (optional) ")
-	flagLogFile := flag.String("logfile", "", "log to the given file (optional)")
 	flagDebug := flag.Bool("debug", false, "debug (verbose log), default is error")
 
 	// One shot commands.
@@ -86,28 +80,13 @@ func init() {
 	env.AppURL = *flagAppURL
 	env.AppPath = *flagAppPath
 	env.DockerPort = *flagDockerPort
-
-	var err error
-	if env.OIDCProvider, err = oidc.NewProvider(context.Background(), "http://localhost:7001"); err != nil {
-		panic(err)
-	}
-	env.OIDCConfig = &oidc.Config{
-		ClientID: "43cad0947da6e5aaaa44",
-	}
-	env.OIDCVerifier = env.OIDCProvider.Verifier(env.OIDCConfig)
-	env.OAuth2Config = oauth2.Config{
-		ClientID:     "43cad0947da6e5aaaa44",
-		ClientSecret: "3b81adc9db9ad4c05bc2517165c2a1186c0dd5c0",
-		Endpoint:     env.OIDCProvider.Endpoint(),
-		RedirectURL:  "http://localhost:8081/callback",
-		Scopes:       []string{oidc.ScopeOpenID, "profile", "email"},
-	}
+	env.OIDCIssuer = *flagOIDCISSUER
+	env.OIDCClientID = *flagOIDCClientID
+	env.OIDCClientSecret = *flagOIDCClientSecret
 
 	paramDBPath = flagDBPath
-
 	paramPublicProductsEndpoint = flagPublicProductsEndpoint
 	paramAdminList = flagAdminList
-	paramLogFile = flagLogFile
 	paramDebug = flagDebug
 
 	commandUpdateQRCode = flagUpdateQRCode
@@ -116,40 +95,37 @@ func init() {
 
 	env.AppFullURL = env.AppURL + env.AppPath
 	env.BuildID = BuildID
-
-	if zmqclient.Zctx, err = zmq.NewContext(); err != nil {
-		panic(err)
-	}
-
 }
 
 func initLogger() {
-	var err error
-
 	if *paramDebug {
 		logger.Log.SetLevel(logrus.DebugLevel)
 	} else {
 		logger.Log.SetLevel(logrus.InfoLevel)
 	}
+}
 
-	if *paramLogFile != "" {
-		var commandLineLogFile *os.File
+func initOIDC() {
 
-		if commandLineLogFile, err = os.OpenFile(*paramLogFile, os.O_WRONLY|os.O_CREATE, 0o755); err != nil {
-			logger.Log.Fatal(err)
-		} else {
-			logger.Log.SetOutput(commandLineLogFile)
-		}
+	var err error = errors.New("fake")
+	for err != nil {
+		env.OIDCProvider, err = oidc.NewProvider(context.Background(), env.OIDCIssuer)
+		logger.Log.Info("- sleeping 2 seconds waiting for OIDC issuer " + env.OIDCIssuer)
+		time.Sleep(2 * time.Second)
 	}
 
-	var internalServerErrorLogFile *os.File
-
-	if internalServerErrorLogFile, err = os.OpenFile(path.Join(*paramDBPath, "server_errors.log"), os.O_WRONLY|os.O_CREATE, 0o755); err != nil {
-		logger.Log.Fatal(err)
-	} else {
-		logger.LogInternal.SetOutput(internalServerErrorLogFile)
-		logger.LogInternal.SetReportCaller(true)
+	env.OIDCConfig = &oidc.Config{
+		ClientID: env.OIDCClientID,
 	}
+	env.OIDCVerifier = env.OIDCProvider.Verifier(env.OIDCConfig)
+	env.OAuth2Config = oauth2.Config{
+		ClientID:     env.OIDCClientID,
+		ClientSecret: env.OIDCClientSecret,
+		Endpoint:     env.OIDCProvider.Endpoint(),
+		RedirectURL:  env.AppURL + env.AppPath + "callback",
+		Scopes:       []string{oidc.ScopeOpenID, "profile", "email"},
+	}
+
 }
 
 func initDB() {
@@ -235,16 +211,6 @@ func initStaticResources(router *mux.Router) {
 	http.Handle("/", router)
 }
 
-// @title Chimithèque API
-// @version 2.0
-// @description Chemical product management application.
-// @contact.name Thomas Bellembois
-// @contact.url https://github.com/tbellembois
-// @contact.email thomas.bellembois@gmail.com
-// @license.name GNU General Public License v3.0
-// @license.url https://www.gnu.org/licenses/gpl-3.0.html
-// @host localhost:8081
-// @BasePath /.
 func main() {
 	var err error
 
@@ -261,17 +227,23 @@ func main() {
 
 	initLogger()
 
+	if zmqclient.Zctx, err = zmq.NewContext(); err != nil {
+		panic(err)
+	}
+
 	logger.Log.WithFields(logrus.Fields{
 		"commandUpdateQRCode": commandUpdateQRCode,
 		"commandVersion":      commandVersion,
 		"commandGenLocaleJS":  commandGenLocaleJS,
 	}).Debug("main")
 
+	initDB()
+
+	initOIDC()
+
 	logger.Log.Debugf("- env: %+v", env)
 	logger.Log.Info("- application version: " + env.BuildID)
 	logger.Log.Info("- application endpoint: " + env.AppFullURL)
-
-	initDB()
 
 	// Advanced commands.
 	if *commandUpdateQRCode {

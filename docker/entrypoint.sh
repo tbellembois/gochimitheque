@@ -3,9 +3,11 @@
 appurl=""
 apppath=""
 dockerport=""
+oidcissuer=""
+oidcclientid=""
+oidcclientsecret=""
 enablepublicproductsendpoint=""
 admins=""
-logfile=""
 debug=""
 updateQRCode=""
 
@@ -26,6 +28,22 @@ then
       apppath="-apppath $CHIMITHEQUE_APPPATH"
       echo $apppath
 fi
+if [ ! -z "$CHIMITHEQUE_OIDCISSUER" ]
+then
+      oidcissuer="-oidcissuer $CHIMITHEQUE_OIDCISSUER"
+      echo $oidcissuer
+fi
+if [ ! -z "$CHIMITHEQUE_OIDCCLIENTID" ]
+then
+      oidcclientid="-oidcclientid $CHIMITHEQUE_OIDCCLIENTID"
+      echo $oidcclientid
+fi
+if [ ! -z "$CHIMITHEQUE_OIDCCLIENTSECRET" ]
+then
+      oidcclientsecret="-oidcclientsecret $CHIMITHEQUE_OIDCCLIENTSECRET"
+      echo $oidcclientsecret
+fi
+
 if [ ! -z "$CHIMITHEQUE_ENABLEPUBLICPRODUCTSENDPOINT" ]
 then
       enablepublicproductsendpoint="-enablepublicproductsendpoint"
@@ -41,11 +59,6 @@ then
       debug="-debug"
       echo $debug
 fi
-if [ ! -z "$CHIMITHEQUE_LOGFILE" ]
-then
-      logfile="-logfile $CHIMITHEQUE_LOGFILE"
-      echo $logfile
-fi
 
 if [ ! -z "$CHIMITHEQUE_UPDATEQRCODE" ]
 then
@@ -58,7 +71,7 @@ echo "command:"
 echo $command
 $command &
 
-command="/var/www-data/gochimitheque -dbpath /data $listenport $appurl $apppath $dockerport $enablepublicproductsendpoint $admins $logfile $debug $updateQRCode"
+command="/var/www-data/gochimitheque -dbpath /data $listenport $appurl $apppath $dockerport $oidcissuer $oidcclientid $oidcclientsecret $enablepublicproductsendpoint $admins $debug $updateQRCode"
 echo "command:"
 echo $command
 $command

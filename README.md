@@ -122,7 +122,7 @@ Create the data directories for the Nginx and Chimithèque containers:
 
 Retrieve the Nginx configuration:
 ```bash
-  wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/documents/system/nginx-chimitheque.conf -O /data/docker-nginx/nginx-templates/default.conf.template
+  wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/documents/system/default.conf.template -O /data/docker-nginx/nginx-templates/default.conf.template
 ```
 
 Start up:

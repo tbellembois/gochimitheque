@@ -2,7 +2,7 @@ version: '3.8'
 services:
     nginx:
         container_name: nginx
-        image: nginx:1.19
+        image: nginx:1.25
         restart: unless-stopped
         ports:
             - 443:443
@@ -15,36 +15,63 @@ services:
             - /data/docker-nginx/nginx-templates:/etc/nginx/templates
         networks:
             - chimitheque
+        depends_on:
+            - casdoor
+            - chimitheque
+    casdoor:
+        container_name: casdoor
+        image: casbin/casdoor:v1.454.0
+        restart: unless-stopped
+        entrypoint: /bin/sh -c './server'
+        # entrypoint: /bin/sh -c './server --createDatabase=true'
+        # ports:
+        #     - "8000:8000"
+        environment:
+            - RUNNING_IN_DOCKER=true
+            - httpport=8000
+            - runmode=dev
+            - driverName=sqlite
+            - dataSourceName=file:/data/casdoor.db?cache=shared
+            - dbName=casdoor
+            - showSql=true
+            - origin=http://192.168.1.62
+        volumes:
+            - /data/docker-casdoor/casdoor-db:/data
+            - /data/docker-casdoor/casdoor-init/init_data.json:/init_data.json:ro
+        networks:
+            - chimitheque
     chimitheque:
         container_name: chimitheque
         # Always choose the "production" image.
         # development
         #image: tbellembois/gochimitheque:latest
         # production
-        image: tbellembois/gochimitheque:2.0.8
+        image: tbellembois/gochimitheque:2.1.0
         restart: unless-stopped
         environment:
             # enable debug logs - not recommended in production
-            - CHIMITHEQUE_DEBUG=false
+            - CHIMITHEQUE_DEBUG=true
             # application path, with a trailing /
             - CHIMITHEQUE_APPPATH=/chimitheque/
             # application url
-            - CHIMITHEQUE_APPURL=http://localhost:8081
+            - CHIMITHEQUE_APPURL=http://192.168.1.62
             # you should not have any reason to change this
             - CHIMITHEQUE_DOCKERPORT=8081
-             # share your product database
+            # OIDC issuer URL
+            - CHIMITHEQUE_OIDCISSUER=http://192.168.1.62
+            # OIDC client ID
+            - CHIMITHEQUE_OIDCCLIENTID=chimitheque
+            # OIDC client secret
+            - CHIMITHEQUE_OIDCCLIENTSECRET=chimitheque
+            # share your product database
             - CHIMITHEQUE_ENABLEPUBLICPRODUCTSENDPOINT=true
             # list of admins
-            - CHIMITHEQUE_ADMINS=admin@foo.com,bar@foo.com
-            # log file
-            - CHIMITHEQUE_LOGFILE=/var/log/chimitheque.log
+            #- CHIMITHEQUE_ADMINS=admin@foo.com,bar@foo.com
             # one shot command: update storages QR codes
             # - CHIMITHEQUE_UPDATEQRCODE=true
         volumes:
             - /data/docker-chimitheque/chimitheque-db:/data
         networks:
             - chimitheque
-        depends_on:
-            - nginx
 networks:
     chimitheque:

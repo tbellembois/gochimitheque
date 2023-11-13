@@ -33,8 +33,6 @@ type Env struct {
 
 	// AutoCreateUser is used with a proxy authentication
 	AutoCreateUser bool
-	// TokenSignKey is the JWT token signing key
-	TokenSignKey []byte
 	// AppPath is the application proxy path if behind a proxy
 	// "/"" by default
 	AppPath string
@@ -52,22 +50,15 @@ type Env struct {
 	DisableCache bool
 
 	// OIDC parameters
-	OIDCProvider *oidc.Provider
-	OIDCVerifier *oidc.IDTokenVerifier
-	OIDCConfig   *oidc.Config
-	OAuth2Config oauth2.Config
+	OIDCIssuer       string
+	OIDCClientID     string
+	OIDCClientSecret string
+	OIDCProvider     *oidc.Provider
+	OIDCVerifier     *oidc.IDTokenVerifier
+	OIDCConfig       *oidc.Config
+	OAuth2Config     oauth2.Config
 }
 
 func NewEnv() Env {
-	var (
-		env Env
-		err error
-	)
-
-	// Generate JWT signing key.
-	if env.TokenSignKey, err = genSymmetricKey(64); err != nil {
-		panic(err)
-	}
-
-	return env
+	return Env{}
 }

@@ -26,7 +26,7 @@ func (env *Env) AppMiddleware(h models.AppHandlerFunc) http.Handler {
 				logger.Log.Error(e.Message + "-" + e.OriginalError.Error())
 
 				if e.Code == http.StatusInternalServerError {
-					logger.LogInternal.Error(e.Message + "-" + e.OriginalError.Error())
+					logger.Log.Error(e.Message + "-" + e.OriginalError.Error())
 				}
 
 				http.Error(w, e.Message+"-"+e.OriginalError.Error(), e.Code)
