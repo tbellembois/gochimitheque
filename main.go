@@ -39,9 +39,7 @@ var (
 	// Starting parameters and commands.
 	paramDBPath,
 	paramAdminList,
-	paramLogFile,
-	commandImportFrom,
-	commandMailTest *string
+	paramLogFile *string
 	paramPublicProductsEndpoint,
 	commandUpdateQRCode,
 	paramDebug,
@@ -81,7 +79,6 @@ func init() {
 	// One shot commands.
 	flagUpdateQRCode := flag.Bool("updateqrcode", false, "regenerate storages QR codes")
 	flagVersion := flag.Bool("version", false, "display application version")
-	flagImportFrom := flag.String("importfrom", "", "base URL of the external Chimithèque instance (running with -enablepublicproductsendpoint) to import products from")
 	flagGenLocaleJS := flag.Bool("genlocalejs", false, "generate JS locales (developper target)")
 
 	flag.Parse()
@@ -115,7 +112,6 @@ func init() {
 
 	commandUpdateQRCode = flagUpdateQRCode
 	commandVersion = flagVersion
-	commandImportFrom = flagImportFrom
 	commandGenLocaleJS = flagGenLocaleJS
 
 	env.AppFullURL = env.AppURL + env.AppPath
@@ -268,8 +264,6 @@ func main() {
 	logger.Log.WithFields(logrus.Fields{
 		"commandUpdateQRCode": commandUpdateQRCode,
 		"commandVersion":      commandVersion,
-		"commandMailTest":     commandMailTest,
-		"commandImportFrom":   commandImportFrom,
 		"commandGenLocaleJS":  commandGenLocaleJS,
 	}).Debug("main")
 
@@ -280,17 +274,6 @@ func main() {
 	initDB()
 
 	// Advanced commands.
-	if *commandImportFrom != "" {
-		logger.Log.Info("- import from URL into database")
-		err := env.DB.Import(*commandImportFrom)
-		if err != nil {
-			logger.Log.Error("an error occurred: " + err.Error())
-			os.Exit(1)
-		}
-
-		os.Exit(0)
-	}
-
 	if *commandUpdateQRCode {
 		logger.Log.Info("- updating storages QR codes")
 		err := env.DB.UpdateAllQRCodes()

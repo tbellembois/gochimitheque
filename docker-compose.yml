@@ -32,37 +32,14 @@ services:
             - CHIMITHEQUE_APPURL=http://localhost:8081
             # you should not have any reason to change this
             - CHIMITHEQUE_DOCKERPORT=8081
-            # SMTP server parameters
-            - CHIMITHEQUE_MAILSERVERADDRESS=smtp.foo.com
-            - CHIMITHEQUE_MAILSERVERPORT=467
-            - CHIMITHEQUE_MAILSERVERSENDER=noreply@foo.com
-            - CHIMITHEQUE_MAILSERVERUSETLS=true
-            # share your product database
+             # share your product database
             - CHIMITHEQUE_ENABLEPUBLICPRODUCTSENDPOINT=true
             # list of admins
             - CHIMITHEQUE_ADMINS=admin@foo.com,bar@foo.com
             # log file
             - CHIMITHEQUE_LOGFILE=/var/log/chimitheque.log
-            # LDAP server parameters
-            - CHIMITHEQUE_LDAPSERVERURL=ldaps://ldapserver.foo.fr/ou=users,dc=foo,dc=fr
-            - CHIMITHEQUE_LDAPSERVERUSERNAME=CN=admin,OU=users,OU=local,DC=users,DC=fr
-            - CHIMITHEQUE_LDAPSERVERPASSWORD=password
-            - CHIMITHEQUE_LDAPUSERSEARCHBASEDN=OU=users,DC=foo,DC=fr
-            - CHIMITHEQUE_LDAPGROUPSEARCHBASEDN=OU=users,DC=foo,DC=fr
-            # memberOf attribute must be provided by the LDAP server
-            - CHIMITHEQUE_LDAPUSERSEARCHFILTER=(&(mail=%s)(objectclass=user))
-            # cn attribute must be provided by the LDAP server
-            - CHIMITHEQUE_LDAPGROUPSEARCHFILTER=(cn=%s)
-            # auto create users in db with LDAP authentication
-            # - CHIMITHEQUE_AUTOCREATEUSER=true
-            # one shot command: reset admin password
-            # - CHIMITHEQUE_RESETADMINPASSWORD=true
             # one shot command: update storages QR codes
             # - CHIMITHEQUE_UPDATEQRCODE=true
-            # one shot command: test your SMTP server parameters
-            # - CHIMITHEQUE_MAILTEST=john.do@foo.com
-            # one shot command: initial product database import
-        #     - CHIMITHEQUE_IMPORTFROM=https://chimitheque.ens-lyon.fr
         volumes:
             - /data/docker-chimitheque/chimitheque-db:/data
         networks:

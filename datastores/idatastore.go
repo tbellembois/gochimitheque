@@ -16,7 +16,6 @@ type Datastore interface {
 	Maintenance()
 
 	CreateDatabase() error
-	Import(url string) error
 	ToCasbinJSONAdapter() ([]byte, error)
 
 	GetWelcomeAnnounce() (models.WelcomeAnnounce, error)
