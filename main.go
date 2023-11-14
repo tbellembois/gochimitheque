@@ -39,7 +39,8 @@ var (
 
 	// Starting parameters and commands.
 	paramDBPath,
-	paramAdminList *string
+	paramAdminList,
+	paramAutoImportURL *string
 	paramPublicProductsEndpoint,
 	commandUpdateQRCode,
 	paramDebug,
@@ -68,6 +69,7 @@ func init() {
 
 	flagPublicProductsEndpoint := flag.Bool("enablepublicproductsendpoint", false, "enable public products endpoint (optional)")
 	flagAdminList := flag.String("admins", "", "the additional admins (comma separated email adresses) (optional) ")
+	flagAutoImportURL := flag.String("autoimporturl", "", "the URL of the chimitheque instance to import initial products (optional) ")
 	flagDebug := flag.Bool("debug", false, "debug (verbose log), default is error")
 
 	// One shot commands.
@@ -87,6 +89,7 @@ func init() {
 	paramDBPath = flagDBPath
 	paramPublicProductsEndpoint = flagPublicProductsEndpoint
 	paramAdminList = flagAdminList
+	paramAutoImportURL = flagAutoImportURL
 	paramDebug = flagDebug
 
 	commandUpdateQRCode = flagUpdateQRCode
@@ -149,6 +152,20 @@ func initDB() {
 	datastore.Maintenance()
 
 	env.DB = datastore
+
+	var productCount int
+
+	if productCount, err = env.DB.CountProducts(); err != nil {
+		logger.Log.Fatal(err)
+	}
+
+	if productCount == 0 && paramAutoImportURL != nil {
+		logger.Log.Info("- importing initial product list from " + *paramAutoImportURL)
+		if err = env.DB.Import(*paramAutoImportURL); err != nil {
+			logger.Log.Fatal(err)
+		}
+	}
+
 }
 
 func initAdmins() {
@@ -192,7 +209,10 @@ func initAdmins() {
 			logger.Log.Info("additional admin: " + ca)
 			if p, err = env.DB.GetPersonByEmail(ca); err != nil {
 				if err == sql.ErrNoRows {
-					logger.Log.Fatal("user " + ca + " not found in database")
+					logger.Log.Info("user " + ca + " not found in database, creating it")
+					if _, err = env.DB.CreatePerson(models.Person{PersonEmail: ca}); err != nil {
+						logger.Log.Fatal(err)
+					}
 				} else {
 					logger.Log.Fatal(err)
 				}
@@ -228,7 +248,7 @@ func main() {
 	initLogger()
 
 	if zmqclient.Zctx, err = zmq.NewContext(); err != nil {
-		panic(err)
+		logger.Log.Fatal(err)
 	}
 
 	logger.Log.WithFields(logrus.Fields{

@@ -9,7 +9,8 @@ oidcclientsecret=""
 enablepublicproductsendpoint=""
 admins=""
 debug=""
-updateQRCode=""
+updateqrcode=""
+autoimporturl=""
 
 echo "parameters:"
 
@@ -59,11 +60,16 @@ then
       debug="-debug"
       echo $debug
 fi
+if [ ! -z "$CHIMITHEQUE_AUTOIMPORT_URL" ]
+then
+      autoimporturl="-autoimporturl $CHIMITHEQUE_AUTOIMPORT_URL"
+      echo $autoimporturl
+fi
 
 if [ ! -z "$CHIMITHEQUE_UPDATEQRCODE" ]
 then
-      updateQRCode="-updateqrcode"
-      echo $updateQRCode
+      updateqrcode="-updateqrcode"
+      echo $updateqrcode
 fi
 
 command="/var/www-data/chimitheque_utils_service"
@@ -71,7 +77,7 @@ echo "command:"
 echo $command
 $command &
 
-command="/var/www-data/gochimitheque -dbpath /data $listenport $appurl $apppath $dockerport $oidcissuer $oidcclientid $oidcclientsecret $enablepublicproductsendpoint $admins $debug $updateQRCode"
+command="/var/www-data/gochimitheque -dbpath /data $listenport $appurl $apppath $dockerport $oidcissuer $oidcclientid $oidcclientsecret $enablepublicproductsendpoint $admins $debug $autoimporturl $updateqrcode"
 echo "command:"
 echo $command
 $command

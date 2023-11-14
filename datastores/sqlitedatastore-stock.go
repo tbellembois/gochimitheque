@@ -305,7 +305,6 @@ func (db *SQLiteDataStore) computeStockStorelocationNoUnit(p models.Product, s *
 // ComputeStockEntity returns the root store locations of the entity(ies) of the loggued user.
 // Each store location has a Stocks []models.Stock field containing the stocks of the product p for each unit.
 func (db *SQLiteDataStore) ComputeStockEntity(p models.Product, r *http.Request) []models.StoreLocation {
-
 	var (
 		units              []models.Unit // reference units
 		syncstorelocations []SyncStoreLocation

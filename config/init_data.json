@@ -1,9 +1,9 @@
 {
     "organizations": [
         {
-            "owner": "admin",
-            "name": "test",
-            "displayName": "test",
+            "owner": "chimitheque",
+            "name": "chimitheque",
+            "displayName": "chimitheque",
             "websiteUrl": "",
             "favicon": "",
             "passwordType": "plain",
@@ -77,7 +77,7 @@
             "owner": "admin",
             "name": "chimitheque-api",
             "displayName": "Chimithèque",
-            "logo": "http://localhost/chimitheque/static/img/logo_chimitheque_small.png",
+            "logo": "",
             "homepageUrl": "",
             "organization": "built-in",
             "cert": "cert-built-in",
@@ -154,9 +154,9 @@
                 }
             ],
             "redirectUris": [
-                "http://192.168.1.62/chimitheque/callback"
+                "http://172.20.82.36/chimitheque/callback"
             ],
-            "expireInHours": 168
+            "expireInHours": 24
         }
     ],
     "users": [
@@ -166,7 +166,7 @@
             "type": "normal-user",
             "password": "chimitheque",
             "displayName": "chimitheque",
-            "avatar": "http://localhost/chimitheque/static/img/logo_chimitheque_small.png",
+            "avatar": "",
             "email": "admin@chimitheque.fr",
             "phone": "",
             "countryCode": "",

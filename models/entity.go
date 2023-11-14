@@ -7,8 +7,6 @@ type Entity struct {
 	EntityDescription string    `db:"entity_description" json:"entity_description" schema:"entity_description"`
 	Managers          []*Person `db:"-" json:"managers" schema:"managers"`
 
-	LDAPGroups []string `db:"-" json:"ldapgroups" schema:"ldapgroups"`
-
 	// total store location count
 	EntitySLC int `db:"entity_slc" json:"entity_slc" schema:"entity_slc"` // not in db but sqlx requires the "db" entry
 	// total person count

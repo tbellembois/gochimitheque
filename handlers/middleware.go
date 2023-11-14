@@ -220,17 +220,6 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 					http.Error(w, "can not edit/delete yourself", http.StatusBadRequest)
 					return
 				}
-				// we can not edit an admin
-				a, e := env.DB.IsPersonAdmin(itemidInt)
-				if e != nil {
-					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
-					http.Error(w, e.Error(), http.StatusInternalServerError)
-					return
-				}
-				if a {
-					http.Error(w, "can not delete an admin", http.StatusBadRequest)
-					return
-				}
 			}
 		case "DELETE":
 			// REST delete method

@@ -286,10 +286,10 @@ func (env *Env) UpdateEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 			Code:          http.StatusInternalServerError,
 		}
 	}
+
 	updatede.EntityName = e.EntityName
 	updatede.EntityDescription = e.EntityDescription
 	updatede.Managers = e.Managers
-	updatede.LDAPGroups = e.LDAPGroups
 
 	logger.Log.WithFields(logrus.Fields{"updatede": updatede}).Debug("UpdateEntityHandler")
 

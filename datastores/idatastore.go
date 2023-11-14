@@ -14,6 +14,7 @@ type Datastore interface {
 	GetDB() *sqlx.DB
 
 	Maintenance()
+	Import(url string) error
 
 	CreateDatabase() error
 	ToCasbinJSONAdapter() ([]byte, error)
@@ -24,6 +25,7 @@ type Datastore interface {
 	GetProducts(zmqclient.Filter, int, bool) ([]models.Product, int, error)
 	GetProduct(id int) (models.Product, error)
 	CountProductStorages(id int) (int, error)
+	CountProducts() (int, error)
 	DeleteProduct(id int) error
 	CreateUpdateProduct(p models.Product, update bool) (int64, error)
 	CreateProductBookmark(pr models.Product, pe models.Person) error

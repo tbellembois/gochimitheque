@@ -531,5 +531,7 @@ var migrationNine = `PRAGMA foreign_keys=off;
 ALTER TABLE person DROP COLUMN person_password;
 ALTER TABLE person DROP COLUMN person_aeskey;
 
+DROP TABLE entityldapgroups;
+
 PRAGMA user_version=9;
 PRAGMA foreign_keys=on;`

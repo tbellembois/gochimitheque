@@ -34,7 +34,7 @@ services:
             - dataSourceName=file:/data/casdoor.db?cache=shared
             - dbName=casdoor
             - showSql=true
-            - origin=http://192.168.1.62
+            - origin=http://172.20.82.36
         volumes:
             - /data/docker-casdoor/casdoor-db:/data
             - /data/docker-casdoor/casdoor-init/init_data.json:/init_data.json:ro
@@ -54,19 +54,21 @@ services:
             # application path, with a trailing /
             - CHIMITHEQUE_APPPATH=/chimitheque/
             # application url
-            - CHIMITHEQUE_APPURL=http://192.168.1.62
+            - CHIMITHEQUE_APPURL=http://172.20.82.36
             # you should not have any reason to change this
             - CHIMITHEQUE_DOCKERPORT=8081
             # OIDC issuer URL
-            - CHIMITHEQUE_OIDCISSUER=http://192.168.1.62
+            - CHIMITHEQUE_OIDCISSUER=http://172.20.82.36
             # OIDC client ID
             - CHIMITHEQUE_OIDCCLIENTID=chimitheque
             # OIDC client secret
             - CHIMITHEQUE_OIDCCLIENTSECRET=chimitheque
             # share your product database
             - CHIMITHEQUE_ENABLEPUBLICPRODUCTSENDPOINT=true
+            # initial autoimport URL
+            - CHIMITHEQUE_AUTOIMPORT_URL=https://chimitheque.ens-lyon.fr
             # list of admins
-            #- CHIMITHEQUE_ADMINS=admin@foo.com,bar@foo.com
+            - CHIMITHEQUE_ADMINS=bob@foo.com,bar@foo.com
             # one shot command: update storages QR codes
             # - CHIMITHEQUE_UPDATEQRCODE=true
         volumes:

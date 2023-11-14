@@ -31,6 +31,7 @@ func Empirical_formula(req string) (string, error) {
 		message []byte
 		err     error
 	)
+
 	if message, err = json.Marshal(EmpiricalFormula{
 		EmpiricalFormula: req,
 	}); err != nil {

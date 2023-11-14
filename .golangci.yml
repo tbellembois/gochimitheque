@@ -41,7 +41,6 @@ run:
   # If false (default) - golangci-lint acquires file lock on start.
   allow-parallel-runners: true
 
-
 # output configuration options
 output:
   # colored-line-number|line-number|json|tab|checkstyle|code-climate|junit-xml|github-actions
@@ -62,7 +61,6 @@ output:
 
   # sorts results by: filepath, line and column
   sort-results: false
-
 
 # all available settings of specific linters
 linters-settings:

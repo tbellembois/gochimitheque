@@ -8,8 +8,8 @@ ENV BuildID=${BuildID}
 #
 
 # Install zeromq repository and library.
-RUN echo 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/release-stable/Debian_11/ /' | tee /etc/apt/sources.list.d/network:messaging:zeromq:release-stable.list
-RUN curl -fsSL https://download.opensuse.org/repositories/network:messaging:zeromq:release-stable/Debian_11/Release.key | gpg --dearmor | tee /etc/apt/trusted.gpg.d/network_messaging_zeromq_release-stable.gpg > /dev/null
+RUN echo "deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/release-stable/Debian_11/ ./" >> /etc/apt/sources.list
+RUN wget https://download.opensuse.org/repositories/network:/messaging:/zeromq:/release-stable/Debian_11/Release.key -O- | apt-key add
 RUN apt -y update
 RUN apt -y install libzmq3-dev
 
@@ -79,8 +79,8 @@ RUN cargo build --release
 FROM golang:1.21-bullseye
 
 # Install zeromq repository and library.
-RUN echo 'deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/release-stable/Debian_11/ /' | tee /etc/apt/sources.list.d/network:messaging:zeromq:release-stable.list
-RUN curl -fsSL https://download.opensuse.org/repositories/network:messaging:zeromq:release-stable/Debian_11/Release.key | gpg --dearmor | tee /etc/apt/trusted.gpg.d/network_messaging_zeromq_release-stable.gpg > /dev/null
+RUN echo "deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/release-stable/Debian_11/ ./" >> /etc/apt/sources.list
+RUN wget https://download.opensuse.org/repositories/network:/messaging:/zeromq:/release-stable/Debian_11/Release.key -O- | apt-key add
 RUN apt -y update
 RUN apt -y install libzmq3-dev
 

@@ -192,7 +192,6 @@ func (db *SQLiteDataStore) GetEntity(id int) (models.Entity, error) {
 	dialect := goqu.Dialect("sqlite3")
 	tableEntity := goqu.T("entity")
 	tablePerson := goqu.T("person")
-	tableEntityLDAPGroups := goqu.T("entityldapgroups")
 
 	sQuery := dialect.From(tableEntity.As("e")).Where(
 		goqu.I("e.entity_id").Eq(id),
@@ -231,22 +230,6 @@ func (db *SQLiteDataStore) GetEntity(id int) (models.Entity, error) {
 	}
 
 	if err = db.Select(&entity.Managers, sqlr, args...); err != nil {
-		return models.Entity{}, err
-	}
-
-	// LDAP groups.
-	sQuery = dialect.From(tableEntityLDAPGroups).Where(
-		goqu.I("entityldapgroups.entityldapgroups_entity_id").Eq(id),
-	).Select(
-		goqu.I("entityldapgroups_ldapgroup"),
-	)
-
-	if sqlr, args, err = sQuery.ToSQL(); err != nil {
-		logger.Log.Error(err)
-		return models.Entity{}, err
-	}
-
-	if err = db.Select(&entity.LDAPGroups, sqlr, args...); err != nil {
 		return models.Entity{}, err
 	}
 
@@ -301,25 +284,10 @@ func (db *SQLiteDataStore) DeleteEntity(id int) error {
 	dialect := goqu.Dialect("sqlite3")
 	tableEntity := goqu.T("entity")
 	tableEntityPeople := goqu.T("entitypeople")
-	tableEntityLDAPGroups := goqu.T("entityldapgroups")
 
 	// Managers.
 	sQuery := dialect.From(tableEntityPeople).Where(
 		goqu.I("entitypeople_entity_id").Eq(id),
-	).Delete()
-
-	if sqlr, args, err = sQuery.ToSQL(); err != nil {
-		logger.Log.Error(err)
-		return err
-	}
-
-	if _, err = db.Exec(sqlr, args...); err != nil {
-		return err
-	}
-
-	// LDAP groups.
-	sQuery = dialect.From(tableEntityLDAPGroups).Where(
-		goqu.I("entityldapgroups_entity_id").Eq(id),
 	).Delete()
 
 	if sqlr, args, err = sQuery.ToSQL(); err != nil {
@@ -402,25 +370,6 @@ func (db *SQLiteDataStore) CreateEntity(e models.Entity) (lastInsertID int64, er
 	}
 
 	e.EntityID = int(lastInsertID)
-
-	// Setting up the LDAP groups.
-	for _, g := range e.LDAPGroups {
-		logger.Log.WithFields(logrus.Fields{"g": g}).Debug("CreateEntity")
-
-		// Adding the managers.
-		if sqlr, args, err = dialect.Insert(goqu.T("entityldapgroups")).Rows(
-			goqu.Record{
-				"entityldapgroups_entity_id": e.EntityID,
-				"entityldapgroups_ldapgroup": g,
-			},
-		).ToSQL(); err != nil {
-			return
-		}
-
-		if _, err = tx.Exec(sqlr, args...); err != nil {
-			return
-		}
-	}
 
 	// Setting up the managers.
 	for _, m := range e.Managers {
@@ -529,7 +478,6 @@ func (db *SQLiteDataStore) UpdateEntity(e models.Entity) (err error) {
 	dialect := goqu.Dialect("sqlite3")
 	tableEntity := goqu.T("entity")
 	tableEntityPeople := goqu.T("entitypeople")
-	tableEntityLDAPGroups := goqu.T("entityldapgroups")
 
 	if tx, err = db.Begin(); err != nil {
 		return
@@ -704,40 +652,6 @@ func (db *SQLiteDataStore) UpdateEntity(e models.Entity) (err error) {
 
 		if _, err = tx.Exec(sqlr, args...); err != nil {
 			logger.Log.Errorf("error inserting manager new permissions w products -1: %v", err)
-			return
-		}
-	}
-
-	// Removing former LDAP groups.
-	dQuery = dialect.From(tableEntityLDAPGroups).Where(
-		goqu.I("entityldapgroups_entity_id").Eq(e.EntityID),
-	).Delete()
-
-	if sqlr, args, err = dQuery.ToSQL(); err != nil {
-		logger.Log.Errorf("error preparing removing LDAP groups: %v", err)
-		return
-	}
-
-	if _, err = tx.Exec(sqlr, args...); err != nil {
-		logger.Log.Errorf("error removing former LDAP groups: %v", err)
-		return
-	}
-
-	// Adding the new LDAP groups.
-	for _, group := range e.LDAPGroups {
-		// Adding the group.
-		if sqlr, args, err = dialect.Insert(tableEntityLDAPGroups).Rows(
-			goqu.Record{
-				"entityldapgroups_entity_id": e.EntityID,
-				"entityldapgroups_ldapgroup": group,
-			},
-		).ToSQL(); err != nil {
-			logger.Log.Errorf("error preparing inserting new group: %v", err)
-			return
-		}
-
-		if _, err = tx.Exec(sqlr, args...); err != nil {
-			logger.Log.Errorf("error inserting new group: %v", err)
 			return
 		}
 	}
