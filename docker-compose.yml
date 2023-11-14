@@ -8,9 +8,6 @@ services:
             - 443:443
             - 80:80
         volumes:
-            # You can change the "/data/docker-nginx" with
-            # another directory if you want to store the container
-            # permanent data elsewhere.
             - /data/docker-nginx/nginx-auth/certs:/etc/nginx/certs
             - /data/docker-nginx/nginx-templates:/etc/nginx/templates
         networks:
