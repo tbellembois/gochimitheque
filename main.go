@@ -63,9 +63,9 @@ func init() {
 	flagAppPath := flag.String("apppath", "/", "the application path with the trailing /")
 	flagDockerPort := flag.Int("dockerport", 0, "application listen port while running in docker")
 
-	flagOIDCISSUER := flag.String("oidcissuer", "http://localhost:8000", "the OIDC issuer URL")
-	flagOIDCClientID := flag.String("oidcclientid", "", "the OIDC client ID")
-	flagOIDCClientSecret := flag.String("oidcclientsecret", "", "the OIDC client secret")
+	flagOIDCISSUER := flag.String("oidcissuer", "http://localhost:7001", "the OIDC issuer URL")
+	flagOIDCClientID := flag.String("oidcclientid", "chimitheque", "the OIDC client ID")
+	flagOIDCClientSecret := flag.String("oidcclientsecret", "chimitheque", "the OIDC client secret")
 
 	flagPublicProductsEndpoint := flag.Bool("enablepublicproductsendpoint", false, "enable public products endpoint (optional)")
 	flagAdminList := flag.String("admins", "", "the additional admins (comma separated email adresses) (optional) ")

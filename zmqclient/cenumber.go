@@ -7,7 +7,7 @@ import (
 )
 
 // Request.
-type IsCeNumber struct {
+type IsCeNumberReq struct {
 	IsCeNumber string `json:"IsCeNumber"`
 }
 
@@ -19,7 +19,7 @@ type IsCeNumberErr struct {
 	Err string
 }
 
-func Is_ce_number(req string) (bool, error) {
+func IsCeNumber(req string) (bool, error) {
 	var s *zmq.Socket
 
 	s, _ = Zctx.NewSocket(zmq.REQ)
@@ -31,7 +31,7 @@ func Is_ce_number(req string) (bool, error) {
 		message []byte
 		err     error
 	)
-	if message, err = json.Marshal(IsCeNumber{
+	if message, err = json.Marshal(IsCeNumberReq{
 		IsCeNumber: req,
 	}); err != nil {
 		return false, err

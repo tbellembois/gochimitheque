@@ -13,7 +13,7 @@ import (
 	"github.com/tbellembois/gochimitheque/zmqclient"
 )
 
-func GetByMany[T models.Searchable](searchable T, db *sqlx.DB, filter zmqclient.Filter) (ts []T, count int, err error) {
+func GetByMany[T models.Searchable](searchable T, db *sqlx.DB, filter zmqclient.RequestFilter) (ts []T, count int, err error) {
 	var (
 		exactSearch, countSQL, selectSQL string
 		countArgs, selectArgs            []interface{}

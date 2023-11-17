@@ -48,7 +48,7 @@ func (db *SQLiteDataStore) ToogleStorageBorrowing(s models.Storage) error {
 }
 
 // GetStoragesUnits return the units.
-func (db *SQLiteDataStore) GetStoragesUnits(f zmqclient.Filter) ([]models.Unit, int, error) {
+func (db *SQLiteDataStore) GetStoragesUnits(f zmqclient.RequestFilter) ([]models.Unit, int, error) {
 	var (
 		units                              []models.Unit
 		count                              int
@@ -113,7 +113,7 @@ func (db *SQLiteDataStore) GetStoragesUnits(f zmqclient.Filter) ([]models.Unit, 
 // GetStorages returns the storages matching the request parameters p.
 // Only storages that the logged user can see are returned given his permissions
 // and membership.
-func (db *SQLiteDataStore) GetStorages(f zmqclient.Filter, person_id int) ([]models.Storage, int, error) {
+func (db *SQLiteDataStore) GetStorages(f zmqclient.RequestFilter, person_id int) ([]models.Storage, int, error) {
 	var (
 		storages                                  []models.Storage
 		count                                     int
@@ -505,7 +505,7 @@ func (db *SQLiteDataStore) GetStorages(f zmqclient.Filter, person_id int) ([]mod
 
 // GetOtherStorages returns the entity manager(s) email of the entities
 // storing the product with the id passed in the request parameters p.
-func (db *SQLiteDataStore) GetOtherStorages(f zmqclient.Filter, person_id int) ([]models.Entity, int, error) {
+func (db *SQLiteDataStore) GetOtherStorages(f zmqclient.RequestFilter, person_id int) ([]models.Entity, int, error) {
 	var (
 		entities                           []models.Entity
 		count                              int

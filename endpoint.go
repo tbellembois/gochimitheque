@@ -95,6 +95,7 @@ func buildEndpoints(appFullURL string) (router *mux.Router) {
 	router.Handle("/f/{item:storelocations}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("POST")
 	router.Handle("/f/{item:storelocations}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE")
 
+	// products
 	router.Handle("/{item:products}/l2eformula/{f}", secureChain.Then(env.AppMiddleware(env.ConvertProductEmpiricalToLinearFormulaHandler))).Methods("GET")
 	router.Handle("/{view:v}/{item:products}", secureChain.Then(env.AppMiddleware(env.VGetProductsHandler))).Methods("GET")
 	router.Handle("/{view:vc}/{item:products}", secureChain.Then(env.AppMiddleware(env.VCreateProductHandler))).Methods("GET")
@@ -146,6 +147,8 @@ func buildEndpoints(appFullURL string) (router *mux.Router) {
 	router.Handle("/{item:products}/producers", secureChain.Then(env.AppMiddleware(env.CreateProducerHandler))).Methods("POST")
 	router.Handle("/{item:products}/suppliers", secureChain.Then(env.AppMiddleware(env.CreateSupplierHandler))).Methods("POST")
 
+	router.Handle("/{item:products}/pubchemautocomplete/{name}", secureChain.Then(env.AppMiddleware(env.PubchemAutocompleteHandler))).Methods("GET")
+
 	router.Handle("/f/{view:v}/{item:products}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 	router.Handle("/f/{view:vc}/{item:products}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 	router.Handle("/f/{item:products}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
@@ -153,6 +156,7 @@ func buildEndpoints(appFullURL string) (router *mux.Router) {
 	router.Handle("/f/{item:products}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT")
 	router.Handle("/f/{item:products}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("POST")
 	router.Handle("/f/{item:products}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE")
+
 	// storages
 	router.Handle("/{view:v}/{item:storages}", secureChain.Then(env.AppMiddleware(env.VGetStoragesHandler))).Methods("GET")
 	router.Handle("/{view:vc}/{item:storages}", secureChain.Then(env.AppMiddleware(env.VCreateStorageHandler))).Methods("GET")

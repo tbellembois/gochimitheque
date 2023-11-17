@@ -7,19 +7,19 @@ import (
 )
 
 // Request.
-type EmpiricalFormulaReq struct {
-	EmpiricalFormula string `json:"EmpiricalFormula"`
+type AutocompleteReq struct {
+	Autocomplete string `json:"Autocomplete"`
 }
 
 // Response.
-type EmpiricalFormulaOk struct {
-	Ok string
+type AutocompleteOk struct {
+	Ok Autocomplete
 }
-type EmpiricalFormulaErr struct {
+type AutocompleteErr struct {
 	Err string
 }
 
-func EmpiricalFormulaFromRawString(req string) (string, error) {
+func AutocompleteProductName(req string) (Autocomplete, error) {
 	var s *zmq.Socket
 
 	s, _ = Zctx.NewSocket(zmq.REQ)
@@ -31,45 +31,44 @@ func EmpiricalFormulaFromRawString(req string) (string, error) {
 		message []byte
 		err     error
 	)
-
-	if message, err = json.Marshal(EmpiricalFormulaReq{
-		EmpiricalFormula: req,
+	if message, err = json.Marshal(AutocompleteReq{
+		Autocomplete: req,
 	}); err != nil {
-		return "", err
+		return Autocomplete{}, err
 	}
 
 	s.Send(string(message), 0)
 
 	if msg, err := s.Recv(0); err != nil {
-		return "", err
+		return Autocomplete{}, err
 	} else {
 
 		if msg[0:5] == `{"Ok"` {
 
-			var resp EmpiricalFormulaOk
+			var resp AutocompleteOk
 			err = json.Unmarshal([]byte(msg), &resp)
 
 			if err != nil {
-				return "", err
+				return Autocomplete{}, err
 			}
 
 			return resp.Ok, nil
 
 		} else if msg[0:6] == `{"Err"` {
 
-			var resp EmpiricalFormulaErr
+			var resp AutocompleteErr
 			err = json.Unmarshal([]byte(msg), &resp)
 
 			if err != nil {
-				return "", err
+				return Autocomplete{}, err
 			}
 
-			return "", err
+			return Autocomplete{}, err
 
 		}
 
 	}
 
-	return "", nil
+	return Autocomplete{}, nil
 
 }

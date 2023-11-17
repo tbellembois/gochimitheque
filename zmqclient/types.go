@@ -1,6 +1,14 @@
 package zmqclient
 
-type Filter struct {
+type DictionnaryTerms struct {
+	Compound []string `json:"compound"`
+}
+type Autocomplete struct {
+	Total           uint64           `json:"total"`
+	DictionaryTerms DictionnaryTerms `json:"dictionary_terms"`
+}
+
+type RequestFilter struct {
 	Search  string `json:"search"`
 	OrderBy string `json:"order_by"`
 	Order   string `json:"order"`

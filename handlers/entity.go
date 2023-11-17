@@ -49,7 +49,7 @@ func (env *Env) GetEntitiesHandler(w http.ResponseWriter, r *http.Request) *mode
 		err      error
 		entities []models.Entity
 		count    int
-		filter   zmqclient.Filter
+		filter   zmqclient.RequestFilter
 	)
 
 	// retrieving the logged user id from request context
@@ -59,7 +59,7 @@ func (env *Env) GetEntitiesHandler(w http.ResponseWriter, r *http.Request) *mode
 	// if filter, aerr = request.NewFilter(r); err != nil {
 	// 	return aerr
 	// }
-	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,

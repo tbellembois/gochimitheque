@@ -11,7 +11,7 @@ ENV BuildID=${BuildID}
 RUN echo "deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/release-stable/Debian_11/ ./" >> /etc/apt/sources.list
 RUN wget https://download.opensuse.org/repositories/network:/messaging:/zeromq:/release-stable/Debian_11/Release.key -O- | apt-key add
 RUN apt -y update
-RUN apt -y install libzmq3-dev
+RUN apt -y install libzmq3-dev openssl libssl-dev
 
 # Create base directory.
 RUN mkdir -p /home/thbellem/workspace \

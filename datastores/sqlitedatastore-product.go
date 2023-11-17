@@ -133,7 +133,7 @@ func (db *SQLiteDataStore) DeleteProductBookmark(pr models.Product, pe models.Pe
 }
 
 // GetProducts return the products matching the search criteria.
-func (db *SQLiteDataStore) GetProducts(f zmqclient.Filter, person_id int, public bool) ([]models.Product, int, error) {
+func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int, public bool) ([]models.Product, int, error) {
 	// defer TimeTrack(time.Now(), "GetProducts")
 	var (
 		products                           []models.Product

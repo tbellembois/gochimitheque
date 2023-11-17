@@ -7,19 +7,19 @@ import (
 )
 
 // Request.
-type RequestFilter struct {
+type RequestFilterReq struct {
 	RequestFilter string `json:"RequestFilter"`
 }
 
 // Response.
 type RequestFilterOk struct {
-	Ok Filter
+	Ok RequestFilter
 }
 type RequestFilterErr struct {
 	Err string
 }
 
-func Request_filter(req string) (Filter, error) {
+func RequestFilterFromRawString(req string) (RequestFilter, error) {
 	var s *zmq.Socket
 
 	s, _ = Zctx.NewSocket(zmq.REQ)
@@ -31,16 +31,16 @@ func Request_filter(req string) (Filter, error) {
 		message []byte
 		err     error
 	)
-	if message, err = json.Marshal(RequestFilter{
+	if message, err = json.Marshal(RequestFilterReq{
 		RequestFilter: req,
 	}); err != nil {
-		return Filter{}, err
+		return RequestFilter{}, err
 	}
 
 	s.Send(string(message), 0)
 
 	if msg, err := s.Recv(0); err != nil {
-		return Filter{}, err
+		return RequestFilter{}, err
 	} else {
 
 		if msg[0:5] == `{"Ok"` {
@@ -49,7 +49,7 @@ func Request_filter(req string) (Filter, error) {
 			err = json.Unmarshal([]byte(msg), &resp)
 
 			if err != nil {
-				return Filter{}, err
+				return RequestFilter{}, err
 			}
 
 			return resp.Ok, nil
@@ -60,15 +60,15 @@ func Request_filter(req string) (Filter, error) {
 			err = json.Unmarshal([]byte(msg), &resp)
 
 			if err != nil {
-				return Filter{}, err
+				return RequestFilter{}, err
 			}
 
-			return Filter{}, err
+			return RequestFilter{}, err
 
 		}
 
 	}
 
-	return Filter{}, nil
+	return RequestFilter{}, nil
 
 }

@@ -154,3 +154,24 @@ To store them on Chimitheque, the "identical bare-code" option will permit to cr
 - ENS de Lyon: `https://chimitheque.ens-lyon.fr`
 
 If you want to share your product database please send an email to the mailing list or create a Github issue.
+
+# Developpement
+
+run `chimitheque_utils` service:
+
+```bash
+cd /home/thbellem/workspace/workspace_rust/chimitheque_utils_service
+RUST_LOG=debug cargo run .
+```
+
+run `casdoor` container:
+```bash
+docker run -p 7001:8000 -v /data/docker-casdoor/casdoor-db:/data -v /data/docker-casdoor/casdoor-init/init_data.json:/init_data.json:ro casbin/casdoor-all-in-one
+```
+
+run `chimitheque`:
+
+```bash
+cd /home/thbellem/workspace/workspace_go/src/github.com/tbellembois/gochimitheque
+go run .
+```

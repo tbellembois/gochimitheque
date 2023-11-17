@@ -31,7 +31,7 @@ services:
             - dataSourceName=file:/data/casdoor.db?cache=shared
             - dbName=casdoor
             - showSql=true
-            - origin=http://172.20.82.36
+            - origin=http://192.168.1.62
         volumes:
             - /data/docker-casdoor/casdoor-db:/data
             - /data/docker-casdoor/casdoor-init/init_data.json:/init_data.json:ro
@@ -51,11 +51,11 @@ services:
             # application path, with a trailing /
             - CHIMITHEQUE_APPPATH=/chimitheque/
             # application url
-            - CHIMITHEQUE_APPURL=http://172.20.82.36
+            - CHIMITHEQUE_APPURL=http://192.168.1.62
             # you should not have any reason to change this
             - CHIMITHEQUE_DOCKERPORT=8081
             # OIDC issuer URL
-            - CHIMITHEQUE_OIDCISSUER=http://172.20.82.36
+            - CHIMITHEQUE_OIDCISSUER=http://192.168.1.62
             # OIDC client ID
             - CHIMITHEQUE_OIDCCLIENTID=chimitheque
             # OIDC client secret

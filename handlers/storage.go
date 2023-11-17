@@ -101,11 +101,11 @@ func (env *Env) GetStoragesUnitsHandler(w http.ResponseWriter, r *http.Request) 
 
 	var (
 		err    error
-		filter zmqclient.Filter
+		filter zmqclient.RequestFilter
 	)
 
 	// init db request parameters
-	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
@@ -146,11 +146,11 @@ func (env *Env) GetStoragesSuppliersHandler(w http.ResponseWriter, r *http.Reque
 
 	var (
 		err    error
-		filter zmqclient.Filter
+		filter zmqclient.RequestFilter
 	)
 
 	// init db request parameters
-	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
@@ -190,14 +190,14 @@ func (env *Env) GetOtherStoragesHandler(w http.ResponseWriter, r *http.Request) 
 
 	var (
 		err      error
-		filter   zmqclient.Filter
+		filter   zmqclient.RequestFilter
 		exportfn string
 	)
 
 	c := request.ContainerFromRequestContext(r)
 
 	// init db request parameters
-	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
@@ -238,14 +238,14 @@ func (env *Env) GetStoragesHandler(w http.ResponseWriter, r *http.Request) *mode
 
 	var (
 		err      error
-		filter   zmqclient.Filter
+		filter   zmqclient.RequestFilter
 		exportfn string
 	)
 
 	c := request.ContainerFromRequestContext(r)
 
 	// init db request parameters
-	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,

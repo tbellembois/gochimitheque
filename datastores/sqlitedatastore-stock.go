@@ -317,7 +317,7 @@ func (db *SQLiteDataStore) ComputeStockEntity(p models.Product, r *http.Request)
 
 	// Getting the entities (GetEntities returns only entities the connected user can see).
 	var (
-		filter zmqclient.Filter
+		filter zmqclient.RequestFilter
 	)
 
 	c := request.ContainerFromRequestContext(r)
@@ -326,7 +326,7 @@ func (db *SQLiteDataStore) ComputeStockEntity(p models.Product, r *http.Request)
 	// 	logger.Log.Error(aerr.Error())
 	// 	return []models.StoreLocation{}
 	// }
-	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
 		logger.Log.Error(err)
 		return []models.StoreLocation{}
 	}

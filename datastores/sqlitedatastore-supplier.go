@@ -11,7 +11,7 @@ import (
 	"github.com/tbellembois/gochimitheque/zmqclient"
 )
 
-func (db *SQLiteDataStore) GetSuppliers(f zmqclient.Filter) ([]models.Supplier, int, error) {
+func (db *SQLiteDataStore) GetSuppliers(f zmqclient.RequestFilter) ([]models.Supplier, int, error) {
 	var (
 		err                              error
 		suppliers                        []models.Supplier
@@ -216,7 +216,7 @@ func (db *SQLiteDataStore) CreateSupplier(s models.Supplier) (lastInsertID int64
 	return
 }
 
-func (db *SQLiteDataStore) GetSupplierRefs(f zmqclient.Filter) ([]models.SupplierRef, int, error) {
+func (db *SQLiteDataStore) GetSupplierRefs(f zmqclient.RequestFilter) ([]models.SupplierRef, int, error) {
 	var (
 		err                              error
 		supplierRefs                     []models.SupplierRef

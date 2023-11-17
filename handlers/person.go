@@ -47,7 +47,7 @@ func (env *Env) GetPeopleHandler(w http.ResponseWriter, r *http.Request) *models
 
 	var (
 		err    error
-		filter zmqclient.Filter
+		filter zmqclient.RequestFilter
 	)
 
 	c := request.ContainerFromRequestContext(r)
@@ -56,7 +56,7 @@ func (env *Env) GetPeopleHandler(w http.ResponseWriter, r *http.Request) *models
 	// if filter, aerr = request.NewFilter(r); aerr != nil {
 	// 	return aerr
 	// }
-	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,

@@ -22,7 +22,7 @@ type Datastore interface {
 	GetWelcomeAnnounce() (models.WelcomeAnnounce, error)
 	UpdateWelcomeAnnounce(w models.WelcomeAnnounce) error
 
-	GetProducts(zmqclient.Filter, int, bool) ([]models.Product, int, error)
+	GetProducts(zmqclient.RequestFilter, int, bool) ([]models.Product, int, error)
 	GetProduct(id int) (models.Product, error)
 	CountProductStorages(id int) (int, error)
 	CountProducts() (int, error)
@@ -32,24 +32,24 @@ type Datastore interface {
 	DeleteProductBookmark(pr models.Product, pe models.Person) error
 	IsProductBookmark(pr models.Product, pe models.Person) (bool, error)
 
-	GetProducers(zmqclient.Filter) ([]models.Producer, int, error)
+	GetProducers(zmqclient.RequestFilter) ([]models.Producer, int, error)
 	GetProducer(id int) (models.Producer, error)
 	GetProducerByLabel(label string) (models.Producer, error)
 	CreateProducer(p models.Producer) (int64, error)
 
-	GetSuppliers(zmqclient.Filter) ([]models.Supplier, int, error)
+	GetSuppliers(zmqclient.RequestFilter) ([]models.Supplier, int, error)
 	GetSupplier(id int) (models.Supplier, error)
 	GetSupplierByLabel(label string) (models.Supplier, error)
 	CreateSupplier(s models.Supplier) (int64, error)
 
-	GetProducerRefs(zmqclient.Filter) ([]models.ProducerRef, int, error)
-	GetSupplierRefs(zmqclient.Filter) ([]models.SupplierRef, int, error)
+	GetProducerRefs(zmqclient.RequestFilter) ([]models.ProducerRef, int, error)
+	GetSupplierRefs(zmqclient.RequestFilter) ([]models.SupplierRef, int, error)
 
 	// storages
-	GetStorages(zmqclient.Filter, int) ([]models.Storage, int, error)
-	GetOtherStorages(zmqclient.Filter, int) ([]models.Entity, int, error)
+	GetStorages(zmqclient.RequestFilter, int) ([]models.Storage, int, error)
+	GetOtherStorages(zmqclient.RequestFilter, int) ([]models.Entity, int, error)
 	GetStorage(id int) (models.Storage, error)
-	GetStoragesUnits(zmqclient.Filter) ([]models.Unit, int, error)
+	GetStoragesUnits(zmqclient.RequestFilter) ([]models.Unit, int, error)
 	GetStorageEntity(id int) (models.Entity, error)
 	DeleteStorage(id int) error
 	ArchiveStorage(id int) error
@@ -59,7 +59,7 @@ type Datastore interface {
 	UpdateAllQRCodes() error
 
 	// store locations
-	GetStoreLocations(zmqclient.Filter, int) ([]models.StoreLocation, int, error)
+	GetStoreLocations(zmqclient.RequestFilter, int) ([]models.StoreLocation, int, error)
 	GetStoreLocation(id int) (models.StoreLocation, error)
 	GetStoreLocationChildren(id int) ([]models.StoreLocation, error)
 	DeleteStoreLocation(id int) error
@@ -70,7 +70,7 @@ type Datastore interface {
 	// entities
 	ComputeStockEntity(p models.Product, r *http.Request) []models.StoreLocation
 
-	GetEntities(zmqclient.Filter, int) ([]models.Entity, int, error)
+	GetEntities(zmqclient.RequestFilter, int) ([]models.Entity, int, error)
 	GetEntity(id int) (models.Entity, error)
 	GetEntityManager(id int) ([]models.Person, error)
 	DeleteEntity(id int) error
@@ -80,7 +80,7 @@ type Datastore interface {
 	HasEntityStorelocation(id int) (bool, error)
 
 	// people
-	GetPeople(zmqclient.Filter, int) ([]models.Person, int, error)
+	GetPeople(zmqclient.RequestFilter, int) ([]models.Person, int, error)
 	GetPerson(id int) (models.Person, error)
 	GetPersonByEmail(email string) (models.Person, error)
 	GetPersonPermissions(id int) ([]models.Permission, error)

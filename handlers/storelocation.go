@@ -54,13 +54,13 @@ func (env *Env) GetStoreLocationsHandler(w http.ResponseWriter, r *http.Request)
 
 	var (
 		err    error
-		filter zmqclient.Filter
+		filter zmqclient.RequestFilter
 	)
 
 	c := request.ContainerFromRequestContext(r)
 
 	// init db request parameters
-	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,

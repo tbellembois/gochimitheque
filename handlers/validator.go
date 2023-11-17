@@ -35,7 +35,7 @@ func (env *Env) ValidatePersonEmailHandler(w http.ResponseWriter, r *http.Reques
 		resp     string
 		person   models.Person
 		personID int
-		filter   zmqclient.Filter
+		filter   zmqclient.RequestFilter
 	)
 
 	vars := mux.Vars(r)
@@ -50,7 +50,7 @@ func (env *Env) ValidatePersonEmailHandler(w http.ResponseWriter, r *http.Reques
 	// 	sendResponse(w, resp)
 	// 	return nil
 	// }
-	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
 		logger.Log.Error("error calling zmqclient.Request_filter")
 		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "person_emailexist_validate", PluralCount: 1})
 		sendResponse(w, resp)
@@ -121,7 +121,7 @@ func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request
 		resp     string
 		entity   models.Entity
 		entityID int
-		filter   zmqclient.Filter
+		filter   zmqclient.RequestFilter
 	)
 
 	// retrieving the logged user id from request context
@@ -134,7 +134,7 @@ func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request
 	// 	sendResponse(w, resp)
 	// 	return nil
 	// }
-	if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
 		logger.Log.Error("error calling zmqclient.Request_filter")
 		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "entity_nameexist_validate", PluralCount: 1})
 		sendResponse(w, resp)
@@ -223,7 +223,7 @@ func (env *Env) FormatProductEmpiricalFormulaHandler(w http.ResponseWriter, r *h
 	}
 
 	// validating it
-	resp, err = zmqclient.Empirical_formula(empiricalFormulaData.EmpiricalFormula)
+	resp, err = zmqclient.EmpiricalFormulaFromRawString(empiricalFormulaData.EmpiricalFormula)
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -256,7 +256,7 @@ func (env *Env) ValidateProductEmpiricalFormulaHandler(w http.ResponseWriter, r 
 	}
 
 	// validating it
-	_, err = zmqclient.Empirical_formula(r.Form.Get("empiricalformula"))
+	_, err = zmqclient.EmpiricalFormulaFromRawString(r.Form.Get("empiricalformula"))
 	if err != nil {
 		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "empiricalformula_validate", PluralCount: 1})
 	} else {
@@ -279,7 +279,7 @@ func (env *Env) ValidateProductCasNumberHandler(w http.ResponseWriter, r *http.R
 		cas        models.CasNumber
 		nbProducts int
 		products   []models.Product
-		filter     zmqclient.Filter
+		filter     zmqclient.RequestFilter
 		productID  int
 	)
 
@@ -296,7 +296,7 @@ func (env *Env) ValidateProductCasNumberHandler(w http.ResponseWriter, r *http.R
 	logger.Log.WithFields(logrus.Fields{"casnumber": r.Form.Get("casnumber")}).Debug("ValidateProductCasNumberHandler")
 
 	// validating it
-	v, _ := zmqclient.Is_cas_number(r.Form.Get("casnumber"))
+	v, _ := zmqclient.IsCasNumber(r.Form.Get("casnumber"))
 
 	if v {
 		resp = "true"
@@ -331,7 +331,7 @@ func (env *Env) ValidateProductCasNumberHandler(w http.ResponseWriter, r *http.R
 			// 	sendResponse(w, resp)
 			// 	return nil
 			// }
-			if filter, err = zmqclient.Request_filter("http://localhost/?" + r.URL.RawQuery); err != nil {
+			if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
 				resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "casnumber_validate_wrongcas", PluralCount: 1})
 				sendResponse(w, resp)
 			}
@@ -385,7 +385,7 @@ func (env *Env) ValidateProductCeNumberHandler(w http.ResponseWriter, r *http.Re
 	logger.Log.WithFields(logrus.Fields{"cenumber": r.Form.Get("cenumber")}).Debug("ValidateProductCeNumberHandler")
 
 	// validating it
-	v, _ := zmqclient.Is_ce_number(r.Form.Get("cenumber"))
+	v, _ := zmqclient.IsCeNumber(r.Form.Get("cenumber"))
 
 	if v {
 		resp = "true"

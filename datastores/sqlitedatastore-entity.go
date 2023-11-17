@@ -13,7 +13,7 @@ import (
 
 // GetEntities select the entities matching p
 // and visible by the connected user.
-func (db *SQLiteDataStore) GetEntities(f zmqclient.Filter, person_id int) ([]models.Entity, int, error) {
+func (db *SQLiteDataStore) GetEntities(f zmqclient.RequestFilter, person_id int) ([]models.Entity, int, error) {
 	var (
 		err                   error
 		entities              []models.Entity

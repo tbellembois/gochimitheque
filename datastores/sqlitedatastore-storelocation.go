@@ -63,7 +63,7 @@ func (db *SQLiteDataStore) buildFullPath(s models.StoreLocation, tx *sqlx.Tx) st
 
 // GetStoreLocations select the store locations matching p
 // and visible by the connected user.
-func (db *SQLiteDataStore) GetStoreLocations(f zmqclient.Filter, person_id int) ([]models.StoreLocation, int, error) {
+func (db *SQLiteDataStore) GetStoreLocations(f zmqclient.RequestFilter, person_id int) ([]models.StoreLocation, int, error) {
 	logger.Log.WithFields(logrus.Fields{"f": f}).Debug("GetStoreLocations")
 
 	if f.OrderBy == "" {

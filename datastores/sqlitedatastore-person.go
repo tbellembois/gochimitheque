@@ -15,7 +15,7 @@ import (
 
 // GetPeople select the people matching p
 // and visible by the connected user.
-func (db *SQLiteDataStore) GetPeople(f zmqclient.Filter, person_id int) ([]models.Person, int, error) {
+func (db *SQLiteDataStore) GetPeople(f zmqclient.RequestFilter, person_id int) ([]models.Person, int, error) {
 	var err error
 
 	logger.Log.WithFields(logrus.Fields{"f": f}).Debug("GetPeople")
