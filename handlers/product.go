@@ -52,6 +52,14 @@ func (env *Env) VCreateProductHandler(w http.ResponseWriter, r *http.Request) *m
 	return nil
 }
 
+func (env *Env) VPubchemHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+	c := request.ContainerFromRequestContext(r)
+
+	jade.Productpubchem(c, w)
+
+	return nil
+}
+
 /*
 	REST handlers
 */
@@ -145,6 +153,36 @@ func (env *Env) GetProductsSupplierRefsHandler(w http.ResponseWriter, r *http.Re
 	return nil
 }
 
+func (env *Env) PubchemGetCompoundByNameHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+	logger.Log.Debug("GetCompoundByNameHandler")
+
+	vars := mux.Vars(r)
+
+	var (
+		err       error
+		compounds zmqclient.Compounds
+	)
+
+	if compounds, err = zmqclient.GetCompoundByName(vars["name"]); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.GetCompoundByName",
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	if err = json.NewEncoder(w).Encode(compounds); err != nil {
+		return &models.AppError{
+			Code:    http.StatusInternalServerError,
+			Message: err.Error(),
+		}
+	}
+
+	return nil
+}
+
 // PubchemAutocompleteHandler calls the autocomplete Pubchem API.
 func (env *Env) PubchemAutocompleteHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	logger.Log.Debug("PubchemAutocompleteHandler")
@@ -156,7 +194,6 @@ func (env *Env) PubchemAutocompleteHandler(w http.ResponseWriter, r *http.Reques
 		autocomplete zmqclient.Autocomplete
 	)
 
-	// init db request parameters
 	if autocomplete, err = zmqclient.AutocompleteProductName(vars["name"]); err != nil {
 		return &models.AppError{
 			OriginalError: err,

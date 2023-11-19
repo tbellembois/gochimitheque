@@ -27,6 +27,10 @@ nav.navbar.navbar-expand-lg.navbar-light
                 a(href="#", onclick="Menu_loadContent('product', '" + c.AppURL + c.AppPath + "vc/products', 'Product_create')").nav-link
                     span.mdi.mdi-tag.mdi-36px.iconlabel
                         = T("menu_create_productcard", 1)
+            li.nav-item#menu_pubchem.collapse
+                a(href="#", onclick="Menu_loadContent('pubchem', '" + c.AppURL + c.AppPath + "vc/pubchem', 'Product_pubchem')").nav-link
+                    span.mdi.mdi-alpha-c-circle-outline.mdi-36px.iconlabel
+                        = T("menu_pubchem", 1)
 
             li.nav-item.dropdown#menu_management.collapse
                 a(href="#").nav-link.dropdown-toggle#navbarDropdown(

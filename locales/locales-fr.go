@@ -255,6 +255,8 @@ var LOCALES_FR = []byte(`
 	one = "gestion"
 [menu_settings]
 	one = "paramètres"
+[menu_pubchem]
+	one = "pubchem"
 
 [clearsearch_text]
 	one = "supprimer tous les filtres"
@@ -434,6 +436,9 @@ var LOCALES_FR = []byte(`
 	one = "nom"
 [synonym_label_title]
 	one = "synonyme(s)"
+
+[search_pubchem_title]
+	one = "rechercher par nom (ou une partie)"
 
 [restricted]
 	one = "accès restreint"

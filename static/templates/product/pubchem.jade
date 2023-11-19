@@ -1,0 +1,17 @@
+include ../mixins
+block CONTENT
+    :go:func
+        Productpubchem(c ViewContainer)
+
+    .card.mx-auto.w-75.mt-sm-2
+        .card-body
+            form#pubchem
+                .form-row
+                    .form-group.col-sm-8.offset-sm-2
+                        +inputtext(name="searchpubchem", label="search_pubchem_title")
+                        button#search.btn.btn-light(type="button" onclick="Product_pubchemSearch();")
+                            span.mdi.mdi-magnify.mdi-24px.iconlabel
+                                = T("search_text", 1)
+
+            #pubchemsearchresult
+            #pubchemcompound

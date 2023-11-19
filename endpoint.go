@@ -99,6 +99,7 @@ func buildEndpoints(appFullURL string) (router *mux.Router) {
 	router.Handle("/{item:products}/l2eformula/{f}", secureChain.Then(env.AppMiddleware(env.ConvertProductEmpiricalToLinearFormulaHandler))).Methods("GET")
 	router.Handle("/{view:v}/{item:products}", secureChain.Then(env.AppMiddleware(env.VGetProductsHandler))).Methods("GET")
 	router.Handle("/{view:vc}/{item:products}", secureChain.Then(env.AppMiddleware(env.VCreateProductHandler))).Methods("GET")
+	router.Handle("/{view:vc}/{item:pubchem}", secureChain.Then(env.AppMiddleware(env.VPubchemHandler))).Methods("GET")
 	router.Handle("/{item:products}", secureChain.Then(env.AppMiddleware(env.GetProductsHandler))).Methods("GET")
 	router.Handle("/{item:products}/{id}", secureChain.Then(env.AppMiddleware(env.GetProductHandler))).Methods("GET")
 	router.Handle("/{item:products}/{id}", secureChain.Then(env.AppMiddleware(env.UpdateProductHandler))).Methods("PUT")
@@ -148,6 +149,7 @@ func buildEndpoints(appFullURL string) (router *mux.Router) {
 	router.Handle("/{item:products}/suppliers", secureChain.Then(env.AppMiddleware(env.CreateSupplierHandler))).Methods("POST")
 
 	router.Handle("/{item:products}/pubchemautocomplete/{name}", secureChain.Then(env.AppMiddleware(env.PubchemAutocompleteHandler))).Methods("GET")
+	router.Handle("/{item:products}/pubchemgetcompoundbyname/{name}", secureChain.Then(env.AppMiddleware(env.PubchemGetCompoundByNameHandler))).Methods("GET")
 
 	router.Handle("/f/{view:v}/{item:products}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 	router.Handle("/f/{view:vc}/{item:products}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
