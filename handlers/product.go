@@ -153,6 +153,36 @@ func (env *Env) GetProductsSupplierRefsHandler(w http.ResponseWriter, r *http.Re
 	return nil
 }
 
+func (env *Env) PubchemGetProductByNameHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+	logger.Log.Debug("GetCompoundByNameHandler")
+
+	vars := mux.Vars(r)
+
+	var (
+		err     error
+		product zmqclient.Product
+	)
+
+	if product, err = zmqclient.GetProductByName(vars["name"]); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.GetCompoundByName",
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	if err = json.NewEncoder(w).Encode(product); err != nil {
+		return &models.AppError{
+			Code:    http.StatusInternalServerError,
+			Message: err.Error(),
+		}
+	}
+
+	return nil
+}
+
 func (env *Env) PubchemGetCompoundByNameHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	logger.Log.Debug("GetCompoundByNameHandler")
 
