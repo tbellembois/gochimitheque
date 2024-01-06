@@ -17,7 +17,7 @@ services:
             - chimitheque
     casdoor:
         container_name: casdoor
-        image: casbin/casdoor:v1.454.0
+        image: casbin/casdoor:v1.492.0
         restart: unless-stopped
         entrypoint: /bin/sh -c './server'
         # entrypoint: /bin/sh -c './server --createDatabase=true'
