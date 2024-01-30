@@ -246,12 +246,21 @@ func (env *Env) CallbackHandler(w http.ResponseWriter, r *http.Request) *models.
 		}
 	}
 
-	token := http.Cookie{
-		Name:  "token",
-		Value: rawIDToken,
+	access_token := http.Cookie{
+		Name:     "access_token",
+		Value:    oauth2Token.AccessToken,
+		Path:     "/",
+		HttpOnly: true,
+	}
+	refresh_token := http.Cookie{
+		Name:     "refresh_token",
+		Value:    oauth2Token.RefreshToken,
+		Path:     "/",
+		HttpOnly: true,
 	}
 
-	http.SetCookie(w, &token)
+	http.SetCookie(w, &access_token)
+	http.SetCookie(w, &refresh_token)
 
 	// TEST
 	// resp := struct {

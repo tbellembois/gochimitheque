@@ -66,6 +66,9 @@ func init() {
 	flagOIDCISSUER := flag.String("oidcissuer", "http://localhost:7001", "the OIDC issuer URL")
 	flagOIDCClientID := flag.String("oidcclientid", "chimitheque", "the OIDC client ID")
 	flagOIDCClientSecret := flag.String("oidcclientsecret", "chimitheque", "the OIDC client secret")
+	flagOIDCTokenEndpoint := flag.String("oidctokenendpoint", "http://localhost:7001/api/login/oauth/access_token", "the OIDC token endpoint")
+	flagOIDCAuthEndpoint := flag.String("oidcauthendpoint", "http://localhost:7001/login/oauth/authorize", "the OIDC authorization endpoint")
+	flagOIDCDeviceEndpoint := flag.String("oidcdeviceendpoint", "http://localhost:7001", "the OIDC device endpoint")
 
 	flagPublicProductsEndpoint := flag.Bool("enablepublicproductsendpoint", false, "enable public products endpoint (optional)")
 	flagAdminList := flag.String("admins", "", "the additional admins (comma separated email adresses) (optional) ")
@@ -85,6 +88,9 @@ func init() {
 	env.OIDCIssuer = *flagOIDCISSUER
 	env.OIDCClientID = *flagOIDCClientID
 	env.OIDCClientSecret = *flagOIDCClientSecret
+	env.OIDCTokenEndpoint = *flagOIDCTokenEndpoint
+	env.OIDCAuthEndpoint = *flagOIDCAuthEndpoint
+	env.OIDCDeviceEndpoint = *flagOIDCDeviceEndpoint
 
 	paramDBPath = flagDBPath
 	paramPublicProductsEndpoint = flagPublicProductsEndpoint
@@ -124,9 +130,13 @@ func initOIDC() {
 	env.OAuth2Config = oauth2.Config{
 		ClientID:     env.OIDCClientID,
 		ClientSecret: env.OIDCClientSecret,
-		Endpoint:     env.OIDCProvider.Endpoint(),
-		RedirectURL:  env.AppURL + env.AppPath + "callback",
-		Scopes:       []string{oidc.ScopeOpenID, "profile", "email"},
+		Endpoint: oauth2.Endpoint{
+			TokenURL:      env.OIDCTokenEndpoint,
+			DeviceAuthURL: env.OIDCDeviceEndpoint,
+			AuthURL:       env.OIDCAuthEndpoint,
+		},
+		RedirectURL: env.AppURL + env.AppPath + "callback",
+		Scopes:      []string{oidc.ScopeOpenID, "profile", "email"},
 	}
 
 }

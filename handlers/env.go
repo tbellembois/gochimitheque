@@ -50,13 +50,16 @@ type Env struct {
 	DisableCache bool
 
 	// OIDC parameters
-	OIDCIssuer       string
-	OIDCClientID     string
-	OIDCClientSecret string
-	OIDCProvider     *oidc.Provider
-	OIDCVerifier     *oidc.IDTokenVerifier
-	OIDCConfig       *oidc.Config
-	OAuth2Config     oauth2.Config
+	OIDCIssuer         string
+	OIDCClientID       string
+	OIDCClientSecret   string
+	OIDCTokenEndpoint  string
+	OIDCAuthEndpoint   string
+	OIDCDeviceEndpoint string
+	OIDCProvider       *oidc.Provider
+	OIDCVerifier       *oidc.IDTokenVerifier
+	OIDCConfig         *oidc.Config
+	OAuth2Config       oauth2.Config
 }
 
 func NewEnv() Env {

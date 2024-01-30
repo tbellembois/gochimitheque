@@ -14,6 +14,7 @@ import (
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
 	"github.com/tbellembois/gochimitheque/request"
+	"golang.org/x/oauth2"
 )
 
 // AppMiddleware is the application handlers wrapper handling the "func() *models.AppError" functions.
@@ -86,54 +87,94 @@ func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		var (
-			rawToken *http.Cookie
-			err      error
+			access_token, refresh_token *http.Cookie
+			err                         error
 		)
 
-		if rawToken, err = r.Cookie("token"); err != nil || rawToken == nil {
-			logger.Log.Debug("token not found in cookies")
-			http.Error(w, "token not found in cookies, please log in", http.StatusUnauthorized)
+		// getting the request context
+		ctx := r.Context()
+
+		if access_token, err = r.Cookie("access_token"); err != nil || access_token == nil {
+			logger.Log.Debug("access token not found in cookies")
+			http.Error(w, "access token not found in cookies, please log in", http.StatusUnauthorized)
 			return
 		}
 
-		var idtoken *oidc.IDToken
-		if idtoken, err = env.OIDCVerifier.Verify(context.Background(), rawToken.Value); err != nil || idtoken == nil {
-			http.Error(w, "failed to verify ID Token: "+err.Error(), http.StatusInternalServerError)
+		if refresh_token, err = r.Cookie("refresh_token"); err != nil || access_token == nil {
+			logger.Log.Debug("refresh token not found in cookies")
+			http.Error(w, "refresh token not found in cookies, please log in", http.StatusUnauthorized)
 			return
 		}
 
-		var claims struct {
-			Email         string `json:"email"`
-			EmailVerified bool   `json:"email_verified"`
+		oauth2Token := oauth2.Token{
+			AccessToken:  access_token.Value,
+			RefreshToken: refresh_token.Value,
 		}
 
-		if err := idtoken.Claims(&claims); err != nil {
-			http.Error(w, "error getting claims from token"+err.Error(), http.StatusBadRequest)
-			return
+		var userInfo *oidc.UserInfo
+		if userInfo, err = env.OIDCProvider.UserInfo(ctx, oauth2.StaticTokenSource(&oauth2Token)); err != nil {
+			// We assume that the access token not valid anymore.
+			ts := env.OAuth2Config.TokenSource(ctx, &oauth2.Token{RefreshToken: refresh_token.Value})
+
+			// Renew token.
+			var newToken *oauth2.Token
+			if newToken, err = ts.Token(); err != nil {
+				http.Error(w, "failed to refresh token: "+err.Error(), http.StatusInternalServerError)
+			} // this actually goes and renews the tokens
+
+			logger.Log.WithFields(logrus.Fields{
+				"newToken": newToken,
+			}).Debug("AuthenticateMiddleware")
+
+			// Save new token.
+			access_token := http.Cookie{
+				Name:     "access_token",
+				Value:    newToken.AccessToken,
+				Path:     "/",
+				HttpOnly: true,
+			}
+			refresh_token := http.Cookie{
+				Name:     "refresh_token",
+				Value:    newToken.RefreshToken,
+				Path:     "/",
+				HttpOnly: true,
+			}
+
+			http.SetCookie(w, &access_token)
+			http.SetCookie(w, &refresh_token)
+
+			oauth2Token = *newToken
+
+			// Trying to get the user informations with the new token.
+			if userInfo, err = env.OIDCProvider.UserInfo(ctx, oauth2.StaticTokenSource(&oauth2Token)); err != nil {
+				http.Error(w, "failed to get userinfo: "+err.Error(), http.StatusInternalServerError)
+				return
+			}
 		}
+
 		logger.Log.WithFields(logrus.Fields{
-			"claims": claims,
+			"userInfo": userInfo,
 		}).Debug("AuthenticateMiddleware")
 
 		// getting the user id
 		var (
 			person models.Person
 		)
-		if person, err = env.DB.GetPersonByEmail(claims.Email); err != nil {
+		if person, err = env.DB.GetPersonByEmail(userInfo.Email); err != nil {
 			if err == sql.ErrNoRows && env.AutoCreateUser {
 			} else {
+				logger.Log.Debug("can not get logged user: " + err.Error())
 				http.Error(w, "can not get logged user: "+err.Error(), http.StatusBadRequest)
 				return
 			}
 		}
 
-		// getting the request context
-		ctx := r.Context()
+		// getting the request container
 		ctxcontainer := ctx.Value(request.ChimithequeContextKey("container"))
 		container := ctxcontainer.(request.Container)
 
 		// setting up auth person informations
-		container.PersonEmail = claims.Email
+		container.PersonEmail = userInfo.Email
 		container.PersonID = person.PersonID
 
 		ctx = context.WithValue(
