@@ -7,11 +7,14 @@ package main
 // compile with:
 // BuildID="v2.1.0" && go build -ldflags "-X main.BuildID=$BuildID".
 import (
+	"context"
 	"database/sql"
 	"embed"
-	"errors"
+	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
+	"log"
 	"net/http"
 	"os"
 	"path"
@@ -20,7 +23,6 @@ import (
 
 	"github.com/coreos/go-oidc/v3/oidc"
 	zmq "github.com/pebbe/zmq4"
-	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 
 	"github.com/gorilla/mux"
@@ -63,12 +65,9 @@ func init() {
 	flagAppPath := flag.String("apppath", "/", "the application path with the trailing /")
 	flagDockerPort := flag.Int("dockerport", 0, "application listen port while running in docker")
 
-	flagOIDCISSUER := flag.String("oidcissuer", "http://localhost:7001", "the OIDC issuer URL")
+	flagOIDCServer := flag.String("oidcserver", "http://localhost:8080/realms/master", "the OIDC server URL")
 	flagOIDCClientID := flag.String("oidcclientid", "chimitheque", "the OIDC client ID")
-	flagOIDCClientSecret := flag.String("oidcclientsecret", "chimitheque", "the OIDC client secret")
-	flagOIDCTokenEndpoint := flag.String("oidctokenendpoint", "http://localhost:7001/api/login/oauth/access_token", "the OIDC token endpoint")
-	flagOIDCAuthEndpoint := flag.String("oidcauthendpoint", "http://localhost:7001/login/oauth/authorize", "the OIDC authorization endpoint")
-	flagOIDCDeviceEndpoint := flag.String("oidcdeviceendpoint", "http://localhost:7001", "the OIDC device endpoint")
+	flagOIDCClientSecret := flag.String("oidcclientsecret", "fuVW7S7mLf8IZ4zaJ0RgIsVUK7CG7dUS", "the OIDC client secret")
 
 	flagPublicProductsEndpoint := flag.Bool("enablepublicproductsendpoint", false, "enable public products endpoint (optional)")
 	flagAdminList := flag.String("admins", "", "the additional admins (comma separated email adresses) (optional) ")
@@ -85,12 +84,9 @@ func init() {
 	env.AppURL = *flagAppURL
 	env.AppPath = *flagAppPath
 	env.DockerPort = *flagDockerPort
-	env.OIDCIssuer = *flagOIDCISSUER
+	env.OIDCServer = *flagOIDCServer
 	env.OIDCClientID = *flagOIDCClientID
 	env.OIDCClientSecret = *flagOIDCClientSecret
-	env.OIDCTokenEndpoint = *flagOIDCTokenEndpoint
-	env.OIDCAuthEndpoint = *flagOIDCAuthEndpoint
-	env.OIDCDeviceEndpoint = *flagOIDCDeviceEndpoint
 
 	paramDBPath = flagDBPath
 	paramPublicProductsEndpoint = flagPublicProductsEndpoint
@@ -114,15 +110,61 @@ func initLogger() {
 	}
 }
 
+type OIDCDiscover struct {
+	Issuer                      string `json:"issuer"`
+	AuthorizationEndpoint       string `json:"authorization_endpoint"`
+	DeviceAuthorizationEndpoint string `json:"device_authorization_endpoint"`
+	TokenEndpoint               string `json:"token_endpoint"`
+	EndSessionEndpoint          string `json:"end_session_endpoint"`
+}
+
 func initOIDC() {
 
-	var err error = errors.New("fake")
-	for err != nil {
-		env.OIDCProvider, err = oidc.NewProvider(context.Background(), env.OIDCIssuer)
-		logger.Log.Info("- sleeping 2 seconds waiting for OIDC issuer " + env.OIDCIssuer)
-		time.Sleep(2 * time.Second)
+	var err error
+
+	// Fetching information from autodiscover URL.
+	autodiscoverURL := env.OIDCServer + "/.well-known/openid-configuration"
+
+	httpClient := http.Client{
+		Timeout: time.Second * 10,
 	}
 
+	var (
+		req *http.Request
+		res *http.Response
+	)
+
+	logger.Log.Info("- fetching OICD discover: " + autodiscoverURL)
+
+	if req, err = http.NewRequest(http.MethodGet, autodiscoverURL, nil); err != nil {
+		log.Fatal(err)
+	}
+	if res, err = httpClient.Do(req); err != nil {
+		log.Fatal(err)
+	}
+	if res.Body != nil {
+		defer res.Body.Close()
+	}
+
+	// Decoding.
+	var body []byte
+	if body, err = io.ReadAll(res.Body); err != nil {
+		log.Fatal(err)
+	}
+
+	oidcDiscover := OIDCDiscover{}
+	if err = json.Unmarshal(body, &oidcDiscover); err != nil {
+		log.Fatal(err)
+	}
+
+	logger.Log.Info("- OICD token endpoint: " + oidcDiscover.TokenEndpoint)
+
+	// Creating new OIDC provider.
+	if env.OIDCProvider, err = oidc.NewProvider(context.Background(), oidcDiscover.Issuer); err != nil {
+		panic(err)
+	}
+
+	env.OIDCEndSessionEndpoint = oidcDiscover.EndSessionEndpoint
 	env.OIDCConfig = &oidc.Config{
 		ClientID: env.OIDCClientID,
 	}
@@ -131,9 +173,9 @@ func initOIDC() {
 		ClientID:     env.OIDCClientID,
 		ClientSecret: env.OIDCClientSecret,
 		Endpoint: oauth2.Endpoint{
-			TokenURL:      env.OIDCTokenEndpoint,
-			DeviceAuthURL: env.OIDCDeviceEndpoint,
-			AuthURL:       env.OIDCAuthEndpoint,
+			TokenURL:      oidcDiscover.TokenEndpoint,
+			DeviceAuthURL: oidcDiscover.DeviceAuthorizationEndpoint,
+			AuthURL:       oidcDiscover.AuthorizationEndpoint,
 		},
 		RedirectURL: env.AppURL + env.AppPath + "callback",
 		Scopes:      []string{oidc.ScopeOpenID, "profile", "email"},

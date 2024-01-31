@@ -70,7 +70,7 @@ func (env *Env) DeleteTokenHandler(w http.ResponseWriter, r *http.Request) *mode
 		http.SetCookie(w, &http.Cookie{Name: cookie.Name, Value: ""})
 	}
 
-	http.Redirect(w, r, env.AppFullURL, http.StatusTemporaryRedirect)
+	http.Redirect(w, r, env.OIDCEndSessionEndpoint, http.StatusTemporaryRedirect)
 
 	return nil
 }

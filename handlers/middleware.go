@@ -122,28 +122,30 @@ func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 				http.Error(w, "failed to refresh token: "+err.Error(), http.StatusInternalServerError)
 			} // this actually goes and renews the tokens
 
-			logger.Log.WithFields(logrus.Fields{
-				"newToken": newToken,
-			}).Debug("AuthenticateMiddleware")
+			if newToken != nil {
+				logger.Log.WithFields(logrus.Fields{
+					"newToken": newToken,
+				}).Debug("AuthenticateMiddleware")
 
-			// Save new token.
-			access_token := http.Cookie{
-				Name:     "access_token",
-				Value:    newToken.AccessToken,
-				Path:     "/",
-				HttpOnly: true,
+				// Save new token.
+				access_token := http.Cookie{
+					Name:     "access_token",
+					Value:    newToken.AccessToken,
+					Path:     "/",
+					HttpOnly: true,
+				}
+				refresh_token := http.Cookie{
+					Name:     "refresh_token",
+					Value:    newToken.RefreshToken,
+					Path:     "/",
+					HttpOnly: true,
+				}
+
+				http.SetCookie(w, &access_token)
+				http.SetCookie(w, &refresh_token)
+
+				oauth2Token = *newToken
 			}
-			refresh_token := http.Cookie{
-				Name:     "refresh_token",
-				Value:    newToken.RefreshToken,
-				Path:     "/",
-				HttpOnly: true,
-			}
-
-			http.SetCookie(w, &access_token)
-			http.SetCookie(w, &refresh_token)
-
-			oauth2Token = *newToken
 
 			// Trying to get the user informations with the new token.
 			if userInfo, err = env.OIDCProvider.UserInfo(ctx, oauth2.StaticTokenSource(&oauth2Token)); err != nil {

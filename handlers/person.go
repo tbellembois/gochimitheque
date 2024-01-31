@@ -243,43 +243,43 @@ func (env *Env) GetPersonPermissionsHandler(w http.ResponseWriter, r *http.Reque
 	return nil
 }
 
-// CreatePersonHandler creates the person from the request form.
-func (env *Env) CreatePersonHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	var (
-		p   models.Person
-		err error
-	)
+// // CreatePersonHandler creates the person from the request form.
+// func (env *Env) CreatePersonHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+// 	var (
+// 		p   models.Person
+// 		err error
+// 	)
 
-	if err = json.NewDecoder(r.Body).Decode(&p); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "JSON decoding error",
-			Code:          http.StatusInternalServerError,
-		}
-	}
+// 	if err = json.NewDecoder(r.Body).Decode(&p); err != nil {
+// 		return &models.AppError{
+// 			OriginalError: err,
+// 			Message:       "JSON decoding error",
+// 			Code:          http.StatusInternalServerError,
+// 		}
+// 	}
 
-	logger.Log.WithFields(logrus.Fields{"p": p}).Debug("CreatePersonHandler")
+// 	logger.Log.WithFields(logrus.Fields{"p": p}).Debug("CreatePersonHandler")
 
-	if _, err := env.DB.CreatePerson(p); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "create person error",
-			Code:          http.StatusInternalServerError,
-		}
-	}
+// 	if _, err := env.DB.CreatePerson(p); err != nil {
+// 		return &models.AppError{
+// 			OriginalError: err,
+// 			Message:       "create person error",
+// 			Code:          http.StatusInternalServerError,
+// 		}
+// 	}
 
-	env.Enforcer = casbin.InitCasbinPolicy(env.DB)
+// 	env.Enforcer = casbin.InitCasbinPolicy(env.DB)
 
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+// 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	if err = json.NewEncoder(w).Encode(p); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
-	return nil
-}
+// 	if err = json.NewEncoder(w).Encode(p); err != nil {
+// 		return &models.AppError{
+// 			Code:    http.StatusInternalServerError,
+// 			Message: err.Error(),
+// 		}
+// 	}
+// 	return nil
+// }
 
 // UpdatePersonHandler updates the person from the request form.
 func (env *Env) UpdatePersonHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
@@ -375,30 +375,30 @@ func (env *Env) UpdatePersonHandler(w http.ResponseWriter, r *http.Request) *mod
 	return nil
 }
 
-// DeletePersonHandler deletes the person with the requested id.
-func (env *Env) DeletePersonHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	vars := mux.Vars(r)
+// // DeletePersonHandler deletes the person with the requested id.
+// func (env *Env) DeletePersonHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+// 	vars := mux.Vars(r)
 
-	var (
-		id  int
-		err error
-	)
+// 	var (
+// 		id  int
+// 		err error
+// 	)
 
-	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "id atoi conversion",
-			Code:          http.StatusInternalServerError,
-		}
-	}
+// 	if id, err = strconv.Atoi(vars["id"]); err != nil {
+// 		return &models.AppError{
+// 			OriginalError: err,
+// 			Message:       "id atoi conversion",
+// 			Code:          http.StatusInternalServerError,
+// 		}
+// 	}
 
-	if err := env.DB.DeletePerson(id); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "delete person error",
-			Code:          http.StatusInternalServerError,
-		}
-	}
+// 	if err := env.DB.DeletePerson(id); err != nil {
+// 		return &models.AppError{
+// 			OriginalError: err,
+// 			Message:       "delete person error",
+// 			Code:          http.StatusInternalServerError,
+// 		}
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
