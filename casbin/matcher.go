@@ -13,12 +13,21 @@ import (
 
 func matchPeople(datastore datastores.Datastore, personID string, itemID string, entityID string) bool {
 	var (
+		orphan   bool
 		pid, iid int
 		err      error
 		ent      []models.Entity
 	)
 
 	logger.Log.WithFields(logrus.Fields{"personId": personID, "itemId": itemID, "entityId": entityID}).Debug("matchPeople")
+
+	if orphan, err = datastore.IsOrphanPerson(iid); err != nil {
+		logger.Log.Error("matchPeople: " + err.Error())
+		return false
+	}
+	if orphan {
+		return true
+	}
 
 	if pid, err = strconv.Atoi(personID); err != nil {
 		logger.Log.Error("matchPeople: " + err.Error())

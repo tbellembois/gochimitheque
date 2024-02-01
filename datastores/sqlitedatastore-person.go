@@ -136,7 +136,85 @@ func (db *SQLiteDataStore) GetPeople(f zmqclient.RequestFilter, person_id int) (
 		return nil, 0, err
 	}
 
-	return people, count, nil
+	// Adding orphan people.
+	var orphans []models.Person
+
+	if orphans, err = db.GetOrphanPeople(); err != nil {
+		return nil, 0, err
+	}
+
+	logger.Log.WithFields(logrus.Fields{"orphans": orphans}).Debug("GetPeople")
+
+	return append(people, orphans...), count + len(orphans), nil
+}
+
+func (db *SQLiteDataStore) IsOrphanPerson(id int) (bool, error) {
+
+	dialect := goqu.Dialect("sqlite3")
+	tablePersonEntity := goqu.T("personentities")
+
+	// Build query.
+	var (
+		err       error
+		countSQL  string
+		countArgs []interface{}
+		count     int
+	)
+
+	if countSQL, countArgs, err = dialect.From(tablePersonEntity).Select(
+		goqu.COUNT("personentities_person_id"),
+	).Where(
+		goqu.I("personentities_person_id").Eq(id),
+	).ToSQL(); err != nil {
+		return false, err
+	}
+
+	if err = db.Get(&count, countSQL, countArgs...); err != nil {
+		return false, err
+	}
+
+	logger.Log.WithFields(logrus.Fields{"count": count}).Debug("IsOrphanPerson")
+
+	return count == 0, nil
+
+}
+
+// GetOrphanPeople select the people in no entities.
+func (db *SQLiteDataStore) GetOrphanPeople() ([]models.Person, error) {
+
+	dialect := goqu.Dialect("sqlite3")
+	tablePerson := goqu.T("person")
+	tablePersonEntity := goqu.T("personentities")
+
+	// Build orderby/order clause.
+	orderByClause := "person_id"
+	orderClause := goqu.I(orderByClause).Asc()
+
+	// Build query.
+	var (
+		err        error
+		selectSQL  string
+		selectArgs []interface{}
+	)
+
+	if selectSQL, selectArgs, err = dialect.From(tablePerson).Where(
+		goqu.I("person.person_id").NotIn(
+			dialect.From(tablePersonEntity).Select("personentities_person_id"),
+		),
+		goqu.I("person.person_email").Neq("admin@chimitheque.fr"),
+	).Order(orderClause).ToSQL(); err != nil {
+		return nil, err
+	}
+
+	var (
+		people []models.Person
+	)
+
+	if err = db.Select(&people, selectSQL, selectArgs...); err != nil {
+		return nil, err
+	}
+
+	return people, nil
 }
 
 // GetPerson select the person by id.

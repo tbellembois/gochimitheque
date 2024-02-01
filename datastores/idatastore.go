@@ -81,6 +81,8 @@ type Datastore interface {
 
 	// people
 	GetPeople(zmqclient.RequestFilter, int) ([]models.Person, int, error)
+	GetOrphanPeople() ([]models.Person, error)
+	IsOrphanPerson(id int) (bool, error)
 	GetPerson(id int) (models.Person, error)
 	GetPersonByEmail(email string) (models.Person, error)
 	GetPersonPermissions(id int) ([]models.Permission, error)

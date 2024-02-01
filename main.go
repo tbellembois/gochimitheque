@@ -67,11 +67,10 @@ func init() {
 
 	flagOIDCServer := flag.String("oidcserver", "http://localhost:8080/realms/master", "the OIDC server URL")
 	flagOIDCClientID := flag.String("oidcclientid", "chimitheque", "the OIDC client ID")
-	flagOIDCClientSecret := flag.String("oidcclientsecret", "fuVW7S7mLf8IZ4zaJ0RgIsVUK7CG7dUS", "the OIDC client secret")
+	flagOIDCClientSecret := flag.String("oidcclientsecret", "rYL1dVUFI8vK7SuTerE0ALz1RAVB1Ioa", "the OIDC client secret")
 
 	flagPublicProductsEndpoint := flag.Bool("enablepublicproductsendpoint", false, "enable public products endpoint (optional)")
 	flagAdminList := flag.String("admins", "", "the additional admins (comma separated email adresses) (optional) ")
-	flagAutoImportURL := flag.String("autoimporturl", "", "the URL of the chimitheque instance to import initial products (optional) ")
 	flagDebug := flag.Bool("debug", false, "debug (verbose log), default is error")
 
 	// One shot commands.
@@ -91,7 +90,6 @@ func init() {
 	paramDBPath = flagDBPath
 	paramPublicProductsEndpoint = flagPublicProductsEndpoint
 	paramAdminList = flagAdminList
-	paramAutoImportURL = flagAutoImportURL
 	paramDebug = flagDebug
 
 	commandUpdateQRCode = flagUpdateQRCode
@@ -204,19 +202,6 @@ func initDB() {
 	datastore.Maintenance()
 
 	env.DB = datastore
-
-	var productCount int
-
-	if productCount, err = env.DB.CountProducts(); err != nil {
-		logger.Log.Fatal(err)
-	}
-
-	if productCount == 0 && paramAutoImportURL != nil {
-		logger.Log.Info("- importing initial product list from " + *paramAutoImportURL)
-		if err = env.DB.Import(*paramAutoImportURL); err != nil {
-			logger.Log.Fatal(err)
-		}
-	}
 
 }
 

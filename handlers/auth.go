@@ -12,7 +12,7 @@ import (
 
 	"golang.org/x/net/context"
 
-	"github.com/coreos/go-oidc/v3/oidc"
+	"github.com/coreos/go-oidc"
 	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
@@ -55,8 +55,7 @@ func (env *Env) VLoginHandler(w http.ResponseWriter, r *http.Request) *models.Ap
 	REST handler
 */
 
-// DeleteTokenHandler delete all the cookies.
-// FIXME: we should use openid logout.
+// DeleteTokenHandler delete all the cookies and redirect to the OIDC logout endpoint.
 func (env *Env) DeleteTokenHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	logger.Log.Debug("DeleteTokenHandler")
 

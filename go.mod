@@ -19,14 +19,16 @@ require (
 	github.com/steambap/captcha v1.4.1
 	golang.org/x/crypto v0.15.0
 	golang.org/x/image v0.13.0 // indirect
-	golang.org/x/sys v0.14.0 // indirect
+	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/text v0.14.0
 )
 
 require (
 	github.com/casbin/json-adapter/v2 v2.1.1
+	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/coreos/go-oidc/v3 v3.7.0
 	github.com/go-ldap/ldap/v3 v3.4.6
+	github.com/gofiber/fiber/v2 v2.52.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/pebbe/zmq4 v1.2.10
 	github.com/russross/blackfriday/v2 v2.1.0
@@ -42,13 +44,15 @@ require (
 	github.com/go-jose/go-jose/v3 v3.0.1 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
-	github.com/google/uuid v1.4.0 // indirect
+	github.com/google/uuid v1.5.0 // indirect
+	github.com/pquerna/cachecontrol v0.2.0 // indirect
 	github.com/tidwall/gjson v1.17.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
+	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
