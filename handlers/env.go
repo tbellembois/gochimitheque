@@ -50,7 +50,7 @@ type Env struct {
 	DisableCache bool
 
 	// OIDC parameters
-	OIDCServer             string
+	OIDCDiscoverURL        string
 	OIDCClientID           string
 	OIDCClientSecret       string
 	OIDCProvider           *oidc.Provider

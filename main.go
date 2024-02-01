@@ -65,7 +65,7 @@ func init() {
 	flagAppPath := flag.String("apppath", "/", "the application path with the trailing /")
 	flagDockerPort := flag.Int("dockerport", 0, "application listen port while running in docker")
 
-	flagOIDCServer := flag.String("oidcserver", "http://localhost:8080/realms/master", "the OIDC server URL")
+	flagOIDCDiscoverURL := flag.String("oidcdiscoverurl", "http://localhost:8080/realms/master/.well-known/openid-configuration", "the OIDC server discover URL")
 	flagOIDCClientID := flag.String("oidcclientid", "chimitheque", "the OIDC client ID")
 	flagOIDCClientSecret := flag.String("oidcclientsecret", "rYL1dVUFI8vK7SuTerE0ALz1RAVB1Ioa", "the OIDC client secret")
 
@@ -83,7 +83,7 @@ func init() {
 	env.AppURL = *flagAppURL
 	env.AppPath = *flagAppPath
 	env.DockerPort = *flagDockerPort
-	env.OIDCServer = *flagOIDCServer
+	env.OIDCDiscoverURL = *flagOIDCDiscoverURL
 	env.OIDCClientID = *flagOIDCClientID
 	env.OIDCClientSecret = *flagOIDCClientSecret
 
@@ -120,9 +120,6 @@ func initOIDC() {
 
 	var err error
 
-	// Fetching information from autodiscover URL.
-	autodiscoverURL := env.OIDCServer + "/.well-known/openid-configuration"
-
 	httpClient := http.Client{
 		Timeout: time.Second * 10,
 	}
@@ -132,9 +129,9 @@ func initOIDC() {
 		res *http.Response
 	)
 
-	logger.Log.Info("- fetching OICD discover: " + autodiscoverURL)
+	logger.Log.Info("- fetching OICD discover: " + env.OIDCDiscoverURL)
 
-	if req, err = http.NewRequest(http.MethodGet, autodiscoverURL, nil); err != nil {
+	if req, err = http.NewRequest(http.MethodGet, env.OIDCDiscoverURL, nil); err != nil {
 		log.Fatal(err)
 	}
 	if res, err = httpClient.Do(req); err != nil {
