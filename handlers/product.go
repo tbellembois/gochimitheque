@@ -163,7 +163,7 @@ func (env *Env) PubchemGetProductByNameHandler(w http.ResponseWriter, r *http.Re
 		product zmqclient.Product
 	)
 
-	if product, err = zmqclient.GetProductByName(vars["name"]); err != nil {
+	if product, err = zmqclient.PubchemGetProductByName(vars["name"]); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
@@ -193,7 +193,7 @@ func (env *Env) PubchemGetCompoundByNameHandler(w http.ResponseWriter, r *http.R
 		compounds zmqclient.Compounds
 	)
 
-	if compounds, err = zmqclient.GetCompoundByName(vars["name"]); err != nil {
+	if compounds, err = zmqclient.PubchemGetCompoundByName(vars["name"]); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
@@ -221,10 +221,10 @@ func (env *Env) PubchemAutocompleteHandler(w http.ResponseWriter, r *http.Reques
 
 	var (
 		err          error
-		autocomplete zmqclient.Autocomplete
+		autocomplete zmqclient.PubchemAutocomplete
 	)
 
-	if autocomplete, err = zmqclient.AutocompleteProductName(vars["name"]); err != nil {
+	if autocomplete, err = zmqclient.PubchemAutocompleteProductName(vars["name"]); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,

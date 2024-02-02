@@ -7,15 +7,15 @@ import (
 )
 
 // Request.
-type EmpiricalFormulaReq struct {
-	EmpiricalFormula string `json:"EmpiricalFormula"`
+type SortEmpiricalFormulaReq struct {
+	SortEmpiricalFormula string `json:"SortEmpiricalFormula"`
 }
 
 // Response.
-type EmpiricalFormulaOk struct {
+type SortEmpiricalFormulaOk struct {
 	Ok string
 }
-type EmpiricalFormulaErr struct {
+type SortEmpiricalFormulaErr struct {
 	Err string
 }
 
@@ -32,8 +32,8 @@ func EmpiricalFormulaFromRawString(req string) (string, error) {
 		err     error
 	)
 
-	if message, err = json.Marshal(EmpiricalFormulaReq{
-		EmpiricalFormula: req,
+	if message, err = json.Marshal(SortEmpiricalFormulaReq{
+		SortEmpiricalFormula: req,
 	}); err != nil {
 		return "", err
 	}
@@ -46,7 +46,7 @@ func EmpiricalFormulaFromRawString(req string) (string, error) {
 
 		if msg[0:5] == `{"Ok"` {
 
-			var resp EmpiricalFormulaOk
+			var resp SortEmpiricalFormulaOk
 			err = json.Unmarshal([]byte(msg), &resp)
 
 			if err != nil {
@@ -57,7 +57,7 @@ func EmpiricalFormulaFromRawString(req string) (string, error) {
 
 		} else if msg[0:6] == `{"Err"` {
 
-			var resp EmpiricalFormulaErr
+			var resp SortEmpiricalFormulaErr
 			err = json.Unmarshal([]byte(msg), &resp)
 
 			if err != nil {

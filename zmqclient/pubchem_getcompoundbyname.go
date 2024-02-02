@@ -7,19 +7,19 @@ import (
 )
 
 // Request.
-type GetCompoundByNameReq struct {
-	GetCompoundByName string `json:"GetCompoundByName"`
+type PubchemGetCompoundByNameReq struct {
+	PubchemGetCompoundByName string `json:"PubchemGetCompoundByName"`
 }
 
 // Response.
-type GetCompoundByNameOk struct {
+type PubchemGetCompoundByNameOk struct {
 	Ok Compounds
 }
-type GetCompoundByNameErr struct {
+type PubchemGetCompoundByNameErr struct {
 	Err string
 }
 
-func GetCompoundByName(req string) (Compounds, error) {
+func PubchemGetCompoundByName(req string) (Compounds, error) {
 	var s *zmq.Socket
 
 	s, _ = Zctx.NewSocket(zmq.REQ)
@@ -31,8 +31,8 @@ func GetCompoundByName(req string) (Compounds, error) {
 		message []byte
 		err     error
 	)
-	if message, err = json.Marshal(GetCompoundByNameReq{
-		GetCompoundByName: req,
+	if message, err = json.Marshal(PubchemGetCompoundByNameReq{
+		PubchemGetCompoundByName: req,
 	}); err != nil {
 		return Compounds{}, err
 	}
@@ -45,7 +45,7 @@ func GetCompoundByName(req string) (Compounds, error) {
 
 		if msg[0:5] == `{"Ok"` {
 
-			var resp GetCompoundByNameOk
+			var resp PubchemGetCompoundByNameOk
 			err = json.Unmarshal([]byte(msg), &resp)
 
 			if err != nil {
@@ -56,7 +56,7 @@ func GetCompoundByName(req string) (Compounds, error) {
 
 		} else if msg[0:6] == `{"Err"` {
 
-			var resp GetCompoundByNameErr
+			var resp PubchemGetCompoundByNameErr
 			err = json.Unmarshal([]byte(msg), &resp)
 
 			if err != nil {

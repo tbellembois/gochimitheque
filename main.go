@@ -67,7 +67,7 @@ func init() {
 
 	flagOIDCDiscoverURL := flag.String("oidcdiscoverurl", "http://localhost:8080/realms/master/.well-known/openid-configuration", "the OIDC server discover URL")
 	flagOIDCClientID := flag.String("oidcclientid", "chimitheque", "the OIDC client ID")
-	flagOIDCClientSecret := flag.String("oidcclientsecret", "rYL1dVUFI8vK7SuTerE0ALz1RAVB1Ioa", "the OIDC client secret")
+	flagOIDCClientSecret := flag.String("oidcclientsecret", "aZoB1f6ogMmZmv0ShUgvxQc6Du07XuyO", "the OIDC client secret")
 
 	flagPublicProductsEndpoint := flag.Bool("enablepublicproductsendpoint", false, "enable public products endpoint (optional)")
 	flagAdminList := flag.String("admins", "", "the additional admins (comma separated email adresses) (optional) ")
