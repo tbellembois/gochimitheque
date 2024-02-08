@@ -88,14 +88,14 @@ RUN rm -Rf /var/cache/apk
 
 # Ensure www-data user exists.
 RUN addgroup --gid 82 --system chimitheque \
-  && adduser --uid 82 --system --ingroup chimitheque chimitheque \
-  && mkdir /data \
-  && chown chimitheque /data \
-  && chmod 700 /data \
-  && mkdir /var/www-data \
-  && chown chimitheque /var/www-data \
-  && chown chimitheque /var/log \
-  && chmod 755 /var/log
+    && adduser --uid 82 --system --ingroup chimitheque chimitheque \
+    && mkdir /data \
+    && chown chimitheque /data \
+    && chmod 700 /data \
+    && mkdir /var/www-data \
+    && chown chimitheque /var/www-data \
+    && chown chimitheque /var/log \
+    && chmod 755 /var/log
 
 COPY --from=builder /go/src/github.com/tbellembois/gochimitheque/gochimitheque /var/www-data/
 RUN chown chimitheque /var/www-data/gochimitheque \
@@ -108,12 +108,6 @@ RUN chown chimitheque /var/www-data/chimitheque_utils_service \
 # Copying entrypoint.
 COPY docker/entrypoint.sh /
 RUN chmod +x /entrypoint.sh
-
-# Adding CA certificates.
-ADD docker/terena.crt /usr/local/share/ca-certificates/terena.crt
-ADD docker/USERTrust_RSA_Certification_Authority.crt /usr/local/share/ca-certificates/USERTrust_RSA_Certification_Authority.crt
-
-RUN chmod 644 /usr/local/share/ca-certificates/* && update-ca-certificates
 
 # Container configuration.
 USER chimitheque
