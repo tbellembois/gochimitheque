@@ -1,4 +1,4 @@
-package data
+package datastores
 
 // TAG is the list of chemical products tags
 // They are inserted into the database during its creation.

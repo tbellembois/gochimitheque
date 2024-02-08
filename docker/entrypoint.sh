@@ -3,14 +3,12 @@
 appurl=""
 apppath=""
 dockerport=""
-oidcissuer=""
+oidcdiscoveryurl=""
 oidcclientid=""
 oidcclientsecret=""
-enablepublicproductsendpoint=""
 admins=""
 debug=""
 updateqrcode=""
-autoimporturl=""
 
 echo "parameters:"
 
@@ -29,10 +27,10 @@ then
       apppath="-apppath $CHIMITHEQUE_APPPATH"
       echo $apppath
 fi
-if [ ! -z "$CHIMITHEQUE_OIDCISSUER" ]
+if [ ! -z "$CHIMITHEQUE_OIDCDISCOVERYURL" ]
 then
-      oidcissuer="-oidcissuer $CHIMITHEQUE_OIDCISSUER"
-      echo $oidcissuer
+      oidcdiscoveryurl="-oidcissuer $CHIMITHEQUE_OIDCDISCOVERYURL"
+      echo $oidcdiscoveryurl
 fi
 if [ ! -z "$CHIMITHEQUE_OIDCCLIENTID" ]
 then
@@ -45,11 +43,6 @@ then
       echo $oidcclientsecret
 fi
 
-if [ ! -z "$CHIMITHEQUE_ENABLEPUBLICPRODUCTSENDPOINT" ]
-then
-      enablepublicproductsendpoint="-enablepublicproductsendpoint"
-      echo $enablepublicproductsendpoint
-fi
 if [ ! -z "$CHIMITHEQUE_ADMINS" ]
 then
       admins="-admins $CHIMITHEQUE_ADMINS"
@@ -59,11 +52,6 @@ if [ ! -z "$CHIMITHEQUE_DEBUG" ]
 then
       debug="-debug"
       echo $debug
-fi
-if [ ! -z "$CHIMITHEQUE_AUTOIMPORT_URL" ]
-then
-      autoimporturl="-autoimporturl $CHIMITHEQUE_AUTOIMPORT_URL"
-      echo $autoimporturl
 fi
 
 if [ ! -z "$CHIMITHEQUE_UPDATEQRCODE" ]
@@ -77,7 +65,7 @@ echo "command:"
 echo $command
 $command &
 
-command="/var/www-data/gochimitheque -dbpath /data $listenport $appurl $apppath $dockerport $oidcissuer $oidcclientid $oidcclientsecret $enablepublicproductsendpoint $admins $debug $autoimporturl $updateqrcode"
+command="/var/www-data/gochimitheque -dbpath /data $appurl $apppath $dockerport $oidcdiscoveryurl $oidcclientid $oidcclientsecret $admins $debug $updateqrcode"
 echo "command:"
 echo $command
 $command

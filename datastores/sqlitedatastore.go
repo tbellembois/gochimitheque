@@ -13,7 +13,6 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/mattn/go-sqlite3"
 	"github.com/sirupsen/logrus"
-	"github.com/tbellembois/gochimitheque/data"
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
 )
@@ -242,7 +241,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	if c == 0 {
 		logger.Log.Info("  inserting CMRs")
 
-		r = csv.NewReader(strings.NewReader(data.CMR_CAS))
+		r = csv.NewReader(strings.NewReader(CMR_CAS))
 		r.Comma = ','
 
 		if records, err = r.ReadAll(); err != nil {
@@ -266,7 +265,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	if c == 0 {
 		logger.Log.Info("  inserting tags")
 
-		r = csv.NewReader(strings.NewReader(data.TAG))
+		r = csv.NewReader(strings.NewReader(TAG))
 		r.Comma = ','
 
 		if records, err = r.ReadAll(); err != nil {
@@ -288,7 +287,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	if c == 0 {
 		logger.Log.Info("  inserting categories")
 
-		r = csv.NewReader(strings.NewReader(data.CATEGORY))
+		r = csv.NewReader(strings.NewReader(CATEGORY))
 		r.Comma = ';'
 
 		if records, err = r.ReadAll(); err != nil {
@@ -310,7 +309,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	if c == 0 {
 		logger.Log.Info("  inserting suppliers")
 
-		r = csv.NewReader(strings.NewReader(data.SUPPLIER))
+		r = csv.NewReader(strings.NewReader(SUPPLIER))
 		r.Comma = ','
 
 		if records, err = r.ReadAll(); err != nil {
@@ -332,7 +331,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	if c == 0 {
 		logger.Log.Info("  inserting producers")
 
-		r = csv.NewReader(strings.NewReader(data.PRODUCER))
+		r = csv.NewReader(strings.NewReader(PRODUCER))
 		r.Comma = ','
 
 		if records, err = r.ReadAll(); err != nil {
@@ -354,7 +353,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	if c == 0 {
 		logger.Log.Info("  inserting hazard statements")
 
-		r = csv.NewReader(strings.NewReader(data.HAZARDSTATEMENT))
+		r = csv.NewReader(strings.NewReader(HAZARDSTATEMENT))
 		r.Comma = '\t'
 
 		if records, err = r.ReadAll(); err != nil {
@@ -380,7 +379,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	if c == 0 {
 		logger.Log.Info("  inserting precautionary statements")
 
-		r = csv.NewReader(strings.NewReader(data.PRECAUTIONARYSTATEMENT))
+		r = csv.NewReader(strings.NewReader(PRECAUTIONARYSTATEMENT))
 		r.Comma = '\t'
 
 		if records, err = r.ReadAll(); err != nil {

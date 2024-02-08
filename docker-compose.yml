@@ -13,30 +13,53 @@ services:
         networks:
             - chimitheque
         depends_on:
-            - casdoor
+            - keycloak
             - chimitheque
-    casdoor:
-        container_name: casdoor
-        image: casbin/casdoor:v1.492.0
+
+    postgres:
+        container_name: postgres
+        image: postgres:16
         restart: unless-stopped
-        entrypoint: /bin/sh -c './server'
-        # entrypoint: /bin/sh -c './server --createDatabase=true'
-        # ports:
-        #     - "8000:8000"
         environment:
-            - RUNNING_IN_DOCKER=true
-            - httpport=8000
-            - runmode=dev
-            - driverName=sqlite
-            - dataSourceName=file:/data/casdoor.db?cache=shared
-            - dbName=casdoor
-            - showSql=true
-            - origin=http://192.168.1.62
-        volumes:
-            - /data/docker-casdoor/casdoor-db:/data
-            - /data/docker-casdoor/casdoor-init/init_data.json:/init_data.json:ro
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
+            POSTGRES_DB: keycloak
         networks:
             - chimitheque
+        volumes:
+            - /data/docker-postgres/data:/var/lib/postgresql/data
+
+    keycloak:
+        container_name: keycloak
+        restart: unless-stopped
+        depends_on:
+            - postgres
+        ports:
+            - 8080:8080
+        build:
+            context: ./docker/keycloak
+            dockerfile: Dockerfile
+            args:
+                KC_DB: postgres
+                KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+                KC_DB_USERNAME: postgres
+                KC_DB_PASSWORD: postgres
+                KC_HOSTNAME: localhost:8080
+                KC_FEATURES: docker
+                KC_HTTP_RELATIVE_PATH: /keycloak
+                KC_HOSTNAME_STRICT_HTTPS: false
+                KC_PROXY: edge
+        entrypoint: "/opt/keycloak/bin/kc.sh start --optimized"
+        #entrypoint: "/opt/keycloak/bin/kc.sh export --dir /tmp/keycloak --users realm_file --realm chimitheque"
+        environment:
+            - KEYCLOAK_ADMIN=chimitheque
+            - KEYCLOAK_ADMIN_PASSWORD=chimitheque
+            - PROXY_ADDRESS_FORWARDING=true
+        # volumes:
+        #     - /tmp/keycloak:/tmp/keycloak
+        networks:
+            - chimitheque
+
     chimitheque:
         container_name: chimitheque
         # Always choose the "production" image.
@@ -47,23 +70,19 @@ services:
         restart: unless-stopped
         environment:
             # enable debug logs - not recommended in production
-            - CHIMITHEQUE_DEBUG=true
+            - CHIMITHEQUE_DEBUG=false
             # application path, with a trailing /
             - CHIMITHEQUE_APPPATH=/chimitheque/
             # application url
-            - CHIMITHEQUE_APPURL=http://192.168.1.62
+            - CHIMITHEQUE_APPURL=http://localhost:8081
             # you should not have any reason to change this
             - CHIMITHEQUE_DOCKERPORT=8081
             # OIDC issuer URL
-            - CHIMITHEQUE_OIDCISSUER=http://192.168.1.62
+            - CHIMITHEQUE_OIDCDISCOVERYURL=http://localhost:8080/keycloak/realms/master/.well-known/openid-configuration
             # OIDC client ID
             - CHIMITHEQUE_OIDCCLIENTID=chimitheque
             # OIDC client secret
-            - CHIMITHEQUE_OIDCCLIENTSECRET=chimitheque
-            # share your product database
-            - CHIMITHEQUE_ENABLEPUBLICPRODUCTSENDPOINT=true
-            # initial autoimport URL
-            - CHIMITHEQUE_AUTOIMPORT_URL=https://chimitheque.ens-lyon.fr
+            - CHIMITHEQUE_OIDCCLIENTSECRET=mysupersecret
             # list of admins
             - CHIMITHEQUE_ADMINS=bob@foo.com,bar@foo.com
             # one shot command: update storages QR codes
@@ -72,5 +91,6 @@ services:
             - /data/docker-chimitheque/chimitheque-db:/data
         networks:
             - chimitheque
+
 networks:
     chimitheque:

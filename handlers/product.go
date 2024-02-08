@@ -1360,53 +1360,53 @@ func (env *Env) GetProductsSynonymsHandler(w http.ResponseWriter, r *http.Reques
 	return nil
 }
 
-// GetExposedProductsHandler returns a json of the product with the requested id.
-func (env *Env) GetExposedProductsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	logger.Log.Debug("GetExposedProductsHandler")
+// // GetExposedProductsHandler returns a json of the product with the requested id.
+// func (env *Env) GetExposedProductsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+// 	logger.Log.Debug("GetExposedProductsHandler")
 
-	var (
-		err error
-		// aerr   *models.AppError
-		filter zmqclient.RequestFilter
-	)
+// 	var (
+// 		err error
+// 		// aerr   *models.AppError
+// 		filter zmqclient.RequestFilter
+// 	)
 
-	// if filter, aerr = request.NewFilter(r); err != nil {
-	// 	return aerr
-	// }
-	c := request.ContainerFromRequestContext(r)
+// 	// if filter, aerr = request.NewFilter(r); err != nil {
+// 	// 	return aerr
+// 	// }
+// 	c := request.ContainerFromRequestContext(r)
 
-	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.Request_filter",
-		}
-	}
+// 	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+// 		return &models.AppError{
+// 			OriginalError: err,
+// 			Code:          http.StatusInternalServerError,
+// 			Message:       "error calling zmqclient.Request_filter",
+// 		}
+// 	}
 
-	products, count, err := env.DB.GetProducts(filter, c.PersonID, true)
-	if err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error getting the products",
-		}
-	}
+// 	products, count, err := env.DB.GetProducts(filter, c.PersonID, true)
+// 	if err != nil {
+// 		return &models.AppError{
+// 			OriginalError: err,
+// 			Code:          http.StatusInternalServerError,
+// 			Message:       "error getting the products",
+// 		}
+// 	}
 
-	type resp struct {
-		Rows  []models.Product `json:"rows"`
-		Total int              `json:"total"`
-	}
+// 	type resp struct {
+// 		Rows  []models.Product `json:"rows"`
+// 		Total int              `json:"total"`
+// 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+// 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	if err = json.NewEncoder(w).Encode(resp{Rows: products, Total: count}); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
-	return nil
-}
+// 	if err = json.NewEncoder(w).Encode(resp{Rows: products, Total: count}); err != nil {
+// 		return &models.AppError{
+// 			Code:    http.StatusInternalServerError,
+// 			Message: err.Error(),
+// 		}
+// 	}
+// 	return nil
+// }
 
 // GetProductsHandler godoc
 // @Summary Get products.

@@ -21,9 +21,9 @@ func buildEndpoints(appFullURL string) (router *mux.Router) {
 	router.Handle("/{item:userinfo}", secureChain.Then(env.AppMiddleware(env.UserInfoHandler))).Methods("GET")
 
 	// products public
-	if *paramPublicProductsEndpoint {
-		router.Handle("/e/{item:products}", commonChain.Then(env.AppMiddleware(env.GetExposedProductsHandler))).Methods("GET")
-	}
+	// if *paramPublicProductsEndpoint {
+	// 	router.Handle("/e/{item:products}", commonChain.Then(env.AppMiddleware(env.GetExposedProductsHandler))).Methods("GET")
+	// }
 
 	// ping handler returns pong only if the request is correctly authenticated (ie. with a valid JWT token)
 	router.Handle("/{item:ping}", secureChain.Then(env.AppMiddleware(env.VPingHandler))).Methods("GET")

@@ -43,7 +43,6 @@ var (
 	paramDBPath,
 	paramAdminList,
 	paramAutoImportURL *string
-	paramPublicProductsEndpoint,
 	commandUpdateQRCode,
 	paramDebug,
 	commandVersion,
@@ -65,11 +64,13 @@ func init() {
 	flagAppPath := flag.String("apppath", "/", "the application path with the trailing /")
 	flagDockerPort := flag.Int("dockerport", 0, "application listen port while running in docker")
 
-	flagOIDCDiscoverURL := flag.String("oidcdiscoverurl", "http://localhost:8080/realms/master/.well-known/openid-configuration", "the OIDC server discover URL")
+	// keycloak
+	flagOIDCDiscoverURL := flag.String("oidcdiscoverurl", "http://localhost:8080/keycloak/realms/master/.well-known/openid-configuration", "the OIDC server discover URL")
+	// casdoor
+	//flagOIDCDiscoverURL := flag.String("oidcdiscoverurl", "http://localhost:8000/.well-known/openid-configuration", "the OIDC server discover URL")
 	flagOIDCClientID := flag.String("oidcclientid", "chimitheque", "the OIDC client ID")
-	flagOIDCClientSecret := flag.String("oidcclientsecret", "aZoB1f6ogMmZmv0ShUgvxQc6Du07XuyO", "the OIDC client secret")
+	flagOIDCClientSecret := flag.String("oidcclientsecret", "9QX66vbGsvGQSHzqPWzAUqJy0d1V1CF1", "the OIDC client secret")
 
-	flagPublicProductsEndpoint := flag.Bool("enablepublicproductsendpoint", false, "enable public products endpoint (optional)")
 	flagAdminList := flag.String("admins", "", "the additional admins (comma separated email adresses) (optional) ")
 	flagDebug := flag.Bool("debug", false, "debug (verbose log), default is error")
 
@@ -88,7 +89,6 @@ func init() {
 	env.OIDCClientSecret = *flagOIDCClientSecret
 
 	paramDBPath = flagDBPath
-	paramPublicProductsEndpoint = flagPublicProductsEndpoint
 	paramAdminList = flagAdminList
 	paramDebug = flagDebug
 
