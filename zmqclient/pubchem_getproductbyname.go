@@ -13,13 +13,13 @@ type PubchemGetProductByNameReq struct {
 
 // Response.
 type PubchemGetProductByNameOk struct {
-	Ok Product
+	Ok PubchemProduct
 }
 type PubchemGetProductByNameErr struct {
 	Err string
 }
 
-func PubchemGetProductByName(req string) (Product, error) {
+func PubchemGetProductByName(req string) (PubchemProduct, error) {
 	var s *zmq.Socket
 
 	s, _ = Zctx.NewSocket(zmq.REQ)
@@ -34,13 +34,13 @@ func PubchemGetProductByName(req string) (Product, error) {
 	if message, err = json.Marshal(PubchemGetProductByNameReq{
 		PubchemGetProductByName: req,
 	}); err != nil {
-		return Product{}, err
+		return PubchemProduct{}, err
 	}
 
 	s.Send(string(message), 0)
 
 	if msg, err := s.Recv(0); err != nil {
-		return Product{}, err
+		return PubchemProduct{}, err
 	} else {
 
 		if msg[0:5] == `{"Ok"` {
@@ -49,7 +49,7 @@ func PubchemGetProductByName(req string) (Product, error) {
 			err = json.Unmarshal([]byte(msg), &resp)
 
 			if err != nil {
-				return Product{}, err
+				return PubchemProduct{}, err
 			}
 
 			return resp.Ok, nil
@@ -60,15 +60,15 @@ func PubchemGetProductByName(req string) (Product, error) {
 			err = json.Unmarshal([]byte(msg), &resp)
 
 			if err != nil {
-				return Product{}, err
+				return PubchemProduct{}, err
 			}
 
-			return Product{}, err
+			return PubchemProduct{}, err
 
 		}
 
 	}
 
-	return Product{}, nil
+	return PubchemProduct{}, nil
 
 }

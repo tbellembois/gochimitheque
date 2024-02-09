@@ -1,7 +1,7 @@
 package zmqclient
 
 // product type
-type Product struct {
+type PubchemProduct struct {
 	Name                *string   `json:"name"`
 	Inchi               *string   `json:"inchi"`
 	InchiKey            *string   `json:"inchi_key"`

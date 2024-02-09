@@ -160,7 +160,7 @@ func (env *Env) PubchemGetProductByNameHandler(w http.ResponseWriter, r *http.Re
 
 	var (
 		err     error
-		product zmqclient.Product
+		product zmqclient.PubchemProduct
 	)
 
 	if product, err = zmqclient.PubchemGetProductByName(vars["name"]); err != nil {
