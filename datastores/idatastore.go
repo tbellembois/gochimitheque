@@ -38,8 +38,8 @@ type Datastore interface {
 	CreateProducer(p models.Producer) (int64, error)
 
 	GetSuppliers(zmqclient.RequestFilter) ([]models.Supplier, int, error)
-	GetSupplier(id int) (models.Supplier, error)
-	GetSupplierByLabel(label string) (models.Supplier, error)
+	// GetSupplier(id int) (models.Supplier, error)
+	// GetSupplierByLabel(label string) (models.Supplier, error)
 	CreateSupplier(s models.Supplier) (int64, error)
 
 	GetProducerRefs(zmqclient.RequestFilter) ([]models.ProducerRef, int, error)

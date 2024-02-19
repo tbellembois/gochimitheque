@@ -382,42 +382,60 @@ func (env *Env) GetProductsSuppliersHandler(w http.ResponseWriter, r *http.Reque
 	logger.Log.Debug("GetProductsSuppliersHandler")
 
 	var (
-		err    error
-		filter zmqclient.RequestFilter
+		jsonRawMessage json.RawMessage
+		err            error
 	)
 
-	// init db request parameters
-	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetSuppliers("http://localhost/?" + r.URL.RawQuery); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.Request_filter",
+			Message:       "error calling zmqclient.DBGetSuppliers",
 		}
-	}
-
-	srs, count, err := env.DB.GetSuppliers(filter)
-	if err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error getting the suppliers",
-		}
-	}
-
-	type resp struct {
-		Rows  []models.Supplier `json:"rows"`
-		Total int               `json:"total"`
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
-	if err = json.NewEncoder(w).Encode(resp{Rows: srs, Total: count}); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
+
+	// var (
+	// 	err    error
+	// 	filter zmqclient.RequestFilter
+	// )
+
+	// // init db request parameters
+	// if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	// 	return &models.AppError{
+	// 		OriginalError: err,
+	// 		Code:          http.StatusInternalServerError,
+	// 		Message:       "error calling zmqclient.Request_filter",
+	// 	}
+	// }
+
+	// srs, count, err := env.DB.GetSuppliers(filter)
+	// if err != nil {
+	// 	return &models.AppError{
+	// 		OriginalError: err,
+	// 		Code:          http.StatusInternalServerError,
+	// 		Message:       "error getting the suppliers",
+	// 	}
+	// }
+
+	// type resp struct {
+	// 	Rows  []models.Supplier `json:"rows"`
+	// 	Total int               `json:"total"`
+	// }
+
+	// w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	// if err = json.NewEncoder(w).Encode(resp{Rows: srs, Total: count}); err != nil {
+	// 	return &models.AppError{
+	// 		Code:    http.StatusInternalServerError,
+	// 		Message: err.Error(),
+	// 	}
+	// }
+	// return nil
 }
 
 // ToogleProductBookmarkHandler (un)bookmarks the product with id passed in the request vars

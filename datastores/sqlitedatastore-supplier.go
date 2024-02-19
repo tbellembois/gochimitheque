@@ -12,158 +12,163 @@ import (
 )
 
 func (db *SQLiteDataStore) GetSuppliers(f zmqclient.RequestFilter) ([]models.Supplier, int, error) {
-	var (
-		err                              error
-		suppliers                        []models.Supplier
-		count                            int
-		exactSearch, countSQL, selectSQL string
-		countArgs, selectArgs            []interface{}
-	)
 
-	logger.Log.WithFields(logrus.Fields{"f": f}).Debug("GetSuppliers")
+	// migrated to Rust.
+	var suppliers []models.Supplier
+	return suppliers, 0, nil
 
-	// hack to bypass optionnal default on the Rust part.
-	if f.Search == "" {
-		f.Search = "%%"
-	}
-	exactSearch = f.Search
-	exactSearch = strings.TrimPrefix(exactSearch, "%")
-	exactSearch = strings.TrimSuffix(exactSearch, "%")
+	// 	var (
+	// 		err                              error
+	// 		suppliers                        []models.Supplier
+	// 		count                            int
+	// 		exactSearch, countSQL, selectSQL string
+	// 		countArgs, selectArgs            []interface{}
+	// 	)
 
-	dialect := goqu.Dialect("sqlite3")
-	supplierTable := goqu.T("supplier")
+	// 	logger.Log.WithFields(logrus.Fields{"f": f}).Debug("GetSuppliers")
 
-	// Join, where.
-	joinClause := dialect.From(
-		supplierTable,
-	).Where(
-		goqu.I("supplier_label").Like(f.Search),
-	)
+	// 	// hack to bypass optionnal default on the Rust part.
+	// 	if f.Search == "" {
+	// 		f.Search = "%%"
+	// 	}
+	// 	exactSearch = f.Search
+	// 	exactSearch = strings.TrimPrefix(exactSearch, "%")
+	// 	exactSearch = strings.TrimSuffix(exactSearch, "%")
 
-	if countSQL, countArgs, err = joinClause.Select(
-		goqu.COUNT(goqu.I("supplier_id").Distinct()),
-	).ToSQL(); err != nil {
-		return nil, 0, err
-	}
-	if selectSQL, selectArgs, err = joinClause.Select(
-		goqu.I("supplier_id"),
-		goqu.I("supplier_label"),
-	).Order(
-		goqu.L("INSTR(supplier_label, ?)", exactSearch).Asc(),
-		goqu.C("supplier_label").Asc(),
-	).Limit(uint(f.Limit)).Offset(uint(f.Offset)).ToSQL(); err != nil {
-		return nil, 0, err
-	}
+	// 	dialect := goqu.Dialect("sqlite3")
+	// 	supplierTable := goqu.T("supplier")
 
-	// Select.
-	if err = db.Select(&suppliers, selectSQL, selectArgs...); err != nil {
-		return nil, 0, err
-	}
-	// Count.
-	if err = db.Get(&count, countSQL, countArgs...); err != nil {
-		return nil, 0, err
-	}
+	// 	// Join, where.
+	// 	joinClause := dialect.From(
+	// 		supplierTable,
+	// 	).Where(
+	// 		goqu.I("supplier_label").Like(f.Search),
+	// 	)
 
-	// Setting the C attribute for formula matching exactly the search.
-	sQuery := dialect.From(supplierTable).Where(
-		goqu.I("supplier_label").Eq(exactSearch),
-	).Select(
-		"supplier_id",
-		"supplier_label",
-	)
+	// 	if countSQL, countArgs, err = joinClause.Select(
+	// 		goqu.COUNT(goqu.I("supplier_id").Distinct()),
+	// 	).ToSQL(); err != nil {
+	// 		return nil, 0, err
+	// 	}
+	// 	if selectSQL, selectArgs, err = joinClause.Select(
+	// 		goqu.I("supplier_id"),
+	// 		goqu.I("supplier_label"),
+	// 	).Order(
+	// 		goqu.L("INSTR(supplier_label, ?)", exactSearch).Asc(),
+	// 		goqu.C("supplier_label").Asc(),
+	// 	).Limit(uint(f.Limit)).Offset(uint(f.Offset)).ToSQL(); err != nil {
+	// 		return nil, 0, err
+	// 	}
 
-	var (
-		sqlr     string
-		args     []interface{}
-		supplier models.Supplier
-	)
-	if sqlr, args, err = sQuery.ToSQL(); err != nil {
-		logger.Log.Error(err)
-		return nil, 0, err
-	}
+	// 	// Select.
+	// 	if err = db.Select(&suppliers, selectSQL, selectArgs...); err != nil {
+	// 		return nil, 0, err
+	// 	}
+	// 	// Count.
+	// 	if err = db.Get(&count, countSQL, countArgs...); err != nil {
+	// 		return nil, 0, err
+	// 	}
 
-	if err = db.Get(&supplier, sqlr, args...); err != nil && err != sql.ErrNoRows {
-		return nil, 0, err
-	}
+	// 	// Setting the C attribute for formula matching exactly the search.
+	// 	sQuery := dialect.From(supplierTable).Where(
+	// 		goqu.I("supplier_label").Eq(exactSearch),
+	// 	).Select(
+	// 		"supplier_id",
+	// 		"supplier_label",
+	// 	)
 
-	for i, e := range suppliers {
-		if e.SupplierID == supplier.SupplierID {
-			suppliers[i].C = 1
-		}
-	}
+	// 	var (
+	// 		sqlr     string
+	// 		args     []interface{}
+	// 		supplier models.Supplier
+	// 	)
+	// 	if sqlr, args, err = sQuery.ToSQL(); err != nil {
+	// 		logger.Log.Error(err)
+	// 		return nil, 0, err
+	// 	}
 
-	logger.Log.WithFields(logrus.Fields{"suppliers": suppliers}).Debug("GetSuppliers")
+	// 	if err = db.Get(&supplier, sqlr, args...); err != nil && err != sql.ErrNoRows {
+	// 		return nil, 0, err
+	// 	}
 
-	return suppliers, count, nil
+	// 	for i, e := range suppliers {
+	// 		if e.SupplierID == supplier.SupplierID {
+	// 			suppliers[i].C = 1
+	// 		}
+	// 	}
+
+	// 	logger.Log.WithFields(logrus.Fields{"suppliers": suppliers}).Debug("GetSuppliers")
+
+	// return suppliers, count, nil
 }
 
-func (db *SQLiteDataStore) GetSupplier(id int) (models.Supplier, error) {
-	var (
-		err      error
-		sqlr     string
-		args     []interface{}
-		supplier models.Supplier
-	)
+// func (db *SQLiteDataStore) GetSupplier(id int) (models.Supplier, error) {
+// 	var (
+// 		err      error
+// 		sqlr     string
+// 		args     []interface{}
+// 		supplier models.Supplier
+// 	)
 
-	logger.Log.WithFields(logrus.Fields{"id": id}).Debug("GetSupplier")
+// 	logger.Log.WithFields(logrus.Fields{"id": id}).Debug("GetSupplier")
 
-	dialect := goqu.Dialect("sqlite3")
-	supplierTable := goqu.T("supplier")
+// 	dialect := goqu.Dialect("sqlite3")
+// 	supplierTable := goqu.T("supplier")
 
-	sQuery := dialect.From(supplierTable).Where(
-		goqu.I("supplier_id").Eq(id),
-	).Select(
-		goqu.I("supplier_id"),
-		goqu.I("supplier_label"),
-	)
+// 	sQuery := dialect.From(supplierTable).Where(
+// 		goqu.I("supplier_id").Eq(id),
+// 	).Select(
+// 		goqu.I("supplier_id"),
+// 		goqu.I("supplier_label"),
+// 	)
 
-	if sqlr, args, err = sQuery.ToSQL(); err != nil {
-		logger.Log.Error(err)
-		return models.Supplier{}, err
-	}
+// 	if sqlr, args, err = sQuery.ToSQL(); err != nil {
+// 		logger.Log.Error(err)
+// 		return models.Supplier{}, err
+// 	}
 
-	if err = db.Get(&supplier, sqlr, args...); err != nil {
-		return models.Supplier{}, err
-	}
+// 	if err = db.Get(&supplier, sqlr, args...); err != nil {
+// 		return models.Supplier{}, err
+// 	}
 
-	logger.Log.WithFields(logrus.Fields{"ID": id, "supplier": supplier}).Debug("GetSupplier")
+// 	logger.Log.WithFields(logrus.Fields{"ID": id, "supplier": supplier}).Debug("GetSupplier")
 
-	return supplier, nil
-}
+// 	return supplier, nil
+// }
 
-func (db *SQLiteDataStore) GetSupplierByLabel(label string) (models.Supplier, error) {
-	var (
-		err      error
-		sqlr     string
-		args     []interface{}
-		supplier models.Supplier
-	)
+// func (db *SQLiteDataStore) GetSupplierByLabel(label string) (models.Supplier, error) {
+// 	var (
+// 		err      error
+// 		sqlr     string
+// 		args     []interface{}
+// 		supplier models.Supplier
+// 	)
 
-	logger.Log.WithFields(logrus.Fields{"label": label}).Debug("GetSupplierByLabel")
+// 	logger.Log.WithFields(logrus.Fields{"label": label}).Debug("GetSupplierByLabel")
 
-	dialect := goqu.Dialect("sqlite3")
-	supplierTable := goqu.T("supplier")
+// 	dialect := goqu.Dialect("sqlite3")
+// 	supplierTable := goqu.T("supplier")
 
-	sQuery := dialect.From(supplierTable).Where(
-		goqu.I("supplier_label").Eq(label),
-	).Select(
-		goqu.I("supplier_id"),
-		goqu.I("supplier_label"),
-	).Order(goqu.I("supplier_label").Asc())
+// 	sQuery := dialect.From(supplierTable).Where(
+// 		goqu.I("supplier_label").Eq(label),
+// 	).Select(
+// 		goqu.I("supplier_id"),
+// 		goqu.I("supplier_label"),
+// 	).Order(goqu.I("supplier_label").Asc())
 
-	if sqlr, args, err = sQuery.ToSQL(); err != nil {
-		logger.Log.Error(err)
-		return models.Supplier{}, err
-	}
+// 	if sqlr, args, err = sQuery.ToSQL(); err != nil {
+// 		logger.Log.Error(err)
+// 		return models.Supplier{}, err
+// 	}
 
-	if err = db.Get(&supplier, sqlr, args...); err != nil {
-		return models.Supplier{}, err
-	}
+// 	if err = db.Get(&supplier, sqlr, args...); err != nil {
+// 		return models.Supplier{}, err
+// 	}
 
-	logger.Log.WithFields(logrus.Fields{"label": label, "supplier": supplier}).Debug("GetSupplierByLabel")
+// 	logger.Log.WithFields(logrus.Fields{"label": label, "supplier": supplier}).Debug("GetSupplierByLabel")
 
-	return supplier, nil
-}
+// 	return supplier, nil
+// }
 
 func (db *SQLiteDataStore) CreateSupplier(s models.Supplier) (lastInsertID int64, err error) {
 	var (

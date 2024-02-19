@@ -2,6 +2,7 @@ package zmqclient
 
 import (
 	"encoding/json"
+	"errors"
 
 	zmq "github.com/pebbe/zmq4"
 )
@@ -20,24 +21,31 @@ type IsCeNumberErr struct {
 }
 
 func IsCeNumber(req string) (bool, error) {
-	var s *zmq.Socket
+	var (
+		s   *zmq.Socket
+		err error
+	)
 
-	s, _ = Zctx.NewSocket(zmq.REQ)
+	if s, err = Zctx.NewSocket(zmq.REQ); err != nil {
+		return false, err
+	}
 	defer s.Close()
 
 	s.Connect("tcp://localhost:5556")
 
 	var (
 		message []byte
-		err     error
 	)
+
 	if message, err = json.Marshal(IsCeNumberReq{
 		IsCeNumber: req,
 	}); err != nil {
 		return false, err
 	}
 
-	s.Send(string(message), 0)
+	if _, err = s.Send(string(message), 0); err != nil {
+		return false, err
+	}
 
 	if msg, err := s.Recv(0); err != nil {
 		return false, err
@@ -63,7 +71,7 @@ func IsCeNumber(req string) (bool, error) {
 				return false, err
 			}
 
-			return false, err
+			return false, errors.New(resp.Err)
 
 		}
 

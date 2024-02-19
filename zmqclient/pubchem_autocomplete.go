@@ -2,6 +2,7 @@ package zmqclient
 
 import (
 	"encoding/json"
+	"errors"
 
 	zmq "github.com/pebbe/zmq4"
 )
@@ -20,24 +21,31 @@ type PubchemAutocompleteErr struct {
 }
 
 func PubchemAutocompleteProductName(req string) (PubchemAutocomplete, error) {
-	var s *zmq.Socket
+	var (
+		s   *zmq.Socket
+		err error
+	)
 
 	s, _ = Zctx.NewSocket(zmq.REQ)
 	defer s.Close()
 
-	s.Connect("tcp://localhost:5556")
+	if err = s.Connect("tcp://localhost:5556"); err != nil {
+		return PubchemAutocomplete{}, err
+	}
 
 	var (
 		message []byte
-		err     error
 	)
+
 	if message, err = json.Marshal(PubchemAutocompleteReq{
 		PubchemAutocomplete: req,
 	}); err != nil {
 		return PubchemAutocomplete{}, err
 	}
 
-	s.Send(string(message), 0)
+	if _, err = s.Send(string(message), 0); err != nil {
+		return PubchemAutocomplete{}, err
+	}
 
 	if msg, err := s.Recv(0); err != nil {
 		return PubchemAutocomplete{}, err
@@ -63,7 +71,7 @@ func PubchemAutocompleteProductName(req string) (PubchemAutocomplete, error) {
 				return PubchemAutocomplete{}, err
 			}
 
-			return PubchemAutocomplete{}, err
+			return PubchemAutocomplete{}, errors.New(resp.Err)
 
 		}
 
