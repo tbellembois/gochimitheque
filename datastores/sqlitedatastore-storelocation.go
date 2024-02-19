@@ -66,6 +66,11 @@ func (db *SQLiteDataStore) buildFullPath(s models.StoreLocation, tx *sqlx.Tx) st
 func (db *SQLiteDataStore) GetStoreLocations(f zmqclient.RequestFilter, person_id int) ([]models.StoreLocation, int, error) {
 	logger.Log.WithFields(logrus.Fields{"f": f}).Debug("GetStoreLocations")
 
+	// hack to bypass optionnal default on the Rust part.
+	if f.Search == "" {
+		f.Search = "%%"
+	}
+
 	if f.OrderBy == "" {
 		f.OrderBy = "storelocation_id"
 	}

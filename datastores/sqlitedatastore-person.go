@@ -20,6 +20,11 @@ func (db *SQLiteDataStore) GetPeople(f zmqclient.RequestFilter, person_id int) (
 
 	logger.Log.WithFields(logrus.Fields{"f": f}).Debug("GetPeople")
 
+	// hack to bypass optionnal default on the Rust part.
+	if f.Search == "" {
+		f.Search = "%%"
+	}
+
 	if f.OrderBy == "" {
 		f.OrderBy = "person_id"
 	}

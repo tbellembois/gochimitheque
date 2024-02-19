@@ -149,6 +149,11 @@ func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int,
 
 	logger.Log.WithFields(logrus.Fields{"f": fmt.Sprintf("%+v", f)}).Debug("GetProducts")
 
+	// hack to bypass optionnal default on the Rust part.
+	if f.Search == "" {
+		f.Search = "%%"
+	}
+
 	if f.OrderBy == "" {
 		f.OrderBy = "product_id"
 	}

@@ -58,6 +58,11 @@ func (db *SQLiteDataStore) GetStoragesUnits(f zmqclient.RequestFilter) ([]models
 		err                                error
 	)
 
+	// hack to bypass optionnal default on the Rust part.
+	if f.Search == "" {
+		f.Search = "%%"
+	}
+
 	if f.OrderBy == "" {
 		f.OrderBy = "unit_id"
 	}
@@ -125,6 +130,11 @@ func (db *SQLiteDataStore) GetStorages(f zmqclient.RequestFilter, person_id int)
 	)
 
 	logger.Log.WithFields(logrus.Fields{"f": f}).Debug("GetStorages")
+
+	// hack to bypass optionnal default on the Rust part.
+	if f.Search == "" {
+		f.Search = "%%"
+	}
 
 	if f.OrderBy == "" {
 		f.OrderBy = "storage_id"
@@ -516,6 +526,11 @@ func (db *SQLiteDataStore) GetOtherStorages(f zmqclient.RequestFilter, person_id
 	)
 
 	logger.Log.WithFields(logrus.Fields{"f": f}).Debug("GetOtherStorages")
+
+	// hack to bypass optionnal default on the Rust part.
+	if f.Search == "" {
+		f.Search = "%%"
+	}
 
 	if f.OrderBy == "" {
 		f.OrderBy = "storage_id"

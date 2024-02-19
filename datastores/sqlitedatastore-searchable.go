@@ -21,6 +21,10 @@ func GetByMany[T models.Searchable](searchable T, db *sqlx.DB, filter zmqclient.
 
 	logger.Log.WithFields(logrus.Fields{"filter": filter}).Debug("GetByMany")
 
+	// hack to bypass optionnal default on the Rust part.
+	if filter.Search == "" {
+		filter.Search = "%%"
+	}
 	exactSearch = filter.Search
 	exactSearch = strings.TrimPrefix(exactSearch, "%")
 	exactSearch = strings.TrimSuffix(exactSearch, "%")

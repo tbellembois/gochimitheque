@@ -22,6 +22,10 @@ func (db *SQLiteDataStore) GetProducers(f zmqclient.RequestFilter) ([]models.Pro
 
 	logger.Log.WithFields(logrus.Fields{"f": f}).Debug("GetProducers")
 
+	// hack to bypass optionnal default on the Rust part.
+	if f.Search == "" {
+		f.Search = "%%"
+	}
 	exactSearch = f.Search
 	exactSearch = strings.TrimPrefix(exactSearch, "%")
 	exactSearch = strings.TrimSuffix(exactSearch, "%")
@@ -233,6 +237,10 @@ func (db *SQLiteDataStore) GetProducerRefs(f zmqclient.RequestFilter) ([]models.
 		f.OrderBy = "producerref_id"
 	}
 
+	// hack to bypass optionnal default on the Rust part.
+	if f.Search == "" {
+		f.Search = "%%"
+	}
 	exactSearch = f.Search
 	exactSearch = strings.TrimPrefix(exactSearch, "%")
 	exactSearch = strings.TrimSuffix(exactSearch, "%")

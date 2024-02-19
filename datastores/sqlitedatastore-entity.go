@@ -24,6 +24,11 @@ func (db *SQLiteDataStore) GetEntities(f zmqclient.RequestFilter, person_id int)
 
 	logger.Log.WithFields(logrus.Fields{"f": f}).Debug("GetEntities")
 
+	// hack to bypass optionnal default on the Rust part.
+	if f.Search == "" {
+		f.Search = "%%"
+	}
+
 	if f.OrderBy == "" {
 		f.OrderBy = "entity_id"
 	}

@@ -22,6 +22,10 @@ func (db *SQLiteDataStore) GetSuppliers(f zmqclient.RequestFilter) ([]models.Sup
 
 	logger.Log.WithFields(logrus.Fields{"f": f}).Debug("GetSuppliers")
 
+	// hack to bypass optionnal default on the Rust part.
+	if f.Search == "" {
+		f.Search = "%%"
+	}
 	exactSearch = f.Search
 	exactSearch = strings.TrimPrefix(exactSearch, "%")
 	exactSearch = strings.TrimSuffix(exactSearch, "%")
@@ -231,6 +235,10 @@ func (db *SQLiteDataStore) GetSupplierRefs(f zmqclient.RequestFilter) ([]models.
 		f.OrderBy = "supplierref_id"
 	}
 
+	// hack to bypass optionnal default on the Rust part.
+	if f.Search == "" {
+		f.Search = "%%"
+	}
 	exactSearch = f.Search
 	exactSearch = strings.TrimPrefix(exactSearch, "%")
 	exactSearch = strings.TrimSuffix(exactSearch, "%")
