@@ -2,7 +2,6 @@ package datastores
 
 import (
 	"database/sql"
-	"strings"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/sirupsen/logrus"
@@ -14,8 +13,7 @@ import (
 func (db *SQLiteDataStore) GetSuppliers(f zmqclient.RequestFilter) ([]models.Supplier, int, error) {
 
 	// migrated to Rust.
-	var suppliers []models.Supplier
-	return suppliers, 0, nil
+	panic("migrated to Rust")
 
 	// 	var (
 	// 		err                              error
@@ -226,107 +224,111 @@ func (db *SQLiteDataStore) CreateSupplier(s models.Supplier) (lastInsertID int64
 }
 
 func (db *SQLiteDataStore) GetSupplierRefs(f zmqclient.RequestFilter) ([]models.SupplierRef, int, error) {
-	var (
-		err                              error
-		supplierRefs                     []models.SupplierRef
-		count                            int
-		exactSearch, countSQL, selectSQL string
-		countArgs, selectArgs            []interface{}
-	)
 
-	logger.Log.WithFields(logrus.Fields{"f": f}).Debug("GetSupplierRefs")
+	// migrated to Rust.
+	panic("migrated to Rust")
 
-	if f.OrderBy == "" {
-		f.OrderBy = "supplierref_id"
-	}
+	// var (
+	// 	err                              error
+	// 	supplierRefs                     []models.SupplierRef
+	// 	count                            int
+	// 	exactSearch, countSQL, selectSQL string
+	// 	countArgs, selectArgs            []interface{}
+	// )
 
-	// hack to bypass optionnal default on the Rust part.
-	if f.Search == "" {
-		f.Search = "%%"
-	}
-	exactSearch = f.Search
-	exactSearch = strings.TrimPrefix(exactSearch, "%")
-	exactSearch = strings.TrimSuffix(exactSearch, "%")
+	// logger.Log.WithFields(logrus.Fields{"f": f}).Debug("GetSupplierRefs")
 
-	dialect := goqu.Dialect("sqlite3")
-	supplierrefTable := goqu.T("supplierref")
+	// if f.OrderBy == "" {
+	// 	f.OrderBy = "supplierref_id"
+	// }
 
-	// Join, where.
-	whereAnd := []goqu.Expression{
-		goqu.I("supplierref.supplierref_label").Like(f.Search),
-	}
-	if f.Supplier != 0 {
-		whereAnd = append(whereAnd, goqu.I("supplierref.supplier").Eq(f.Supplier))
-	}
+	// // hack to bypass optionnal default on the Rust part.
+	// if f.Search == "" {
+	// 	f.Search = "%%"
+	// }
+	// exactSearch = f.Search
+	// exactSearch = strings.TrimPrefix(exactSearch, "%")
+	// exactSearch = strings.TrimSuffix(exactSearch, "%")
 
-	joinClause := dialect.From(
-		supplierrefTable,
-	).Join(
-		goqu.T("supplier"),
-		goqu.On(
-			goqu.Ex{
-				"supplierref.supplier": goqu.I("supplier.supplier_id"),
-			},
-		),
-	).Where(
-		whereAnd...,
-	)
+	// dialect := goqu.Dialect("sqlite3")
+	// supplierrefTable := goqu.T("supplierref")
 
-	if countSQL, countArgs, err = joinClause.Select(
-		goqu.COUNT(goqu.I("supplierref.supplierref_id").Distinct()),
-	).ToSQL(); err != nil {
-		return nil, 0, err
-	}
-	if selectSQL, selectArgs, err = joinClause.Select(
-		goqu.I("supplierref_id"),
-		goqu.I("supplierref_label"),
-		goqu.I("supplier_id").As(goqu.C("supplier.supplier_id")),
-		goqu.I("supplier_label").As(goqu.C("supplier.supplier_label")),
-	).Order(
-		goqu.L("INSTR(supplierref_label, ?)", exactSearch).Asc(),
-		goqu.C("supplierref_label").Asc(),
-	).Limit(uint(f.Limit)).Offset(uint(f.Offset)).ToSQL(); err != nil {
-		return nil, 0, err
-	}
+	// // Join, where.
+	// whereAnd := []goqu.Expression{
+	// 	goqu.I("supplierref.supplierref_label").Like(f.Search),
+	// }
+	// if f.Supplier != 0 {
+	// 	whereAnd = append(whereAnd, goqu.I("supplierref.supplier").Eq(f.Supplier))
+	// }
 
-	// Select.
-	if err = db.Select(&supplierRefs, selectSQL, selectArgs...); err != nil {
-		return nil, 0, err
-	}
-	// Count.
-	if err = db.Get(&count, countSQL, countArgs...); err != nil {
-		return nil, 0, err
-	}
+	// joinClause := dialect.From(
+	// 	supplierrefTable,
+	// ).Join(
+	// 	goqu.T("supplier"),
+	// 	goqu.On(
+	// 		goqu.Ex{
+	// 			"supplierref.supplier": goqu.I("supplier.supplier_id"),
+	// 		},
+	// 	),
+	// ).Where(
+	// 	whereAnd...,
+	// )
 
-	// Setting the C attribute for formula matching exactly the search.
-	sQuery := dialect.From(supplierrefTable).Where(
-		goqu.I("supplierref_label").Eq(exactSearch),
-	).Select(
-		"supplierref_id",
-		"supplierref_label",
-	)
+	// if countSQL, countArgs, err = joinClause.Select(
+	// 	goqu.COUNT(goqu.I("supplierref.supplierref_id").Distinct()),
+	// ).ToSQL(); err != nil {
+	// 	return nil, 0, err
+	// }
+	// if selectSQL, selectArgs, err = joinClause.Select(
+	// 	goqu.I("supplierref_id"),
+	// 	goqu.I("supplierref_label"),
+	// 	goqu.I("supplier_id").As(goqu.C("supplier.supplier_id")),
+	// 	goqu.I("supplier_label").As(goqu.C("supplier.supplier_label")),
+	// ).Order(
+	// 	goqu.L("INSTR(supplierref_label, ?)", exactSearch).Asc(),
+	// 	goqu.C("supplierref_label").Asc(),
+	// ).Limit(uint(f.Limit)).Offset(uint(f.Offset)).ToSQL(); err != nil {
+	// 	return nil, 0, err
+	// }
 
-	var (
-		sqlr string
-		args []interface{}
-		pref models.SupplierRef
-	)
-	if sqlr, args, err = sQuery.ToSQL(); err != nil {
-		logger.Log.Error(err)
-		return nil, 0, err
-	}
+	// // Select.
+	// if err = db.Select(&supplierRefs, selectSQL, selectArgs...); err != nil {
+	// 	return nil, 0, err
+	// }
+	// // Count.
+	// if err = db.Get(&count, countSQL, countArgs...); err != nil {
+	// 	return nil, 0, err
+	// }
 
-	if err = db.Get(&pref, sqlr, args...); err != nil && err != sql.ErrNoRows {
-		return nil, 0, err
-	}
+	// // Setting the C attribute for formula matching exactly the search.
+	// sQuery := dialect.From(supplierrefTable).Where(
+	// 	goqu.I("supplierref_label").Eq(exactSearch),
+	// ).Select(
+	// 	"supplierref_id",
+	// 	"supplierref_label",
+	// )
 
-	for i, p := range supplierRefs {
-		if p.SupplierRefID == pref.SupplierRefID {
-			supplierRefs[i].C = 1
-		}
-	}
+	// var (
+	// 	sqlr string
+	// 	args []interface{}
+	// 	pref models.SupplierRef
+	// )
+	// if sqlr, args, err = sQuery.ToSQL(); err != nil {
+	// 	logger.Log.Error(err)
+	// 	return nil, 0, err
+	// }
 
-	logger.Log.WithFields(logrus.Fields{"supplierRefs": supplierRefs}).Debug("GetSupplierRefs")
+	// if err = db.Get(&pref, sqlr, args...); err != nil && err != sql.ErrNoRows {
+	// 	return nil, 0, err
+	// }
 
-	return supplierRefs, count, nil
+	// for i, p := range supplierRefs {
+	// 	if p.SupplierRefID == pref.SupplierRefID {
+	// 		supplierRefs[i].C = 1
+	// 	}
+	// }
+
+	// logger.Log.WithFields(logrus.Fields{"supplierRefs": supplierRefs}).Debug("GetSupplierRefs")
+
+	// return supplierRefs, count, nil
 }

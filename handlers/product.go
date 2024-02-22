@@ -115,42 +115,62 @@ func (env *Env) GetProductsSupplierRefsHandler(w http.ResponseWriter, r *http.Re
 	logger.Log.Debug("GetProductsSupplierRefsHandler")
 
 	var (
-		err    error
-		filter zmqclient.RequestFilter
+		jsonRawMessage json.RawMessage
+		err            error
 	)
 
-	// init db request parameters
-	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetSupplierrefs("http://localhost/?" + r.URL.RawQuery); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.Request_filter",
+			Message:       "error calling zmqclient.DBGetSupplierrefs",
 		}
-	}
-
-	srefs, count, err := env.DB.GetSupplierRefs(filter)
-	if err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error getting the supplierrefs",
-		}
-	}
-
-	type resp struct {
-		Rows  []models.SupplierRef `json:"rows"`
-		Total int                  `json:"total"`
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
-	if err = json.NewEncoder(w).Encode(resp{Rows: srefs, Total: count}); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
+
+	// logger.Log.Debug("GetProductsSupplierRefsHandler")
+
+	// var (
+	// 	err    error
+	// 	filter zmqclient.RequestFilter
+	// )
+
+	// // init db request parameters
+	// if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	// 	return &models.AppError{
+	// 		OriginalError: err,
+	// 		Code:          http.StatusInternalServerError,
+	// 		Message:       "error calling zmqclient.Request_filter",
+	// 	}
+	// }
+
+	// srefs, count, err := env.DB.GetSupplierRefs(filter)
+	// if err != nil {
+	// 	return &models.AppError{
+	// 		OriginalError: err,
+	// 		Code:          http.StatusInternalServerError,
+	// 		Message:       "error getting the supplierrefs",
+	// 	}
+	// }
+
+	// type resp struct {
+	// 	Rows  []models.SupplierRef `json:"rows"`
+	// 	Total int                  `json:"total"`
+	// }
+
+	// w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	// if err = json.NewEncoder(w).Encode(resp{Rows: srefs, Total: count}); err != nil {
+	// 	return &models.AppError{
+	// 		Code:    http.StatusInternalServerError,
+	// 		Message: err.Error(),
+	// 	}
+	// }
+	// return nil
 }
 
 func (env *Env) PubchemGetProductByNameHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
