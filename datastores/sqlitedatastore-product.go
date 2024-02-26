@@ -181,7 +181,6 @@ func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int,
 	p.product_radioactive,
 	p.product_threedformula,
 	p.product_twodformula,
-	p.product_molformula,
 	p.product_disposalcomment,
 	p.product_remark,
 	p.product_sheet,
@@ -845,7 +844,6 @@ func (db *SQLiteDataStore) GetProduct(id int) (models.Product, error) {
 	product_radioactive,
 	product_threedformula,
 	product_twodformula,
-	product_molformula,
 	product_disposalcomment,
 	product_remark,
 	product_sheet,
@@ -1425,11 +1423,11 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p models.Product, update bool) (l
 		insertCols["producerref"] = nil
 	}
 
-	if p.ProductMolFormula.Valid {
-		insertCols["product_molformula"] = p.ProductMolFormula.String
-	} else {
-		insertCols["product_molformula"] = nil
-	}
+	// if p.ProductMolFormula.Valid {
+	// 	insertCols["product_molformula"] = p.ProductMolFormula.String
+	// } else {
+	// 	insertCols["product_molformula"] = nil
+	// }
 
 	insertCols["name"] = p.NameID
 	insertCols["person"] = p.PersonID

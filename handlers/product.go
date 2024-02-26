@@ -66,48 +66,68 @@ func (env *Env) VPubchemHandler(w http.ResponseWriter, r *http.Request) *models.
 
 // GetProductsProducerRefsHandler returns a json list of the producerref.
 func (env *Env) GetProductsProducerRefsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+
 	logger.Log.Debug("GetProductsProducerRefsHandler")
 
 	var (
-		err    error
-		filter zmqclient.RequestFilter
+		jsonRawMessage json.RawMessage
+		err            error
 	)
 
-	// init db request parameters
-	// if filter, aerr = request.NewFilter(r); err != nil {
-	// 	return aerr
-	// }
-	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetProducerrefs("http://localhost/?" + r.URL.RawQuery); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.Request_filter",
+			Message:       "error calling zmqclient.DBGetProducerrefs",
 		}
-	}
-
-	prefs, count, err := env.DB.GetProducerRefs(filter)
-	if err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error getting the producerrefs",
-		}
-	}
-
-	type resp struct {
-		Rows  []models.ProducerRef `json:"rows"`
-		Total int                  `json:"total"`
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
-	if err = json.NewEncoder(w).Encode(resp{Rows: prefs, Total: count}); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
+	// logger.Log.Debug("GetProductsProducerRefsHandler")
+
+	// var (
+	// 	err    error
+	// 	filter zmqclient.RequestFilter
+	// )
+
+	// // init db request parameters
+	// // if filter, aerr = request.NewFilter(r); err != nil {
+	// // 	return aerr
+	// // }
+	// if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	// 	return &models.AppError{
+	// 		OriginalError: err,
+	// 		Code:          http.StatusInternalServerError,
+	// 		Message:       "error calling zmqclient.Request_filter",
+	// 	}
+	// }
+
+	// prefs, count, err := env.DB.GetProducerRefs(filter)
+	// if err != nil {
+	// 	return &models.AppError{
+	// 		OriginalError: err,
+	// 		Code:          http.StatusInternalServerError,
+	// 		Message:       "error getting the producerrefs",
+	// 	}
+	// }
+
+	// type resp struct {
+	// 	Rows  []models.ProducerRef `json:"rows"`
+	// 	Total int                  `json:"total"`
+	// }
+
+	// w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	// if err = json.NewEncoder(w).Encode(resp{Rows: prefs, Total: count}); err != nil {
+	// 	return &models.AppError{
+	// 		Code:    http.StatusInternalServerError,
+	// 		Message: err.Error(),
+	// 	}
+	// }
+	// return nil
 }
 
 // GetProductsSupplierRefsHandler returns a json list of the producerref.
@@ -359,42 +379,62 @@ func (env *Env) GetProductsProducersHandler(w http.ResponseWriter, r *http.Reque
 	logger.Log.Debug("GetProductsProducersHandler")
 
 	var (
-		err    error
-		filter zmqclient.RequestFilter
+		jsonRawMessage json.RawMessage
+		err            error
 	)
 
-	// init db request parameters
-	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetProducers("http://localhost/?" + r.URL.RawQuery); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.Request_filter",
+			Message:       "error calling zmqclient.DBGetProducers",
 		}
-	}
-
-	prs, count, err := env.DB.GetProducers(filter)
-	if err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error getting the producers",
-		}
-	}
-
-	type resp struct {
-		Rows  []models.Producer `json:"rows"`
-		Total int               `json:"total"`
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
-	if err = json.NewEncoder(w).Encode(resp{Rows: prs, Total: count}); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
+
+	// logger.Log.Debug("GetProductsProducersHandler")
+
+	// var (
+	// 	err    error
+	// 	filter zmqclient.RequestFilter
+	// )
+
+	// // init db request parameters
+	// if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	// 	return &models.AppError{
+	// 		OriginalError: err,
+	// 		Code:          http.StatusInternalServerError,
+	// 		Message:       "error calling zmqclient.Request_filter",
+	// 	}
+	// }
+
+	// prs, count, err := env.DB.GetProducers(filter)
+	// if err != nil {
+	// 	return &models.AppError{
+	// 		OriginalError: err,
+	// 		Code:          http.StatusInternalServerError,
+	// 		Message:       "error getting the producers",
+	// 	}
+	// }
+
+	// type resp struct {
+	// 	Rows  []models.Producer `json:"rows"`
+	// 	Total int               `json:"total"`
+	// }
+
+	// w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	// if err = json.NewEncoder(w).Encode(resp{Rows: prs, Total: count}); err != nil {
+	// 	return &models.AppError{
+	// 		Code:    http.StatusInternalServerError,
+	// 		Message: err.Error(),
+	// 	}
+	// }
+	// return nil
 }
 
 // GetProductsSuppliersHandler returns a json list of the supplier.
@@ -1654,7 +1694,7 @@ func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *mo
 	updatedp.LinearFormula = p.LinearFormula
 	updatedp.ProductThreeDFormula = p.ProductThreeDFormula
 	updatedp.ProductTwoDFormula = p.ProductTwoDFormula
-	updatedp.ProductMolFormula = p.ProductMolFormula
+	// updatedp.ProductMolFormula = p.ProductMolFormula
 	updatedp.ProductDisposalComment = p.ProductDisposalComment
 	updatedp.ProductRemark = p.ProductRemark
 	updatedp.ProductNumberPerCarton = p.ProductNumberPerCarton

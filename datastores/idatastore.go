@@ -33,8 +33,8 @@ type Datastore interface {
 	IsProductBookmark(pr models.Product, pe models.Person) (bool, error)
 
 	GetProducers(zmqclient.RequestFilter) ([]models.Producer, int, error)
-	GetProducer(id int) (models.Producer, error)
-	GetProducerByLabel(label string) (models.Producer, error)
+	// GetProducer(id int) (models.Producer, error)
+	// GetProducerByLabel(label string) (models.Producer, error)
 	CreateProducer(p models.Producer) (int64, error)
 
 	GetSuppliers(zmqclient.RequestFilter) ([]models.Supplier, int, error)

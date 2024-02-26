@@ -12,14 +12,14 @@ import (
 
 // Product is a chemical product card.
 type Product struct {
-	ProductID              int            `db:"product_id" json:"product_id" schema:"product_id"`
-	ProductSpecificity     sql.NullString `db:"product_specificity" json:"product_specificity" schema:"product_specificity" `
-	ProductMSDS            sql.NullString `db:"product_msds" json:"product_msds" schema:"product_msds" `
-	ProductRestricted      sql.NullBool   `db:"product_restricted" json:"product_restricted" schema:"product_restricted" `
-	ProductRadioactive     sql.NullBool   `db:"product_radioactive" json:"product_radioactive" schema:"product_radioactive" `
-	ProductThreeDFormula   sql.NullString `db:"product_threedformula" json:"product_threedformula" schema:"product_threedformula" `
-	ProductTwoDFormula     sql.NullString `db:"product_twodformula" json:"product_twodformula" schema:"product_twodformula" `
-	ProductMolFormula      sql.NullString `db:"product_molformula" json:"product_molformula" schema:"product_molformula" `
+	ProductID            int            `db:"product_id" json:"product_id" schema:"product_id"`
+	ProductSpecificity   sql.NullString `db:"product_specificity" json:"product_specificity" schema:"product_specificity" `
+	ProductMSDS          sql.NullString `db:"product_msds" json:"product_msds" schema:"product_msds" `
+	ProductRestricted    sql.NullBool   `db:"product_restricted" json:"product_restricted" schema:"product_restricted" `
+	ProductRadioactive   sql.NullBool   `db:"product_radioactive" json:"product_radioactive" schema:"product_radioactive" `
+	ProductThreeDFormula sql.NullString `db:"product_threedformula" json:"product_threedformula" schema:"product_threedformula" `
+	ProductTwoDFormula   sql.NullString `db:"product_twodformula" json:"product_twodformula" schema:"product_twodformula" `
+	// ProductMolFormula      sql.NullString `db:"product_molformula" json:"product_molformula" schema:"product_molformula" `
 	ProductDisposalComment sql.NullString `db:"product_disposalcomment" json:"product_disposalcomment" schema:"product_disposalcomment" `
 	ProductRemark          sql.NullString `db:"product_remark" json:"product_remark" schema:"product_remark" `
 	ProductTemperature     sql.NullInt64  `db:"product_temperature" json:"product_temperature" schema:"product_temperature" `
