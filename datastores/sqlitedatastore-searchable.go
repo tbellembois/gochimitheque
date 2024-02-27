@@ -2,103 +2,100 @@ package datastores
 
 import (
 	"database/sql"
-	"fmt"
-	"strings"
 
 	"github.com/doug-martin/goqu/v9"
 	"github.com/jmoiron/sqlx"
 	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
-	"github.com/tbellembois/gochimitheque/zmqclient"
 )
 
-func GetByMany[T models.Searchable](searchable T, db *sqlx.DB, filter zmqclient.RequestFilter) (ts []T, count int, err error) {
-	var (
-		exactSearch, countSQL, selectSQL string
-		countArgs, selectArgs            []interface{}
-	)
+// func GetByMany[T models.Searchable](searchable T, db *sqlx.DB, filter zmqclient.RequestFilter) (ts []T, count int, err error) {
+// 	var (
+// 		exactSearch, countSQL, selectSQL string
+// 		countArgs, selectArgs            []interface{}
+// 	)
 
-	logger.Log.WithFields(logrus.Fields{"filter": filter}).Debug("GetByMany")
+// 	logger.Log.WithFields(logrus.Fields{"filter": filter}).Debug("GetByMany")
 
-	// hack to bypass optionnal default on the Rust part.
-	if filter.Search == "" {
-		filter.Search = "%%"
-	}
-	exactSearch = filter.Search
-	exactSearch = strings.TrimPrefix(exactSearch, "%")
-	exactSearch = strings.TrimSuffix(exactSearch, "%")
+// 	// hack to bypass optionnal default on the Rust part.
+// 	if filter.Search == "" {
+// 		filter.Search = "%%"
+// 	}
+// 	exactSearch = filter.Search
+// 	exactSearch = strings.TrimPrefix(exactSearch, "%")
+// 	exactSearch = strings.TrimSuffix(exactSearch, "%")
 
-	dialect := goqu.Dialect("sqlite3")
+// 	dialect := goqu.Dialect("sqlite3")
 
-	// Join, where.
-	joinClause := dialect.From(
-		searchable.GetTableName(),
-	).Where(
-		goqu.I(searchable.GetTextFieldName()).Like(filter.Search),
-	)
+// 	// Join, where.
+// 	joinClause := dialect.From(
+// 		searchable.GetTableName(),
+// 	).Where(
+// 		goqu.I(searchable.GetTextFieldName()).Like(filter.Search),
+// 	)
 
-	if countSQL, countArgs, err = joinClause.Select(
-		goqu.COUNT(goqu.I(searchable.GetIDFieldName()).Distinct()),
-	).ToSQL(); err != nil {
-		return
-	}
+// 	if countSQL, countArgs, err = joinClause.Select(
+// 		goqu.COUNT(goqu.I(searchable.GetIDFieldName()).Distinct()),
+// 	).ToSQL(); err != nil {
+// 		return
+// 	}
 
-	if selectSQL, selectArgs, err = joinClause.Select(
-		goqu.I("*"),
-	).Order(
-		goqu.L(fmt.Sprintf("INSTR(%s, ?)", searchable.GetTextFieldName()), exactSearch).Asc(),
-		goqu.C(searchable.GetTextFieldName()).Asc(),
-	).Limit(
-		uint(filter.Limit),
-	).Offset(
-		uint(filter.Offset),
-	).ToSQL(); err != nil {
-		return
-	}
+// 	if selectSQL, selectArgs, err = joinClause.Select(
+// 		goqu.I("*"),
+// 	).Order(
+// 		goqu.L(fmt.Sprintf("INSTR(%s, ?)", searchable.GetTextFieldName()), exactSearch).Asc(),
+// 		goqu.C(searchable.GetTextFieldName()).Asc(),
+// 	).Limit(
+// 		uint(filter.Limit),
+// 	).Offset(
+// 		uint(filter.Offset),
+// 	).ToSQL(); err != nil {
+// 		return
+// 	}
 
-	// Select.
-	if err = db.Select(&ts, selectSQL, selectArgs...); err != nil {
-		return
-	}
-	// Count.
-	if err = db.Get(&count, countSQL, countArgs...); err != nil {
-		return
-	}
+// 	// Select.
+// 	if err = db.Select(&ts, selectSQL, selectArgs...); err != nil {
+// 		return
+// 	}
+// 	// Count.
+// 	if err = db.Get(&count, countSQL, countArgs...); err != nil {
+// 		return
+// 	}
 
-	// Setting the C attribute for formula matching exactly the search.
-	sQuery := dialect.From(searchable.GetTableName()).Where(
-		goqu.I(searchable.GetTextFieldName()).Eq(exactSearch),
-	).Select("*")
+// 	// Setting the C attribute for formula matching exactly the search.
+// 	sQuery := dialect.From(searchable.GetTableName()).Where(
+// 		goqu.I(searchable.GetTextFieldName()).Eq(exactSearch),
+// 	).Select("*")
 
-	var (
-		sqlr string
-		args []interface{}
-		t    T
-	)
+// 	var (
+// 		sqlr string
+// 		args []interface{}
+// 		t    T
+// 	)
 
-	if sqlr, args, err = sQuery.ToSQL(); err != nil {
-		logger.Log.Error(err)
-		return
-	}
+// 	if sqlr, args, err = sQuery.ToSQL(); err != nil {
+// 		logger.Log.Error(err)
+// 		return
+// 	}
 
-	if err = db.Get(&t, sqlr, args...); err != nil && err != sql.ErrNoRows {
-		logger.Log.Error(err)
-		return
-	}
+// 	if err = db.Get(&t, sqlr, args...); err != nil && err != sql.ErrNoRows {
+// 		logger.Log.Error(err)
+// 		return
+// 	}
 
-	err = nil
+// 	err = nil
 
-	for i, c := range ts {
-		if c.GetID() == t.GetID() {
-			ts[i] = (ts[i].SetC(1)).(T)
-		}
-	}
+// 	for i, c := range ts {
+// 		if c.GetID() == t.GetID() {
+// 			ts[i] = (ts[i].SetC(1)).(T)
+// 		}
+// 	}
 
-	logger.Log.WithFields(logrus.Fields{"ts": ts}).Debug("GetByMany")
+// 	logger.Log.WithFields(logrus.Fields{"ts": ts}).Debug("GetByMany")
 
-	return
-}
+// 	return
+// }
 
 func GetByID[T models.Searchable](searchable T, db *sqlx.DB, id int) (t T, err error) {
 	var (

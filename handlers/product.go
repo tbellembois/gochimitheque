@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -23,6 +22,7 @@ func sanitizeProduct(p *models.Product) {
 	for i := range p.Synonyms {
 		p.Synonyms[i].NameLabel = strings.Trim(p.Synonyms[i].NameLabel, " ")
 	}
+
 	p.NameLabel = strings.Trim(p.NameLabel, " ")
 	p.LinearFormulaLabel.String = strings.Trim(p.LinearFormulaLabel.String, " ")
 	p.EmpiricalFormulaLabel.String = strings.Trim(p.EmpiricalFormulaLabel.String, " ")
@@ -86,48 +86,6 @@ func (env *Env) GetProductsProducerRefsHandler(w http.ResponseWriter, r *http.Re
 	w.Write(jsonRawMessage)
 
 	return nil
-	// logger.Log.Debug("GetProductsProducerRefsHandler")
-
-	// var (
-	// 	err    error
-	// 	filter zmqclient.RequestFilter
-	// )
-
-	// // init db request parameters
-	// // if filter, aerr = request.NewFilter(r); err != nil {
-	// // 	return aerr
-	// // }
-	// if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
-	// 	return &models.AppError{
-	// 		OriginalError: err,
-	// 		Code:          http.StatusInternalServerError,
-	// 		Message:       "error calling zmqclient.Request_filter",
-	// 	}
-	// }
-
-	// prefs, count, err := env.DB.GetProducerRefs(filter)
-	// if err != nil {
-	// 	return &models.AppError{
-	// 		OriginalError: err,
-	// 		Code:          http.StatusInternalServerError,
-	// 		Message:       "error getting the producerrefs",
-	// 	}
-	// }
-
-	// type resp struct {
-	// 	Rows  []models.ProducerRef `json:"rows"`
-	// 	Total int                  `json:"total"`
-	// }
-
-	// w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	// if err = json.NewEncoder(w).Encode(resp{Rows: prefs, Total: count}); err != nil {
-	// 	return &models.AppError{
-	// 		Code:    http.StatusInternalServerError,
-	// 		Message: err.Error(),
-	// 	}
-	// }
-	// return nil
 }
 
 // GetProductsSupplierRefsHandler returns a json list of the producerref.
@@ -151,46 +109,6 @@ func (env *Env) GetProductsSupplierRefsHandler(w http.ResponseWriter, r *http.Re
 	w.Write(jsonRawMessage)
 
 	return nil
-
-	// logger.Log.Debug("GetProductsSupplierRefsHandler")
-
-	// var (
-	// 	err    error
-	// 	filter zmqclient.RequestFilter
-	// )
-
-	// // init db request parameters
-	// if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
-	// 	return &models.AppError{
-	// 		OriginalError: err,
-	// 		Code:          http.StatusInternalServerError,
-	// 		Message:       "error calling zmqclient.Request_filter",
-	// 	}
-	// }
-
-	// srefs, count, err := env.DB.GetSupplierRefs(filter)
-	// if err != nil {
-	// 	return &models.AppError{
-	// 		OriginalError: err,
-	// 		Code:          http.StatusInternalServerError,
-	// 		Message:       "error getting the supplierrefs",
-	// 	}
-	// }
-
-	// type resp struct {
-	// 	Rows  []models.SupplierRef `json:"rows"`
-	// 	Total int                  `json:"total"`
-	// }
-
-	// w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	// if err = json.NewEncoder(w).Encode(resp{Rows: srefs, Total: count}); err != nil {
-	// 	return &models.AppError{
-	// 		Code:    http.StatusInternalServerError,
-	// 		Message: err.Error(),
-	// 	}
-	// }
-	// return nil
 }
 
 func (env *Env) PubchemGetProductByNameHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
@@ -289,43 +207,21 @@ func (env *Env) GetProductsCategoriesHandler(w http.ResponseWriter, r *http.Requ
 	logger.Log.Debug("GetProductsCategoriesHandler")
 
 	var (
-		err    error
-		filter zmqclient.RequestFilter
+		jsonRawMessage json.RawMessage
+		err            error
 	)
 
-	// init db request parameters
-	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetCategories("http://localhost/?" + r.URL.RawQuery); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.Request_filter",
+			Message:       "error calling zmqclient.DBGetCategories",
 		}
-	}
-
-	// cats, count, err := env.DB.GetCategories(*filter)
-	cats, count, err := datastores.GetByMany(models.Category{}, env.DB.GetDB(), filter)
-
-	if err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error getting the categories",
-		}
-	}
-
-	type resp struct {
-		Rows  []models.Category `json:"rows"`
-		Total int               `json:"total"`
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
-	if err = json.NewEncoder(w).Encode(resp{Rows: cats, Total: count}); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
 }
 
@@ -334,43 +230,21 @@ func (env *Env) GetProductsTagsHandler(w http.ResponseWriter, r *http.Request) *
 	logger.Log.Debug("GetProductsTagsHandler")
 
 	var (
-		err    error
-		filter zmqclient.RequestFilter
+		jsonRawMessage json.RawMessage
+		err            error
 	)
 
-	// init db request parameters
-	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetTags("http://localhost/?" + r.URL.RawQuery); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.Request_filter",
+			Message:       "error calling zmqclient.GetProductsTagsHandler",
 		}
-	}
-
-	// tags, count, err := env.DB.GetTags(*filter)
-	tags, count, err := datastores.GetByMany(models.Tag{}, env.DB.GetDB(), filter)
-
-	if err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error getting the tags",
-		}
-	}
-
-	type resp struct {
-		Rows  []models.Tag `json:"rows"`
-		Total int          `json:"total"`
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
-	if err = json.NewEncoder(w).Encode(resp{Rows: tags, Total: count}); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
 }
 
@@ -395,46 +269,6 @@ func (env *Env) GetProductsProducersHandler(w http.ResponseWriter, r *http.Reque
 	w.Write(jsonRawMessage)
 
 	return nil
-
-	// logger.Log.Debug("GetProductsProducersHandler")
-
-	// var (
-	// 	err    error
-	// 	filter zmqclient.RequestFilter
-	// )
-
-	// // init db request parameters
-	// if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
-	// 	return &models.AppError{
-	// 		OriginalError: err,
-	// 		Code:          http.StatusInternalServerError,
-	// 		Message:       "error calling zmqclient.Request_filter",
-	// 	}
-	// }
-
-	// prs, count, err := env.DB.GetProducers(filter)
-	// if err != nil {
-	// 	return &models.AppError{
-	// 		OriginalError: err,
-	// 		Code:          http.StatusInternalServerError,
-	// 		Message:       "error getting the producers",
-	// 	}
-	// }
-
-	// type resp struct {
-	// 	Rows  []models.Producer `json:"rows"`
-	// 	Total int               `json:"total"`
-	// }
-
-	// w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	// if err = json.NewEncoder(w).Encode(resp{Rows: prs, Total: count}); err != nil {
-	// 	return &models.AppError{
-	// 		Code:    http.StatusInternalServerError,
-	// 		Message: err.Error(),
-	// 	}
-	// }
-	// return nil
 }
 
 // GetProductsSuppliersHandler returns a json list of the supplier.
@@ -458,44 +292,6 @@ func (env *Env) GetProductsSuppliersHandler(w http.ResponseWriter, r *http.Reque
 	w.Write(jsonRawMessage)
 
 	return nil
-
-	// var (
-	// 	err    error
-	// 	filter zmqclient.RequestFilter
-	// )
-
-	// // init db request parameters
-	// if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
-	// 	return &models.AppError{
-	// 		OriginalError: err,
-	// 		Code:          http.StatusInternalServerError,
-	// 		Message:       "error calling zmqclient.Request_filter",
-	// 	}
-	// }
-
-	// srs, count, err := env.DB.GetSuppliers(filter)
-	// if err != nil {
-	// 	return &models.AppError{
-	// 		OriginalError: err,
-	// 		Code:          http.StatusInternalServerError,
-	// 		Message:       "error getting the suppliers",
-	// 	}
-	// }
-
-	// type resp struct {
-	// 	Rows  []models.Supplier `json:"rows"`
-	// 	Total int               `json:"total"`
-	// }
-
-	// w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	// if err = json.NewEncoder(w).Encode(resp{Rows: srs, Total: count}); err != nil {
-	// 	return &models.AppError{
-	// 		Code:    http.StatusInternalServerError,
-	// 		Message: err.Error(),
-	// 	}
-	// }
-	// return nil
 }
 
 // ToogleProductBookmarkHandler (un)bookmarks the product with id passed in the request vars
@@ -562,67 +358,88 @@ func (env *Env) ToogleProductBookmarkHandler(w http.ResponseWriter, r *http.Requ
 
 // GetProductsCasNumbersHandler returns a json list of the cas numbers matching the search criteria.
 func (env *Env) GetProductsCasNumbersHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+
 	logger.Log.Debug("GetProductsCasNumbersHandler")
 
 	var (
-		err    error
-		filter zmqclient.RequestFilter
+		jsonRawMessage json.RawMessage
+		err            error
 	)
 
-	// init db request parameters
-	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetCasnumbers("http://localhost/?" + r.URL.RawQuery); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.Request_filter",
+			Message:       "error calling zmqclient.DBGetCasnumbers",
 		}
-	}
-
-	// copy/paste CAS can send wrong separators (ie "-")
-	// we must then rebuild the correct CAS
-	cas := filter.Search
-	rcas := regexp.MustCompile("(?P<groupone>[0-9]{1,7}).{1}(?P<grouptwo>[0-9]{2}).{1}(?P<groupthree>[0-9]{1})")
-	// finding group names
-	n := rcas.SubexpNames()
-	// finding matches
-	ms := rcas.FindAllStringSubmatch(cas, -1)
-
-	if len(ms) > 0 {
-		m := ms[0]
-		// then building a map of matches
-		md := map[string]string{}
-		for i, j := range m {
-			md[n[i]] = j
-		}
-
-		filter.Search = fmt.Sprintf("%s-%s-%s", md["groupone"], md["grouptwo"], md["groupthree"])
-	}
-
-	// casnumbers, count, err := env.DB.GetCasNumbers(*filter)
-	casnumbers, count, err := datastores.GetByMany(models.CasNumber{}, env.DB.GetDB(), filter)
-
-	if err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error getting the cas numbers",
-		}
-	}
-
-	type resp struct {
-		Rows  []models.CasNumber `json:"rows"`
-		Total int                `json:"total"`
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
-	if err = json.NewEncoder(w).Encode(resp{Rows: casnumbers, Total: count}); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
+
+	// logger.Log.Debug("GetProductsCasNumbersHandler")
+
+	// var (
+	// 	err    error
+	// 	filter zmqclient.RequestFilter
+	// )
+
+	// // init db request parameters
+	// if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	// 	return &models.AppError{
+	// 		OriginalError: err,
+	// 		Code:          http.StatusInternalServerError,
+	// 		Message:       "error calling zmqclient.Request_filter",
+	// 	}
+	// }
+
+	// // copy/paste CAS can send wrong separators (ie "-")
+	// // we must then rebuild the correct CAS
+	// cas := filter.Search
+	// rcas := regexp.MustCompile("(?P<groupone>[0-9]{1,7}).{1}(?P<grouptwo>[0-9]{2}).{1}(?P<groupthree>[0-9]{1})")
+	// // finding group names
+	// n := rcas.SubexpNames()
+	// // finding matches
+	// ms := rcas.FindAllStringSubmatch(cas, -1)
+
+	// if len(ms) > 0 {
+	// 	m := ms[0]
+	// 	// then building a map of matches
+	// 	md := map[string]string{}
+	// 	for i, j := range m {
+	// 		md[n[i]] = j
+	// 	}
+
+	// 	filter.Search = fmt.Sprintf("%s-%s-%s", md["groupone"], md["grouptwo"], md["groupthree"])
+	// }
+
+	// // casnumbers, count, err := env.DB.GetCasNumbers(*filter)
+	// casnumbers, count, err := datastores.GetByMany(models.CasNumber{}, env.DB.GetDB(), filter)
+
+	// if err != nil {
+	// 	return &models.AppError{
+	// 		OriginalError: err,
+	// 		Code:          http.StatusInternalServerError,
+	// 		Message:       "error getting the cas numbers",
+	// 	}
+	// }
+
+	// type resp struct {
+	// 	Rows  []models.CasNumber `json:"rows"`
+	// 	Total int                `json:"total"`
+	// }
+
+	// w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	// if err = json.NewEncoder(w).Encode(resp{Rows: casnumbers, Total: count}); err != nil {
+	// 	return &models.AppError{
+	// 		Code:    http.StatusInternalServerError,
+	// 		Message: err.Error(),
+	// 	}
+	// }
+	// return nil
 }
 
 // GetProductsCeNumbersHandler returns a json list of the ce numbers matching the search criteria.
@@ -630,43 +447,21 @@ func (env *Env) GetProductsCeNumbersHandler(w http.ResponseWriter, r *http.Reque
 	logger.Log.Debug("GetProductsCeNumbersHandler")
 
 	var (
-		err    error
-		filter zmqclient.RequestFilter
+		jsonRawMessage json.RawMessage
+		err            error
 	)
 
-	// init db request parameters
-	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetCenumbers("http://localhost/?" + r.URL.RawQuery); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.Request_filter",
+			Message:       "error calling zmqclient.DBGetCenumbers",
 		}
-	}
-
-	// cenumbers, count, err := env.DB.GetCeNumbers(*filter)
-	cenumbers, count, err := datastores.GetByMany(models.CeNumber{}, env.DB.GetDB(), filter)
-
-	if err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error getting the ce numbers",
-		}
-	}
-
-	type resp struct {
-		Rows  []models.CeNumber `json:"rows"`
-		Total int               `json:"total"`
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
-	if err = json.NewEncoder(w).Encode(resp{Rows: cenumbers, Total: count}); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
 }
 
@@ -675,43 +470,21 @@ func (env *Env) GetProductsPhysicalStatesHandler(w http.ResponseWriter, r *http.
 	logger.Log.Debug("GetProductsPhysicalStatesHandler")
 
 	var (
-		err    error
-		filter zmqclient.RequestFilter
+		jsonRawMessage json.RawMessage
+		err            error
 	)
 
-	// init db request parameters
-	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetPhysicalstates("http://localhost/?" + r.URL.RawQuery); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.Request_filter",
+			Message:       "error calling zmqclient.DBGetPhysicalstates",
 		}
-	}
-
-	// pstates, count, err := env.DB.GetPhysicalStates(*filter)
-	pstates, count, err := datastores.GetByMany(models.PhysicalState{}, env.DB.GetDB(), filter)
-
-	if err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error getting the physical states",
-		}
-	}
-
-	type resp struct {
-		Rows  []models.PhysicalState `json:"rows"`
-		Total int                    `json:"total"`
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
-	if err = json.NewEncoder(w).Encode(resp{Rows: pstates, Total: count}); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
 }
 
@@ -720,43 +493,21 @@ func (env *Env) GetProductsSignalWordsHandler(w http.ResponseWriter, r *http.Req
 	logger.Log.Debug("GetProductsSignalWordsHandler")
 
 	var (
-		err    error
-		filter zmqclient.RequestFilter
+		jsonRawMessage json.RawMessage
+		err            error
 	)
 
-	// init db request parameters
-	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetSignalwords("http://localhost/?" + r.URL.RawQuery); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.Request_filter",
+			Message:       "error calling zmqclient.DBGetSignalwords",
 		}
-	}
-
-	// swords, count, err := env.DB.GetSignalWords(*filter)
-	swords, count, err := datastores.GetByMany(models.SignalWord{}, env.DB.GetDB(), filter)
-
-	if err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error getting the signal words",
-		}
-	}
-
-	type resp struct {
-		Rows  []models.SignalWord `json:"rows"`
-		Total int                 `json:"total"`
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
-	if err = json.NewEncoder(w).Encode(resp{Rows: swords, Total: count}); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
 }
 
@@ -765,43 +516,21 @@ func (env *Env) GetProductsClassOfCompoundsHandler(w http.ResponseWriter, r *htt
 	logger.Log.Debug("GetProductsClassOfCompoundsHandler")
 
 	var (
-		err    error
-		filter zmqclient.RequestFilter
+		jsonRawMessage json.RawMessage
+		err            error
 	)
 
-	// init db request parameters
-	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetClassesofcompound("http://localhost/?" + r.URL.RawQuery); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.Request_filter",
+			Message:       "error calling zmqclient.DBGetClassesofcompound",
 		}
-	}
-
-	// cocs, count, err := env.DB.GetClassesOfCompound(*filter)
-	cocs, count, err := datastores.GetByMany(models.ClassOfCompound{}, env.DB.GetDB(), filter)
-
-	if err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error getting the classes of compounds",
-		}
-	}
-
-	type resp struct {
-		Rows  []models.ClassOfCompound `json:"rows"`
-		Total int                      `json:"total"`
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
-	if err = json.NewEncoder(w).Encode(resp{Rows: cocs, Total: count}); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
 }
 
@@ -810,65 +539,84 @@ func (env *Env) GetProductsEmpiricalFormulasHandler(w http.ResponseWriter, r *ht
 	logger.Log.Debug("GetProductsEmpiricalFormulasHandler")
 
 	var (
-		err    error
-		filter zmqclient.RequestFilter
+		jsonRawMessage json.RawMessage
+		err            error
 	)
 
-	// convert search to empirical formula
-	if _, ok := r.URL.Query()["search"]; ok {
-		var converted_search string
-
-		if converted_search, err = zmqclient.EmpiricalFormulaFromRawString(r.URL.Query()["search"][0]); err != nil {
-			return &models.AppError{
-				OriginalError: err,
-				Code:          http.StatusBadRequest,
-				Message:       "error calling zmqclient.Empirical_formula",
-			}
-		}
-
-		logger.Log.Debug("GetProductsEmpiricalFormulasHandler: converted_search=" + converted_search)
-
-		q := r.URL.Query()
-		q.Set("search", converted_search)
-		r.URL.RawQuery = q.Encode()
-	}
-
-	// init db request parameters
-	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetEmpiricalformulas("http://localhost/?" + r.URL.RawQuery); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.Request_filter",
+			Message:       "error calling zmqclient.DBGetEmpiricalformulas",
 		}
-	}
-
-	logger.Log.Debug("GetProductsEmpiricalFormulasHandler: filter.Search=" + filter.Search)
-
-	// eformulas, count, err := env.DB.GetEmpiricalFormulas(*filter)
-	eformulas, count, err := datastores.GetByMany(models.EmpiricalFormula{}, env.DB.GetDB(), filter)
-
-	if err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error getting the empirical formulas",
-		}
-	}
-
-	type resp struct {
-		Rows  []models.EmpiricalFormula `json:"rows"`
-		Total int                       `json:"total"`
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
-	if err = json.NewEncoder(w).Encode(resp{Rows: eformulas, Total: count}); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
+	// logger.Log.Debug("GetProductsEmpiricalFormulasHandler")
+
+	// var (
+	// 	err    error
+	// 	filter zmqclient.RequestFilter
+	// )
+
+	// // convert search to empirical formula
+	// if _, ok := r.URL.Query()["search"]; ok {
+	// 	var converted_search string
+
+	// 	if converted_search, err = zmqclient.EmpiricalFormulaFromRawString(r.URL.Query()["search"][0]); err != nil {
+	// 		return &models.AppError{
+	// 			OriginalError: err,
+	// 			Code:          http.StatusBadRequest,
+	// 			Message:       "error calling zmqclient.Empirical_formula",
+	// 		}
+	// 	}
+
+	// 	logger.Log.Debug("GetProductsEmpiricalFormulasHandler: converted_search=" + converted_search)
+
+	// 	q := r.URL.Query()
+	// 	q.Set("search", converted_search)
+	// 	r.URL.RawQuery = q.Encode()
+	// }
+
+	// // init db request parameters
+	// if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	// 	return &models.AppError{
+	// 		OriginalError: err,
+	// 		Code:          http.StatusInternalServerError,
+	// 		Message:       "error calling zmqclient.Request_filter",
+	// 	}
+	// }
+
+	// logger.Log.Debug("GetProductsEmpiricalFormulasHandler: filter.Search=" + filter.Search)
+
+	// // eformulas, count, err := env.DB.GetEmpiricalFormulas(*filter)
+	// eformulas, count, err := datastores.GetByMany(models.EmpiricalFormula{}, env.DB.GetDB(), filter)
+
+	// if err != nil {
+	// 	return &models.AppError{
+	// 		OriginalError: err,
+	// 		Code:          http.StatusInternalServerError,
+	// 		Message:       "error getting the empirical formulas",
+	// 	}
+	// }
+
+	// type resp struct {
+	// 	Rows  []models.EmpiricalFormula `json:"rows"`
+	// 	Total int                       `json:"total"`
+	// }
+
+	// w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	// if err = json.NewEncoder(w).Encode(resp{Rows: eformulas, Total: count}); err != nil {
+	// 	return &models.AppError{
+	// 		Code:    http.StatusInternalServerError,
+	// 		Message: err.Error(),
+	// 	}
+	// }
+	// return nil
 }
 
 // GetProductsLinearFormulasHandler returns a json list of the linear formulas matching the search criteria.
@@ -876,43 +624,21 @@ func (env *Env) GetProductsLinearFormulasHandler(w http.ResponseWriter, r *http.
 	logger.Log.Debug("GetProductsLinearFormulasHandler")
 
 	var (
-		err    error
-		filter zmqclient.RequestFilter
+		jsonRawMessage json.RawMessage
+		err            error
 	)
 
-	// init db request parameters
-	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetLinearformulas("http://localhost/?" + r.URL.RawQuery); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.Request_filter",
+			Message:       "error calling zmqclient.DBGetLinearformulas",
 		}
-	}
-
-	// lformulas, count, err := env.DB.GetLinearFormulas(*filter)
-	lformulas, count, err := datastores.GetByMany(models.LinearFormula{}, env.DB.GetDB(), filter)
-
-	if err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error getting the empirical formulas",
-		}
-	}
-
-	type resp struct {
-		Rows  []models.LinearFormula `json:"rows"`
-		Total int                    `json:"total"`
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
-	if err = json.NewEncoder(w).Encode(resp{Rows: lformulas, Total: count}); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
 }
 
@@ -1044,43 +770,21 @@ func (env *Env) GetProductsSymbolsHandler(w http.ResponseWriter, r *http.Request
 	logger.Log.Debug("GetProductsSymbolsHandler")
 
 	var (
-		err    error
-		filter zmqclient.RequestFilter
+		jsonRawMessage json.RawMessage
+		err            error
 	)
 
-	// init db request parameters
-	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetSymbols("http://localhost/?" + r.URL.RawQuery); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.Request_filter",
+			Message:       "error calling zmqclient.DBGetSymbols",
 		}
-	}
-
-	// symbols, count, err := env.DB.GetSymbols(*filter)
-	symbols, count, err := datastores.GetByMany(models.Symbol{}, env.DB.GetDB(), filter)
-
-	if err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error getting the symbols",
-		}
-	}
-
-	type resp struct {
-		Rows  []models.Symbol `json:"rows"`
-		Total int             `json:"total"`
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
-	if err = json.NewEncoder(w).Encode(resp{Rows: symbols, Total: count}); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
 }
 
@@ -1130,43 +834,21 @@ func (env *Env) GetProductsHazardStatementsHandler(w http.ResponseWriter, r *htt
 	logger.Log.Debug("GetProductsHazardStatementsHandler")
 
 	var (
-		err    error
-		filter zmqclient.RequestFilter
+		jsonRawMessage json.RawMessage
+		err            error
 	)
 
-	// init db request parameters
-	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetHazardstatements("http://localhost/?" + r.URL.RawQuery); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.Request_filter",
+			Message:       "error calling zmqclient.DBGetHazardstatements",
 		}
-	}
-
-	// hs, count, err := env.DB.GetHazardStatements(*filter)
-	hs, count, err := datastores.GetByMany(models.HazardStatement{}, env.DB.GetDB(), filter)
-
-	if err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error getting the hazard statements",
-		}
-	}
-
-	type resp struct {
-		Rows  []models.HazardStatement `json:"rows"`
-		Total int                      `json:"total"`
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
-	if err = json.NewEncoder(w).Encode(resp{Rows: hs, Total: count}); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
 }
 
@@ -1216,43 +898,21 @@ func (env *Env) GetProductsPrecautionaryStatementsHandler(w http.ResponseWriter,
 	logger.Log.Debug("GetProductsPrecautionaryStatementsHandler")
 
 	var (
-		err    error
-		filter zmqclient.RequestFilter
+		jsonRawMessage json.RawMessage
+		err            error
 	)
 
-	// init db request parameters
-	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetPrecautionarystatements("http://localhost/?" + r.URL.RawQuery); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.Request_filter",
+			Message:       "error calling zmqclient.DBGetPrecautionarystatements",
 		}
-	}
-
-	// ps, count, err := env.DB.GetPrecautionaryStatements(*filter)
-	ps, count, err := datastores.GetByMany(models.PrecautionaryStatement{}, env.DB.GetDB(), filter)
-
-	if err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error getting the precautionary statements",
-		}
-	}
-
-	type resp struct {
-		Rows  []models.PrecautionaryStatement `json:"rows"`
-		Total int                             `json:"total"`
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
-	if err = json.NewEncoder(w).Encode(resp{Rows: ps, Total: count}); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
 }
 
@@ -1302,54 +962,73 @@ func (env *Env) GetProductsNamesHandler(w http.ResponseWriter, r *http.Request) 
 	logger.Log.Debug("GetProductsNamesHandler")
 
 	var (
-		err    error
-		filter zmqclient.RequestFilter
+		jsonRawMessage json.RawMessage
+		err            error
 	)
 
-	// convert search to uppercase
-	if _, ok := r.URL.Query()["search"]; ok {
-		converted_search := strings.ToUpper(r.URL.Query()["search"][0])
-
-		q := r.URL.Query()
-		q.Set("search", converted_search)
-		r.URL.RawQuery = q.Encode()
-	}
-	// init db request parameters
-	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetNames("http://localhost/?" + r.URL.RawQuery); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.Request_filter",
+			Message:       "error calling zmqclient.DBGetNames",
 		}
-	}
-
-	logger.Log.Debug("GetProductsNamesHandler: filter.Search=" + filter.Search)
-
-	// names, count, err := env.DB.GetNames(*filter)
-	names, count, err := datastores.GetByMany(models.Name{}, env.DB.GetDB(), filter)
-
-	if err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error getting the cas numbers",
-		}
-	}
-
-	type resp struct {
-		Rows  []models.Name `json:"rows"`
-		Total int           `json:"total"`
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
-	if err = json.NewEncoder(w).Encode(resp{Rows: names, Total: count}); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
+	// logger.Log.Debug("GetProductsNamesHandler")
+
+	// var (
+	// 	err    error
+	// 	filter zmqclient.RequestFilter
+	// )
+
+	// // convert search to uppercase
+	// if _, ok := r.URL.Query()["search"]; ok {
+	// 	converted_search := strings.ToUpper(r.URL.Query()["search"][0])
+
+	// 	q := r.URL.Query()
+	// 	q.Set("search", converted_search)
+	// 	r.URL.RawQuery = q.Encode()
+	// }
+	// // init db request parameters
+	// if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	// 	return &models.AppError{
+	// 		OriginalError: err,
+	// 		Code:          http.StatusInternalServerError,
+	// 		Message:       "error calling zmqclient.Request_filter",
+	// 	}
+	// }
+
+	// logger.Log.Debug("GetProductsNamesHandler: filter.Search=" + filter.Search)
+
+	// // names, count, err := env.DB.GetNames(*filter)
+	// names, count, err := datastores.GetByMany(models.Name{}, env.DB.GetDB(), filter)
+
+	// if err != nil {
+	// 	return &models.AppError{
+	// 		OriginalError: err,
+	// 		Code:          http.StatusInternalServerError,
+	// 		Message:       "error getting the cas numbers",
+	// 	}
+	// }
+
+	// type resp struct {
+	// 	Rows  []models.Name `json:"rows"`
+	// 	Total int           `json:"total"`
+	// }
+
+	// w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	// if err = json.NewEncoder(w).Encode(resp{Rows: names, Total: count}); err != nil {
+	// 	return &models.AppError{
+	// 		Code:    http.StatusInternalServerError,
+	// 		Message: err.Error(),
+	// 	}
+	// }
+	// return nil
 }
 
 // GetProductsNameHandler returns a json of the name matching the id.
@@ -1398,43 +1077,21 @@ func (env *Env) GetProductsSynonymsHandler(w http.ResponseWriter, r *http.Reques
 	logger.Log.Debug("GetProductsSynonymsHandler")
 
 	var (
-		err    error
-		filter zmqclient.RequestFilter
+		jsonRawMessage json.RawMessage
+		err            error
 	)
 
-	// init db request parameters
-	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetNames("http://localhost/?" + r.URL.RawQuery); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.Request_filter",
+			Message:       "error calling zmqclient.GetProductsSynonymsHandler",
 		}
-	}
-
-	// synonyms, count, err := env.DB.GetNames(*filter)
-	synonyms, count, err := datastores.GetByMany(models.Name{}, env.DB.GetDB(), filter)
-
-	if err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error getting the synonyms",
-		}
-	}
-
-	type resp struct {
-		Rows  []models.Name `json:"rows"`
-		Total int           `json:"total"`
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
-	if err = json.NewEncoder(w).Encode(resp{Rows: synonyms, Total: count}); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
 }
 
@@ -1626,6 +1283,7 @@ func (env *Env) CreateProductHandler(w http.ResponseWriter, r *http.Request) *mo
 			Code:          http.StatusInternalServerError,
 		}
 	}
+
 	p.ProductID = int(pid)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
