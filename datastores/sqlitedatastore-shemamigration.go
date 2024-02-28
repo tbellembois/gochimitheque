@@ -1125,12 +1125,10 @@ CREATE TABLE symbol_new (
 ) STRICT;
 INSERT INTO symbol_new (
 	symbol_id,
-	symbol_label,
-	symbol_image
+	symbol_label
 )
 SELECT symbol_id,
-	symbol_label,
-	symbol_image
+	symbol_label
 FROM symbol;
 DROP TABLE symbol;
 ALTER TABLE symbol_new RENAME TO symbol;

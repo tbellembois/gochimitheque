@@ -14,7 +14,6 @@ type Datastore interface {
 	GetDB() *sqlx.DB
 
 	Maintenance()
-	Import(url string) error
 
 	CreateDatabase() error
 	ToCasbinJSONAdapter() ([]byte, error)
