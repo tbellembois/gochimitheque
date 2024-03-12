@@ -165,7 +165,7 @@ func buildEndpoints(appFullURL string) (router *mux.Router) {
 	router.Handle("/{view:vc}/{item:storages}", secureChain.Then(env.AppMiddleware(env.VCreateStorageHandler))).Methods("GET")
 	router.Handle("/{item:storages}", secureChain.Then(env.AppMiddleware(env.GetStoragesHandler))).Methods("GET")
 	router.Handle("/{item:storages}/others", secureChain.Then(env.AppMiddleware(env.GetOtherStoragesHandler))).Methods("GET")
-	router.Handle("/{item:storages}/suppliers", secureChain.Then(env.AppMiddleware(env.GetStoragesSuppliersHandler))).Methods("GET")
+	// router.Handle("/{item:storages}/suppliers", secureChain.Then(env.AppMiddleware(env.GetStoragesSuppliersHandler))).Methods("GET")
 	router.Handle("/{item:storages}/units", secureChain.Then(env.AppMiddleware(env.GetStoragesUnitsHandler))).Methods("GET")
 	router.Handle("/{item:storages}/{id}", secureChain.Then(env.AppMiddleware(env.GetStorageHandler))).Methods("GET")
 	router.Handle("/{item:storages}/{id}", secureChain.Then(env.AppMiddleware(env.UpdateStorageHandler))).Methods("PUT")

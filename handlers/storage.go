@@ -141,47 +141,47 @@ func (env *Env) GetStoragesUnitsHandler(w http.ResponseWriter, r *http.Request) 
 // @Failure 500
 // @Failure 403
 // @Router /storages/suppliers [get].
-func (env *Env) GetStoragesSuppliersHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	logger.Log.Debug("GetStoragesSuppliersHandler")
+// func (env *Env) GetStoragesSuppliersHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+// 	logger.Log.Debug("GetStoragesSuppliersHandler")
 
-	var (
-		err    error
-		filter zmqclient.RequestFilter
-	)
+// 	var (
+// 		err    error
+// 		filter zmqclient.RequestFilter
+// 	)
 
-	// init db request parameters
-	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.Request_filter",
-		}
-	}
+// 	// init db request parameters
+// 	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+// 		return &models.AppError{
+// 			OriginalError: err,
+// 			Code:          http.StatusInternalServerError,
+// 			Message:       "error calling zmqclient.Request_filter",
+// 		}
+// 	}
 
-	suppliers, count, err := env.DB.GetSuppliers(filter)
-	if err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error getting the suppliers",
-		}
-	}
+// 	suppliers, count, err := env.DB.GetSuppliers(filter)
+// 	if err != nil {
+// 		return &models.AppError{
+// 			OriginalError: err,
+// 			Code:          http.StatusInternalServerError,
+// 			Message:       "error getting the suppliers",
+// 		}
+// 	}
 
-	type resp struct {
-		Rows  []models.Supplier `json:"rows"`
-		Total int               `json:"total"`
-	}
+// 	type resp struct {
+// 		Rows  []models.Supplier `json:"rows"`
+// 		Total int               `json:"total"`
+// 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+// 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	if err = json.NewEncoder(w).Encode(resp{Rows: suppliers, Total: count}); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
-	return nil
-}
+// 	if err = json.NewEncoder(w).Encode(resp{Rows: suppliers, Total: count}); err != nil {
+// 		return &models.AppError{
+// 			Code:    http.StatusInternalServerError,
+// 			Message: err.Error(),
+// 		}
+// 	}
+// 	return nil
+// }
 
 // GetOtherStoragesHandler returns a json list of the storages matching the search criteria
 // in other entities with no storage details.
