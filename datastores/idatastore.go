@@ -31,18 +31,18 @@ type Datastore interface {
 	DeleteProductBookmark(pr models.Product, pe models.Person) error
 	IsProductBookmark(pr models.Product, pe models.Person) (bool, error)
 
-	GetProducers(zmqclient.RequestFilter) ([]models.Producer, int, error)
+	// GetProducers(zmqclient.RequestFilter) ([]models.Producer, int, error)
 	// GetProducer(id int) (models.Producer, error)
 	// GetProducerByLabel(label string) (models.Producer, error)
 	CreateProducer(p models.Producer) (int64, error)
 
-	GetSuppliers(zmqclient.RequestFilter) ([]models.Supplier, int, error)
+	// GetSuppliers(zmqclient.RequestFilter) ([]models.Supplier, int, error)
 	// GetSupplier(id int) (models.Supplier, error)
 	// GetSupplierByLabel(label string) (models.Supplier, error)
 	CreateSupplier(s models.Supplier) (int64, error)
 
-	GetProducerRefs(zmqclient.RequestFilter) ([]models.ProducerRef, int, error)
-	GetSupplierRefs(zmqclient.RequestFilter) ([]models.SupplierRef, int, error)
+	// GetProducerRefs(zmqclient.RequestFilter) ([]models.ProducerRef, int, error)
+	// GetSupplierRefs(zmqclient.RequestFilter) ([]models.SupplierRef, int, error)
 
 	// storages
 	GetStorages(zmqclient.RequestFilter, int) ([]models.Storage, int, error)
