@@ -612,7 +612,7 @@ func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int,
 		for i, pr := range products {
 			// note: do not modify p but products[i] instead
 			reqSymbols.Reset()
-			reqSymbols.WriteString("SELECT symbol_id, symbol_label, symbol_image FROM symbol")
+			reqSymbols.WriteString("SELECT symbol_id, symbol_label FROM symbol")
 			reqSymbols.WriteString(" JOIN productsymbols ON productsymbols.productsymbols_symbol_id = symbol.symbol_id")
 			reqSymbols.WriteString(" JOIN product ON productsymbols.productsymbols_product_id = product.product_id")
 			reqSymbols.WriteString(" WHERE product.product_id = ?")
@@ -921,7 +921,7 @@ func (db *SQLiteDataStore) GetProduct(id int) (models.Product, error) {
 	//
 	// getting symbols
 	//
-	sqlr = `SELECT symbol_id, symbol_label, symbol_image FROM symbol
+	sqlr = `SELECT symbol_id, symbol_label FROM symbol
 	JOIN productsymbols ON productsymbols.productsymbols_symbol_id = symbol.symbol_id
 	JOIN product ON productsymbols.productsymbols_product_id = product.product_id
 	WHERE product.product_id = ?`
