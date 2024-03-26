@@ -58,7 +58,7 @@ type Datastore interface {
 	UpdateAllQRCodes() error
 
 	// store locations
-	GetStoreLocations(zmqclient.RequestFilter, int) ([]models.StoreLocation, int, error)
+	// GetStoreLocations(zmqclient.RequestFilter, int) ([]models.StoreLocation, int, error)
 	GetStoreLocation(id int) (models.StoreLocation, error)
 	GetStoreLocationChildren(id int) ([]models.StoreLocation, error)
 	DeleteStoreLocation(id int) error

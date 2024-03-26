@@ -3,7 +3,6 @@ package datastores
 import (
 	"database/sql"
 	"fmt"
-	"strings"
 
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/sqlite3"
@@ -64,116 +63,119 @@ func (db *SQLiteDataStore) buildFullPath(s models.StoreLocation, tx *sqlx.Tx) st
 // GetStoreLocations select the store locations matching p
 // and visible by the connected user.
 func (db *SQLiteDataStore) GetStoreLocations(f zmqclient.RequestFilter, person_id int) ([]models.StoreLocation, int, error) {
-	logger.Log.WithFields(logrus.Fields{"f": f}).Debug("GetStoreLocations")
+	// migrated to Rust.
+	panic("migrated to Rust")
 
-	// hack to bypass optionnal default on the Rust part.
-	if f.Search == "" {
-		f.Search = "%%"
-	}
+	// logger.Log.WithFields(logrus.Fields{"f": f}).Debug("GetStoreLocations")
 
-	if f.OrderBy == "" {
-		f.OrderBy = "storelocation_id"
-	}
+	// // hack to bypass optionnal default on the Rust part.
+	// if f.Search == "" {
+	// 	f.Search = "%%"
+	// }
 
-	var err error
+	// if f.OrderBy == "" {
+	// 	f.OrderBy = "storelocation_id"
+	// }
 
-	dialect := goqu.Dialect("sqlite3")
-	tableStorelocation := goqu.T("storelocation")
+	// var err error
 
-	// Map orderby clause.
-	orderByClause := f.OrderBy
-	if orderByClause == "storelocation" {
-		orderByClause = "storelocation.storelocation_id"
-	}
+	// dialect := goqu.Dialect("sqlite3")
+	// tableStorelocation := goqu.T("storelocation")
 
-	// Build orderby/order clause.
-	orderClause := goqu.I(orderByClause).Asc()
-	if strings.ToLower(f.Order) == "desc" {
-		orderClause = goqu.I(orderByClause).Desc()
-	}
+	// // Map orderby clause.
+	// orderByClause := f.OrderBy
+	// if orderByClause == "storelocation" {
+	// 	orderByClause = "storelocation.storelocation_id"
+	// }
 
-	// Build join clause.
-	joinClause := dialect.From(tableStorelocation.As("s")).Join(
-		goqu.T("entity"),
-		goqu.On(goqu.Ex{"s.entity": goqu.I("entity.entity_id")}),
-	).LeftJoin(
-		goqu.T("storelocation"),
-		goqu.On(goqu.Ex{"s.storelocation": goqu.I("storelocation.storelocation_id")}),
-	).Join(
-		goqu.T("permission").As("perm"),
-		goqu.On(
-			goqu.Ex{
-				"perm.person":               person_id,
-				"perm.permission_item_name": []string{"all", "storages"},
-				"perm.permission_perm_name": []string{"r", "w", "all"},
-				"perm.permission_entity_id": []interface{}{-1, goqu.I("entity.entity_id")},
-			},
-		),
-	)
+	// // Build orderby/order clause.
+	// orderClause := goqu.I(orderByClause).Asc()
+	// if strings.ToLower(f.Order) == "desc" {
+	// 	orderClause = goqu.I(orderByClause).Desc()
+	// }
 
-	// Build where AND expression.
-	whereAnd := []goqu.Expression{
-		goqu.I("s.storelocation_name").Like(f.Search),
-	}
-	if f.Entity != 0 {
-		whereAnd = append(whereAnd, goqu.I("s.entity").Eq(f.Entity))
-	}
-	if f.StoreLocationCanStore {
-		whereAnd = append(whereAnd, goqu.I("s.storelocation_canstore").Eq(f.StoreLocationCanStore))
-	}
+	// // Build join clause.
+	// joinClause := dialect.From(tableStorelocation.As("s")).Join(
+	// 	goqu.T("entity"),
+	// 	goqu.On(goqu.Ex{"s.entity": goqu.I("entity.entity_id")}),
+	// ).LeftJoin(
+	// 	goqu.T("storelocation"),
+	// 	goqu.On(goqu.Ex{"s.storelocation": goqu.I("storelocation.storelocation_id")}),
+	// ).Join(
+	// 	goqu.T("permission").As("perm"),
+	// 	goqu.On(
+	// 		goqu.Ex{
+	// 			"perm.person":               person_id,
+	// 			"perm.permission_item_name": []string{"all", "storages"},
+	// 			"perm.permission_perm_name": []string{"r", "w", "all"},
+	// 			"perm.permission_entity_id": []interface{}{-1, goqu.I("entity.entity_id")},
+	// 		},
+	// 	),
+	// )
 
-	joinClause = joinClause.Where(goqu.And(whereAnd...))
+	// // Build where AND expression.
+	// whereAnd := []goqu.Expression{
+	// 	goqu.I("s.storelocation_name").Like(f.Search),
+	// }
+	// if f.Entity != 0 {
+	// 	whereAnd = append(whereAnd, goqu.I("s.entity").Eq(f.Entity))
+	// }
+	// if f.StoreLocationCanStore {
+	// 	whereAnd = append(whereAnd, goqu.I("s.storelocation_canstore").Eq(f.StoreLocationCanStore))
+	// }
 
-	// Building final count.
-	var (
-		countSQL  string
-		countArgs []interface{}
-	)
-	if countSQL, countArgs, err = joinClause.Select(
-		goqu.COUNT(goqu.I("s.storelocation_id").Distinct()),
-	).ToSQL(); err != nil {
-		return nil, 0, err
-	}
+	// joinClause = joinClause.Where(goqu.And(whereAnd...))
 
-	// Building final select.
-	var (
-		selectSQL  string
-		selectArgs []interface{}
-	)
-	if selectSQL, selectArgs, err = joinClause.Select(
-		goqu.I("s.storelocation_id").As("storelocation_id"),
-		goqu.I("s.storelocation_canstore").As("storelocation_canstore"),
-		goqu.I("s.storelocation_color").As("storelocation_color"),
-		goqu.I("s.storelocation_id").As("storelocation_id"),
-		goqu.I("s.storelocation_name").As("storelocation_name"),
-		goqu.I("s.storelocation_fullpath").As("storelocation_fullpath"),
-		goqu.I("storelocation.storelocation_id").As(goqu.C("storelocation.storelocation_id")),
-		goqu.I("storelocation.storelocation_name").As(goqu.C("storelocation.storelocation_name")),
-		goqu.I("entity.entity_id").As(goqu.C("entity.entity_id")),
-		goqu.I("entity.entity_name").As(goqu.C("entity.entity_name")),
-	).GroupBy(goqu.I("s.storelocation_id")).Order(orderClause).Limit(uint(f.Limit)).Offset(uint(f.Offset)).ToSQL(); err != nil {
-		return nil, 0, err
-	}
+	// // Building final count.
+	// var (
+	// 	countSQL  string
+	// 	countArgs []interface{}
+	// )
+	// if countSQL, countArgs, err = joinClause.Select(
+	// 	goqu.COUNT(goqu.I("s.storelocation_id").Distinct()),
+	// ).ToSQL(); err != nil {
+	// 	return nil, 0, err
+	// }
 
-	logger.Log.Debug(selectSQL)
-	logger.Log.Debug(selectArgs)
-	logger.Log.Debug(countSQL)
-	logger.Log.Debug(countArgs)
+	// // Building final select.
+	// var (
+	// 	selectSQL  string
+	// 	selectArgs []interface{}
+	// )
+	// if selectSQL, selectArgs, err = joinClause.Select(
+	// 	goqu.I("s.storelocation_id").As("storelocation_id"),
+	// 	goqu.I("s.storelocation_canstore").As("storelocation_canstore"),
+	// 	goqu.I("s.storelocation_color").As("storelocation_color"),
+	// 	goqu.I("s.storelocation_id").As("storelocation_id"),
+	// 	goqu.I("s.storelocation_name").As("storelocation_name"),
+	// 	goqu.I("s.storelocation_fullpath").As("storelocation_fullpath"),
+	// 	goqu.I("storelocation.storelocation_id").As(goqu.C("storelocation.storelocation_id")),
+	// 	goqu.I("storelocation.storelocation_name").As(goqu.C("storelocation.storelocation_name")),
+	// 	goqu.I("entity.entity_id").As(goqu.C("entity.entity_id")),
+	// 	goqu.I("entity.entity_name").As(goqu.C("entity.entity_name")),
+	// ).GroupBy(goqu.I("s.storelocation_id")).Order(orderClause).Limit(uint(f.Limit)).Offset(uint(f.Offset)).ToSQL(); err != nil {
+	// 	return nil, 0, err
+	// }
 
-	var (
-		storelocations []models.StoreLocation
-		count          int
-	)
+	// logger.Log.Debug(selectSQL)
+	// logger.Log.Debug(selectArgs)
+	// logger.Log.Debug(countSQL)
+	// logger.Log.Debug(countArgs)
 
-	if err = db.Select(&storelocations, selectSQL, selectArgs...); err != nil {
-		return nil, 0, err
-	}
+	// var (
+	// 	storelocations []models.StoreLocation
+	// 	count          int
+	// )
 
-	if err = db.Get(&count, countSQL, countArgs...); err != nil {
-		return nil, 0, err
-	}
+	// if err = db.Select(&storelocations, selectSQL, selectArgs...); err != nil {
+	// 	return nil, 0, err
+	// }
 
-	return storelocations, count, nil
+	// if err = db.Get(&count, countSQL, countArgs...); err != nil {
+	// 	return nil, 0, err
+	// }
+
+	// return storelocations, count, nil
 }
 
 func (db *SQLiteDataStore) GetStoreLocation(id int) (models.StoreLocation, error) {

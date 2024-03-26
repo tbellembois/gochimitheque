@@ -53,39 +53,51 @@ func (env *Env) GetStoreLocationsHandler(w http.ResponseWriter, r *http.Request)
 	logger.Log.Debug("GetStoreLocationsHandler")
 
 	var (
-		err    error
-		filter zmqclient.RequestFilter
+		err            error
+		jsonRawMessage json.RawMessage
 	)
 
 	c := request.ContainerFromRequestContext(r)
 
-	// init db request parameters
-	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetStorelocations("http://localhost/?"+r.URL.RawQuery, c.PersonID); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.Request_filter",
-		}
-	}
-
-	storelocations, count, err := env.DB.GetStoreLocations(filter, c.PersonID)
-	if err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error getting the store locations",
+			Message:       "error calling zmqclient.DBGetStorelocations",
 		}
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
-	if err = json.NewEncoder(w).Encode(models.StoreLocationsResp{Rows: storelocations, Total: count}); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
+	// // init db request parameters
+	// if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	// 	return &models.AppError{
+	// 		OriginalError: err,
+	// 		Code:          http.StatusInternalServerError,
+	// 		Message:       "error calling zmqclient.Request_filter",
+	// 	}
+	// }
+
+	// storelocations, count, err := env.DB.GetStoreLocations(filter, c.PersonID)
+	// if err != nil {
+	// 	return &models.AppError{
+	// 		OriginalError: err,
+	// 		Code:          http.StatusInternalServerError,
+	// 		Message:       "error getting the store locations",
+	// 	}
+	// }
+
+	// w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	// if err = json.NewEncoder(w).Encode(models.StoreLocationsResp{Rows: storelocations, Total: count}); err != nil {
+	// 	return &models.AppError{
+	// 		Code:    http.StatusInternalServerError,
+	// 		Message: err.Error(),
+	// 	}
+	// }
+	// return nil
 }
 
 // GetStoreLocationHandler returns a json of the store location with the requested id.
