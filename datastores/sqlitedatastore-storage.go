@@ -49,6 +49,7 @@ func (db *SQLiteDataStore) ToogleStorageBorrowing(s models.Storage) error {
 
 // GetStoragesUnits return the units.
 func (db *SQLiteDataStore) GetStoragesUnits(f zmqclient.RequestFilter) ([]models.Unit, int, error) {
+
 	var (
 		units                              []models.Unit
 		count                              int

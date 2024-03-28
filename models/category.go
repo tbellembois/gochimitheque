@@ -4,13 +4,17 @@ import "database/sql"
 
 // Category is a product category.
 type Category struct {
-	C             int            `db:"c" json:"c"` // not stored in db but db:"c" set for sqlx
-	CategoryID    sql.NullInt64  `db:"category_id" json:"category_id" schema:"category_id" `
-	CategoryLabel sql.NullString `db:"category_label" json:"category_label" schema:"category_label" `
+	MatchExactSearch bool           `db:"match_exact_case" json:"match_exact_case"` // not stored in db but db:"c" set for sqlx
+	CategoryID       sql.NullInt64  `db:"category_id" json:"category_id" schema:"category_id" `
+	CategoryLabel    sql.NullString `db:"category_label" json:"category_label" schema:"category_label" `
 }
 
 func (category Category) SetC(count int) Searchable {
-	category.C = count
+	if count > 1 {
+		category.MatchExactSearch = true
+	} else {
+		category.MatchExactSearch = false
+	}
 
 	return category
 }

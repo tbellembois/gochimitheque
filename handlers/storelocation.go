@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/barweiss/go-tuple"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/logger"
@@ -67,10 +68,26 @@ func (env *Env) GetStoreLocationsHandler(w http.ResponseWriter, r *http.Request)
 		}
 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Write(jsonRawMessage)
+	// hack to return the response expected by bootstrap table.
+	var (
+		zmqResponse tuple.T2[[]models.StoreLocation, int]
+	)
+	if err = json.Unmarshal([]byte(jsonRawMessage), &zmqResponse); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error decoding zmqclient.DBGetStorelocations response",
+		}
+	}
 
+	if err = json.NewEncoder(w).Encode(models.StoreLocationsResp{Rows: zmqResponse.V1, Total: zmqResponse.V2}); err != nil {
+		return &models.AppError{
+			Code:    http.StatusInternalServerError,
+			Message: err.Error(),
+		}
+	}
 	return nil
+
 	// // init db request parameters
 	// if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
 	// 	return &models.AppError{
@@ -166,7 +183,7 @@ func (env *Env) CreateStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 			Code:          http.StatusInternalServerError,
 		}
 	}
-	sl.StoreLocationID = sql.NullInt64{Valid: true, Int64: id}
+	sl.StoreLocationID = models.NullInt64{NullInt64: sql.NullInt64{Valid: true, Int64: id}}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
