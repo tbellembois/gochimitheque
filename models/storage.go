@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"encoding/csv"
+	"errors"
 	"os"
 	"strconv"
 	"strings"
@@ -11,15 +12,58 @@ import (
 	"github.com/tbellembois/gochimitheque/logger"
 )
 
+type MyNullTime sql.NullTime
+type MyTime struct{ time.Time }
+
+func (t *MyNullTime) Scan(src interface{}) error {
+	var (
+		tm    time.Time
+		valid bool
+	)
+
+	switch src.(type) {
+	case int64:
+		value := src.(int64)
+		tm = time.Unix(value, 0)
+		valid = false
+	case nil:
+
+	default:
+		return errors.New("Invalid type for ExpireTimestamp")
+	}
+
+	*t = MyNullTime{Valid: valid, Time: tm}
+	return nil
+}
+
+func (t *MyTime) Scan(src interface{}) error {
+	var (
+		tm time.Time
+	)
+
+	switch src.(type) {
+	case int64:
+		value := src.(int64)
+		tm = time.Unix(value, 0)
+	case nil:
+
+	default:
+		return errors.New("Invalid type for ExpireTimestamp")
+	}
+
+	*t = MyTime{tm}
+	return nil
+}
+
 // Storage is a product storage in a store location.
 type Storage struct {
 	StorageID                sql.NullInt64   `db:"storage_id" json:"storage_id" schema:"storage_id" `
-	StorageCreationDate      time.Time       `db:"storage_creationdate" json:"storage_creationdate" schema:"storage_creationdate"`
-	StorageModificationDate  time.Time       `db:"storage_modificationdate" json:"storage_modificationdate" schema:"storage_modificationdate"`
-	StorageEntryDate         sql.NullTime    `db:"storage_entrydate" json:"storage_entrydate" schema:"storage_entrydate" `
-	StorageExitDate          sql.NullTime    `db:"storage_exitdate" json:"storage_exitdate" schema:"storage_exitdate" `
-	StorageOpeningDate       sql.NullTime    `db:"storage_openingdate" json:"storage_openingdate" schema:"storage_openingdate" `
-	StorageExpirationDate    sql.NullTime    `db:"storage_expirationdate" json:"storage_expirationdate" schema:"storage_expirationdate" `
+	StorageCreationDate      MyTime          `db:"storage_creationdate" json:"storage_creationdate" schema:"storage_creationdate"`
+	StorageModificationDate  MyTime          `db:"storage_modificationdate" json:"storage_modificationdate" schema:"storage_modificationdate"`
+	StorageEntryDate         MyNullTime      `db:"storage_entrydate" json:"storage_entrydate" schema:"storage_entrydate" `
+	StorageExitDate          MyNullTime      `db:"storage_exitdate" json:"storage_exitdate" schema:"storage_exitdate" `
+	StorageOpeningDate       MyNullTime      `db:"storage_openingdate" json:"storage_openingdate" schema:"storage_openingdate" `
+	StorageExpirationDate    MyNullTime      `db:"storage_expirationdate" json:"storage_expirationdate" schema:"storage_expirationdate" `
 	StorageComment           sql.NullString  `db:"storage_comment" json:"storage_comment" schema:"storage_comment" `
 	StorageReference         sql.NullString  `db:"storage_reference" json:"storage_reference" schema:"storage_reference" `
 	StorageBatchNumber       sql.NullString  `db:"storage_batchnumber" json:"storage_batchnumber" schema:"storage_batchnumber" `

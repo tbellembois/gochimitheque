@@ -382,7 +382,7 @@ func (env *Env) UpdateStorageHandler(w http.ResponseWriter, r *http.Request) *mo
 		}
 	}
 
-	s.StorageModificationDate = time.Now()
+	s.StorageModificationDate = models.MyTime{time.Now()}
 	s.StorageID = updateds.StorageID
 	s.PersonID = c.PersonID
 
@@ -517,8 +517,8 @@ func (env *Env) CreateStorageHandler(w http.ResponseWriter, r *http.Request) *mo
 		}
 	}
 
-	s.StorageCreationDate = time.Now()
-	s.StorageModificationDate = time.Now()
+	s.StorageCreationDate = models.MyTime{time.Now()}
+	s.StorageModificationDate = models.MyTime{time.Now()}
 	s.PersonID = c.PersonID
 
 	logger.Log.WithFields(logrus.Fields{"s": fmt.Sprintf("%+v", s)}).Debug("CreateStorageHandler")
