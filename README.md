@@ -42,9 +42,7 @@ The project was started in 2015 and has moved to Github in 2017.
 
 - *projet leaders*: Delphine Pitrat - ENS-Lyon (delphine[dot]pitrat[at]ens-lyon[dot]fr) - Thomas Bellembois - UCA
 - *technical referent - chemistry*: Delphine Pitrat  
-- *technical referent - biology*: Antoine Goisnard Phd - University Clermont-Auvergne / IMOST lab. (antoine[dot]goinard[at]uca[dot]fr)  
-- Marie Depresle - University Clermont-Auvergne / Biorcell3D: *biology specialist*
-- Manon Roux - University Clermont-Auvergne / Biorcell3D: *chemistry specialist*
+- *technical referent - biology*: Alexandra Massé, biology specialist, Unité Mixte de Recherche Herbivores - équipe Biomarqueurs, INRAE
 
 ## Screenshot
 
