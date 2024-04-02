@@ -1,4 +1,4 @@
-FROM golang:1.21-bullseye as builder
+FROM golang:1.22-bullseye as builder
 LABEL author="Thomas Bellembois"
 ARG BuildID
 ENV BuildID=${BuildID}
@@ -64,6 +64,7 @@ ENV PATH="$PATH:/root/.cargo/bin"
 
 # Get sources.
 WORKDIR /go/src/rust
+RUN git clone https://github.com/tbellembois/chimitheque_db.git
 RUN git clone https://github.com/tbellembois/chimitheque_types.git
 RUN git clone https://github.com/tbellembois/chimitheque_utils.git
 RUN git clone https://github.com/tbellembois/chimitheque_utils_service.git
@@ -76,7 +77,9 @@ RUN cargo build --release
 # Final image.
 #
 
-FROM golang:1.21-bullseye
+FROM golang:1.22-bullseye
+
+RUN update-ca-certificates -v
 
 # Install zeromq repository and library.
 RUN echo "deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/release-stable/Debian_11/ ./" >> /etc/apt/sources.list

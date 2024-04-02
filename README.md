@@ -26,10 +26,9 @@ It was tested successfully with Firefox and Chrome/Chromium.
 # 2.1.0 News!
 
 Here is the list of the major changes from the `2.1.0` version:
-- the only supported installation is with docker
+- the only supported installation is with Docker
 - the authentication is based on OpenID
 - the LDAP configuration has been removed from Chimithèque to be managed by the OpenID server
-- the initial database is automatically populated from another Chimithèque instance
 
 # Requirements
 
@@ -44,39 +43,39 @@ Retrieve the Chimithèque `docker-compose.yml` file:
   wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/docker-compose.yml -O docker-compose.yml
 ```
 
-Change the `services > casdoor > environment > origin` URL.
-Change the `services > chimitheque > environment > CHIMITHEQUE_APPURL` URL.
-Change the `services > chimitheque > environment > CHIMITHEQUE_OIDCISSUER` URL.
-
-The three URLs must be the same. This is the base URL of your Chimithèque instance.
+TODO: add docker directory
 
 Create the data directories for the containers:
 ```bash
-  mkdir -p /data/docker-casdoor/casdoor-db
-  mkdir -p /data/docker-casdoor/casdoor-init
-  mkdir -p /data/docker-nginx/nginx-auth/certs
-  mkdir -p /data/docker-nginx/nginx-templates
-  mkdir -p /data/docker-chimitheque/chimitheque-db
-  chmod o+rwx /data
+mkdir /data
+mkdir /data/docker-chimitheque
+mkdir /data/docker-chimitheque/chimitheque-db
+mkdir /data/docker-keycloak
+mkdir /data/docker-keycloak/tmp
+mkdir /data/docker-nginx
+mkdir /data/docker-nginx/nginx-auth
+mkdir /data/docker-nginx/nginx-auth/certs
+mkdir /data/docker-nginx/nginx-templates
+mkdir /data/docker-postgres
+mkdir /data/docker-postgres/data
+cp docker/keycloak/chimitheque-realm.json /data/docker-keycloak/tmp/
+cp docker/nginx/default.conf.template /data/docker-nginx/nginx-templates/
+cp /path/to/my/chimitheque.crt /data/docker-nginx/nginx-auth/certs/chimitheque.crt
+cp /path/to/my/chimitheque.key /data/docker-nginx/nginx-auth/certs/chimitheque.key
 ```
+
+TODO: edit nginx template: certs + listen port
 
 Retrieve the Nginx configuration:
 ```bash
   wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/config/default.conf.template -O /data/docker-nginx/nginx-templates/default.conf.template
 ```
 
-TODO edit
-
-Retrieve the CasDoor configuration:
-```bash
-  wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/config/init_data.json -O /data/docker-casdoor/casdoor-init/init_data.json
-```
-
-TODO edit
+TODO: start db + keycloak one time for REALM import
 
 Start up:
 ```bash
-  docker-compose up -d
+  docker compose up -d
 ```
 
 ## Connection

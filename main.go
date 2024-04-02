@@ -66,8 +66,6 @@ func init() {
 
 	// keycloak
 	flagOIDCDiscoverURL := flag.String("oidcdiscoverurl", "http://localhost:8080/keycloak/realms/master/.well-known/openid-configuration", "the OIDC server discover URL")
-	// casdoor
-	//flagOIDCDiscoverURL := flag.String("oidcdiscoverurl", "http://localhost:8000/.well-known/openid-configuration", "the OIDC server discover URL")
 	flagOIDCClientID := flag.String("oidcclientid", "chimitheque", "the OIDC client ID")
 	flagOIDCClientSecret := flag.String("oidcclientsecret", "9QX66vbGsvGQSHzqPWzAUqJy0d1V1CF1", "the OIDC client secret")
 

@@ -1,4 +1,4 @@
-FROM quay.io/keycloak/keycloak:23.0.6 as builder
+FROM quay.io/keycloak/keycloak:24.0 as builder
 
 ARG KC_DB
 ARG KC_FEATURES
@@ -17,7 +17,7 @@ RUN echo "KC_HOSTNAME_STRICT_HTTPS=${KC_HOSTNAME_STRICT_HTTPS}"
 
 RUN /opt/keycloak/bin/kc.sh --verbose build
 
-FROM quay.io/keycloak/keycloak:23.0.6
+FROM quay.io/keycloak/keycloak:24.0
 
 COPY --from=builder /opt/keycloak/ /opt/keycloak/
 WORKDIR /opt/keycloak

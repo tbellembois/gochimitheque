@@ -3,7 +3,7 @@
 appurl=""
 apppath=""
 dockerport=""
-oidcdiscoveryurl=""
+oidcdiscoverurl=""
 oidcclientid=""
 oidcclientsecret=""
 admins=""
@@ -27,10 +27,10 @@ then
       apppath="-apppath $CHIMITHEQUE_APPPATH"
       echo $apppath
 fi
-if [ ! -z "$CHIMITHEQUE_OIDCDISCOVERYURL" ]
+if [ ! -z "$CHIMITHEQUE_OIDCDISCOVERURL" ]
 then
-      oidcdiscoveryurl="-oidcissuer $CHIMITHEQUE_OIDCDISCOVERYURL"
-      echo $oidcdiscoveryurl
+      oidcdiscoverurl="-oidcdiscoverurl $CHIMITHEQUE_OIDCDISCOVERURL"
+      echo $oidcdiscoverurl
 fi
 if [ ! -z "$CHIMITHEQUE_OIDCCLIENTID" ]
 then
@@ -60,12 +60,12 @@ then
       echo $updateqrcode
 fi
 
-command="/var/www-data/chimitheque_utils_service"
+command="/var/www-data/chimitheque_utils_service --db-path /data/storage.db"
 echo "command:"
 echo $command
 $command &
 
-command="/var/www-data/gochimitheque -dbpath /data $appurl $apppath $dockerport $oidcdiscoveryurl $oidcclientid $oidcclientsecret $admins $debug $updateqrcode"
+command="/var/www-data/gochimitheque -dbpath /data $appurl $apppath $dockerport $oidcdiscoverurl $oidcclientid $oidcclientsecret $admins $debug $updateqrcode"
 echo "command:"
 echo $command
 $command
