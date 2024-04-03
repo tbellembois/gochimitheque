@@ -69,7 +69,7 @@ services:
         # keycloak export REALM command
         #entrypoint: "/opt/keycloak/bin/kc.sh export --dir /opt/keycloak/data/import --users realm_file --realm chimitheque --users different_files --users-per-file 1000 --optimized"
         environment:
-            - KEYCLOAK_ADMIN=chimitheque
+            - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN}
             - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
             - PROXY_ADDRESS_FORWARDING=true
         volumes:
