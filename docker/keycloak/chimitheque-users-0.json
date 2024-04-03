@@ -1,0 +1,18 @@
+{
+  "realm" : "chimitheque",
+  "users" : [ {
+    "id" : "6349e3d1-145c-4c0a-9e55-355789d553f8",
+    "username" : "thbellem",
+    "email" : "thomas.bellembois@uca.fr",
+    "emailVerified" : true,
+    "createdTimestamp" : 1712141968151,
+    "enabled" : true,
+    "totp" : false,
+    "credentials" : [ ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-chimitheque" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  } ]
+}

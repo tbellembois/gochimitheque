@@ -67,7 +67,7 @@ services:
                 KC_PROXY_HEADERS: forwarded
         entrypoint: "/opt/keycloak/bin/kc.sh start --optimized --import-realm"
         # keycloak export REALM command
-        #entrypoint: "/opt/keycloak/bin/kc.sh export --dir /opt/keycloak/data/import --users realm_file --realm chimitheque --optimized"
+        #entrypoint: "/opt/keycloak/bin/kc.sh export --dir /opt/keycloak/data/import --users realm_file --realm chimitheque --users different_files --users-per-file 1000 --optimized"
         environment:
             - KEYCLOAK_ADMIN=chimitheque
             - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
@@ -83,7 +83,7 @@ services:
         restart: unless-stopped
         environment:
             - CHIMITHEQUE_DEBUG=${CHIMITHEQUE_DEBUG}
-            - CHIMITHEQUE_APPPATH=/chimitheque/
+            - CHIMITHEQUE_APPPATH=/app/
             - CHIMITHEQUE_APPURL=${CHIMITHEQUE_APPURL}
             - CHIMITHEQUE_DOCKERPORT=8081
             - CHIMITHEQUE_OIDCDISCOVERURL=${KEYCLOAK_SCHEME}://${KEYCLOAK_HOSTNAME}/keycloak/realms/master/.well-known/openid-configuration
