@@ -52,14 +52,17 @@ mkdir /data/docker-chimitheque
 mkdir /data/docker-chimitheque/chimitheque-db
 mkdir /data/docker-keycloak
 mkdir /data/docker-keycloak/import
+mkdir /data/docker-keycloak/templates
 mkdir /data/docker-postgres
 mkdir /data/docker-postgres/data
 mkdir /data/docker-nginx
 mkdir /data/docker-nginx/nginx-auth
 mkdir /data/docker-nginx/nginx-auth/certs
 mkdir /data/docker-nginx/nginx-templates
-cp docker/keycloak/chimitheque-realm-template.json /data/docker-keycloak/import/
+mkdir /data/docker-nginx/nginx-conf
+cp docker/keycloak/chimitheque-realm-template.json /data/docker-keycloak/templates/
 cp docker/nginx/default.conf.template /data/docker-nginx/nginx-templates/
+cp docker/nginx/nginx.conf /data/docker-nginx/nginx-conf/
 cp /path/to/my/chimitheque.crt /data/docker-nginx/nginx-auth/certs/chimitheque.crt
 cp /path/to/my/chimitheque.key /data/docker-nginx/nginx-auth/certs/chimitheque.key
 cp /path/to/my/old/chimitheque/storage.db* /data/docker-chimitheque/chimitheque-db/
@@ -67,14 +70,18 @@ cp /path/to/my/old/chimitheque/storage.db* /data/docker-chimitheque/chimitheque-
 
 TODO: edit nginx template: certs + listen port
 
-TODO: start db + keycloak one time for REALM import
-
 Start up:
 ```bash
   docker compose up -d
 ```
 
-TODO: connect to keycloak configure mail and import users
+TODO: connect to keycloak:
+- change admin password
+- set admin email
+- import users
+- configure mail server
+- enable user registration
+
 
 ## Connection
 

@@ -38,9 +38,10 @@ services:
         command: >
             bash -c "echo $CHIMITHEQUE_APPURL &&
                      echo $CHIMITHEQUE_OIDCCLIENTSECRET &&
-                     sed 's CHIMITHEQUE_APPURL $CHIMITHEQUE_APPURL g; s CHIMITHEQUE_OIDCCLIENTSECRET $CHIMITHEQUE_OIDCCLIENTSECRET g' /data/chimitheque-realm-template.json > /data/chimitheque-realm.json"
+                     sed 's CHIMITHEQUE_APPURL $CHIMITHEQUE_APPURL g; s CHIMITHEQUE_OIDCCLIENTSECRET $CHIMITHEQUE_OIDCCLIENTSECRET g' /templates/chimitheque-realm-template.json > /data/chimitheque-realm.json"
         volumes:
             - /data/docker-keycloak/import:/data
+            - /data/docker-keycloak/templates:/templates
         networks:
             - chimitheque
 
@@ -49,6 +50,7 @@ services:
         restart: unless-stopped
         depends_on:
             - postgres
+            - keycloakpre
         ports:
             - 8080:8080
         build:
@@ -86,7 +88,7 @@ services:
             - CHIMITHEQUE_APPPATH=/app/
             - CHIMITHEQUE_APPURL=${CHIMITHEQUE_APPURL}
             - CHIMITHEQUE_DOCKERPORT=8081
-            - CHIMITHEQUE_OIDCDISCOVERURL=${KEYCLOAK_SCHEME}://${KEYCLOAK_HOSTNAME}/keycloak/realms/master/.well-known/openid-configuration
+            - CHIMITHEQUE_OIDCDISCOVERURL=${KEYCLOAK_SCHEME}://${KEYCLOAK_HOSTNAME}/keycloak/realms/chimitheque/.well-known/openid-configuration
             - CHIMITHEQUE_OIDCCLIENTID=chimitheque
             - CHIMITHEQUE_OIDCCLIENTSECRET=${CHIMITHEQUE_OIDCCLIENTSECRET}
             - CHIMITHEQUE_ADMINS=${CHIMITHEQUE_ADMINS}
