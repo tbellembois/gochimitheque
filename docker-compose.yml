@@ -56,6 +56,7 @@ services:
         build:
             context: ./docker/keycloak
             dockerfile: Dockerfile
+            no_cache: true
             args:
                 KC_DB: postgres
                 KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
@@ -69,7 +70,7 @@ services:
                 KC_PROXY_HEADERS: forwarded
         entrypoint: "/opt/keycloak/bin/kc.sh start --optimized --import-realm"
         # keycloak export REALM command
-        #entrypoint: "/opt/keycloak/bin/kc.sh export --dir /opt/keycloak/data/import --users realm_file --realm chimitheque --users different_files --users-per-file 1000 --optimized"
+        #entrypoint: "/opt/keycloak/bin/kc.sh export --dir /opt/keycloak/data/import --realm chimitheque --users different_files --users-per-file 1000 --optimized"
         environment:
             - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN}
             - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}

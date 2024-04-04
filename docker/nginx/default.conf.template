@@ -36,7 +36,7 @@ server {
     
     location = / {
         # CONFIGURE change to the FQDN of your server
-        return 301 http://127.0.0.1/app;
+        return 301 http://localhost/app;
     }
 
     location /app/ {

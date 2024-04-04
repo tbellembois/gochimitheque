@@ -66,6 +66,8 @@ cp docker/nginx/nginx.conf /data/docker-nginx/nginx-conf/
 cp /path/to/my/chimitheque.crt /data/docker-nginx/nginx-auth/certs/chimitheque.crt
 cp /path/to/my/chimitheque.key /data/docker-nginx/nginx-auth/certs/chimitheque.key
 cp /path/to/my/old/chimitheque/storage.db* /data/docker-chimitheque/chimitheque-db/
+
+chmod 777 /data/docker-chimitheque/chimitheque-db
 ```
 
 TODO: edit nginx template: certs + listen port
@@ -78,6 +80,7 @@ Start up:
 TODO: connect to keycloak:
 - change admin password
 - set admin email
+- create admin@chimitheque.fr user and password
 - import users
 - configure mail server
 - enable user registration
