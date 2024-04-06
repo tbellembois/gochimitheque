@@ -65,9 +65,9 @@ func init() {
 	flagDockerPort := flag.Int("dockerport", 0, "application listen port while running in docker")
 
 	// keycloak
-	flagOIDCDiscoverURL := flag.String("oidcdiscoverurl", "http://localhost:8080/keycloak/realms/master/.well-known/openid-configuration", "the OIDC server discover URL")
+	flagOIDCDiscoverURL := flag.String("oidcdiscoverurl", "http://localhost:8080/keycloak/realms/chimitheque/.well-known/openid-configuration", "the OIDC server discover URL")
 	flagOIDCClientID := flag.String("oidcclientid", "chimitheque", "the OIDC client ID")
-	flagOIDCClientSecret := flag.String("oidcclientsecret", "9QX66vbGsvGQSHzqPWzAUqJy0d1V1CF1", "the OIDC client secret")
+	flagOIDCClientSecret := flag.String("oidcclientsecret", "mysupersecret", "the OIDC client secret")
 
 	flagAdminList := flag.String("admins", "", "the additional admins (comma separated email adresses) (optional) ")
 	flagDebug := flag.Bool("debug", false, "debug (verbose log), default is error")
