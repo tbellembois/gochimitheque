@@ -100,37 +100,56 @@ func (env *Env) GetStoragesUnitsHandler(w http.ResponseWriter, r *http.Request) 
 	logger.Log.Debug("GetStoragesUnitsHandler")
 
 	var (
-		err    error
-		filter zmqclient.RequestFilter
+		jsonRawMessage json.RawMessage
+		err            error
 	)
 
-	// init db request parameters
-	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetUnits("http://localhost/?" + r.URL.RawQuery); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.Request_filter",
-		}
-	}
-
-	units, count, err := env.DB.GetStoragesUnits(filter)
-	if err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error getting the units",
+			Message:       "error calling zmqclient.DBGetUnits",
 		}
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
-	if err = json.NewEncoder(w).Encode(models.UnitsResp{Rows: units, Total: count}); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
+	// logger.Log.Debug("GetStoragesUnitsHandler")
+
+	// var (
+	// 	err    error
+	// 	filter zmqclient.RequestFilter
+	// )
+
+	// // init db request parameters
+	// if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	// 	return &models.AppError{
+	// 		OriginalError: err,
+	// 		Code:          http.StatusInternalServerError,
+	// 		Message:       "error calling zmqclient.Request_filter",
+	// 	}
+	// }
+
+	// units, count, err := env.DB.GetStoragesUnits(filter)
+	// if err != nil {
+	// 	return &models.AppError{
+	// 		OriginalError: err,
+	// 		Code:          http.StatusInternalServerError,
+	// 		Message:       "error getting the units",
+	// 	}
+	// }
+
+	// w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+	// if err = json.NewEncoder(w).Encode(models.UnitsResp{Rows: units, Total: count}); err != nil {
+	// 	return &models.AppError{
+	// 		Code:    http.StatusInternalServerError,
+	// 		Message: err.Error(),
+	// 	}
+	// }
+	// return nil
 }
 
 // GetStoragesSuppliersHandler godoc

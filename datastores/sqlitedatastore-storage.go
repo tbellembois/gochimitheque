@@ -50,70 +50,73 @@ func (db *SQLiteDataStore) ToogleStorageBorrowing(s models.Storage) error {
 // GetStoragesUnits return the units.
 func (db *SQLiteDataStore) GetStoragesUnits(f zmqclient.RequestFilter) ([]models.Unit, int, error) {
 
-	var (
-		units                              []models.Unit
-		count                              int
-		precreq, presreq, comreq, postsreq strings.Builder
-		cnstmt                             *sqlx.NamedStmt
-		snstmt                             *sqlx.NamedStmt
-		err                                error
-	)
+	// migrated to Rust.
+	panic("migrated to Rust")
 
-	// hack to bypass optionnal default on the Rust part.
-	if f.Search == "" {
-		f.Search = "%%"
-	}
+	// var (
+	// 	units                              []models.Unit
+	// 	count                              int
+	// 	precreq, presreq, comreq, postsreq strings.Builder
+	// 	cnstmt                             *sqlx.NamedStmt
+	// 	snstmt                             *sqlx.NamedStmt
+	// 	err                                error
+	// )
 
-	if f.OrderBy == "" {
-		f.OrderBy = "unit_id"
-	}
+	// // hack to bypass optionnal default on the Rust part.
+	// if f.Search == "" {
+	// 	f.Search = "%%"
+	// }
 
-	precreq.WriteString(" SELECT count(DISTINCT unit.unit_id)")
-	presreq.WriteString(" SELECT unit_id, unit_label, unit_type")
+	// if f.OrderBy == "" {
+	// 	f.OrderBy = "unit_id"
+	// }
 
-	comreq.WriteString(" FROM unit")
-	comreq.WriteString(" WHERE unit_label LIKE :search")
+	// precreq.WriteString(" SELECT count(DISTINCT unit.unit_id)")
+	// presreq.WriteString(" SELECT unit_id, unit_label, unit_type")
 
-	if f.UnitType != "" {
-		comreq.WriteString(" AND unit_type=:unit_type")
-	}
+	// comreq.WriteString(" FROM unit")
+	// comreq.WriteString(" WHERE unit_label LIKE :search")
 
-	postsreq.WriteString(" ORDER BY unit.unit_type, unit_id  " + f.Order)
+	// if f.UnitType != "" {
+	// 	comreq.WriteString(" AND unit_type=:unit_type")
+	// }
 
-	// limit
-	if f.Limit != ^uint64(0) {
-		postsreq.WriteString(" LIMIT :limit OFFSET :offset")
-	}
+	// postsreq.WriteString(" ORDER BY unit.unit_type, unit_id  " + f.Order)
 
-	// building count and select statements
-	if cnstmt, err = db.PrepareNamed(precreq.String() + comreq.String()); err != nil {
-		return nil, 0, err
-	}
-	if snstmt, err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); err != nil {
-		return nil, 0, err
-	}
+	// // limit
+	// if f.Limit != ^uint64(0) {
+	// 	postsreq.WriteString(" LIMIT :limit OFFSET :offset")
+	// }
 
-	// building argument map
-	m := map[string]interface{}{
-		"search":    f.Search,
-		"order":     f.Order,
-		"limit":     f.Limit,
-		"offset":    f.Offset,
-		"unit_type": f.UnitType,
-	}
+	// // building count and select statements
+	// if cnstmt, err = db.PrepareNamed(precreq.String() + comreq.String()); err != nil {
+	// 	return nil, 0, err
+	// }
+	// if snstmt, err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); err != nil {
+	// 	return nil, 0, err
+	// }
 
-	// Select.
-	if err = snstmt.Select(&units, m); err != nil {
-		return nil, 0, err
-	}
-	// Count.
-	if err = cnstmt.Get(&count, m); err != nil {
-		return nil, 0, err
-	}
+	// // building argument map
+	// m := map[string]interface{}{
+	// 	"search":    f.Search,
+	// 	"order":     f.Order,
+	// 	"limit":     f.Limit,
+	// 	"offset":    f.Offset,
+	// 	"unit_type": f.UnitType,
+	// }
 
-	logger.Log.WithFields(logrus.Fields{"units": units}).Debug("GetStoragesUnits")
+	// // Select.
+	// if err = snstmt.Select(&units, m); err != nil {
+	// 	return nil, 0, err
+	// }
+	// // Count.
+	// if err = cnstmt.Get(&count, m); err != nil {
+	// 	return nil, 0, err
+	// }
 
-	return units, count, nil
+	// logger.Log.WithFields(logrus.Fields{"units": units}).Debug("GetStoragesUnits")
+
+	// return units, count, nil
 }
 
 // GetStorages returns the storages matching the request parameters p.

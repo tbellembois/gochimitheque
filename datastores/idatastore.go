@@ -48,7 +48,7 @@ type Datastore interface {
 	GetStorages(zmqclient.RequestFilter, int) ([]models.Storage, int, error)
 	GetOtherStorages(zmqclient.RequestFilter, int) ([]models.Entity, int, error)
 	GetStorage(id int) (models.Storage, error)
-	GetStoragesUnits(zmqclient.RequestFilter) ([]models.Unit, int, error)
+	// GetStoragesUnits(zmqclient.RequestFilter) ([]models.Unit, int, error)
 	GetStorageEntity(id int) (models.Entity, error)
 	DeleteStorage(id int) error
 	ArchiveStorage(id int) error
