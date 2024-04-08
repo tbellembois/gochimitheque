@@ -12,16 +12,20 @@ import (
 
 // Product is a chemical product card.
 type Product struct {
-	ProductID            int            `db:"product_id" json:"product_id" schema:"product_id"`
-	ProductSpecificity   sql.NullString `db:"product_specificity" json:"product_specificity" schema:"product_specificity" `
-	ProductMSDS          sql.NullString `db:"product_msds" json:"product_msds" schema:"product_msds" `
-	ProductRestricted    sql.NullBool   `db:"product_restricted" json:"product_restricted" schema:"product_restricted" `
-	ProductRadioactive   sql.NullBool   `db:"product_radioactive" json:"product_radioactive" schema:"product_radioactive" `
-	ProductThreeDFormula sql.NullString `db:"product_threedformula" json:"product_threedformula" schema:"product_threedformula" `
-	ProductTwoDFormula   sql.NullString `db:"product_twodformula" json:"product_twodformula" schema:"product_twodformula" `
+	ProductID              int            `db:"product_id" json:"product_id" schema:"product_id"`
+	ProductInchi           sql.NullString `db:"product_inchi" json:"product_inchi" schema:"product_inchi"`
+	ProductInchikey        sql.NullString `db:"product_inchikey" json:"product_inchikey" schema:"product_inchikey"`
+	ProductCanonicalSmiles sql.NullString `db:"product_canonical_smiles" json:"product_canonical_smiles" schema:"product_canonical_smiles"`
+	ProductSpecificity     sql.NullString `db:"product_specificity" json:"product_specificity" schema:"product_specificity" `
+	ProductMSDS            sql.NullString `db:"product_msds" json:"product_msds" schema:"product_msds" `
+	ProductRestricted      sql.NullBool   `db:"product_restricted" json:"product_restricted" schema:"product_restricted" `
+	ProductRadioactive     sql.NullBool   `db:"product_radioactive" json:"product_radioactive" schema:"product_radioactive" `
+	ProductThreeDFormula   sql.NullString `db:"product_threedformula" json:"product_threedformula" schema:"product_threedformula" `
+	ProductTwoDFormula     sql.NullString `db:"product_twodformula" json:"product_twodformula" schema:"product_twodformula" `
 	// ProductMolFormula      sql.NullString `db:"product_molformula" json:"product_molformula" schema:"product_molformula" `
 	ProductDisposalComment sql.NullString `db:"product_disposalcomment" json:"product_disposalcomment" schema:"product_disposalcomment" `
 	ProductRemark          sql.NullString `db:"product_remark" json:"product_remark" schema:"product_remark" `
+	ProductMolecularWeight sql.NullInt64  `db:"product_molecularweight" json:"product_molecularweight" schema:"product_molecularweight" `
 	ProductTemperature     sql.NullInt64  `db:"product_temperature" json:"product_temperature" schema:"product_temperature" `
 	ProductSheet           sql.NullString `db:"product_sheet" json:"product_sheet" schema:"product_sheet" `
 	ProductNumberPerCarton sql.NullInt64  `db:"product_number_per_carton" json:"product_number_per_carton" schema:"product_number_per_carton" `
@@ -38,6 +42,7 @@ type Product struct {
 	ProducerRef            `db:"producerref" json:"producerref" schema:"producerref"`
 	Category               `db:"category" json:"category" schema:"category"`
 	UnitTemperature        Unit `db:"unit_temperature" json:"unit_temperature" schema:"unit_temperature"`
+	UnitMolecularWeight    Unit `db:"unit_molecularweight" json:"unit_molecularweight" schema:"unit_molecularweight"`
 
 	ClassOfCompound         []ClassOfCompound        `db:"-" schema:"classofcompound" json:"classofcompound"`
 	Synonyms                []Name                   `db:"-" schema:"synonyms" json:"synonyms"`

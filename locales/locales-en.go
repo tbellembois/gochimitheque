@@ -122,9 +122,9 @@ var LOCALES_EN = []byte(`
 [login_openid]
 	one = "OpenID connection"
 [login_openid_text]
-	one = "CLick on 'Enter' below"
+	one = "Click on 'Enter' below"
 [login_openid_link]
-	one = "Sign in"
+	one = "Enter"
 [login_forbidden]
 	one = "Your account has not been approved by an entity manager"
 

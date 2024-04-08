@@ -846,6 +846,9 @@ ALTER TABLE producerref_new RENAME TO producerref;
 
 CREATE TABLE product_new (
 	product_id	INTEGER,
+	product_inchi TEXT,
+	product_inchikey TEXT,
+	product_canonical_smiles TEXT,
 	product_specificity	TEXT,
 	product_msds	TEXT,
 	product_restricted	INTEGER DEFAULT 0,
@@ -858,6 +861,7 @@ CREATE TABLE product_new (
 	product_sheet	TEXT,
 	product_concentration	REAL,
 	product_temperature	REAL,
+	product_molecularweight REAL,
 	casnumber	INTEGER,
 	cenumber	INTEGER,
 	person	INTEGER NOT NULL,
@@ -867,6 +871,7 @@ CREATE TABLE product_new (
 	signalword	INTEGER,
 	name	INTEGER NOT NULL,
 	producerref	INTEGER,
+	unit_molecularweight INTEGER,
 	unit_temperature	INTEGER,
 	category	INTEGER,
 	product_number_per_carton	INTEGER,
@@ -880,6 +885,7 @@ CREATE TABLE product_new (
 	FOREIGN KEY(category) REFERENCES category(category_id),
 	PRIMARY KEY(product_id),
 	FOREIGN KEY(unit_temperature) REFERENCES unit(unit_id),
+	FOREIGN KEY(unit_molecularweight) REFERENCES unit(unit_id),
 	FOREIGN KEY(physicalstate) REFERENCES physicalstate(physicalstate_id),
 	FOREIGN KEY(signalword) REFERENCES signalword(signalword_id),
 	FOREIGN KEY(name) REFERENCES name(name_id)

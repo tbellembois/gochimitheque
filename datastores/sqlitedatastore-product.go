@@ -174,8 +174,12 @@ func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int,
 
 	// pre request: select or count
 	precreq.WriteString(" SELECT count(DISTINCT p.product_id)")
-	presreq.WriteString(` SELECT p.product_id, 
+	presreq.WriteString(` SELECT p.product_id,
+	p.product_inchi,
+	p.product_inchikey,
 	p.product_specificity, 
+	p.product_canonical_smiles,
+	p.product_molecularweight,
 	p.product_msds,
 	p.product_restricted,
 	p.product_radioactive,
@@ -211,6 +215,8 @@ func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int,
 	producer.producer_label AS "producerref.producer.producer_label",
 	ut.unit_id AS "unit_temperature.unit_id",
 	ut.unit_label AS "unit_temperature.unit_label",
+	umw.unit_id AS "unit_molecularweight.unit_id",
+	umw.unit_label AS "unit_molecularweight.unit_label",
 	category.category_id AS "category.category_id",
 	category.category_label AS "category.category_label"
 	`)
@@ -240,6 +246,8 @@ func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int,
 	}
 	// get unit_temperature
 	comreq.WriteString(" LEFT JOIN unit ut ON p.unit_temperature = ut.unit_id")
+	// get unit_molecularweight
+	comreq.WriteString(" LEFT JOIN unit umw ON p.unit_molecularweight = umw.unit_id")
 	// get producerref
 	if f.ProducerRef != 0 {
 		comreq.WriteString(" JOIN producerref ON p.producerref = :producerref")
@@ -838,7 +846,11 @@ func (db *SQLiteDataStore) GetProduct(id int) (models.Product, error) {
 	)
 
 	sqlr = `SELECT product.product_id, 
-	product.product_specificity, 
+	product.product_inchi,
+	product.product_inchikey,
+	product.product_specificity,
+	product.product_canonical_smiles, 
+	product.product_molecularweight,
 	product_msds,
 	product_restricted,
 	product_radioactive,
@@ -873,6 +885,8 @@ func (db *SQLiteDataStore) GetProduct(id int) (models.Product, error) {
 	producer.producer_label AS "producerref.producer.producer_label",
 	ut.unit_id AS "unit_temperature.unit_id",
 	ut.unit_label AS "unit_temperature.unit_label",
+	umw.unit_id AS "unit_molecularweight.unit_id",
+	umw.unit_label AS "unit_molecularweight.unit_label",
 	category.category_id AS "category.category_id",
 	category.category_label AS "category.category_label"
 	FROM product
@@ -886,6 +900,7 @@ func (db *SQLiteDataStore) GetProduct(id int) (models.Product, error) {
 	LEFT JOIN signalword ON product.signalword = signalword.signalword_id
 	LEFT JOIN category ON product.category = category.category_id
 	LEFT JOIN unit ut ON product.unit_temperature = ut.unit_id
+	LEFT JOIN unit umw ON product.unit_temperature = umw.unit_id
 	LEFT JOIN producerref ON product.producerref = producerref.producerref_id
 	LEFT JOIN producer ON producerref.producer = producer.producer_id
 	WHERE product_id = ?`
@@ -1296,6 +1311,30 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p models.Product, update bool) (l
 	// finally updating the product
 	insertCols := goqu.Record{}
 
+	if p.ProductInchi.Valid {
+		insertCols["product_inchi"] = p.ProductInchi.String
+	} else {
+		insertCols["product_inchi"] = nil
+	}
+
+	if p.ProductInchikey.Valid {
+		insertCols["product_inchikey"] = p.ProductInchikey.String
+	} else {
+		insertCols["product_inchikey"] = nil
+	}
+
+	if p.ProductCanonicalSmiles.Valid {
+		insertCols["product_canonical_smiles"] = p.ProductCanonicalSmiles.String
+	} else {
+		insertCols["product_canonical_smiles"] = nil
+	}
+
+	if p.ProductMolecularWeight.Valid {
+		insertCols["product_molecularweight"] = p.ProductMolecularWeight.Int64
+	} else {
+		insertCols["product_molecularweight"] = nil
+	}
+
 	if p.ProductSpecificity.Valid {
 		insertCols["product_specificity"] = p.ProductSpecificity.String
 	} else {
@@ -1342,6 +1381,12 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p models.Product, update bool) (l
 		insertCols["unit_temperature"] = int(p.UnitTemperature.UnitID.Int64)
 	} else {
 		insertCols["unit_temperature"] = nil
+	}
+
+	if p.UnitMolecularWeight.UnitID.Valid {
+		insertCols["unit_molecularweight"] = int(p.UnitMolecularWeight.UnitID.Int64)
+	} else {
+		insertCols["unit_molecularweight"] = nil
 	}
 
 	if p.ProductThreeDFormula.Valid {
