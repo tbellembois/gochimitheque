@@ -1200,6 +1200,8 @@ DROP INDEX IF EXISTS idx_supplierref_label;
 DROP TABLE IF EXISTS captcha;
 DROP TABLE IF EXISTS entityldapgroups;
 
+INSERT INTO unit (unit_label, unit_multiplier, unit_type) VALUES ("g/mol", 1, "molecularweight");
+
 PRAGMA user_version=10;
 COMMIT;
 PRAGMA foreign_keys=on;`
