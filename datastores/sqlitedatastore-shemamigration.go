@@ -610,7 +610,7 @@ ALTER TABLE casnumber_new RENAME TO casnumber;
 
 CREATE TABLE category_new (
 	category_id	INTEGER,
-	category_label	TEXT NOT NULL,
+	category_label	TEXT NOT NULL UNIQUE,
 	PRIMARY KEY(category_id)
 ) STRICT;
 INSERT INTO category_new (
@@ -689,7 +689,7 @@ ALTER TABLE entity_new RENAME TO entity;
 CREATE TABLE hazardstatement_new (
 	hazardstatement_id	INTEGER,
 	hazardstatement_label	TEXT NOT NULL,
-	hazardstatement_reference	TEXT NOT NULL,
+	hazardstatement_reference	TEXT NOT NULL UNIQUE,
 	hazardstatement_cmr	TEXT,
 	PRIMARY KEY(hazardstatement_id)
 ) STRICT;
@@ -764,7 +764,7 @@ ALTER TABLE permission_new RENAME TO permission;
 
 CREATE TABLE person_new (
 	person_id	INTEGER,
-	person_email	TEXT NOT NULL,
+	person_email	TEXT NOT NULL UNIQUE,
 	PRIMARY KEY(person_id)
 ) STRICT;
 INSERT INTO person_new (
@@ -795,7 +795,7 @@ ALTER TABLE physicalstate_new RENAME TO physicalstate;
 CREATE TABLE precautionarystatement_new (
 	precautionarystatement_id	INTEGER,
 	precautionarystatement_label	TEXT NOT NULL,
-	precautionarystatement_reference	TEXT NOT NULL,
+	precautionarystatement_reference	TEXT NOT NULL UNIQUE,
 	PRIMARY KEY(precautionarystatement_id)
 ) STRICT;
 INSERT INTO precautionarystatement_new (
@@ -812,7 +812,7 @@ ALTER TABLE precautionarystatement_new RENAME TO precautionarystatement;
 
 CREATE TABLE producer_new (
 	producer_id	INTEGER,
-	producer_label	TEXT NOT NULL,
+	producer_label	TEXT NOT NULL UNIQUE,
 	PRIMARY KEY(producer_id)
 ) STRICT;
 INSERT INTO producer_new (
@@ -1091,7 +1091,7 @@ ALTER TABLE storelocation_new RENAME TO storelocation;
 
 CREATE TABLE supplier_new (
 	supplier_id	INTEGER,
-	supplier_label	TEXT NOT NULL,
+	supplier_label	TEXT NOT NULL UNIQUE,
 	PRIMARY KEY(supplier_id)
 ) STRICT;
 INSERT INTO supplier_new (
@@ -1125,7 +1125,7 @@ ALTER TABLE supplierref_new RENAME TO supplierref;
 
 CREATE TABLE symbol_new (
 	symbol_id	INTEGER,
-	symbol_label	TEXT NOT NULL,
+	symbol_label	TEXT NOT NULL UNIQUE,
 	symbol_image	TEXT,
 	PRIMARY KEY(symbol_id)
 ) STRICT;
@@ -1141,7 +1141,7 @@ ALTER TABLE symbol_new RENAME TO symbol;
 
 CREATE TABLE tag_new (
 	tag_id	INTEGER,
-	tag_label	TEXT NOT NULL,
+	tag_label	TEXT NOT NULL UNIQUE,
 	PRIMARY KEY(tag_id)
 ) STRICT;
 INSERT INTO tag_new (
