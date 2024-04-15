@@ -23,14 +23,14 @@ type Product struct {
 	ProductThreeDFormula   sql.NullString `db:"product_threedformula" json:"product_threedformula" schema:"product_threedformula" `
 	ProductTwoDFormula     sql.NullString `db:"product_twodformula" json:"product_twodformula" schema:"product_twodformula" `
 	// ProductMolFormula      sql.NullString `db:"product_molformula" json:"product_molformula" schema:"product_molformula" `
-	ProductDisposalComment sql.NullString `db:"product_disposalcomment" json:"product_disposalcomment" schema:"product_disposalcomment" `
-	ProductRemark          sql.NullString `db:"product_remark" json:"product_remark" schema:"product_remark" `
-	ProductMolecularWeight sql.NullInt64  `db:"product_molecularweight" json:"product_molecularweight" schema:"product_molecularweight" `
-	ProductTemperature     sql.NullInt64  `db:"product_temperature" json:"product_temperature" schema:"product_temperature" `
-	ProductSheet           sql.NullString `db:"product_sheet" json:"product_sheet" schema:"product_sheet" `
-	ProductNumberPerCarton sql.NullInt64  `db:"product_number_per_carton" json:"product_number_per_carton" schema:"product_number_per_carton" `
-	ProductNumberPerBag    sql.NullInt64  `db:"product_number_per_bag" json:"product_number_per_bag" schema:"product_number_per_bag" `
-	ProductType            string         `db:"-" json:"product_type" schema:"product_type"`
+	ProductDisposalComment sql.NullString  `db:"product_disposalcomment" json:"product_disposalcomment" schema:"product_disposalcomment" `
+	ProductRemark          sql.NullString  `db:"product_remark" json:"product_remark" schema:"product_remark" `
+	ProductMolecularWeight sql.NullFloat64 `db:"product_molecularweight" json:"product_molecularweight" schema:"product_molecularweight" `
+	ProductTemperature     sql.NullInt64   `db:"product_temperature" json:"product_temperature" schema:"product_temperature" `
+	ProductSheet           sql.NullString  `db:"product_sheet" json:"product_sheet" schema:"product_sheet" `
+	ProductNumberPerCarton sql.NullInt64   `db:"product_number_per_carton" json:"product_number_per_carton" schema:"product_number_per_carton" `
+	ProductNumberPerBag    sql.NullInt64   `db:"product_number_per_bag" json:"product_number_per_bag" schema:"product_number_per_bag" `
+	ProductType            string          `db:"-" json:"product_type" schema:"product_type"`
 	EmpiricalFormula       `db:"empiricalformula" json:"empiricalformula" schema:"empiricalformula"`
 	LinearFormula          `db:"linearformula" json:"linearformula" schema:"linearformula"`
 	PhysicalState          `db:"physicalstate" json:"physicalstate" schema:"physicalstate"`

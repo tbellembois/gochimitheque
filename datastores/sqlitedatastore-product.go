@@ -1330,7 +1330,7 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p models.Product, update bool) (l
 	}
 
 	if p.ProductMolecularWeight.Valid {
-		insertCols["product_molecularweight"] = p.ProductMolecularWeight.Int64
+		insertCols["product_molecularweight"] = p.ProductMolecularWeight.Float64
 	} else {
 		insertCols["product_molecularweight"] = nil
 	}
