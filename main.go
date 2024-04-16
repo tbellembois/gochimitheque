@@ -196,6 +196,9 @@ func initDB() {
 	logger.Log.Info("- running maintenance job")
 	datastore.Maintenance()
 
+	logger.Log.Info("- updating GHS statements")
+	zmqclient.DBUpdateGHSStatements()
+
 	env.DB = datastore
 
 }
