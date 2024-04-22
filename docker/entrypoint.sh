@@ -60,12 +60,14 @@ then
       echo $updateqrcode
 fi
 
-command="/var/www-data/chimitheque_utils_service --db-path /data/storage.db"
-echo "command:"
-echo $command
-$command &
-
 command="/var/www-data/gochimitheque -dbpath /data $appurl $apppath $dockerport $oidcdiscoverurl $oidcclientid $oidcclientsecret $admins $debug $updateqrcode"
 echo "command:"
 echo $command
 $command
+
+sleep 2
+
+command="/var/www-data/chimitheque_utils_service --db-path /data/storage.db"
+echo "command:"
+echo $command
+$command &
