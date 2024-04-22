@@ -53,6 +53,8 @@ var LOCALES_EN = []byte(`
 	one = "create"
 [check_all]
 	one = "check all"
+[import]
+	one = "import"
 
 [required_input]
 	one = "required input"
@@ -450,6 +452,14 @@ var LOCALES_EN = []byte(`
 	one = "create a product card"
 [product_update_title]
 	one = "update product"
+[product_inchi_title]
+	one = "inchi"
+[product_inchi_key_title]
+	one = "inchi key"
+[product_smiles_title]
+	one = "SMILES"
+[product_molecularweight_title]
+	one = "molecular weight"
 [product_threedformula_title]
 	one = "3D formula"
 [product_twodformula_title]

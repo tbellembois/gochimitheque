@@ -53,6 +53,8 @@ var LOCALES_FR = []byte(`
 	one = "créer"
 [check_all]
 	one = "sélectionner tout"
+[import]
+	one = "importer"
 
 [required_input]
 	one = "champs requis"
@@ -450,6 +452,14 @@ var LOCALES_FR = []byte(`
 	one = "créer une fiche produit"
 [product_update_title]
 	one = "mettre à jour produit"
+[product_inchi_title]
+	one = "code inchi"
+[product_smiles_title]
+	one = "SMILES"
+[product_molecularweight_title]
+	one = "poids moléculaire"
+[product_inchi_key_title]
+	one = "clé inchi"
 [product_threedformula_title]
 	one = "formule 3D"
 [product_twodformula_title]

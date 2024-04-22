@@ -1353,6 +1353,9 @@ func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *mo
 	updatedp.ProductThreeDFormula = p.ProductThreeDFormula
 	updatedp.ProductTwoDFormula = p.ProductTwoDFormula
 	// updatedp.ProductMolFormula = p.ProductMolFormula
+	updatedp.ProductInchi = p.ProductInchi
+	updatedp.ProductInchikey = p.ProductInchikey
+	updatedp.ProductCanonicalSmiles = p.ProductCanonicalSmiles
 	updatedp.ProductDisposalComment = p.ProductDisposalComment
 	updatedp.ProductRemark = p.ProductRemark
 	updatedp.ProductNumberPerCarton = p.ProductNumberPerCarton
@@ -1369,6 +1372,7 @@ func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *mo
 	updatedp.ProductSheet = p.ProductSheet
 	updatedp.ProductTemperature = p.ProductTemperature
 	updatedp.UnitTemperature = p.UnitTemperature
+	updatedp.UnitMolecularWeight = p.UnitMolecularWeight
 
 	logger.Log.WithFields(logrus.Fields{"updatedp": fmt.Sprintf("%+v", updatedp)}).Debug("UpdateProductHandler")
 

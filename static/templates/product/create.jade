@@ -131,6 +131,22 @@ block CONTENT
 
                 .form-row.chem.collapse
                     .form-group.col-sm-6
+                        +inputtext(name="product_inchi", label="product_inchi_title")
+                    .form-group.col-sm-6
+                        +inputtext(name="product_inchikey", label="product_inchi_key_title")
+
+                .form-row.chem.collapse
+                    .form-group.col-sm-6
+                        +inputtext(name="product_canonicalsmiles", label="product_smiles_title")
+
+                .form-row.chem.collapse
+                    .form-group.col-sm-6
+                        +inputnumber(name="product_molecularweight", label="product_molecularweight_title", step="any", min="-10000000", max="10000000")
+                    .form-group.col-sm-6
+                        +inputselect(name="unit_molecularweight", label="unit_label_title")
+
+                .form-row.chem.collapse
+                    .form-group.col-sm-6
                         +inputtext(name="product_threedformula", label="product_threedformula_title")
                     .form-group.col-sm-6
                         +inputfile("product_twodformula_title", "product_twodformula", ".png,.jpg,.jpeg")
