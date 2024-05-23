@@ -45,6 +45,7 @@ var (
 	paramAutoImportURL *string
 	commandUpdateQRCode,
 	paramDebug,
+	paramFakeAuth,
 	commandVersion,
 	commandGenLocaleJS *bool
 	BuildID string
@@ -71,6 +72,7 @@ func init() {
 
 	flagAdminList := flag.String("admins", "", "the additional admins (comma separated email adresses) (optional) ")
 	flagDebug := flag.Bool("debug", false, "debug (verbose log), default is error")
+	flagFakeAuth := flag.Bool("fakeauth", false, "fake authentication (use in devel only), default is false")
 
 	// One shot commands.
 	flagUpdateQRCode := flag.Bool("updateqrcode", false, "regenerate storages QR codes")
@@ -89,6 +91,7 @@ func init() {
 	paramDBPath = flagDBPath
 	paramAdminList = flagAdminList
 	paramDebug = flagDebug
+	paramFakeAuth = flagFakeAuth
 
 	commandUpdateQRCode = flagUpdateQRCode
 	commandVersion = flagVersion
@@ -261,6 +264,8 @@ func initAdmins() {
 }
 
 func initStaticResources(router *mux.Router) {
+	// http.Handle("/wasm/", alice.New(env.HeadersMiddleware).Then(http.FileServer(http.FS(embedWasmBox))))
+	// http.Handle("/static/", alice.New(env.HeadersMiddleware).Then(http.FileServer(http.FS(embedStaticBox))))
 	http.Handle("/wasm/", http.FileServer(http.FS(embedWasmBox)))
 	http.Handle("/static/", http.FileServer(http.FS(embedStaticBox)))
 	http.Handle("/", router)
@@ -314,7 +319,7 @@ func main() {
 
 	initAdmins()
 
-	router := buildEndpoints(env.AppFullURL)
+	router := buildEndpoints(env.AppFullURL, *paramFakeAuth)
 
 	initStaticResources(router)
 

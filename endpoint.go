@@ -5,11 +5,18 @@ import (
 	"github.com/justinas/alice"
 )
 
-func buildEndpoints(appFullURL string) (router *mux.Router) {
+func buildEndpoints(appFullURL string, fakeAuth bool) (router *mux.Router) {
 	router = mux.NewRouter()
 
+	var secureChain alice.Chain
+
 	commonChain := alice.New(env.HeadersMiddleware, env.ContextMiddleware, env.LogingMiddleware)
-	secureChain := alice.New(env.HeadersMiddleware, env.ContextMiddleware, env.LogingMiddleware, env.AuthenticateMiddleware, env.AuthorizeMiddleware)
+
+	if fakeAuth {
+		secureChain = alice.New(env.HeadersMiddleware, env.ContextMiddleware, env.LogingMiddleware, env.FakeMiddleware, env.AuthorizeMiddleware)
+	} else {
+		secureChain = alice.New(env.HeadersMiddleware, env.ContextMiddleware, env.LogingMiddleware, env.AuthenticateMiddleware, env.AuthorizeMiddleware)
+	}
 
 	router.Handle("/login", commonChain.Then(env.AppMiddleware(env.VLoginHandler))).Methods("GET")
 	router.Handle("/menu", commonChain.Then(env.AppMiddleware(env.VMenuHandler))).Methods("GET")
@@ -82,6 +89,8 @@ func buildEndpoints(appFullURL string) (router *mux.Router) {
 	router.Handle("/{view:v}/{item:storelocations}", secureChain.Then(env.AppMiddleware(env.VGetStoreLocationsHandler))).Methods("GET")
 	router.Handle("/{view:vc}/{item:storelocations}", secureChain.Then(env.AppMiddleware(env.VCreateStoreLocationHandler))).Methods("GET")
 	router.Handle("/{item:storelocations}", secureChain.Then(env.AppMiddleware(env.GetStoreLocationsHandler))).Methods("GET")
+	router.Handle("/{item:storelocations-bstable}", secureChain.Then(env.AppMiddleware(env.GetStoreLocationsBSTABLEHandler))).Methods("GET")
+
 	router.Handle("/{item:storelocations}/{id}", secureChain.Then(env.AppMiddleware(env.GetStoreLocationHandler))).Methods("GET")
 	router.Handle("/{item:storelocations}/{id}", secureChain.Then(env.AppMiddleware(env.UpdateStoreLocationHandler))).Methods("PUT")
 	router.Handle("/{item:storelocations}", secureChain.Then(env.AppMiddleware(env.CreateStoreLocationHandler))).Methods("POST")

@@ -42,15 +42,7 @@ func (env *Env) VCreateStoreLocationHandler(w http.ResponseWriter, r *http.Reque
 	REST handlers
 */
 
-// GetStoreLocationsHandler godoc
-// @Summary Get store locations. Only store locations visible by the authenticated user are returned.
-// @tags storelocation
-// @Produce json
-// @Success 200 {object} models.StoreLocationsResp
-// @Failure 500
-// @Failure 403
-// @Router /storelocations/ [get].
-func (env *Env) GetStoreLocationsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+func (env *Env) GetStoreLocationsBSTABLEHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	logger.Log.Debug("GetStoreLocationsHandler")
 
 	var (
@@ -87,34 +79,38 @@ func (env *Env) GetStoreLocationsHandler(w http.ResponseWriter, r *http.Request)
 		}
 	}
 	return nil
+}
 
-	// // init db request parameters
-	// if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
-	// 	return &models.AppError{
-	// 		OriginalError: err,
-	// 		Code:          http.StatusInternalServerError,
-	// 		Message:       "error calling zmqclient.Request_filter",
-	// 	}
-	// }
+// GetStoreLocationsHandler godoc
+// @Summary Get store locations. Only store locations visible by the authenticated user are returned.
+// @tags storelocation
+// @Produce json
+// @Success 200 {object} models.StoreLocationsResp
+// @Failure 500
+// @Failure 403
+// @Router /storelocations/ [get].
+func (env *Env) GetStoreLocationsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+	logger.Log.Debug("GetStoreLocationsHandler")
 
-	// storelocations, count, err := env.DB.GetStoreLocations(filter, c.PersonID)
-	// if err != nil {
-	// 	return &models.AppError{
-	// 		OriginalError: err,
-	// 		Code:          http.StatusInternalServerError,
-	// 		Message:       "error getting the store locations",
-	// 	}
-	// }
+	var (
+		err            error
+		jsonRawMessage json.RawMessage
+	)
 
-	// w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	c := request.ContainerFromRequestContext(r)
 
-	// if err = json.NewEncoder(w).Encode(models.StoreLocationsResp{Rows: storelocations, Total: count}); err != nil {
-	// 	return &models.AppError{
-	// 		Code:    http.StatusInternalServerError,
-	// 		Message: err.Error(),
-	// 	}
-	// }
-	// return nil
+	if jsonRawMessage, err = zmqclient.DBGetStorelocations("http://localhost/?"+r.URL.RawQuery, c.PersonID); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.DBGetStorelocations",
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
+
+	return nil
 }
 
 // GetStoreLocationHandler returns a json of the store location with the requested id.

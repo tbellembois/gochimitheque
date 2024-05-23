@@ -82,6 +82,30 @@ func (env *Env) ContextMiddleware(h http.Handler) http.Handler {
 	})
 }
 
+// FakeMiddleware fake the authentication.
+func (env *Env) FakeMiddleware(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// getting the request context
+		ctx := r.Context()
+
+		// getting the request container
+		ctxcontainer := ctx.Value(request.ChimithequeContextKey("container"))
+		container := ctxcontainer.(request.Container)
+
+		// setting up auth person informations
+		container.PersonEmail = "thomas.bellembois@uca.fr"
+		container.PersonID = 1
+
+		ctx = context.WithValue(
+			r.Context(),
+			request.ChimithequeContextKey("container"),
+			container,
+		)
+
+		h.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
 // AuthenticateMiddleware check that a valid token is in the request.
 func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
