@@ -114,12 +114,12 @@ html
             if (!window.FileReader) {
                 return alert('FileReader API is not supported by your browser.');
             }
-            molfile = $('#product_twodformula')[0];
+            molfile = $('#product_twod_formula')[0];
             if (molfile.files && molfile.files[0]) {
                 file = molfile.files[0]; // The file
                 fr = new FileReader(); // FileReader instance
                 fr.onload = function () {
-                    $('#hidden_product_twodformula_content').append(fr.result);
+                    $('#hidden_product_twod_formula_content').append(fr.result);
                 };
                 fr.error = function () {
                     alert("error loading image.")

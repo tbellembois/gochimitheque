@@ -60,8 +60,8 @@ func (db *SQLiteDataStore) GetWelcomeAnnounce() (models.WelcomeAnnounce, error) 
 		err  error
 	)
 
-	sqlr = `SELECT welcomeannounce.welcomeannounce_id, welcomeannounce.welcomeannounce_text
-	FROM welcomeannounce LIMIT 1`
+	sqlr = `SELECT welcome_announce.welcome_announce_id, welcome_announce.welcome_announce_text
+	FROM welcome_announce LIMIT 1`
 	if err = db.Get(&wa, sqlr); err != nil {
 		return models.WelcomeAnnounce{}, err
 	}
@@ -85,8 +85,8 @@ func (db *SQLiteDataStore) UpdateWelcomeAnnounce(w models.WelcomeAnnounce) error
 	}
 
 	// updating person
-	sqlr = `UPDATE welcomeannounce SET welcomeannounce_text = ?
-	WHERE welcomeannounce_id = (SELECT welcomeannounce_id FROM welcomeannounce LIMIT 1)`
+	sqlr = `UPDATE welcome_announce SET welcome_announce_text = ?
+	WHERE welcome_announce_id = (SELECT welcome_announce_id FROM welcome_announce LIMIT 1)`
 	if _, err = tx.Exec(sqlr, w.WelcomeAnnounceText); err != nil {
 		if errr := tx.Rollback(); errr != nil {
 			return errr
@@ -170,13 +170,20 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	)
 
 	// tables creation
-	logger.Log.Info("  creating sqlite tables")
+	var count_entity_table int
+	if err = db.Get(&count_entity_table, `SELECT count(*) FROM sqlite_schema WHERE type='table' AND name='entity'`); err != nil {
+		logger.Log.Fatal(err)
+	}
 
-	if _, err = db.Exec(schema); err != nil {
-		return err
+	if count_entity_table == 0 {
+		logger.Log.Info("  creating sqlite tables")
+		if _, err = db.Exec(schema); err != nil {
+			return err
+		}
 	}
 
 	// shema migration
+	logger.Log.Info("  running migrations")
 	if err = db.Get(&userVersion, `PRAGMA user_version`); err != nil {
 		return err
 	}
@@ -191,10 +198,11 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 			return err
 		}
 		nextVersion++
+		logger.Log.Infof("  done")
 	}
 
 	// welcome announce
-	if err = db.Get(&c, `SELECT count(*) FROM welcomeannounce`); err != nil {
+	if err = db.Get(&c, `SELECT count(*) FROM welcome_announce`); err != nil {
 		return err
 	}
 
@@ -219,8 +227,21 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		}
 	}
 
+	// physical states
+	if err = db.Get(&c, `SELECT count(*) FROM physical_state`); err != nil {
+		return err
+	}
+
+	if c == 0 {
+		logger.Log.Info("  inserting physical states")
+
+		if _, err = db.Exec(insphysicalstate); err != nil {
+			return err
+		}
+	}
+
 	// signal words
-	if err = db.Get(&c, `SELECT count(*) FROM signalword`); err != nil {
+	if err = db.Get(&c, `SELECT count(*) FROM signal_word`); err != nil {
 		return err
 	}
 
@@ -233,7 +254,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	}
 
 	// cas numbers
-	if err = db.Get(&c, `SELECT count(*) FROM casnumber`); err != nil {
+	if err = db.Get(&c, `SELECT count(*) FROM cas_number`); err != nil {
 		return err
 	}
 
@@ -248,7 +269,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		}
 
 		for _, record := range records {
-			if _, err = db.Exec(`INSERT INTO casnumber (casnumber_label, casnumber_cmr) VALUES (?, ?)`,
+			if _, err = db.Exec(`INSERT INTO cas_number (cas_number_label, cas_number_cmr) VALUES (?, ?)`,
 				record[0],
 				record[1]); err != nil {
 				return err
@@ -344,8 +365,30 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		}
 	}
 
+	// classes of compounds
+	if err = db.Get(&c, `SELECT count(*) FROM class_of_compound`); err != nil {
+		return err
+	}
+
+	if c == 0 {
+		logger.Log.Info("  inserting classes of compounds")
+
+		r = csv.NewReader(strings.NewReader(CLASSOFCOMPOUND))
+		r.Comma = ','
+
+		if records, err = r.ReadAll(); err != nil {
+			return err
+		}
+
+		for _, record := range records {
+			if _, err = db.Exec(`INSERT INTO class_of_compound (class_of_compound_label) VALUES (?)`, record[0]); err != nil {
+				return err
+			}
+		}
+	}
+
 	// hazard statements
-	if err = db.Get(&c, `SELECT count(*) FROM hazardstatement`); err != nil {
+	if err = db.Get(&c, `SELECT count(*) FROM hazard_statement`); err != nil {
 		return err
 	}
 
@@ -360,10 +403,10 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		}
 
 		for _, record := range records {
-			if _, err = db.Exec(`INSERT INTO hazardstatement (
-				hazardstatement_label, 
-				hazardstatement_reference, 
-				hazardstatement_cmr) VALUES (?, ?, ?)`,
+			if _, err = db.Exec(`INSERT INTO hazard_statement (
+				hazard_statement_label,
+				hazard_statement_reference,
+				hazard_statement_cmr) VALUES (?, ?, ?)`,
 				record[0], record[1], record[2]); err != nil {
 				return err
 			}
@@ -371,7 +414,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 	}
 
 	// precautionary statements
-	if err = db.Get(&c, `SELECT count(*) FROM precautionarystatement`); err != nil {
+	if err = db.Get(&c, `SELECT count(*) FROM precautionary_statement`); err != nil {
 		return err
 	}
 
@@ -386,9 +429,9 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 		}
 
 		for _, record := range records {
-			if _, err = db.Exec(`INSERT INTO precautionarystatement (
-				precautionarystatement_label, 
-				precautionarystatement_reference) VALUES (?, ?)`,
+			if _, err = db.Exec(`INSERT INTO precautionary_statement (
+				precautionary_statement_label,
+				precautionary_statement_reference) VALUES (?, ?)`,
 				record[0], record[1]); err != nil {
 				return err
 			}
@@ -444,7 +487,7 @@ func (db *SQLiteDataStore) Maintenance() {
 
 	var casNumbers []models.CasNumber
 
-	sqlr = `SELECT casnumber_id, casnumber_label FROM casnumber;`
+	sqlr = `SELECT cas_number_id, cas_number_label FROM cas_number;`
 
 	if err = db.Select(&casNumbers, sqlr); err != nil {
 		logger.Log.Error(err)
@@ -453,15 +496,16 @@ func (db *SQLiteDataStore) Maintenance() {
 	}
 
 	for _, casNumber := range casNumbers {
-		if strings.HasPrefix(casNumber.CasNumberLabel.String, " ") || strings.HasSuffix(casNumber.CasNumberLabel.String, " ") {
-			logger.Log.Infof("casnumber %s contains spaces", casNumber.CasNumberLabel.String)
+		// if strings.HasPrefix(casNumber.CasNumberLabel.String, " ") || strings.HasSuffix(casNumber.CasNumberLabel.String, " ") {
+		if strings.HasPrefix(*casNumber.CasNumberLabel, " ") || strings.HasSuffix(*casNumber.CasNumberLabel, " ") {
+			logger.Log.Infof("casnumber %s contains spaces", *casNumber.CasNumberLabel)
 
-			trimmedLabel := strings.Trim(casNumber.CasNumberLabel.String, " ")
+			trimmedLabel := strings.Trim(*casNumber.CasNumberLabel, " ")
 
 			// Checking if the trimmed label already exists.
 			var existCasNumber models.CasNumber
 
-			sqlr = `SELECT casnumber_id, casnumber_label FROM casnumber WHERE casnumber_label=?;`
+			sqlr = `SELECT cas_number_id, cas_number_label FROM cas_number WHERE cas_number_label=?;`
 
 			if err = db.Get(&existCasNumber, sqlr, trimmedLabel); err != nil {
 				switch err {
@@ -469,7 +513,7 @@ func (db *SQLiteDataStore) Maintenance() {
 					// Just fixing the label.
 					logger.Log.Info("  - fixing it")
 
-					sqlr = `UPDATE casnumber SET casnumber_label=? WHERE casnumber_id=?;`
+					sqlr = `UPDATE cas_number SET cas_number_label=? WHERE cas_number_id=?;`
 
 					if _, err = tx.Exec(sqlr, trimmedLabel, casNumber.CasNumberID); err != nil {
 						logger.Log.Error(err)
@@ -492,11 +536,11 @@ func (db *SQLiteDataStore) Maintenance() {
 			}
 
 			// Updating products with the found casnumber.
-			logger.Log.Infof("  - correct cas number found, replacing it: %d -> %d",
-				existCasNumber.CasNumberID.Int64,
-				casNumber.CasNumberID.Int64)
+			// logger.Log.Infof("  - correct cas number found, replacing it: %d -> %d",
+			// 	existCasNumber.CasNumberID.Int64,
+			// 	casNumber.CasNumberID.Int64)
 
-			sqlr = `UPDATE product SET casnumber=? WHERE casnumber=?;`
+			sqlr = `UPDATE product SET cas_number=? WHERE cas_number=?;`
 
 			if _, err = tx.Exec(sqlr, existCasNumber.CasNumberID, casNumber.CasNumberID); err != nil {
 				logger.Log.Error(err)
@@ -513,7 +557,7 @@ func (db *SQLiteDataStore) Maintenance() {
 			// Deleting the wrong cas number.
 			logger.Log.Info("  - deleting it")
 
-			sqlr = `DELETE FROM casnumber WHERE casnumber_id=?;`
+			sqlr = `DELETE FROM cas_number WHERE cas_number_id=?;`
 
 			if _, err = tx.Exec(sqlr, casNumber.CasNumberID); err != nil {
 				logger.Log.Error(err)

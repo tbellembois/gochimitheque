@@ -190,9 +190,9 @@ var schema = `
 		product_msds string,
 		product_restricted boolean default 0,
 		product_radioactive boolean default 0,
-		product_threedformula string,
+		product_threed_formula string,
 		product_molformula blob,
-		product_disposalcomment string,
+		product_disposal_comment string,
 		product_remark string,
 		product_qrcode string,
 		casnumber integer,
@@ -282,6 +282,7 @@ var inssymbol = `INSERT INTO symbol (symbol_label, symbol_image) VALUES
 	("SGH09", "image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAI8SURBVFiFzdi7a1VBEMDhb0EjYhFfaCEICopBi4haWUiqqGgQW1OKaBpNIQEVvREi2lhaWCiC/4CSImgv2IgQELSSdKKlMUKEtTgr3jxuPI+9iQMD5+y9u/NjdmbO7IYYoywSQgvE2MqyXoyxudKKxKStHGvmhsoGl9dTGT2Xf/syweWFygiXHyoTXHegMsDVgprjLk5hS4wRenLD1fYUhjGans9jF/rRlwOuMhS2Yz924F0CO4EBjOTyXK0YwUVcwAcEHMJr9OaKudqLYBA/cQx7cT+NB1xrCld5cvLOGA7gqSIRricv7sED9Df1XB1PbcVOXMZnzOA7pvEcg3UTqjNY1QDlKmLSsRX+14NNlXamLlQyeDJBfenw+xmcxQ3cxunSCVYpINmYatUfHUlg3xaN9+MmjqR5uxPkaNltrZbChcFYUi8tmjuOqbIxt25pT7uifMThtvcBPMS84kvwKY2fizE+hhDCBkXGzuBZaUsN4qtPUVQj3uOJIhmGFSXlOO4loEmsr5KhtYIfvRjCUTxS1K8reKnIwAkLt/UHhqqUjUblIkFuxi18TRCv8KsNah5v8UbqRqqVi5JwOKhI/ym8wKzlg3+xzmGyrJ2QjC2U4ox4J72NS2fFEMI27CsdwEtlNsY43Wn9BVIlILNoo494t+CytD254bI2irngutJaN4Xr6mGkrpFVOb5VNbaqB96yRtfkiuBfxtf0UqUTxH9xDbU8XBaoPGAZt69dq3awy0uMLSH8fc4gvwFyuYuihNiCxwAAAABJRU5ErkJggg==");`
 
 var (
-	inssignalword      = `INSERT INTO signalword (signalword_label) VALUES ("danger"), ("warning")`
-	inswelcomeannounce = `INSERT INTO welcomeannounce (welcomeannounce_text) VALUES ("")`
+	inssignalword      = `INSERT INTO signal_word (signal_word_label) VALUES ("danger"), ("warning")`
+	inswelcomeannounce = `INSERT INTO welcome_announce (welcome_announce_text) VALUES ("")`
+	insphysicalstate   = `INSERT INTO physical_state (physical_state_label) VALUES ("gaz"), ("liquid"), ("solid")`
 )

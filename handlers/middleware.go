@@ -325,7 +325,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 					http.Error(w, "can not delete an admin", http.StatusBadRequest)
 					return
 				}
-			case "storelocations":
+			case "store_locations":
 				// itemid is an int
 				if itemidInt, err = strconv.Atoi(itemid); err != nil {
 					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Debug("AuthorizeMiddleware")

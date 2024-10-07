@@ -2,7 +2,7 @@ package models
 
 // WelcomeAnnounce is the custom welcome page message.
 type WelcomeAnnounce struct {
-	WelcomeAnnounceID   int    `db:"welcomeannounce_id" json:"welcomeannounce_id" schema:"welcomeannounce_id"`
-	WelcomeAnnounceText string `db:"welcomeannounce_text" json:"welcomeannounce_text" schema:"welcomeannounce_text"`
-	WelcomeAnnounceHTML string `db:"welcomeannounce_html" json:"welcomeannounce_html" schema:"welcomeannounce_html"`
+	WelcomeAnnounceID   int    `db:"welcome_announce_id" json:"welcome_announce_id" schema:"welcome_announce_id"`
+	WelcomeAnnounceText string `db:"welcome_announce_text" json:"welcome_announce_text" schema:"welcome_announce_text"`
+	WelcomeAnnounceHTML string `db:"welcome_announce_html" json:"welcome_announce_html" schema:"welcome_announce_html"`
 }

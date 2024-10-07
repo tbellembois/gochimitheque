@@ -101,7 +101,7 @@ func (env *Env) UpdateWelcomeAnnounceHandler(w http.ResponseWriter, r *http.Requ
 	if err = env.DB.UpdateWelcomeAnnounce(wa); err != nil {
 		return &models.AppError{
 			OriginalError: err,
-			Message:       "update welcomeannounce error",
+			Message:       "update welcome_announce error",
 			Code:          http.StatusInternalServerError,
 		}
 	}

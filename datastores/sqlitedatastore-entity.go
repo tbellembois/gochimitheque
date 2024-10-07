@@ -36,7 +36,7 @@ func (db *SQLiteDataStore) GetEntities(f zmqclient.RequestFilter, person_id int)
 	dialect := goqu.Dialect("sqlite3")
 	entityTable := goqu.T("entity")
 	personTable := goqu.T("person")
-	storelocationTable := goqu.T("storelocation")
+	store_locationTable := goqu.T("store_location")
 	personentitiesTable := goqu.T("personentities")
 
 	// Prepare orderby/order clause.
@@ -132,10 +132,10 @@ func (db *SQLiteDataStore) GetEntities(f zmqclient.RequestFilter, person_id int)
 	// Getting entities number of store locations.
 	//
 	for i, entity := range entities {
-		sQuery := dialect.From(storelocationTable).Where(
+		sQuery := dialect.From(store_locationTable).Where(
 			goqu.I("entity").Eq(entity.EntityID),
 		).Select(
-			goqu.COUNT(goqu.I("storelocation_id")),
+			goqu.COUNT(goqu.I("store_location_id")),
 		)
 
 		var (
@@ -702,12 +702,12 @@ func (db *SQLiteDataStore) HasEntityStorelocation(id int) (bool, error) {
 	)
 
 	dialect := goqu.Dialect("sqlite3")
-	tableStorelocation := goqu.T("storelocation")
+	tableStorelocation := goqu.T("store_location")
 
 	sQuery := dialect.From(tableStorelocation).Select(
 		goqu.COUNT("*"),
 	).Where(
-		goqu.I("storelocation.entity").Eq(id),
+		goqu.I("store_location.entity").Eq(id),
 	)
 
 	if sqlr, args, err = sQuery.ToSQL(); err != nil {

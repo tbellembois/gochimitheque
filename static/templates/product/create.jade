@@ -67,7 +67,7 @@ block CONTENT
                     .form-group.col-sm-6
                         +inputselect(name="producer", label="producer_label_title")
                     .form-group.col-sm-6
-                        +inputselect(name="producerref", label="producerref_label_title", ismultiple=false, placeholder="", help="", required=true)
+                        +inputselect(name="producer_ref", label="producer_ref_label_title", ismultiple=false, placeholder="", help="", required=true)
                 .form-row.bio.consu.collapse
                     .form-group.col-sm-5.offset-sm-6
                         +inputtext(name="addproducer", label="add_producer_title")
@@ -80,7 +80,7 @@ block CONTENT
                     .form-group.col-sm-6
                         +inputselect(name="supplier", label="supplier_label_title")
                     .form-group.col-sm-6
-                        +inputselect(name="supplierrefs", label="supplierref_label_title", ismultiple=true)
+                        +inputselect(name="supplier_refs", label="supplier_ref_label_title", ismultiple=true)
                 .form-row.bio.consu.collapse
                     .form-group.col-sm-5.offset-sm-6
                         +inputtext(name="addsupplier", label="add_supplier_title")
@@ -113,9 +113,9 @@ block CONTENT
                             = T("empirical_formula_convert", 1 )
                         span.ml-sm-2#convertedEmpiricalFormula
                     .form-group.col-sm-6
-                        +inputselect(name="empiricalformula", label="empiricalformula_label_title", ismultiple=false, placeholder="", help="", required=true)
+                        +inputselect(name="empirical_formula", label="empirical_formula_label_title", ismultiple=false, placeholder="", help="", required=true)
                     .form-group.col-sm-6
-                        +inputselect(name="linearformula", label="linearformula_label_title")
+                        +inputselect(name="linear_formula", label="linear_formula_label_title")
 
                 .form-row.chem.collapse
                     .form-group.col-sm-12
@@ -123,11 +123,11 @@ block CONTENT
                             span.mdi.mdi-24px.mdi-cursor-default-click-outline &nbsp;
                             = T("no_cas_number", 1 )
                     .form-group.col-sm-4
-                        +inputselect(name="casnumber", label="casnumber_label_title", ismultiple=false, placeholder="", help="", required=true)
+                        +inputselect(name="cas_number", label="cas_number_label_title", ismultiple=false, placeholder="", help="", required=true)
                     .form-group.col-sm-4
                         +inputtext(name="product_specificity", label="product_specificity_title")
                     .form-group.col-sm-4
-                        +inputselect(name="cenumber", label="cenumber_label_title")
+                        +inputselect(name="ce_number", label="ce_number_label_title")
 
                 .form-row.chem.collapse
                     .form-group.col-sm-6
@@ -141,16 +141,16 @@ block CONTENT
 
                 .form-row.chem.collapse
                     .form-group.col-sm-6
-                        +inputnumber(name="product_molecularweight", label="product_molecularweight_title", step="any", min="-10000000", max="10000000")
+                        +inputnumber(name="product_molecularweight", label="product_molecular_weight_title", step="any", min="-10000000", max="10000000")
                     .form-group.col-sm-6
                         +inputselect(name="unit_molecularweight", label="unit_label_title")
 
                 .form-row.chem.collapse
                     .form-group.col-sm-6
-                        +inputtext(name="product_threedformula", label="product_threedformula_title")
+                        +inputtext(name="product_threed_formula", label="product_threed_formula_title")
                     .form-group.col-sm-6
-                        +inputfile("product_twodformula_title", "product_twodformula", ".png,.jpg,.jpeg")
-                        +inputhidden("product_twodformula_content", "")
+                        +inputfile("product_twod_formula_title", "product_twod_formula", ".png,.jpg,.jpeg")
+                        +inputhidden("product_twod_formula_content", "")
 
                 .form-row
                     .form-group.col-sm-6
@@ -160,9 +160,9 @@ block CONTENT
 
                 .form-row.chem.bio
                     .form-group.col-sm-6
-                        +inputselect(name="physicalstate", label="physicalstate_label_title")
+                        +inputselect(name="physical_state", label="physical_state_label_title")
                     .form-group.col-sm-6
-                        +inputselect(name="classofcompound", label="classofcompound_label_title", ismultiple=true)  
+                        +inputselect(name="class_of_compound", label="class_of_compound_label_title", ismultiple=true)
 
                 .form-row.chem.bio
                     .form-group.col-sm-12
@@ -179,15 +179,15 @@ block CONTENT
 
                 .form-row.chem.bio
                     .form-group.col-sm-6
-                        +inputselect(name="signalword", label="signalword_label_title")
+                        +inputselect(name="signal_word", label="signal_word_label_title")
                     .form-group.col-sm-6
                         +inputselect(name="symbols", label="symbol_label_title", ismultiple=true)
 
                 .form-row.chem.bio
                     .form-group.col-sm-6
-                        +inputselect(name="hazardstatements", label="hazardstatement_label_title", ismultiple=true)
+                        +inputselect(name="hazard_statements", label="hazard_statement_label_title", ismultiple=true)
                     .form-group.col-sm-6
-                        +inputselect(name="precautionarystatements", label="precautionarystatement_label_title", ismultiple=true)
+                        +inputselect(name="precautionary_statements", label="precautionary_statement_label_title", ismultiple=true)
 
                 .form-row
                     .form-group.col-sm-4
@@ -197,7 +197,7 @@ block CONTENT
 
                 .form-row
                     .form-group.col-sm-12
-                        +inputtext(name="product_disposalcomment", label="product_disposalcomment_title", type="textarea")
+                        +inputtext(name="product_disposal_comment", label="product_disposal_comment_title", type="textarea")
                 .form-row
                     .form-group.col-sm-12
                         +inputtext(name="product_remark", label="product_remark_title", type="textarea")

@@ -1,36 +1,34 @@
 package models
 
-import "database/sql"
-
 // EmpiricalFormula is a product empirical formula.
 type EmpiricalFormula struct {
-	MatchExactSearch      bool           `db:"match_exact_case" json:"match_exact_case"` // not stored in db but db:"c" set for sqlx
-	EmpiricalFormulaID    sql.NullInt64  `db:"empiricalformula_id" json:"empiricalformula_id" schema:"empiricalformula_id" `
-	EmpiricalFormulaLabel sql.NullString `db:"empiricalformula_label" json:"empiricalformula_label" schema:"empiricalformula_label" `
+	MatchExactSearch      bool    `db:"match_exact_case" json:"match_exact_case"` // not stored in db but db:"c" set for sqlx
+	EmpiricalFormulaID    *int64  `db:"empirical_formula_id" json:"empirical_formula_id" schema:"empirical_formula_id" `
+	EmpiricalFormulaLabel *string `db:"empirical_formula_label" json:"empirical_formula_label" schema:"empirical_formula_label" `
 }
 
-func (empiricalformula EmpiricalFormula) SetC(count int) Searchable {
+func (empirical_formula EmpiricalFormula) SetC(count int) Searchable {
 	if count > 1 {
-		empiricalformula.MatchExactSearch = true
+		empirical_formula.MatchExactSearch = true
 	} else {
-		empiricalformula.MatchExactSearch = false
+		empirical_formula.MatchExactSearch = false
 	}
 
-	return empiricalformula
+	return empirical_formula
 }
 
-func (empiricalformula EmpiricalFormula) GetTableName() string {
-	return ("empiricalformula")
+func (empirical_formula EmpiricalFormula) GetTableName() string {
+	return ("empirical_formula")
 }
 
-func (empiricalformula EmpiricalFormula) GetIDFieldName() string {
-	return ("empiricalformula_id")
+func (empirical_formula EmpiricalFormula) GetIDFieldName() string {
+	return ("empirical_formula_id")
 }
 
-func (empiricalformula EmpiricalFormula) GetTextFieldName() string {
-	return ("empiricalformula_label")
+func (empirical_formula EmpiricalFormula) GetTextFieldName() string {
+	return ("empirical_formula_label")
 }
 
-func (empiricalformula EmpiricalFormula) GetID() int64 {
-	return empiricalformula.EmpiricalFormulaID.Int64
+func (empirical_formula EmpiricalFormula) GetID() int64 {
+	return *empirical_formula.EmpiricalFormulaID
 }

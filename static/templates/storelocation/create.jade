@@ -4,26 +4,26 @@ block CONTENT
     :go:func
         Storelocationcreate(c ViewContainer)
 
-    +titleicon(iconitem="docker" label="storelocation_create_title")
+    +titleicon(iconitem="docker" label="store_location_create_title")
 
     .card.mx-auto.w-50
         .card-body
-            form#storelocation
+            form#store_location
                 .form-group.row
                     .form-group.col-sm-12
-                        +inputtext(name="storelocation_name", label="storelocation_name_title")
+                        +inputtext(name="store_location_name", label="store_location_name_title")
                 .form-group.row
                     .form-group.col-sm-12
-                        +inputselect(name="entity", label="storelocation_entity_title")
+                        +inputselect(name="entity", label="store_location_entity_title")
                 .form-group.row
                     .form-group.col-sm-12
-                        +inputselect(name="storelocation", label="storelocation_parent_title") 
+                        +inputselect(name="store_location", label="store_location_parent_title")
                 .form-group.row
                     .form-group.col-sm-12
-                        +checkbox(name="storelocation_canstore", label="storelocation_canstore_title")
+                        +checkbox(name="store_location_can_store", label="store_location_can_store_title")
                 .form-group.row
                     .form-group.col-sm-12
-                        +inputtext(name="storelocation_color", label="storelocation_color_title")
+                        +inputtext(name="store_location_color", label="store_location_color_title")
 
             button#save.btn.btn-primary.float-right(type='button', onclick='StoreLocation_saveStoreLocation()')
                 span.mdi.mdi-content-save.mdi-24px.iconlabel

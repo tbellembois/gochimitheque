@@ -239,7 +239,7 @@ func (db *SQLiteDataStore) GetSupplierRefs(f zmqclient.RequestFilter) ([]models.
 	// logger.Log.WithFields(logrus.Fields{"f": f}).Debug("GetSupplierRefs")
 
 	// if f.OrderBy == "" {
-	// 	f.OrderBy = "supplierref_id"
+	// 	f.OrderBy = "supplier_ref_id"
 	// }
 
 	// // hack to bypass optionnal default on the Rust part.
@@ -251,23 +251,23 @@ func (db *SQLiteDataStore) GetSupplierRefs(f zmqclient.RequestFilter) ([]models.
 	// exactSearch = strings.TrimSuffix(exactSearch, "%")
 
 	// dialect := goqu.Dialect("sqlite3")
-	// supplierrefTable := goqu.T("supplierref")
+	// supplier_refTable := goqu.T("supplier_ref")
 
 	// // Join, where.
 	// whereAnd := []goqu.Expression{
-	// 	goqu.I("supplierref.supplierref_label").Like(f.Search),
+	// 	goqu.I("supplier_ref.supplier_ref_label").Like(f.Search),
 	// }
 	// if f.Supplier != 0 {
-	// 	whereAnd = append(whereAnd, goqu.I("supplierref.supplier").Eq(f.Supplier))
+	// 	whereAnd = append(whereAnd, goqu.I("supplier_ref.supplier").Eq(f.Supplier))
 	// }
 
 	// joinClause := dialect.From(
-	// 	supplierrefTable,
+	// 	supplier_refTable,
 	// ).Join(
 	// 	goqu.T("supplier"),
 	// 	goqu.On(
 	// 		goqu.Ex{
-	// 			"supplierref.supplier": goqu.I("supplier.supplier_id"),
+	// 			"supplier_ref.supplier": goqu.I("supplier.supplier_id"),
 	// 		},
 	// 	),
 	// ).Where(
@@ -275,18 +275,18 @@ func (db *SQLiteDataStore) GetSupplierRefs(f zmqclient.RequestFilter) ([]models.
 	// )
 
 	// if countSQL, countArgs, err = joinClause.Select(
-	// 	goqu.COUNT(goqu.I("supplierref.supplierref_id").Distinct()),
+	// 	goqu.COUNT(goqu.I("supplier_ref.supplier_ref_id").Distinct()),
 	// ).ToSQL(); err != nil {
 	// 	return nil, 0, err
 	// }
 	// if selectSQL, selectArgs, err = joinClause.Select(
-	// 	goqu.I("supplierref_id"),
-	// 	goqu.I("supplierref_label"),
+	// 	goqu.I("supplier_ref_id"),
+	// 	goqu.I("supplier_ref_label"),
 	// 	goqu.I("supplier_id").As(goqu.C("supplier.supplier_id")),
 	// 	goqu.I("supplier_label").As(goqu.C("supplier.supplier_label")),
 	// ).Order(
-	// 	goqu.L("INSTR(supplierref_label, ?)", exactSearch).Asc(),
-	// 	goqu.C("supplierref_label").Asc(),
+	// 	goqu.L("INSTR(supplier_ref_label, ?)", exactSearch).Asc(),
+	// 	goqu.C("supplier_ref_label").Asc(),
 	// ).Limit(uint(f.Limit)).Offset(uint(f.Offset)).ToSQL(); err != nil {
 	// 	return nil, 0, err
 	// }
@@ -301,11 +301,11 @@ func (db *SQLiteDataStore) GetSupplierRefs(f zmqclient.RequestFilter) ([]models.
 	// }
 
 	// // Setting the C attribute for formula matching exactly the search.
-	// sQuery := dialect.From(supplierrefTable).Where(
-	// 	goqu.I("supplierref_label").Eq(exactSearch),
+	// sQuery := dialect.From(supplier_refTable).Where(
+	// 	goqu.I("supplier_ref_label").Eq(exactSearch),
 	// ).Select(
-	// 	"supplierref_id",
-	// 	"supplierref_label",
+	// 	"supplier_ref_id",
+	// 	"supplier_ref_label",
 	// )
 
 	// var (

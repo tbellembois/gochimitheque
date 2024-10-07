@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"database/sql"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -9,7 +8,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/sirupsen/logrus"
-	"github.com/tbellembois/gochimitheque/datastores"
 	"github.com/tbellembois/gochimitheque/locales"
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
@@ -205,7 +203,7 @@ func (env *Env) ValidateProductNameHandler(w http.ResponseWriter, r *http.Reques
 func (env *Env) FormatProductEmpiricalFormulaHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 
 	type EmpiricalFormulaData struct {
-		EmpiricalFormula string `json:"empiricalformula"`
+		EmpiricalFormula string `json:"empirical_formula"`
 	}
 
 	var (
@@ -250,15 +248,15 @@ func (env *Env) ValidateProductEmpiricalFormulaHandler(w http.ResponseWriter, r 
 	// getting the empirical formula
 	if err = r.ParseForm(); err != nil {
 		logger.Log.Error("ParseForm error")
-		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "empiricalformula_validate", PluralCount: 1})
+		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "empirical_formula_validate", PluralCount: 1})
 		sendResponse(w, resp)
 		return nil
 	}
 
 	// validating it
-	_, err = zmqclient.EmpiricalFormulaFromRawString(r.Form.Get("empiricalformula"))
+	_, err = zmqclient.EmpiricalFormulaFromRawString(r.Form.Get("empirical_formula"))
 	if err != nil {
-		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "empiricalformula_validate", PluralCount: 1})
+		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "empirical_formula_validate", PluralCount: 1})
 	} else {
 		resp = "true"
 	}
@@ -271,96 +269,100 @@ func (env *Env) ValidateProductEmpiricalFormulaHandler(w http.ResponseWriter, r 
 // - the cas number is valid
 // - a product with the cas number and specificity does not already exist.
 func (env *Env) ValidateProductCasNumberHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	vars := mux.Vars(r)
+	// vars := mux.Vars(r)
 
 	var (
-		err        error
-		resp       string
-		cas        models.CasNumber
-		nbProducts int
-		products   []models.Product
-		filter     zmqclient.RequestFilter
-		productID  int
+		err  error
+		resp string
+		// cas        models.CasNumber
+		// nbProducts int
+		// products   []models.Product
+		// filter     zmqclient.RequestFilter
+		// productID  int
 	)
 
-	c := request.ContainerFromRequestContext(r)
+	// c := request.ContainerFromRequestContext(r)
 
 	// getting the cas number
 	if err = r.ParseForm(); err != nil {
 		logger.Log.Error("ParseForm error")
-		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "casnumber_validate_wrongcas", PluralCount: 1})
+		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "cas_number_validate_wrongcas", PluralCount: 1})
 		sendResponse(w, resp)
 		return nil
 	}
 
-	logger.Log.WithFields(logrus.Fields{"casnumber": r.Form.Get("casnumber")}).Debug("ValidateProductCasNumberHandler")
+	logger.Log.WithFields(logrus.Fields{"cas_number": r.Form.Get("cas_number")}).Debug("ValidateProductCasNumberHandler")
 
 	// validating it
-	v, _ := zmqclient.IsCasNumber(r.Form.Get("casnumber"))
+	v, _ := zmqclient.IsCasNumber(r.Form.Get("cas_number"))
 
 	if v {
 		resp = "true"
 	} else {
-		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "casnumber_validate_wrongcas", PluralCount: 1})
+		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "cas_number_validate_wrongcas", PluralCount: 1})
 	}
 
 	// converting the id
-	if productID, err = strconv.Atoi(vars["id"]); err != nil {
-		logger.Log.Error("strconv error")
-		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "casnumber_validate_wrongcas", PluralCount: 1})
-		sendResponse(w, resp)
-		return nil
-	}
+	// if productID, err = strconv.Atoi(vars["id"]); err != nil {
+	// 	logger.Log.Error("strconv error")
+	// 	resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "cas_number_validate_wrongcas", PluralCount: 1})
+	// 	sendResponse(w, resp)
+	// 	return nil
+	// }
 
-	// check pair cas/specificity only on create
-	if productID == -1 {
-		// get cas number id
-		// if cas, err = env.DB.GetCasNumberByLabel(r.Form.Get("casnumber")); err != nil && err != sql.ErrNoRows {
-		if cas, err = datastores.GetByText(models.CasNumber{}, env.DB.GetDB(), r.Form.Get("casnumber")); err != nil && err != sql.ErrNoRows {
-			logger.Log.Error("GetProductsCasNumberByLabel error")
-			resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "casnumber_validate_wrongcas", PluralCount: 1})
-			sendResponse(w, resp)
-			return nil
-		}
-
-		if err != sql.ErrNoRows {
-			// init db request parameters
-			// if filter, aerr = request.NewFilter(r); aerr != nil {
-			// 	logger.Log.Error("NewdbselectparamProduct error")
-			// 	resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "casnumber_validate_wrongcas", PluralCount: 1})
-			// 	sendResponse(w, resp)
-			// 	return nil
-			// }
-			if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
-				resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "casnumber_validate_wrongcas", PluralCount: 1})
-				sendResponse(w, resp)
-			}
-
-			if cas.CasNumberID.Valid {
-				filter.CasNumber = int(cas.CasNumberID.Int64)
-			}
-
-			filter.ProductSpecificity = r.Form.Get("product_specificity")
-
-			// getting the products matching the cas and specificity
-			if products, nbProducts, err = env.DB.GetProducts(filter, c.PersonID, false); err != nil {
-				logger.Log.Error("GetProducts error")
-				resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "casnumber_validate_wrongcas", PluralCount: 1})
-				sendResponse(w, resp)
-				return nil
-			}
-
-			logger.Log.Debug(nbProducts)
-
-			if nbProducts != 0 {
-				if filter.ProductSpecificity == "" && products[0].ProductSpecificity.Valid && products[0].ProductSpecificity.String != "" {
-
-				} else {
-					resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "casnumber_validate_casspecificity", PluralCount: 1})
-				}
-			}
-		}
-	}
+	// // check pair cas/specificity only on create
+	// if productID == -1 {
+	// 	// get cas number id
+	// 	// if cas, err = env.DB.GetCasNumberByLabel(r.Form.Get("cas_number")); err != nil && err != sql.ErrNoRows {
+	// 	if cas, err = datastores.GetByText(models.CasNumber{}, env.DB.GetDB(), r.Form.Get("cas_number")); err != nil && err != sql.ErrNoRows {
+	// 		logger.Log.Error("GetProductsCasNumberByLabel error:" + err.Error())
+	// 		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "cas_number_validate_wrongcas", PluralCount: 1})
+	// 		sendResponse(w, resp)
+	// 		return nil
+	// 	}
+	//
+	// 	if err != sql.ErrNoRows {
+	// 		// init db request parameters
+	// 		// if filter, aerr = request.NewFilter(r); aerr != nil {
+	// 		// 	logger.Log.Error("NewdbselectparamProduct error")
+	// 		// 	resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "cas_number_validate_wrongcas", PluralCount: 1})
+	// 		// 	sendResponse(w, resp)
+	// 		// 	return nil
+	// 		// }
+	// 		if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	// 			resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "cas_number_validate_wrongcas", PluralCount: 1})
+	// 			sendResponse(w, resp)
+	// 		}
+	//
+	// 		// if cas.CasNumberID.Valid {
+	// 		// 	filter.CasNumber = int(cas.CasNumberID.Int64)
+	// 		// }
+	// 		if cas.CasNumberID != nil {
+	// 			// filter.CasNumber = int(cas.CasNumberID.Int64)
+	// 			filter.CasNumber = int(*cas.CasNumberID)
+	// 		}
+	//
+	// 		filter.ProductSpecificity = r.Form.Get("product_specificity")
+	//
+	// 		// getting the products matching the cas and specificity
+	// 		if products, nbProducts, err = env.DB.GetProducts(filter, c.PersonID, false); err != nil && err != sql.ErrNoRows {
+	// 			logger.Log.Error("GetProducts error:" + err.Error())
+	// 			resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "cas_number_validate_wrongcas", PluralCount: 1})
+	// 			sendResponse(w, resp)
+	// 			return nil
+	// 		}
+	//
+	// 		logger.Log.Debug(nbProducts)
+	//
+	// 		if nbProducts != 0 {
+	// 			if filter.ProductSpecificity == "" && products[0].ProductSpecificity != nil && *products[0].ProductSpecificity != "" {
+	//
+	// 			} else {
+	// 				resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "cas_number_validate_casspecificity", PluralCount: 1})
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	sendResponse(w, resp)
 	return nil
@@ -377,20 +379,20 @@ func (env *Env) ValidateProductCeNumberHandler(w http.ResponseWriter, r *http.Re
 	// getting the ce number
 	if err = r.ParseForm(); err != nil {
 		logger.Log.Error("ParseForm error")
-		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "cenumber_validate", PluralCount: 1})
+		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "ce_number_validate", PluralCount: 1})
 		sendResponse(w, resp)
 		return nil
 	}
 
-	logger.Log.WithFields(logrus.Fields{"cenumber": r.Form.Get("cenumber")}).Debug("ValidateProductCeNumberHandler")
+	logger.Log.WithFields(logrus.Fields{"ce_number": r.Form.Get("ce_number")}).Debug("ValidateProductCeNumberHandler")
 
 	// validating it
-	v, _ := zmqclient.IsCeNumber(r.Form.Get("cenumber"))
+	v, _ := zmqclient.IsCeNumber(r.Form.Get("ce_number"))
 
 	if v {
 		resp = "true"
 	} else {
-		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "cenumber_validate", PluralCount: 1})
+		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "ce_number_validate", PluralCount: 1})
 	}
 
 	sendResponse(w, resp)

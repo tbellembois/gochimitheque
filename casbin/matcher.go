@@ -71,7 +71,7 @@ func matchStorelocation(datastore datastores.Datastore, personID string, itemID 
 		pid, iid      int
 		err           error
 		m             bool
-		storelocation models.StoreLocation
+		store_location models.StoreLocation
 	)
 
 	logger.Log.WithFields(logrus.Fields{"personId": personID, "itemId": itemID, "entityId": entityID}).Debug("matchStorelocation")
@@ -86,7 +86,7 @@ func matchStorelocation(datastore datastores.Datastore, personID string, itemID 
 		return false
 	}
 
-	if storelocation, err = datastore.GetStoreLocation(iid); err != nil && err != sql.ErrNoRows {
+	if store_location, err = datastore.GetStoreLocation(iid); err != nil && err != sql.ErrNoRows {
 		logger.Log.Error("matchStorelocation: " + err.Error())
 		return false
 	}
@@ -95,11 +95,11 @@ func matchStorelocation(datastore datastores.Datastore, personID string, itemID 
 		return false
 	}
 
-	if strconv.Itoa(storelocation.EntityID) != entityID {
+	if strconv.Itoa(store_location.EntityID) != entityID {
 		return false
 	}
 
-	if m, err = datastore.DoesPersonBelongsTo(pid, []models.Entity{storelocation.Entity}); err != nil {
+	if m, err = datastore.DoesPersonBelongsTo(pid, []models.Entity{store_location.Entity}); err != nil {
 		logger.Log.Error("matchStorelocation: " + err.Error())
 		return false
 	}

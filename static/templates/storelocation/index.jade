@@ -15,47 +15,47 @@ block CONTENT
                                 data-pagination='true', 
                                 data-ajax='StoreLocation_getTableData', 
                                 data-query-params='StoreLocation_dataQueryParams', 
-                                data-sort-name='storelocation_fullpath')
+                                data-sort-name='store_location_full_path')
                         thead
                             tr
-                                //th(data-field='storelocation_id' data-sortable='true' data-formatter='storelocation_idFormatter') ID
-                                th(data-field='storelocation_fullpath' data-sortable='true')
-                                    = T("storelocation_name_table_header", 1)
+                                //th(data-field='store_location_id' data-sortable='true' data-formatter='store_location_idFormatter') ID
+                                th(data-field='store_location_full_path' data-sortable='true')
+                                    = T("store_location_name_table_header", 1)
                                 th(data-field='entity.entity_name' data-sortable='true')
-                                    = T("storelocation_entity_table_header", 1)
-                                th(data-field='storelocation_color' data-sortable='false' data-formatter='StoreLocation_colorFormatter')
-                                    = T("storelocation_color_table_header", 1)
-                                th(data-field='storelocation_canstore' data-sortable='false' data-formatter='StoreLocation_canStoreFormatter')
-                                    = T("storelocation_canstore_table_header", 1)
-                                th(data-field='storelocation' data-sortable='true' data-formatter='StoreLocation_storeLocationFormatter')
-                                    = T("storelocation_parent_table_header", 1)
-                                th.th-storelocation-operate(data-field='operate' data-formatter='StoreLocation_operateFormatter' data-events='operateEvents')
+                                    = T("store_location_entity_table_header", 1)
+                                th(data-field='store_location_color' data-sortable='false' data-formatter='StoreLocation_colorFormatter')
+                                    = T("store_location_color_table_header", 1)
+                                th(data-field='store_location_can_store' data-sortable='false' data-formatter='StoreLocation_canStoreFormatter')
+                                    = T("store_location_can_store_table_header", 1)
+                                th(data-field='store_location' data-sortable='true' data-formatter='StoreLocation_storeLocationFormatter')
+                                    = T("store_location_parent_table_header", 1)
+                                th.th-store_location-operate(data-field='operate' data-formatter='StoreLocation_operateFormatter' data-events='operateEvents')
 
         #edit-collapse.collapse(data-parent='#accordion')
 
-            +titleicon(iconitem="docker" label="storelocation_update_title")
+            +titleicon(iconitem="docker" label="store_location_update_title")
 
             .card.mx-auto.w-50
                 .card-body
-                    form#storelocation
+                    form#store_location
                         input#index(type='hidden', name='index', value='')
-                        input#storelocation_id(type='hidden', name='storelocation_id', value='')
+                        input#store_location_id(type='hidden', name='store_location_id', value='')
 
                         .form-group.row
                             .form-group.col-sm-12
-                                +inputtext(name="storelocation_name", label="storelocation_name_title")
+                                +inputtext(name="store_location_name", label="store_location_name_title")
                         .form-group.row
                             .form-group.col-sm-12
-                                +inputselect(name="entity", label="storelocation_entity_title")
+                                +inputselect(name="entity", label="store_location_entity_title")
                         .form-group.row
                             .form-group.col-sm-12
-                                +inputselect(name="storelocation", label="storelocation_parent_title") 
+                                +inputselect(name="store_location", label="store_location_parent_title")
                         .form-group.row
                             .form-group.col-sm-12
-                                +checkbox(name="storelocation_canstore", label="storelocation_canstore_title")
+                                +checkbox(name="store_location_can_store", label="store_location_can_store_title")
                         .form-group.row
                             .form-group.col-sm-12
-                                +inputtext(name="storelocation_color", label="storelocation_color_title")
+                                +inputtext(name="store_location_color", label="store_location_color_title")
                             
                     button#save.btn.btn-primary.float-right(type='button', onclick='StoreLocation_saveStoreLocation()')
                         span.mdi.mdi-content-save.mdi-24px.iconlabel

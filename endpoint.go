@@ -5,7 +5,7 @@ import (
 	"github.com/justinas/alice"
 )
 
-func buildEndpoints(appFullURL string, fakeAuth bool) (router *mux.Router) {
+func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 	router = mux.NewRouter()
 
 	var secureChain alice.Chain
@@ -193,7 +193,7 @@ func buildEndpoints(appFullURL string, fakeAuth bool) (router *mux.Router) {
 	// validators
 	router.Handle("/{item:validate}/entity/{id}/name/", secureChain.Then(env.AppMiddleware(env.ValidateEntityNameHandler))).Methods("POST")
 	router.Handle("/{item:validate}/person/{id}/email/", secureChain.Then(env.AppMiddleware(env.ValidatePersonEmailHandler))).Methods("POST")
-	router.Handle("/{item:validate}/product/{id}/casnumber/", secureChain.Then(env.AppMiddleware(env.ValidateProductCasNumberHandler))).Methods("POST")
+	router.Handle("/{item:validate}/product/{id}/cas_number/", secureChain.Then(env.AppMiddleware(env.ValidateProductCasNumberHandler))).Methods("POST")
 	router.Handle("/{item:validate}/product/{id}/cenumber/", secureChain.Then(env.AppMiddleware(env.ValidateProductCeNumberHandler))).Methods("POST")
 	router.Handle("/{item:validate}/product/{id}/name/", secureChain.Then(env.AppMiddleware(env.ValidateProductNameHandler))).Methods("POST")
 	router.Handle("/{item:validate}/product/{id}/empiricalformula/", secureChain.Then(env.AppMiddleware(env.ValidateProductEmpiricalFormulaHandler))).Methods("POST")

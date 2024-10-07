@@ -83,12 +83,12 @@ func (env *Env) GetStoreLocationsBSTABLEHandler(w http.ResponseWriter, r *http.R
 
 // GetStoreLocationsHandler godoc
 // @Summary Get store locations. Only store locations visible by the authenticated user are returned.
-// @tags storelocation
+// @tags store_location
 // @Produce json
 // @Success 200 {object} models.StoreLocationsResp
 // @Failure 500
 // @Failure 403
-// @Router /storelocations/ [get].
+// @Router /store_locations/ [get].
 func (env *Env) GetStoreLocationsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	logger.Log.Debug("GetStoreLocationsHandler")
 
@@ -107,8 +107,37 @@ func (env *Env) GetStoreLocationsHandler(w http.ResponseWriter, r *http.Request)
 		}
 	}
 
+	// Convert Rust response to former one.
+	var tuple tuple.T2[interface{}, int]
+	if err = json.Unmarshal(jsonRawMessage, &tuple); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling jsonRawMessage",
+		}
+	}
+
+	resp := struct {
+		Rows     interface{} `json:"rows"`
+		Total    int         `json:"total"`
+		Exportfn string      `json:"exportfn"`
+	}{
+		Rows:     tuple.V1,
+		Total:    tuple.V2,
+		Exportfn: "",
+	}
+
+	var jsonresp []byte
+	if jsonresp, err = json.Marshal(resp); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error marshalling response",
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Write(jsonRawMessage)
+	w.Write(jsonresp)
 
 	return nil
 }
@@ -130,7 +159,7 @@ func (env *Env) GetStoreLocationHandler(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 
-	storelocation, err := env.DB.GetStoreLocation(id)
+	store_location, err := env.DB.GetStoreLocation(id)
 	if err != nil {
 		return &models.AppError{
 			OriginalError: err,
@@ -139,11 +168,11 @@ func (env *Env) GetStoreLocationHandler(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 
-	logger.Log.WithFields(logrus.Fields{"storelocation": storelocation}).Debug("GetStoreLocationHandler")
+	logger.Log.WithFields(logrus.Fields{"store_location": store_location}).Debug("GetStoreLocationHandler")
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	if err = json.NewEncoder(w).Encode(storelocation); err != nil {
+	if err = json.NewEncoder(w).Encode(store_location); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
 			Message: err.Error(),

@@ -1,13 +1,11 @@
 package models
 
-import "database/sql"
-
 // HazardStatement is a product hazard statement.
 type HazardStatement struct {
-	HazardStatementID        int            `db:"hazardstatement_id" json:"hazardstatement_id" schema:"hazardstatement_id"`
-	HazardStatementLabel     string         `db:"hazardstatement_label" json:"hazardstatement_label" schema:"hazardstatement_label"`
-	HazardStatementReference string         `db:"hazardstatement_reference" json:"hazardstatement_reference" schema:"hazardstatement_reference"`
-	HazardStatementCMR       sql.NullString `db:"hazardstatement_cmr" json:"hazardstatement_cmr" schema:"hazardstatement_cmr" `
+	HazardStatementID        int     `db:"hazard_statement_id" json:"hazard_statement_id" schema:"hazard_statement_id"`
+	HazardStatementLabel     string  `db:"hazard_statement_label" json:"hazard_statement_label" schema:"hazard_statement_label"`
+	HazardStatementReference string  `db:"hazard_statement_reference" json:"hazard_statement_reference" schema:"hazard_statement_reference"`
+	HazardStatementCMR       *string `db:"hazard_statement_cmr" json:"hazard_statement_cmr" schema:"hazard_statement_cmr" `
 }
 
 func (hs HazardStatement) SetC(count int) Searchable {
@@ -15,15 +13,15 @@ func (hs HazardStatement) SetC(count int) Searchable {
 }
 
 func (hs HazardStatement) GetTableName() string {
-	return ("hazardstatement")
+	return ("hazard_statement")
 }
 
 func (hs HazardStatement) GetIDFieldName() string {
-	return ("hazardstatement_id")
+	return ("hazard_statement_id")
 }
 
 func (hs HazardStatement) GetTextFieldName() string {
-	return ("hazardstatement_reference")
+	return ("hazard_statement_reference")
 }
 
 func (hs HazardStatement) GetID() int64 {

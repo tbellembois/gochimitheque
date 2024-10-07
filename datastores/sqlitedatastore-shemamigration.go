@@ -247,9 +247,9 @@ SELECT product_id,
 	product_msds,
 	product_restricted,
 	product_radioactive,
-	product_threedformula,
+	product_threed_formula,
 	product_molformula,
-	product_disposalcomment,
+	product_disposal_comment,
 	product_remark,
 	product_qrcode,
 	casnumber,
@@ -590,23 +590,23 @@ FROM borrowing;
 DROP TABLE borrowing;
 ALTER TABLE borrowing_new RENAME TO borrowing; 
 
-CREATE TABLE casnumber_new (
-	casnumber_id	INTEGER,
-	casnumber_label	TEXT NOT NULL UNIQUE,
-	casnumber_cmr	TEXT,
-	PRIMARY KEY(casnumber_id)
+CREATE TABLE cas_number_new (
+	cas_number_id	INTEGER,
+	cas_number_label	TEXT NOT NULL UNIQUE,
+	cas_number_cmr	TEXT,
+	PRIMARY KEY(cas_number_id)
 ) STRICT;
-INSERT INTO casnumber_new (
-	casnumber_id,
-	casnumber_label,
-	casnumber_cmr
+INSERT INTO cas_number_new (
+	cas_number_id,
+	cas_number_label,
+	cas_number_cmr
 )
 SELECT casnumber_id,
 	casnumber_label,
 	casnumber_cmr
 FROM casnumber;
 DROP TABLE casnumber;
-ALTER TABLE casnumber_new RENAME TO casnumber; 
+ALTER TABLE cas_number_new RENAME TO cas_number;
 
 CREATE TABLE category_new (
 	category_id	INTEGER,
@@ -623,50 +623,50 @@ FROM category;
 DROP TABLE category;
 ALTER TABLE category_new RENAME TO category; 
 
-CREATE TABLE cenumber_new (
-	cenumber_id	INTEGER,
-	cenumber_label	TEXT NOT NULL UNIQUE,
-	PRIMARY KEY(cenumber_id)
+CREATE TABLE ce_number_new (
+	ce_number_id	INTEGER,
+	ce_number_label	TEXT NOT NULL UNIQUE,
+	PRIMARY KEY(ce_number_id)
 ) STRICT;
-INSERT INTO cenumber_new (
-	cenumber_id,
-	cenumber_label
+INSERT INTO ce_number_new (
+	ce_number_id,
+	ce_number_label
 )
 SELECT cenumber_id,
 	cenumber_label 
 FROM cenumber;
 DROP TABLE cenumber;
-ALTER TABLE cenumber_new RENAME TO cenumber; 
+ALTER TABLE ce_number_new RENAME TO ce_number;
 
-CREATE TABLE classofcompound_new (
-	classofcompound_id	INTEGER,
-	classofcompound_label	TEXT NOT NULL UNIQUE,
-	PRIMARY KEY(classofcompound_id)
+CREATE TABLE class_of_compound_new (
+	class_of_compound_id	INTEGER,
+	class_of_compound_label	TEXT NOT NULL UNIQUE,
+	PRIMARY KEY(class_of_compound_id)
 ) STRICT;
-INSERT INTO classofcompound_new (
-	classofcompound_id,
-	classofcompound_label
+INSERT INTO class_of_compound_new (
+	class_of_compound_id,
+	class_of_compound_label
 )
 SELECT classofcompound_id,
 	classofcompound_label
 FROM classofcompound;
 DROP TABLE classofcompound;
-ALTER TABLE classofcompound_new RENAME TO classofcompound; 
+ALTER TABLE class_of_compound_new RENAME TO class_of_compound;
 
-CREATE TABLE empiricalformula_new (
-	empiricalformula_id	INTEGER,
-	empiricalformula_label	TEXT NOT NULL UNIQUE,
-	PRIMARY KEY(empiricalformula_id)
+CREATE TABLE empirical_formula_new (
+	empirical_formula_id	INTEGER,
+	empirical_formula_label	TEXT NOT NULL UNIQUE,
+	PRIMARY KEY(empirical_formula_id)
 ) STRICT;
-INSERT INTO empiricalformula_new (
-	empiricalformula_id,
-	empiricalformula_label
+INSERT INTO empirical_formula_new (
+	empirical_formula_id,
+	empirical_formula_label
 )
 SELECT empiricalformula_id,
 	empiricalformula_label
 FROM empiricalformula;
 DROP TABLE empiricalformula;
-ALTER TABLE empiricalformula_new RENAME TO empiricalformula; 
+ALTER TABLE empirical_formula_new RENAME TO empirical_formula;
 
 CREATE TABLE entity_new (
 	entity_id	INTEGER,
@@ -686,18 +686,18 @@ FROM entity;
 DROP TABLE entity;
 ALTER TABLE entity_new RENAME TO entity; 
 
-CREATE TABLE hazardstatement_new (
-	hazardstatement_id	INTEGER,
-	hazardstatement_label	TEXT NOT NULL,
-	hazardstatement_reference	TEXT NOT NULL UNIQUE,
-	hazardstatement_cmr	TEXT,
-	PRIMARY KEY(hazardstatement_id)
+CREATE TABLE hazard_statement_new (
+	hazard_statement_id	INTEGER,
+	hazard_statement_label	TEXT NOT NULL,
+	hazard_statement_reference	TEXT NOT NULL UNIQUE,
+	hazard_statement_cmr	TEXT,
+	PRIMARY KEY(hazard_statement_id)
 ) STRICT;
-INSERT INTO hazardstatement_new (
-	hazardstatement_id,
-	hazardstatement_label,
-	hazardstatement_reference,
-	hazardstatement_cmr
+INSERT INTO hazard_statement_new (
+	hazard_statement_id,
+	hazard_statement_label,
+	hazard_statement_reference,
+	hazard_statement_cmr
 )
 SELECT hazardstatement_id,
 	hazardstatement_label,
@@ -705,22 +705,22 @@ SELECT hazardstatement_id,
 	hazardstatement_cmr
 FROM hazardstatement;
 DROP TABLE hazardstatement;
-ALTER TABLE hazardstatement_new RENAME TO hazardstatement; 
+ALTER TABLE hazard_statement_new RENAME TO hazard_statement;
 
-CREATE TABLE linearformula_new (
-	linearformula_id	INTEGER,
-	linearformula_label	TEXT NOT NULL UNIQUE,
-	PRIMARY KEY(linearformula_id)
+CREATE TABLE linear_formula_new (
+	linear_formula_id	INTEGER,
+	linear_formula_label	TEXT NOT NULL UNIQUE,
+	PRIMARY KEY(linear_formula_id)
 ) STRICT;
-INSERT INTO linearformula_new (
-	linearformula_id,
-	linearformula_label
+INSERT INTO linear_formula_new (
+	linear_formula_id,
+	linear_formula_label
 )
 SELECT linearformula_id,
 	linearformula_label
 FROM linearformula;
 DROP TABLE linearformula;
-ALTER TABLE linearformula_new RENAME TO linearformula; 
+ALTER TABLE linear_formula_new RENAME TO linear_formula;
 
 CREATE TABLE name_new (
 	name_id	INTEGER,
@@ -777,38 +777,38 @@ FROM person;
 DROP TABLE person;
 ALTER TABLE person_new RENAME TO person; 
 
-CREATE TABLE physicalstate_new (
-	physicalstate_id	INTEGER,
-	physicalstate_label	TEXT NOT NULL UNIQUE,
-	PRIMARY KEY(physicalstate_id)
+CREATE TABLE physical_state_new (
+	physical_state_id	INTEGER,
+	physical_state_label	TEXT NOT NULL UNIQUE,
+	PRIMARY KEY(physical_state_id)
 ) STRICT;
-INSERT into physicalstate_new (
-	physicalstate_id,
-	physicalstate_label
+INSERT into physical_state_new (
+	physical_state_id,
+	physical_state_label
 )
 SELECT physicalstate_id,
 	physicalstate_label
 FROM physicalstate;
 DROP TABLE physicalstate;
-ALTER TABLE physicalstate_new RENAME TO physicalstate; 
+ALTER TABLE physical_state_new RENAME TO physical_state;
 
-CREATE TABLE precautionarystatement_new (
-	precautionarystatement_id	INTEGER,
-	precautionarystatement_label	TEXT NOT NULL,
-	precautionarystatement_reference	TEXT NOT NULL UNIQUE,
-	PRIMARY KEY(precautionarystatement_id)
+CREATE TABLE precautionary_statement_new (
+	precautionary_statement_id	INTEGER,
+	precautionary_statement_label	TEXT NOT NULL,
+	precautionary_statement_reference	TEXT NOT NULL UNIQUE,
+	PRIMARY KEY(precautionary_statement_id)
 ) STRICT;
-INSERT INTO precautionarystatement_new (
-	precautionarystatement_id,
-	precautionarystatement_label,
-	precautionarystatement_reference
+INSERT INTO precautionary_statement_new (
+	precautionary_statement_id,
+	precautionary_statement_label,
+	precautionary_statement_reference
 )
 SELECT precautionarystatement_id,
 	precautionarystatement_label,
 	precautionarystatement_reference
 FROM precautionarystatement;
 DROP TABLE precautionarystatement;
-ALTER TABLE precautionarystatement_new RENAME TO precautionarystatement; 
+ALTER TABLE precautionary_statement_new RENAME TO precautionary_statement;
 
 CREATE TABLE producer_new (
 	producer_id	INTEGER,
@@ -825,16 +825,16 @@ FROM producer;
 DROP TABLE producer;
 ALTER TABLE producer_new RENAME TO producer; 
 
-CREATE TABLE producerref_new (
-	producerref_id	INTEGER,
-	producerref_label	TEXT NOT NULL,
+CREATE TABLE producer_ref_new (
+	producer_ref_id	INTEGER,
+	producer_ref_label	TEXT NOT NULL,
 	producer	INTEGER,
 	FOREIGN KEY(producer) REFERENCES producer(producer_id),
-	PRIMARY KEY(producerref_id)
+	PRIMARY KEY(producer_ref_id)
 ) STRICT;
-INSERT INTO producerref_new (
-	producerref_id,
-	producerref_label,
+INSERT INTO producer_ref_new (
+	producer_ref_id,
+	producer_ref_label,
 	producer
 )
 SELECT producerref_id,
@@ -842,7 +842,7 @@ SELECT producerref_id,
 	producer
 FROM producerref;
 DROP TABLE producerref;
-ALTER TABLE producerref_new RENAME TO producerref; 
+ALTER TABLE producer_ref_new RENAME TO producer_ref;
 
 CREATE TABLE product_new (
 	product_id	INTEGER,
@@ -853,41 +853,41 @@ CREATE TABLE product_new (
 	product_msds	TEXT,
 	product_restricted	INTEGER DEFAULT 0,
 	product_radioactive	INTEGER DEFAULT 0,
-	product_threedformula	TEXT,
-	product_twodformula	TEXT,
-	product_disposalcomment	TEXT,
+	product_threed_formula	TEXT,
+	product_twod_formula	TEXT,
+	product_disposal_comment	TEXT,
 	product_remark	TEXT,
 	product_qrcode	TEXT,
 	product_sheet	TEXT,
 	product_concentration	REAL,
 	product_temperature	REAL,
-	product_molecularweight REAL,
-	casnumber	INTEGER,
-	cenumber	INTEGER,
+	product_molecular_weight REAL,
+	cas_number	INTEGER,
+	ce_number	INTEGER,
 	person	INTEGER NOT NULL,
-	empiricalformula	INTEGER,
-	linearformula	INTEGER,
-	physicalstate	INTEGER,
-	signalword	INTEGER,
+	empirical_formula	INTEGER,
+	linear_formula	INTEGER,
+	physical_state	INTEGER,
+	signal_word	INTEGER,
 	name	INTEGER NOT NULL,
-	producerref	INTEGER,
-	unit_molecularweight INTEGER,
+	producer_ref	INTEGER,
+	unit_molecular_weight INTEGER,
 	unit_temperature	INTEGER,
 	category	INTEGER,
 	product_number_per_carton	INTEGER,
 	product_number_per_bag	INTEGER,
 	FOREIGN KEY(person) REFERENCES person(person_id),
-	FOREIGN KEY(empiricalformula) REFERENCES empiricalformula(empiricalformula_id),
-	FOREIGN KEY(linearformula) REFERENCES linearformula(linearformula_id),
-	FOREIGN KEY(casnumber) REFERENCES casnumber(casnumber_id),
-	FOREIGN KEY(cenumber) REFERENCES cenumber(cenumber_id),
-	FOREIGN KEY(producerref) REFERENCES producerref(producerref_id),
+	FOREIGN KEY(empirical_formula) REFERENCES empirical_formula(empirical_formula_id),
+	FOREIGN KEY(linear_formula) REFERENCES linear_formula(linear_formula_id),
+	FOREIGN KEY(cas_number) REFERENCES cas_number(cas_number_id),
+	FOREIGN KEY(ce_number) REFERENCES ce_number(ce_number_id),
+	FOREIGN KEY(producer_ref) REFERENCES producer_ref(producer_ref_id),
 	FOREIGN KEY(category) REFERENCES category(category_id),
 	PRIMARY KEY(product_id),
 	FOREIGN KEY(unit_temperature) REFERENCES unit(unit_id),
-	FOREIGN KEY(unit_molecularweight) REFERENCES unit(unit_id),
-	FOREIGN KEY(physicalstate) REFERENCES physicalstate(physicalstate_id),
-	FOREIGN KEY(signalword) REFERENCES signalword(signalword_id),
+	FOREIGN KEY(unit_molecular_weight) REFERENCES unit(unit_id),
+	FOREIGN KEY(physical_state) REFERENCES physical_state(physical_state_id),
+	FOREIGN KEY(signal_word) REFERENCES signal_word(signal_word_id),
 	FOREIGN KEY(name) REFERENCES name(name_id)
 ) STRICT;
 INSERT into product_new (
@@ -896,23 +896,23 @@ INSERT into product_new (
 	product_msds,
 	product_restricted,
 	product_radioactive,
-	product_threedformula,
-	product_twodformula,
-	product_disposalcomment,
+	product_threed_formula,
+	product_twod_formula,
+	product_disposal_comment,
 	product_remark,
 	product_qrcode,
 	product_sheet,
 	product_concentration,
 	product_temperature,
-	casnumber,
-	cenumber,
+	cas_number,
+	ce_number,
 	person,
-	empiricalformula,
-	linearformula,
-	physicalstate,
-	signalword,
+	empirical_formula,
+	linear_formula,
+	physical_state,
+	signal_word,
 	name,
-	producerref,
+	producer_ref,
 	unit_temperature,
 	category,
 	product_number_per_carton,
@@ -948,35 +948,35 @@ FROM product;
 DROP TABLE product;
 ALTER TABLE product_new RENAME TO product; 
 
-CREATE TABLE signalword_new (
-	signalword_id	INTEGER,
-	signalword_label	TEXT NOT NULL UNIQUE,
-	PRIMARY KEY(signalword_id)
+CREATE TABLE signal_word_new (
+	signal_word_id	INTEGER,
+	signal_word_label	TEXT NOT NULL UNIQUE,
+	PRIMARY KEY(signal_word_id)
 ) STRICT;
-INSERT INTO signalword_new (
-	signalword_id,
-	signalword_label
+INSERT INTO signal_word_new (
+	signal_word_id,
+	signal_word_label
 )
 SELECT signalword_id,
 	signalword_label
 FROM signalword;
 DROP TABLE signalword;
-ALTER TABLE signalword_new RENAME TO signalword; 
+ALTER TABLE signal_word_new RENAME TO signal_word;
 
 CREATE TABLE storage_new (
 	storage_id	INTEGER,
-	storage_creationdate	INTEGER NOT NULL,
-	storage_modificationdate	INTEGER NOT NULL,
-	storage_entrydate	INTEGER,
-	storage_exitdate	INTEGER,
-	storage_openingdate	INTEGER,
-	storage_expirationdate	INTEGER,
+	storage_creation_date	INTEGER NOT NULL DEFAULT current_timestamp,
+	storage_modification_date	INTEGER NOT NULL DEFAULT current_timestamp,
+	storage_entry_date	INTEGER,
+	storage_exit_date	INTEGER,
+	storage_opening_date	INTEGER,
+	storage_expiration_date	INTEGER,
 	storage_quantity	REAL,
 	storage_barecode	TEXT,
 	storage_comment	TEXT,
 	storage_reference	TEXT,
-	storage_batchnumber	TEXT,
-	storage_todestroy	INTEGER DEFAULT 0,
+	storage_batch_number	TEXT,
+	storage_to_destroy	INTEGER DEFAULT 0,
 	storage_archive	INTEGER DEFAULT 0,
 	storage_qrcode	BLOB,
 	storage_concentration	REAL,
@@ -985,7 +985,7 @@ CREATE TABLE storage_new (
 	storage_number_of_carton	INTEGER,
 	person	INTEGER NOT NULL,
 	product	INTEGER NOT NULL,
-	storelocation	INTEGER NOT NULL,
+	store_location	INTEGER NOT NULL,
 	unit_concentration	REAL,
 	unit_quantity	REAL,
 	supplier	INTEGER,
@@ -996,23 +996,23 @@ CREATE TABLE storage_new (
 	FOREIGN KEY(supplier) REFERENCES supplier(supplier_id),
 	FOREIGN KEY(person) REFERENCES person(person_id),
 	FOREIGN KEY(product) REFERENCES product(product_id),
-	FOREIGN KEY(storelocation) REFERENCES storelocation(storelocation_id),
+	FOREIGN KEY(store_location) REFERENCES store_location(store_location_id),
 	PRIMARY KEY(storage_id)
 ) STRICT;
 INSERT INTO storage_new (
 	storage_id,
-	storage_creationdate,
-	storage_modificationdate,
-	storage_entrydate,
-	storage_exitdate,
-	storage_openingdate,
-	storage_expirationdate,
+	storage_creation_date,
+	storage_modification_date,
+	storage_entry_date,
+	storage_exit_date,
+	storage_opening_date,
+	storage_expiration_date,
 	storage_quantity,
 	storage_barecode,
 	storage_comment,
 	storage_reference,
-	storage_batchnumber,
-	storage_todestroy,
+	storage_batch_number,
+	storage_to_destroy,
 	storage_archive,
 	storage_qrcode,
 	storage_concentration,
@@ -1021,19 +1021,19 @@ INSERT INTO storage_new (
 	storage_number_of_carton,
 	person,
 	product,
-	storelocation,
+	store_location,
 	unit_concentration,
 	unit_quantity,
 	supplier,
 	storage
 )
 SELECT storage_id,
-CAST(unixepoch(storage_creationdate) AS INTEGER) AS storage_creationdate,
-CAST(unixepoch(storage_modificationdate) AS INTEGER) AS storage_modificationdate,
-CAST(unixepoch(storage_entrydate) AS INTEGER) AS storage_entrydate,
-CAST(unixepoch(storage_exitdate) AS INTEGER) AS storage_exitdate,
-CAST(unixepoch(storage_openingdate) AS INTEGER) AS storage_openingdate,
-CAST(unixepoch(storage_expirationdate) AS INTEGER) AS storage_expirationdate,
+CAST(unixepoch(storage_creationdate) AS INTEGER) AS storage_creation_date,
+CAST(unixepoch(storage_modificationdate) AS INTEGER) AS storage_modification_date,
+CAST(unixepoch(storage_entrydate) AS INTEGER) AS storage_entry_date,
+CAST(unixepoch(storage_exitdate) AS INTEGER) AS storage_exit_date,
+CAST(unixepoch(storage_openingdate) AS INTEGER) AS storage_opening_date,
+CAST(unixepoch(storage_expirationdate) AS INTEGER) AS storage_expiration_date,
 storage_quantity,
 storage_barecode,
 storage_comment,
@@ -1057,26 +1057,32 @@ FROM storage;
 DROP TABLE storage;
 ALTER TABLE storage_new RENAME TO storage; 
 
-CREATE TABLE storelocation_new (
-	storelocation_id	INTEGER,
-	storelocation_name	TEXT NOT NULL,
-	storelocation_color	TEXT,
-	storelocation_canstore	INTEGER DEFAULT 0,
-	storelocation_fullpath	TEXT,
+-- CREATE TRIGGER insert_storage_modification_date_Trigger
+-- AFTER INSERT ON storage
+-- BEGIN
+-- UPDATE storage SET storage_modification_date = current_timestamp WHERE storage_id = NEW.storage_id;
+-- END;
+
+CREATE TABLE store_location_new (
+	store_location_id	INTEGER,
+	store_location_name	TEXT NOT NULL,
+	store_location_color	TEXT,
+	store_location_can_store	INTEGER DEFAULT 0,
+	store_location_full_path	TEXT,
 	entity	INTEGER NOT NULL,
-	storelocation	INTEGER,
-	FOREIGN KEY(storelocation) REFERENCES storelocation(storelocation_id),
+	store_location	INTEGER,
+	FOREIGN KEY(store_location) REFERENCES store_location(store_location_id),
 	FOREIGN KEY(entity) REFERENCES entity(entity_id),
-	PRIMARY KEY(storelocation_id)
+	PRIMARY KEY(store_location_id)
 ) STRICT;
-INSERT INTO storelocation_new (
-	storelocation_id,
-	storelocation_name,
-	storelocation_color,
-	storelocation_canstore,
-	storelocation_fullpath,
+INSERT INTO store_location_new (
+	store_location_id,
+	store_location_name,
+	store_location_color,
+	store_location_can_store,
+	store_location_full_path,
 	entity,
-	storelocation
+	store_location
 )
 SELECT storelocation_id,
 	storelocation_name,
@@ -1087,7 +1093,7 @@ SELECT storelocation_id,
 	storelocation
 FROM storelocation;
 DROP TABLE storelocation;
-ALTER TABLE storelocation_new RENAME TO storelocation;
+ALTER TABLE store_location_new RENAME TO store_location;
 
 CREATE TABLE supplier_new (
 	supplier_id	INTEGER,
@@ -1104,16 +1110,16 @@ FROM supplier;
 DROP TABLE supplier;
 ALTER TABLE supplier_new RENAME TO supplier;
 
-CREATE TABLE supplierref_new (
-	supplierref_id	INTEGER,
-	supplierref_label	TEXT NOT NULL,
+CREATE TABLE supplier_ref_new (
+	supplier_ref_id	INTEGER,
+	supplier_ref_label	TEXT NOT NULL,
 	supplier	INTEGER,
 	FOREIGN KEY(supplier) REFERENCES supplier(supplier_id),
-	PRIMARY KEY(supplierref_id)
+	PRIMARY KEY(supplier_ref_id)
 ) STRICT;
-INSERT INTO supplierref_new (
-	supplierref_id,
-	supplierref_label,
+INSERT INTO supplier_ref_new (
+	supplier_ref_id,
+	supplier_ref_label,
 	supplier
 )
 SELECT supplierref_id,
@@ -1121,7 +1127,7 @@ SELECT supplierref_id,
 	supplier
 FROM supplierref;
 DROP TABLE supplierref;
-ALTER TABLE supplierref_new RENAME TO supplierref;
+ALTER TABLE supplier_ref_new RENAME TO supplier_ref;
 
 CREATE TABLE symbol_new (
 	symbol_id	INTEGER,
@@ -1174,20 +1180,87 @@ FROM unit;
 DROP TABLE unit;
 ALTER TABLE unit_new RENAME TO unit;
 
-CREATE TABLE welcomeannounce_new (
-	welcomeannounce_id	INTEGER,
-	welcomeannounce_text	TEXT,
-	PRIMARY KEY(welcomeannounce_id)
+CREATE TABLE welcome_announce_new (
+	welcome_announce_id	INTEGER,
+	welcome_announce_text	TEXT,
+	PRIMARY KEY(welcome_announce_id)
 ) STRICT;
-INSERT INTO welcomeannounce_new (
-	welcomeannounce_id,
-	welcomeannounce_text
+INSERT INTO welcome_announce_new (
+	welcome_announce_id,
+	welcome_announce_text
 )
 SELECT welcomeannounce_id,
 	welcomeannounce_text
 FROM welcomeannounce;
 DROP TABLE welcomeannounce;
-ALTER TABLE welcomeannounce_new RENAME TO welcomeannounce;
+ALTER TABLE welcome_announce_new RENAME TO welcome_announce;
+
+CREATE TABLE productclassesofcompounds (
+	productclassesofcompounds_product_id INTEGER NOT NULL,
+	productclassesofcompounds_class_of_compound_id INTEGER NOT NULL,
+	PRIMARY KEY (productclassesofcompounds_product_id, productclassesofcompounds_class_of_compound_id),
+	FOREIGN KEY (productclassesofcompounds_product_id) REFERENCES product(product_id),
+	FOREIGN KEY (productclassesofcompounds_class_of_compound_id) REFERENCES class_of_compound(class_of_compound_id)
+) STRICT;
+INSERT INTO productclassesofcompounds (
+	productclassesofcompounds_product_id,
+	productclassesofcompounds_class_of_compound_id
+)
+SELECT productclassofcompound_product_id,
+	productclassofcompound_classofcompound_id
+FROM productclassofcompound;
+DROP TABLE productclassofcompound;
+
+CREATE TABLE producthazardstatements_new (
+	producthazardstatements_product_id INTEGER NOT NULL,
+	producthazardstatements_hazard_statement_id INTEGER NOT NULL,
+	PRIMARY KEY (producthazardstatements_product_id, producthazardstatements_hazard_statement_id),
+	FOREIGN KEY (producthazardstatements_product_id) REFERENCES product(product_id),
+	FOREIGN KEY (producthazardstatements_hazard_statement_id) REFERENCES hazard_statement(hazard_statement_id)
+) STRICT;
+INSERT INTO producthazardstatements_new (
+	producthazardstatements_product_id,
+	producthazardstatements_hazard_statement_id
+)
+SELECT producthazardstatements_product_id,
+producthazardstatements_hazardstatement_id
+FROM producthazardstatements;
+DROP TABLE producthazardstatements;
+ALTER TABLE producthazardstatements_new RENAME TO producthazardstatements;
+
+CREATE TABLE productprecautionarystatements_new (
+productprecautionarystatements_product_id INTEGER NOT NULL,
+productprecautionarystatements_precautionary_statement_id INTEGER NOT NULL,
+PRIMARY KEY (productprecautionarystatements_product_id, productprecautionarystatements_precautionary_statement_id),
+FOREIGN KEY (productprecautionarystatements_product_id) REFERENCES product(product_id),
+FOREIGN KEY (productprecautionarystatements_precautionary_statement_id) REFERENCES precautionary_statement(precautionary_statement_id)
+) STRICT;
+INSERT INTO productprecautionarystatements_new (
+productprecautionarystatements_product_id,
+productprecautionarystatements_precautionary_statement_id
+)
+SELECT productprecautionarystatements_product_id,
+productprecautionarystatements_precautionarystatement_id
+FROM productprecautionarystatements;
+DROP TABLE productprecautionarystatements;
+ALTER TABLE productprecautionarystatements_new RENAME TO productprecautionarystatements;
+
+CREATE TABLE productsupplierrefs_new (
+productsupplierrefs_product_id INTEGER NOT NULL,
+productsupplierrefs_supplier_ref_id INTEGER NOT NULL,
+PRIMARY KEY (productsupplierrefs_product_id, productsupplierrefs_supplier_ref_id),
+FOREIGN KEY (productsupplierrefs_product_id) REFERENCES product(product_id),
+FOREIGN KEY (productsupplierrefs_supplier_ref_id) REFERENCES supplier_ref(supplier_ref_id)
+) STRICT;
+INSERT INTO productsupplierrefs_new (
+productsupplierrefs_product_id,
+productsupplierrefs_supplier_ref_id
+)
+SELECT productsupplierrefs_product_id,
+productsupplierrefs_supplierref_id
+FROM productsupplierrefs;
+DROP TABLE productsupplierrefs;
+ALTER TABLE productsupplierrefs_new RENAME TO productsupplierrefs;
 
 DROP INDEX IF EXISTS idx_producerref_label;
 DROP INDEX IF EXISTS idx_supplierref_label;
@@ -1195,7 +1268,15 @@ DROP INDEX IF EXISTS idx_supplierref_label;
 DROP TABLE IF EXISTS captcha;
 DROP TABLE IF EXISTS entityldapgroups;
 
-INSERT INTO unit (unit_label, unit_multiplier, unit_type) VALUES ("g/mol", 1, "molecularweight");
+DROP INDEX IF EXISTS idx_product_casnumber;
+DROP INDEX IF EXISTS idx_product_cenumber;
+DROP INDEX IF EXISTS idx_product_empiricalformula;
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_product_casnumber ON product(product_id, cas_number);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_product_cenumber ON product(product_id, ce_number);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_product_empiricalformula ON product(product_id, empirical_formula);
+
+INSERT INTO unit (unit_label, unit_multiplier, unit_type) VALUES ("g/mol", 1, "molecular_weight");
 
 COMMIT;
 

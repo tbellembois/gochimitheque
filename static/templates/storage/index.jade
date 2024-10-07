@@ -58,14 +58,14 @@ block CONTENT
                 thead
                     tr
                         //th(data-field='storage_id' data-formatter='storage_idFormatter' data-sortable='true') ID
-                        //th(data-field='storage_modificationdate' data-formatter='dateFormatter' data-sortable='true') modification date
+                        //th(data-field='storage_modification_date' data-formatter='dateFormatter' data-sortable='true') modification date
                         th(data-field='product.name.name_label' data-formatter='Storage_productFormatter' data-sortable='true')
                             = T("storage_product_table_header", 1)
-                        th(data-field='storage_batchnumber' data-formatter='Storage_batchnumberFormatter' data-sortable='true')
-                            = T("storage_batchnumber_title", 1)
-                        th(data-field='storelocation.storelocation_fullpath' data-sortable='true' data-formatter='Storage_storelocationFormatter')
-                            = T("storage_storelocation_table_header", 1)
-                        th(data-field='storage_modificationdate' data-sortable='true' data-formatter='Storage_modificationdateFormatter')
+                        th(data-field='storage_batch_number' data-formatter='Storage_batchnumberFormatter' data-sortable='true')
+                            = T("storage_batch_number_title", 1)
+                        th(data-field='store_location.store_location_full_path' data-sortable='true' data-formatter='Storage_store_locationFormatter')
+                            = T("storage_store_location_table_header", 1)
+                        th(data-field='storage_modification_date' data-sortable='true' data-formatter='Storage_modificationdateFormatter')
                             = T("modified", 1)
                         th(data-field='storage_quantity' data-formatter='Storage_quantityFormatter')
                             = T("storage_quantity_table_header", 1)

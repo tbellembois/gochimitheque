@@ -2,7 +2,6 @@ package datastores
 
 import (
 	"database/sql"
-	"database/sql/driver"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -156,15 +155,15 @@ func (db *SQLiteDataStore) GetStorages(f zmqclient.RequestFilter, person_id int)
 	// pre request: select or count
 	precreq.WriteString(" SELECT count(DISTINCT s.storage_id)")
 	presreq.WriteString(` SELECT s.storage_id AS "storage_id",
-		s.storage_entrydate,
-		s.storage_exitdate,
-		s.storage_openingdate,
-		s.storage_expirationdate,
+		s.storage_entry_date,
+		s.storage_exit_date,
+		s.storage_opening_date,
+		s.storage_expiration_date,
 		s.storage_reference,
-		s.storage_batchnumber,
-		s.storage_todestroy,
-		s.storage_creationdate,
-		s.storage_modificationdate,
+		s.storage_batch_number,
+		s.storage_to_destroy,
+		s.storage_creation_date,
+		s.storage_modification_date,
 		s.storage_quantity,
 		s.storage_barecode,
 		s.storage_qrcode,
@@ -187,23 +186,23 @@ func (db *SQLiteDataStore) GetStorages(f zmqclient.RequestFilter, person_id int)
 		product.product_specificity AS "product.product_specificity",
 		product.product_number_per_carton AS "product.product_number_per_carton",
 		product.product_number_per_bag AS "product.product_number_per_bag",
-        producerref.producerref_id AS "product.producerref.producerref_id",
-		producerref.producerref_label AS "product.producerref.producerref_label",
+        producer_ref.producer_ref_id AS "product.producer_ref.producer_ref_id",
+		producer_ref.producer_ref_label AS "product.producer_ref.producer_ref_label",
 		name.name_id AS "product.name.name_id",
 		name.name_label AS "product.name.name_label",
-		casnumber.casnumber_id AS "product.casnumber.casnumber_id",
-		casnumber.casnumber_label AS "product.casnumber.casnumber_label",
+		cas_number.cas_number_id AS "product.cas_number.cas_number_id",
+		cas_number.cas_number_label AS "product.cas_number.cas_number_label",
 		borrowing.borrowing_id AS "borrowing.borrowing_id",
 		borrowing.borrowing_comment AS "borrowing.borrowing_comment",
-		storelocation.storelocation_id AS "storelocation.storelocation_id",
-		storelocation.storelocation_name AS "storelocation.storelocation_name",
-		storelocation.storelocation_color AS "storelocation.storelocation_color",
-		storelocation.storelocation_fullpath AS "storelocation.storelocation_fullpath",
-		entity.entity_id AS "storelocation.entity.entity_id"
+		store_location.store_location_id AS "store_location.store_location_id",
+		store_location.store_location_name AS "store_location.store_location_name",
+		store_location.store_location_color AS "store_location.store_location_color",
+		store_location.store_location_full_path AS "store_location.store_location_full_path",
+		entity.entity_id AS "store_location.entity.entity_id"
 		`)
 
 	if f.CasNumberCmr {
-		presreq.WriteString(`,GROUP_CONCAT(DISTINCT hazardstatement.hazardstatement_cmr) AS "product.hazardstatement_cmr"`)
+		presreq.WriteString(`,GROUP_CONCAT(DISTINCT hazard_statement.hazard_statement_cmr) AS "product.hazard_statement_cmr"`)
 	}
 
 	// common parts
@@ -214,14 +213,14 @@ func (db *SQLiteDataStore) GetStorages(f zmqclient.RequestFilter, person_id int)
 	comreq.WriteString(" JOIN product ON s.product = product.product_id")
 	// CMR
 	if f.CasNumberCmr {
-		comreq.WriteString(" LEFT JOIN producthazardstatements ON producthazardstatements.producthazardstatements_product_id = product.product_id")
-		comreq.WriteString(" LEFT JOIN hazardstatement ON producthazardstatements.producthazardstatements_hazardstatement_id = hazardstatement.hazardstatement_id")
+		comreq.WriteString(" LEFT JOIN producthazard_statements ON producthazard_statements.producthazard_statements_product_id = product.product_id")
+		comreq.WriteString(" LEFT JOIN hazard_statement ON producthazard_statements.producthazard_statements_hazard_statement_id = hazard_statement.hazard_statement_id")
 	}
-	// get producerref
+	// get producer_ref
 	if f.ProducerRef != 0 {
-		comreq.WriteString(" JOIN producerref ON product.producerref = :producerref")
+		comreq.WriteString(" JOIN producer_ref ON product.producer_ref = :producer_ref")
 	} else {
-		comreq.WriteString(" LEFT JOIN producerref ON product.producerref = producerref.producerref_id")
+		comreq.WriteString(" LEFT JOIN producer_ref ON product.producer_ref = producer_ref.producer_ref_id")
 	}
 	// get name
 	comreq.WriteString(" JOIN name ON product.name = name.name_id")
@@ -230,13 +229,13 @@ func (db *SQLiteDataStore) GetStorages(f zmqclient.RequestFilter, person_id int)
 		comreq.WriteString(" JOIN category ON product.category = :category")
 	}
 	// get signal word
-	comreq.WriteString(" LEFT JOIN signalword ON product.signalword = signalword.signalword_id")
+	comreq.WriteString(" LEFT JOIN signal_word ON product.signal_word = signal_word.signal_word_id")
 	// get person
 	comreq.WriteString(" JOIN person ON s.person = person.person_id")
 	// get store location
-	comreq.WriteString(" JOIN storelocation ON s.storelocation = storelocation.storelocation_id")
+	comreq.WriteString(" JOIN store_location ON s.store_location = store_location.store_location_id")
 	// get entity
-	comreq.WriteString(" JOIN entity ON storelocation.entity = entity.entity_id")
+	comreq.WriteString(" JOIN entity ON store_location.entity = entity.entity_id")
 	// get unit quantity
 	comreq.WriteString(" LEFT JOIN unit uq ON s.unit_quantity = uq.unit_id")
 	// get unit concentration
@@ -249,21 +248,21 @@ func (db *SQLiteDataStore) GetStorages(f zmqclient.RequestFilter, person_id int)
 	} else {
 		comreq.WriteString(" LEFT JOIN borrowing ON s.storage_id = borrowing.storage")
 	}
-	// get casnumber
-	comreq.WriteString(" LEFT JOIN casnumber ON product.casnumber = casnumber.casnumber_id")
+	// get cas_number
+	comreq.WriteString(" LEFT JOIN cas_number ON product.cas_number = cas_number.cas_number_id")
 	// get empirical formula
-	comreq.WriteString(" LEFT JOIN empiricalformula ON product.empiricalformula = empiricalformula.empiricalformula_id")
+	comreq.WriteString(" LEFT JOIN empirical_formula ON product.empirical_formula = empirical_formula.empirical_formula_id")
 	// get symbols
 	if len(f.Symbols) != 0 {
 		comreq.WriteString(" JOIN productsymbols AS ps ON ps.productsymbols_product_id = product.product_id")
 	}
-	// get hazardstatements
+	// get hazard_statements
 	if len(f.HazardStatements) != 0 {
-		comreq.WriteString(" JOIN producthazardstatements AS phs ON phs.producthazardstatements_product_id = product.product_id")
+		comreq.WriteString(" JOIN producthazard_statements AS phs ON phs.producthazard_statements_product_id = product.product_id")
 	}
-	// get precautionarystatements
+	// get precautionary_statements
 	if len(f.PrecautionaryStatements) != 0 {
-		comreq.WriteString(" JOIN productprecautionarystatements AS pps ON pps.productprecautionarystatements_product_id = product.product_id")
+		comreq.WriteString(" JOIN productprecautionary_statements AS pps ON pps.productprecautionary_statements_product_id = product.product_id")
 	}
 	// get tags
 	if len(f.Tags) != 0 {
@@ -276,7 +275,7 @@ func (db *SQLiteDataStore) GetStorages(f zmqclient.RequestFilter, person_id int)
 
 	// filter by entities
 	if !isadmin {
-		comreq.WriteString(` JOIN personentities ON (personentities_entity_id = storelocation.entity AND personentities_person_id = :personid)`)
+		comreq.WriteString(` JOIN personentities ON (personentities_entity_id = store_location.entity AND personentities_person_id = :personid)`)
 	}
 
 	// filter by permissions
@@ -295,10 +294,10 @@ func (db *SQLiteDataStore) GetStorages(f zmqclient.RequestFilter, person_id int)
 		comreq.WriteString(" )")
 	}
 	if f.StorageToDestroy {
-		comreq.WriteString(" AND s.storage_todestroy = true")
+		comreq.WriteString(" AND s.storage_to_destroy = true")
 	}
 	if f.CasNumberCmr {
-		comreq.WriteString(" AND (casnumber.casnumber_cmr IS NOT NULL OR (hazardstatement_cmr IS NOT NULL AND hazardstatement_cmr != ''))")
+		comreq.WriteString(" AND (cas_number.cas_number_cmr IS NOT NULL OR (hazard_statement_cmr IS NOT NULL AND hazard_statement_cmr != ''))")
 	}
 	if f.Product != 0 {
 		comreq.WriteString(" AND product.product_id = :product")
@@ -307,7 +306,7 @@ func (db *SQLiteDataStore) GetStorages(f zmqclient.RequestFilter, person_id int)
 		comreq.WriteString(" AND entity.entity_id = :entity")
 	}
 	if f.Storelocation != 0 {
-		comreq.WriteString(" AND storelocation.storelocation_id = :storelocation")
+		comreq.WriteString(" AND store_location.store_location_id = :store_location")
 	}
 	if f.Storage != 0 {
 		if f.History {
@@ -332,16 +331,16 @@ func (db *SQLiteDataStore) GetStorages(f zmqclient.RequestFilter, person_id int)
 		comreq.WriteString(" AND name.name_id = :name")
 	}
 	if f.CasNumber != 0 {
-		comreq.WriteString(" AND casnumber.casnumber_id = :casnumber")
+		comreq.WriteString(" AND cas_number.cas_number_id = :cas_number")
 	}
 	if f.EmpiricalFormula != 0 {
-		comreq.WriteString(" AND empiricalformula.empiricalformula_id = :empiricalformula")
+		comreq.WriteString(" AND empirical_formula.empirical_formula_id = :empirical_formula")
 	}
 	if f.StorageBarecode != "" {
 		comreq.WriteString(" AND s.storage_barecode LIKE :storage_barecode")
 	}
 	if f.StorageBatchNumber != "" {
-		comreq.WriteString(" AND s.storage_batchnumber LIKE :storage_batchnumber")
+		comreq.WriteString(" AND s.storage_batch_number LIKE :storage_batch_number")
 	}
 	if f.CustomNamePartOf != "" {
 		comreq.WriteString(" AND name.name_label LIKE :custom_name_part_of")
@@ -358,7 +357,7 @@ func (db *SQLiteDataStore) GetStorages(f zmqclient.RequestFilter, person_id int)
 		comreq.WriteString(" )")
 	}
 	if len(f.HazardStatements) != 0 {
-		comreq.WriteString(" AND phs.producthazardstatements_hazardstatement_id IN (")
+		comreq.WriteString(" AND phs.producthazard_statements_hazard_statement_id IN (")
 
 		for _, s := range f.HazardStatements {
 			comreq.WriteString(fmt.Sprintf("%d,", s))
@@ -369,7 +368,7 @@ func (db *SQLiteDataStore) GetStorages(f zmqclient.RequestFilter, person_id int)
 		comreq.WriteString(" )")
 	}
 	if len(f.PrecautionaryStatements) != 0 {
-		comreq.WriteString(" AND pps.productprecautionarystatements_precautionarystatement_id IN (")
+		comreq.WriteString(" AND pps.productprecautionary_statements_precautionary_statement_id IN (")
 
 		for _, s := range f.PrecautionaryStatements {
 			comreq.WriteString(fmt.Sprintf("%d,", s))
@@ -391,7 +390,7 @@ func (db *SQLiteDataStore) GetStorages(f zmqclient.RequestFilter, person_id int)
 		comreq.WriteString(" )")
 	}
 	if f.SignalWord != 0 {
-		comreq.WriteString(" AND signalword.signalword_id = :signalword")
+		comreq.WriteString(" AND signal_word.signal_word_id = :signal_word")
 	}
 
 	// show bio/chem/consu
@@ -399,16 +398,16 @@ func (db *SQLiteDataStore) GetStorages(f zmqclient.RequestFilter, person_id int)
 	case !f.ShowChem && !f.ShowBio && f.ShowConsu:
 		comreq.WriteString(" AND (product_number_per_carton IS NOT NULL AND product_number_per_carton != 0)")
 	case !f.ShowChem && f.ShowBio && !f.ShowConsu:
-		comreq.WriteString(" AND producerref IS NOT NULL")
+		comreq.WriteString(" AND producer_ref IS NOT NULL")
 		comreq.WriteString(" AND (product_number_per_carton IS NULL OR product_number_per_carton == 0)")
 	case !f.ShowChem && f.ShowBio && f.ShowConsu:
 		comreq.WriteString(" AND ((product_number_per_carton IS NOT NULL AND product_number_per_carton != 0)")
-		comreq.WriteString(" OR producerref IS NOT NULL)")
+		comreq.WriteString(" OR producer_ref IS NOT NULL)")
 	case f.ShowChem && !f.ShowBio && !f.ShowConsu:
-		comreq.WriteString(" AND producerref IS NULL")
+		comreq.WriteString(" AND producer_ref IS NULL")
 		comreq.WriteString(" AND (product_number_per_carton IS NULL OR product_number_per_carton == 0)")
 	case f.ShowChem && !f.ShowBio && f.ShowConsu:
-		comreq.WriteString(" AND (producerref IS NULL")
+		comreq.WriteString(" AND (producer_ref IS NULL")
 		comreq.WriteString(" OR (product_number_per_carton IS NOT NULL AND product_number_per_carton != 0))")
 	case f.ShowChem && f.ShowBio && !f.ShowConsu:
 		comreq.WriteString(" AND (product_number_per_carton IS NULL OR product_number_per_carton == 0)")
@@ -433,25 +432,25 @@ func (db *SQLiteDataStore) GetStorages(f zmqclient.RequestFilter, person_id int)
 
 	// building argument map
 	m := map[string]interface{}{
-		"ids":                 f.Ids,
-		"search":              f.Search,
-		"personid":            person_id,
-		"order":               f.Order,
-		"limit":               f.Limit,
-		"offset":              f.Offset,
-		"entity":              f.Entity,
-		"product":             f.Product,
-		"storelocation":       f.Storelocation,
-		"storage":             f.Storage,
-		"name":                f.Name,
-		"casnumber":           f.CasNumber,
-		"empiricalformula":    f.EmpiricalFormula,
-		"storage_barecode":    f.StorageBarecode,
-		"storage_batchnumber": f.StorageBatchNumber,
-		"custom_name_part_of": "%" + f.CustomNamePartOf + "%",
-		"signalword":          f.SignalWord,
-		"producerref":         f.ProducerRef,
-		"category":            f.Category,
+		"ids":                  f.Ids,
+		"search":               f.Search,
+		"personid":             person_id,
+		"order":                f.Order,
+		"limit":                f.Limit,
+		"offset":               f.Offset,
+		"entity":               f.Entity,
+		"product":              f.Product,
+		"store_location":       f.Storelocation,
+		"storage":              f.Storage,
+		"name":                 f.Name,
+		"cas_number":           f.CasNumber,
+		"empirical_formula":    f.EmpiricalFormula,
+		"storage_barecode":     f.StorageBarecode,
+		"storage_batch_number": f.StorageBatchNumber,
+		"custom_name_part_of":  "%" + f.CustomNamePartOf + "%",
+		"signal_word":          f.SignalWord,
+		"producer_ref":         f.ProducerRef,
+		"category":             f.Category,
 	}
 
 	logger.Log.Debug(presreq.String() + comreq.String() + postsreq.String())
@@ -470,9 +469,9 @@ func (db *SQLiteDataStore) GetStorages(f zmqclient.RequestFilter, person_id int)
 	// getting product type
 	//
 	for i, st := range storages {
-		if st.Product.ProductNumberPerCarton.Valid {
+		if st.Product.ProductNumberPerCarton != nil {
 			storages[i].Product.ProductType = "CONS"
-		} else if st.Product.ProducerRef.ProducerRefID.Valid {
+		} else if st.Product.ProducerRef.ProducerRefID != nil {
 			storages[i].Product.ProductType = "BIO"
 		} else {
 			storages[i].Product.ProductType = "CHEM"
@@ -553,9 +552,9 @@ func (db *SQLiteDataStore) GetOtherStorages(f zmqclient.RequestFilter, person_id
 	comreq.WriteString(" FROM entity as e")
 
 	// get store location
-	comreq.WriteString(" JOIN storelocation ON storelocation.entity = e.entity_id")
+	comreq.WriteString(" JOIN store_location ON store_location.entity = e.entity_id")
 	// get storages
-	comreq.WriteString(" JOIN storage ON storage.storelocation = storelocation.storelocation_id")
+	comreq.WriteString(" JOIN storage ON storage.store_location = store_location.store_location_id")
 
 	// get managers
 	comreq.WriteString(" JOIN entitypeople ON e.entity_id = entitypeople.entitypeople_entity_id")
@@ -586,14 +585,14 @@ func (db *SQLiteDataStore) GetOtherStorages(f zmqclient.RequestFilter, person_id
 		"offset":              f.Offset,
 		"entity":              f.Entity,
 		"product":             f.Product,
-		"storelocation":       f.Storelocation,
+		"store_location":      f.Storelocation,
 		"storage":             f.Storage,
 		"name":                f.Name,
-		"casnumber":           f.CasNumber,
-		"empiricalformula":    f.EmpiricalFormula,
+		"cas_number":          f.CasNumber,
+		"empirical_formula":   f.EmpiricalFormula,
 		"storage_barecode":    f.StorageBarecode,
 		"custom_name_part_of": "%" + f.CustomNamePartOf + "%",
-		"signalword":          f.SignalWord,
+		"signal_word":         f.SignalWord,
 	}
 
 	// Select.
@@ -619,15 +618,15 @@ func (db *SQLiteDataStore) GetStorage(id int) (models.Storage, error) {
 	logger.Log.WithFields(logrus.Fields{"id": id}).Debug("GetStorage")
 
 	sqlr = `SELECT storage.storage_id,
-	storage.storage_entrydate,
-	storage.storage_exitdate,
-	storage.storage_openingdate,
-	storage.storage_expirationdate,
+	storage.storage_entry_date,
+	storage.storage_exit_date,
+	storage.storage_opening_date,
+	storage.storage_expiration_date,
 	storage.storage_reference,
-	storage.storage_batchnumber,
-	storage.storage_todestroy,
-	storage.storage_creationdate,
-	storage.storage_modificationdate,
+	storage.storage_batch_number,
+	storage.storage_to_destroy,
+	storage.storage_creation_date,
+	storage.storage_modification_date,
 	storage.storage_quantity,
 	storage.storage_barecode,
 	storage.storage_qrcode,
@@ -648,33 +647,33 @@ func (db *SQLiteDataStore) GetStorage(id int) (models.Storage, error) {
 	name.name_label AS "product.name.name_label",
 	product.product_id AS "product.product_id",
 	product.product_number_per_carton AS "product.product_number_per_carton",
-	producerref.producerref_id AS "product.producerref.producerref_id",
-	casnumber.casnumber_id AS "product.casnumber.casnumber_id",
-	casnumber.casnumber_label AS "product.casnumber.casnumber_label",
-	storelocation.storelocation_id AS "storelocation.storelocation_id",
-	storelocation.storelocation_name AS "storelocation.storelocation_name",
-	storelocation.storelocation_color AS "storelocation.storelocation_color",
-	storelocation.storelocation_fullpath AS "storelocation.storelocation_fullpath",
-	entity.entity_id AS "storelocation.entity.entity_id"
+	producer_ref.producer_ref_id AS "product.producer_ref.producer_ref_id",
+	cas_number.cas_number_id AS "product.cas_number.cas_number_id",
+	cas_number.cas_number_label AS "product.cas_number.cas_number_label",
+	store_location.store_location_id AS "store_location.store_location_id",
+	store_location.store_location_name AS "store_location.store_location_name",
+	store_location.store_location_color AS "store_location.store_location_color",
+	store_location.store_location_full_path AS "store_location.store_location_full_path",
+	entity.entity_id AS "store_location.entity.entity_id"
 	FROM storage
-	JOIN storelocation ON storage.storelocation = storelocation.storelocation_id
-	JOIN entity ON storelocation.entity = entity.entity_id
+	JOIN store_location ON storage.store_location = store_location.store_location_id
+	JOIN entity ON store_location.entity = entity.entity_id
 	LEFT JOIN unit uq ON storage.unit_quantity = uq.unit_id
 	LEFT JOIN unit uc ON storage.unit_concentration = uc.unit_id
 	LEFT JOIN supplier ON storage.supplier = supplier.supplier_id
 	JOIN person ON storage.person = person.person_id
 	JOIN product ON storage.product = product.product_id
-	LEFT JOIN producerref ON product.producerref = producerref.producerref_id
-	LEFT JOIN casnumber ON product.casnumber = casnumber.casnumber_id
+	LEFT JOIN producer_ref ON product.producer_ref = producer_ref.producer_ref_id
+	LEFT JOIN cas_number ON product.cas_number = cas_number.cas_number_id
 	JOIN name ON product.name = name.name_id
 	WHERE storage.storage_id = ?`
 	if err = db.Get(&storage, sqlr, id); err != nil {
 		return models.Storage{}, err
 	}
 
-	if storage.Product.ProductNumberPerCarton.Valid {
+	if storage.Product.ProductNumberPerCarton != nil {
 		storage.Product.ProductType = "CONS"
-	} else if storage.Product.ProducerRef.ProducerRefID.Valid {
+	} else if storage.Product.ProducerRef.ProducerRefID != nil {
 		storage.Product.ProductType = "BIO"
 	} else {
 		storage.Product.ProductType = "CHEM"
@@ -697,8 +696,8 @@ func (db *SQLiteDataStore) GetStorageEntity(id int) (models.Entity, error) {
 	entity.entity_id AS "entity_id",
 	entity.entity_name AS "entity_name"
 	FROM storage
-	JOIN storelocation ON storage.storelocation = storelocation.storelocation_id
-	JOIN entity ON storelocation.entity = entity.entity_id
+	JOIN store_location ON storage.store_location = store_location.store_location_id
+	JOIN entity ON store_location.entity = entity.entity_id
 	WHERE storage.storage_id = ?`
 	if err = db.Get(&entity, sqlr, id); err != nil {
 		return models.Entity{}, err
@@ -785,7 +784,6 @@ func (db *SQLiteDataStore) RestoreStorage(id int) error {
 // CreateStorage creates a new storage.
 func (db *SQLiteDataStore) CreateUpdateStorage(s models.Storage, itemNumber int, update bool) (lastInsertID int64, err error) {
 	var (
-		v            driver.Value
 		tx           *sql.Tx
 		sqlr         string
 		res          sql.Result
@@ -793,6 +791,8 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s models.Storage, itemNumber int,
 		prefix       string
 		major, minor string
 	)
+
+	logger.Log.WithFields(logrus.Fields{"s": fmt.Sprintf("%+v", s)}).Debug("CreateUpdateStorage")
 
 	// Default major.
 	major = strconv.Itoa(s.ProductID)
@@ -822,18 +822,18 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s models.Storage, itemNumber int,
 
 	if update {
 		// create an history of the storage
-		sqlr = `INSERT into storage (storage_creationdate, 
-		storage_modificationdate,
-		storage_entrydate, 
-		storage_exitdate, 
-		storage_openingdate, 
-		storage_expirationdate,
+		sqlr = `INSERT into storage (storage_creation_date,
+		storage_modification_date,
+		storage_entry_date,
+		storage_exit_date,
+		storage_opening_date,
+		storage_expiration_date,
 		storage_comment,
 		storage_reference,
-		storage_batchnumber,
+		storage_batch_number,
 		storage_quantity,
 		storage_barecode,
-		storage_todestroy,
+		storage_to_destroy,
 		storage_archive,
 		storage_concentration,
 		storage_number_of_unit,
@@ -841,22 +841,22 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s models.Storage, itemNumber int,
 		storage_number_of_carton,
 		person,
 		product,
-		storelocation,
+		store_location,
 		unit_quantity,
 		unit_concentration,
 		supplier,
-		storage) select storage_creationdate, 
-				storage_modificationdate,
-				storage_entrydate, 
-				storage_exitdate, 
-				storage_openingdate, 
-				storage_expirationdate,
+		storage) select storage_creation_date,
+				storage_modification_date,
+				storage_entry_date,
+				storage_exit_date,
+				storage_opening_date,
+				storage_expiration_date,
 				storage_comment,
 				storage_reference,
-				storage_batchnumber,
+				storage_batch_number,
 				storage_quantity,
 				storage_barecode,
-				storage_todestroy,
+				storage_to_destroy,
 				storage_archive,
 				storage_concentration,
 				storage_number_of_unit,
@@ -864,12 +864,13 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s models.Storage, itemNumber int,
 				storage_number_of_carton,
 				person,
 				product,
-				storelocation,
+				store_location,
 				unit_quantity,
 				unit_concentration,
 				supplier,
 				? FROM storage WHERE storage_id = ?`
 		if _, err = tx.Exec(sqlr, s.StorageID, s.StorageID); err != nil {
+			logger.Log.Error("error creating storage history")
 			return
 		}
 	}
@@ -878,7 +879,7 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s models.Storage, itemNumber int,
 	if !update {
 		if !(s.StorageBarecode.Valid) || s.StorageBarecode.String == "" {
 			//
-			// Getting the barecode prefix from the storelocation name.
+			// Getting the barecode prefix from the store_location name.
 			//
 			// regex to detect store locations names starting with [_a-zA-Z] to build barecode prefixes
 			prefixRegex := regexp.MustCompile(`^\[(?P<groupone>[_a-zA-Z]{1,5})\].*$`)
@@ -904,13 +905,14 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s models.Storage, itemNumber int,
 			// for the same product in the same entity.
 			//
 			sqlr := `SELECT storage_barecode FROM storage 
-		JOIN storelocation on storage.storelocation = storelocation.storelocation_id 
-		WHERE product = ? AND storelocation.entity = ? AND regexp('^[_a-zA-Z]{0,5}[0-9]+\.[0-9]+$', '' || storage_barecode || '') = true
+		JOIN store_location on storage.store_location = store_location.store_location_id
+		WHERE product = ? AND store_location.entity = ? AND regexp('^[_a-zA-Z]{0,5}[0-9]+\.[0-9]+$', '' || storage_barecode || '') = true
 		ORDER BY storage_barecode desc`
 
 			var rows *sql.Rows
 
 			if rows, err = tx.Query(sqlr, s.ProductID, s.EntityID); err != nil && err != sql.ErrNoRows {
+				logger.Log.Error("error getting storage barecode")
 				return
 			}
 
@@ -972,7 +974,7 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s models.Storage, itemNumber int,
 	}
 
 	// if SupplierID = -1 then it is a new supplier
-	if v, err = s.Supplier.SupplierID.Value(); s.Supplier.SupplierID.Valid && err == nil && v.(int64) == -1 {
+	if s.Supplier.SupplierID != nil && err == nil && *s.Supplier.SupplierID == -1 {
 		sqlr = `INSERT INTO supplier (supplier_label) VALUES (?)`
 		if res, err = tx.Exec(sqlr, s.Supplier.SupplierLabel); err != nil {
 			return
@@ -982,7 +984,7 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s models.Storage, itemNumber int,
 			return
 		}
 		// updating the storage SupplierId (SupplierLabel already set)
-		s.Supplier.SupplierID = sql.NullInt64{Valid: true, Int64: lastInsertID}
+		*s.Supplier.SupplierID = lastInsertID
 	}
 	if err != nil {
 		logger.Log.Error("supplier error - " + err.Error())
@@ -1009,40 +1011,40 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s models.Storage, itemNumber int,
 		insertCols["storage_barecode"] = nil
 	}
 
-	if s.UnitQuantity.UnitID.Valid {
-		insertCols["unit_quantity"] = s.UnitQuantity.UnitID.Int64
+	if s.UnitQuantity.UnitID != nil {
+		insertCols["unit_quantity"] = *s.UnitQuantity.UnitID
 	} else {
 		insertCols["unit_quantity"] = nil
 	}
 
-	if s.SupplierID.Valid {
-		insertCols["supplier"] = s.SupplierID.Int64
+	if s.Supplier.SupplierID != nil {
+		insertCols["supplier"] = *s.SupplierID
 	} else {
 		insertCols["supplier"] = nil
 	}
 
 	if s.StorageEntryDate.Valid {
-		insertCols["storage_entrydate"] = s.StorageEntryDate.Time
+		insertCols["storage_entry_date"] = s.StorageEntryDate.Time
 	} else {
-		insertCols["storage_entrydate"] = nil
+		insertCols["storage_entry_date"] = nil
 	}
 
 	if s.StorageExitDate.Valid {
-		insertCols["storage_exitdate"] = s.StorageExitDate.Time
+		insertCols["storage_exit_date"] = s.StorageExitDate.Time
 	} else {
-		insertCols["storage_exitdate"] = nil
+		insertCols["storage_exit_date"] = nil
 	}
 
 	if s.StorageOpeningDate.Valid {
-		insertCols["storage_openingdate"] = s.StorageOpeningDate.Time
+		insertCols["storage_opening_date"] = s.StorageOpeningDate.Time
 	} else {
-		insertCols["storage_openingdate"] = nil
+		insertCols["storage_opening_date"] = nil
 	}
 
 	if s.StorageExpirationDate.Valid {
-		insertCols["storage_expirationdate"] = s.StorageExpirationDate.Time
+		insertCols["storage_expiration_date"] = s.StorageExpirationDate.Time
 	} else {
-		insertCols["storage_expirationdate"] = nil
+		insertCols["storage_expiration_date"] = nil
 	}
 
 	if s.StorageReference.Valid {
@@ -1052,15 +1054,15 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s models.Storage, itemNumber int,
 	}
 
 	if s.StorageBatchNumber.Valid {
-		insertCols["storage_batchnumber"] = s.StorageBatchNumber.String
+		insertCols["storage_batch_number"] = s.StorageBatchNumber.String
 	} else {
-		insertCols["storage_batchnumber"] = nil
+		insertCols["storage_batch_number"] = nil
 	}
 
 	if s.StorageToDestroy.Valid {
-		insertCols["storage_todestroy"] = s.StorageToDestroy.Bool
+		insertCols["storage_to_destroy"] = s.StorageToDestroy.Bool
 	} else {
-		insertCols["storage_todestroy"] = nil
+		insertCols["storage_to_destroy"] = nil
 	}
 
 	if s.StorageConcentration.Valid {
@@ -1087,27 +1089,29 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s models.Storage, itemNumber int,
 		insertCols["storage_number_of_unit"] = nil
 	}
 
-	if s.UnitConcentration.UnitID.Valid {
-		insertCols["unit_concentration"] = int(s.UnitConcentration.UnitID.Int64)
+	if s.UnitConcentration.UnitID != nil {
+		insertCols["unit_concentration"] = int(*s.UnitConcentration.UnitID)
 	} else {
 		insertCols["unit_concentration"] = nil
 	}
 
 	insertCols["person"] = s.PersonID
-	insertCols["storelocation"] = s.StoreLocationID.Int64
+	insertCols["store_location"] = s.StoreLocationID.Int64
 	insertCols["product"] = s.ProductID
-	insertCols["storage_creationdate"] = s.StorageCreationDate
-	insertCols["storage_modificationdate"] = s.StorageModificationDate
+	insertCols["storage_creation_date"] = s.StorageCreationDate.Unix()
+	insertCols["storage_modification_date"] = s.StorageModificationDate.Unix()
 	insertCols["storage_archive"] = false
 
 	if update {
 		iQuery := dialect.Update(tableStorage).Set(insertCols).Where(goqu.I("storage_id").Eq(s.StorageID))
 		if sqlr, args, err = iQuery.ToSQL(); err != nil {
+			logger.Log.Error("error preparing update storage")
 			return
 		}
 	} else {
 		iQuery := dialect.Insert(tableStorage).Rows(insertCols)
 		if sqlr, args, err = iQuery.ToSQL(); err != nil {
+			logger.Log.Error("error preparing create storage")
 			return
 		}
 	}
@@ -1116,6 +1120,7 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s models.Storage, itemNumber int,
 	// logger.Log.Debug(args)
 
 	if res, err = tx.Exec(sqlr, args...); err != nil {
+		logger.Log.Error("error creating/updating storage")
 		return
 	}
 
@@ -1156,17 +1161,17 @@ func (db *SQLiteDataStore) UpdateAllQRCodes() error {
 		sqlr string
 	)
 
+	// beginning new transaction
+	if tx, err = db.Beginx(); err != nil {
+		return err
+	}
+
 	// retrieving storages
 	if err = db.Select(&sts, ` SELECT storage_id
         FROM storage`); err != nil {
 		if errr := tx.Rollback(); errr != nil {
 			return errr
 		}
-	}
-
-	// beginning new transaction
-	if tx, err = db.Beginx(); err != nil {
-		return err
 	}
 
 	for _, s := range sts {

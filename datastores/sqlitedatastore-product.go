@@ -2,7 +2,6 @@ package datastores
 
 import (
 	"database/sql"
-	"database/sql/driver"
 	"fmt"
 	"regexp"
 	"strings"
@@ -179,40 +178,40 @@ func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int,
 	p.product_inchikey,
 	p.product_specificity, 
 	p.product_canonical_smiles,
-	p.product_molecularweight,
+	p.product_molecular_weight,
 	p.product_msds,
 	p.product_restricted,
 	p.product_radioactive,
-	p.product_threedformula,
-	p.product_twodformula,
-	p.product_disposalcomment,
+	p.product_threed_formula,
+	p.product_twod_formula,
+	p.product_disposal_comment,
 	p.product_remark,
 	p.product_sheet,
 	p.product_temperature,
 	p.product_number_per_carton,
 	p.product_number_per_bag,
-	linearformula.linearformula_id AS "linearformula.linearformula_id",
-	linearformula.linearformula_label AS "linearformula.linearformula_label",
-	empiricalformula.empiricalformula_id AS "empiricalformula.empiricalformula_id",
-	empiricalformula.empiricalformula_label AS "empiricalformula.empiricalformula_label",
-	physicalstate.physicalstate_id AS "physicalstate.physicalstate_id",
-	physicalstate.physicalstate_label AS "physicalstate.physicalstate_label",
-	signalword.signalword_id AS "signalword.signalword_id",
-	signalword.signalword_label AS "signalword.signalword_label",
+	linear_formula.linear_formula_id AS "linear_formula.linear_formula_id",
+	linear_formula.linear_formula_label AS "linear_formula.linear_formula_label",
+	empirical_formula.empirical_formula_id AS "empirical_formula.empirical_formula_id",
+	empirical_formula.empirical_formula_label AS "empirical_formula.empirical_formula_label",
+	physical_state.physical_state_id AS "physical_state.physical_state_id",
+	physical_state.physical_state_label AS "physical_state.physical_state_label",
+	signal_word.signal_word_id AS "signal_word.signal_word_id",
+	signal_word.signal_word_label AS "signal_word.signal_word_label",
 	person.person_id AS "person.person_id",
 	person.person_email AS "person.person_email",
 	name.name_id AS "name.name_id",
 	name.name_label AS "name.name_label",
 	bookmark.bookmark_id AS "bookmark.bookmark_id",
-	cenumber.cenumber_id AS "cenumber.cenumber_id",
-	cenumber.cenumber_label AS "cenumber.cenumber_label",
-	casnumber.casnumber_id AS "casnumber.casnumber_id",
-	casnumber.casnumber_label AS "casnumber.casnumber_label",
-	casnumber.casnumber_cmr AS "casnumber.casnumber_cmr",
-	producerref.producerref_id AS "producerref.producerref_id",
-	producerref.producerref_label AS "producerref.producerref_label",
-	producer.producer_id AS "producerref.producer.producer_id",
-	producer.producer_label AS "producerref.producer.producer_label",
+	ce_number.ce_number_id AS "ce_number.ce_number_id",
+	ce_number.ce_number_label AS "ce_number.ce_number_label",
+	cas_number.cas_number_id AS "cas_number.cas_number_id",
+	cas_number.cas_number_label AS "cas_number.cas_number_label",
+	cas_number.cas_number_cmr AS "cas_number.cas_number_cmr",
+	producer_ref.producer_ref_id AS "producer_ref.producer_ref_id",
+	producer_ref.producer_ref_label AS "producer_ref.producer_ref_label",
+	producer.producer_id AS "producer_ref.producer.producer_id",
+	producer.producer_label AS "producer_ref.producer.producer_label",
 	ut.unit_id AS "unit_temperature.unit_id",
 	ut.unit_label AS "unit_temperature.unit_label",
 	umw.unit_id AS "unit_molecularweight.unit_id",
@@ -226,7 +225,7 @@ func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int,
 	}
 
 	if f.CasNumberCmr {
-		presreq.WriteString(`,GROUP_CONCAT(DISTINCT hazardstatement.hazardstatement_cmr) AS "hazardstatement_cmr"`)
+		presreq.WriteString(`,GROUP_CONCAT(DISTINCT hazard_statement.hazard_statement_cmr) AS "hazard_statement_cmr"`)
 	}
 
 	// common parts
@@ -234,7 +233,7 @@ func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int,
 	// CMR
 	if f.CasNumberCmr {
 		comreq.WriteString(" LEFT JOIN producthazardstatements ON producthazardstatements.producthazardstatements_product_id = p.product_id")
-		comreq.WriteString(" LEFT JOIN hazardstatement ON producthazardstatements.producthazardstatements_hazardstatement_id = hazardstatement.hazardstatement_id")
+		comreq.WriteString(" LEFT JOIN hazard_statement ON producthazardstatements.producthazardstatements_hazard_statement_id = hazard_statement.hazard_statement_id")
 	}
 	// get name
 	comreq.WriteString(" JOIN name ON p.name = name.name_id")
@@ -247,37 +246,37 @@ func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int,
 	// get unit_temperature
 	comreq.WriteString(" LEFT JOIN unit ut ON p.unit_temperature = ut.unit_id")
 	// get unit_molecularweight
-	comreq.WriteString(" LEFT JOIN unit umw ON p.unit_molecularweight = umw.unit_id")
-	// get producerref
+	comreq.WriteString(" LEFT JOIN unit umw ON p.unit_molecular_weight = umw.unit_id")
+	// get producer_ref
 	if f.ProducerRef != 0 {
-		comreq.WriteString(" JOIN producerref ON p.producerref = :producerref")
+		comreq.WriteString(" JOIN producer_ref ON p.producer_ref = :producer_ref")
 	} else {
-		comreq.WriteString(" LEFT JOIN producerref ON p.producerref = producerref.producerref_id")
+		comreq.WriteString(" LEFT JOIN producer_ref ON p.producer_ref = producer_ref.producer_ref_id")
 	}
 	// get producer
-	comreq.WriteString(" LEFT JOIN producer ON producerref.producer = producer.producer_id")
-	// get casnumber
-	comreq.WriteString(" LEFT JOIN casnumber ON p.casnumber = casnumber.casnumber_id")
-	// get cenumber
-	comreq.WriteString(" LEFT JOIN cenumber ON p.cenumber = cenumber.cenumber_id")
+	comreq.WriteString(" LEFT JOIN producer ON producer_ref.producer = producer.producer_id")
+	// get cas_number
+	comreq.WriteString(" LEFT JOIN cas_number ON p.cas_number = cas_number.cas_number_id")
+	// get ce_number
+	comreq.WriteString(" LEFT JOIN ce_number ON p.ce_number = ce_number.ce_number_id")
 	// get person
 	comreq.WriteString(" JOIN person ON p.person = person.person_id")
 	// get physical state
-	comreq.WriteString(" LEFT JOIN physicalstate ON p.physicalstate = physicalstate.physicalstate_id")
+	comreq.WriteString(" LEFT JOIN physical_state ON p.physical_state = physical_state.physical_state_id")
 	// get signal word
-	comreq.WriteString(" LEFT JOIN signalword ON p.signalword = signalword.signalword_id")
+	comreq.WriteString(" LEFT JOIN signal_word ON p.signal_word = signal_word.signal_word_id")
 	// get empirical formula
-	comreq.WriteString(" LEFT JOIN empiricalformula ON p.empiricalformula = empiricalformula.empiricalformula_id")
+	comreq.WriteString(" LEFT JOIN empirical_formula ON p.empirical_formula = empirical_formula.empirical_formula_id")
 	// get linear formula
-	comreq.WriteString(" LEFT JOIN linearformula ON p.linearformula = linearformula.linearformula_id")
+	comreq.WriteString(" LEFT JOIN linear_formula ON p.linear_formula = linear_formula.linear_formula_id")
 	// get bookmark
 	comreq.WriteString(" LEFT JOIN bookmark ON (bookmark.product = p.product_id AND bookmark.person = :personid)")
 	// get storages, store locations and entities
 	comreq.WriteString(" LEFT JOIN storage ON storage.product = p.product_id")
 
 	if f.Entity != 0 || f.Storelocation != 0 || f.StorageBarecode != "" {
-		comreq.WriteString(" JOIN storelocation ON storage.storelocation = storelocation.storelocation_id")
-		comreq.WriteString(" JOIN entity ON storelocation.entity = entity.entity_id")
+		comreq.WriteString(" JOIN store_location ON storage.store_location = store_location.store_location_id")
+		comreq.WriteString(" JOIN entity ON store_location.entity = entity.entity_id")
 	}
 	// get borrowings
 	if f.Borrowing {
@@ -295,11 +294,11 @@ func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int,
 	if f.Name != 0 {
 		comreq.WriteString(" JOIN productsynonyms AS psyn ON psyn.productsynonyms_product_id = p.product_id")
 	}
-	// get hazardstatements
+	// get hazard_statements
 	if len(f.HazardStatements) != 0 {
 		comreq.WriteString(" JOIN producthazardstatements AS phs ON phs.producthazardstatements_product_id = p.product_id")
 	}
-	// get precautionarystatements
+	// get precautionary_statements
 	if len(f.PrecautionaryStatements) != 0 {
 		comreq.WriteString(" JOIN productprecautionarystatements AS pps ON pps.productprecautionarystatements_product_id = p.product_id")
 	}
@@ -320,11 +319,11 @@ func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int,
 	comreq.WriteString(" WHERE 1")
 
 	if f.StorageToDestroy {
-		comreq.WriteString(" AND storage.storage_todestroy = true")
+		comreq.WriteString(" AND storage.storage_to_destroy = true")
 	}
 
 	if f.CasNumberCmr {
-		comreq.WriteString(" AND (casnumber.casnumber_cmr IS NOT NULL OR (hazardstatement_cmr IS NOT NULL AND hazardstatement_cmr != ''))")
+		comreq.WriteString(" AND (cas_number.cas_number_cmr IS NOT NULL OR (hazard_statement_cmr IS NOT NULL AND hazard_statement_cmr != ''))")
 	}
 
 	if f.Product != 0 {
@@ -336,7 +335,7 @@ func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int,
 	}
 
 	if f.Storelocation != 0 {
-		comreq.WriteString(" AND storelocation.storelocation_id = :storelocation")
+		comreq.WriteString(" AND store_location.store_location_id = :store_location")
 	}
 
 	if f.ProductSpecificity != "" {
@@ -350,11 +349,11 @@ func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int,
 	}
 
 	if f.CasNumber != 0 {
-		comreq.WriteString(" AND casnumber.casnumber_id = :casnumber")
+		comreq.WriteString(" AND cas_number.cas_number_id = :cas_number")
 	}
 
 	if f.EmpiricalFormula != 0 {
-		comreq.WriteString(" AND empiricalformula.empiricalformula_id = :empiricalformula")
+		comreq.WriteString(" AND empirical_formula.empirical_formula_id = :empirical_formula")
 	}
 
 	if f.StorageBarecode != "" {
@@ -362,7 +361,7 @@ func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int,
 	}
 
 	if f.StorageBatchNumber != "" {
-		comreq.WriteString(" AND storage.storage_batchnumber LIKE :storage_batchnumber")
+		comreq.WriteString(" AND storage.storage_batch_number LIKE :storage_batch_number")
 	}
 
 	if f.CustomNamePartOf != "" {
@@ -382,7 +381,7 @@ func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int,
 	}
 
 	if len(f.HazardStatements) != 0 {
-		comreq.WriteString(" AND phs.producthazardstatements_hazardstatement_id IN (")
+		comreq.WriteString(" AND phs.producthazardstatements_hazard_statement_id IN (")
 
 		for _, s := range f.HazardStatements {
 			comreq.WriteString(fmt.Sprintf("%d,", s))
@@ -394,7 +393,7 @@ func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int,
 	}
 
 	if len(f.PrecautionaryStatements) != 0 {
-		comreq.WriteString(" AND pps.productprecautionarystatements_precautionarystatement_id IN (")
+		comreq.WriteString(" AND pps.productprecautionarystatements_precautionary_statement_id IN (")
 
 		for _, s := range f.PrecautionaryStatements {
 			comreq.WriteString(fmt.Sprintf("%d,", s))
@@ -417,7 +416,7 @@ func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int,
 	}
 
 	if f.SignalWord != 0 {
-		comreq.WriteString(" AND signalword.signalword_id = :signalword")
+		comreq.WriteString(" AND signal_word.signal_word_id = :signal_word")
 	}
 
 	// filter restricted product
@@ -430,16 +429,16 @@ func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int,
 	case !f.ShowChem && !f.ShowBio && f.ShowConsu:
 		comreq.WriteString(" AND (product_number_per_carton IS NOT NULL AND product_number_per_carton != 0)")
 	case !f.ShowChem && f.ShowBio && !f.ShowConsu:
-		comreq.WriteString(" AND producerref IS NOT NULL")
+		comreq.WriteString(" AND producer_ref IS NOT NULL")
 		comreq.WriteString(" AND (product_number_per_carton IS NULL OR product_number_per_carton == 0)")
 	case !f.ShowChem && f.ShowBio && f.ShowConsu:
 		comreq.WriteString(" AND ((product_number_per_carton IS NOT NULL AND product_number_per_carton != 0)")
-		comreq.WriteString(" OR producerref IS NOT NULL)")
+		comreq.WriteString(" OR producer_ref IS NOT NULL)")
 	case f.ShowChem && !f.ShowBio && !f.ShowConsu:
-		comreq.WriteString(" AND producerref IS NULL")
+		comreq.WriteString(" AND producer_ref IS NULL")
 		comreq.WriteString(" AND (product_number_per_carton IS NULL OR product_number_per_carton == 0)")
 	case f.ShowChem && !f.ShowBio && f.ShowConsu:
-		comreq.WriteString(" AND (producerref IS NULL")
+		comreq.WriteString(" AND (producer_ref IS NULL")
 		comreq.WriteString(" OR (product_number_per_carton IS NOT NULL AND product_number_per_carton != 0))")
 	case f.ShowChem && f.ShowBio && !f.ShowConsu:
 		comreq.WriteString(" AND (product_number_per_carton IS NULL OR product_number_per_carton == 0)")
@@ -467,24 +466,24 @@ func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int,
 
 	// building argument map
 	m := map[string]interface{}{
-		"search":              f.Search,
-		"personid":            person_id,
-		"order":               f.Order,
-		"limit":               f.Limit,
-		"offset":              f.Offset,
-		"entity":              f.Entity,
-		"product":             f.Product,
-		"storelocation":       f.Storelocation,
-		"name":                f.Name,
-		"casnumber":           f.CasNumber,
-		"empiricalformula":    f.EmpiricalFormula,
-		"product_specificity": f.ProductSpecificity,
-		"storage_barecode":    f.StorageBarecode,
-		"storage_batchnumber": f.StorageBatchNumber,
-		"custom_name_part_of": "%" + f.CustomNamePartOf + "%",
-		"signalword":          f.SignalWord,
-		"producerref":         f.ProducerRef,
-		"category":            f.Category,
+		"search":               f.Search,
+		"personid":             person_id,
+		"order":                f.Order,
+		"limit":                f.Limit,
+		"offset":               f.Offset,
+		"entity":               f.Entity,
+		"product":              f.Product,
+		"store_location":       f.Storelocation,
+		"name":                 f.Name,
+		"cas_number":           f.CasNumber,
+		"empirical_formula":    f.EmpiricalFormula,
+		"product_specificity":  f.ProductSpecificity,
+		"storage_barecode":     f.StorageBarecode,
+		"storage_batch_number": f.StorageBatchNumber,
+		"custom_name_part_of":  "%" + f.CustomNamePartOf + "%",
+		"signal_word":          f.SignalWord,
+		"producer_ref":         f.ProducerRef,
+		"category":             f.Category,
 	}
 
 	// Select.
@@ -505,9 +504,9 @@ func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int,
 	go func() {
 		for i, pr := range products {
 			switch {
-			case pr.ProductNumberPerCarton.Valid:
+			case pr.ProductNumberPerCarton != nil:
 				products[i].ProductType = "CONS"
-			case pr.ProducerRef.ProducerRefID.Valid:
+			case pr.ProducerRef.ProducerRefID != nil:
 				products[i].ProductType = "BIO"
 			default:
 				products[i].ProductType = "CHEM"
@@ -527,7 +526,7 @@ func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int,
 			r := regexp.MustCompile(`([a-zA-Z]{1}[0-9]+)\.[0-9]+`)
 			for i, pr := range products {
 				// note: do not modify p but products[i] instead
-				m := r.FindAllStringSubmatch(pr.ProductSL.String, -1)
+				m := r.FindAllStringSubmatch(*pr.ProductSL, -1)
 
 				if len(m) > 0 {
 					differentSL := false
@@ -541,12 +540,12 @@ func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int,
 					}
 
 					if !differentSL {
-						products[i].ProductSL.String = m[0][1]
+						*products[i].ProductSL = m[0][1]
 					} else {
-						products[i].ProductSL.String = ""
+						*products[i].ProductSL = ""
 					}
 				} else {
-					products[i].ProductSL.String = ""
+					*products[i].ProductSL = ""
 				}
 			}
 
@@ -555,7 +554,7 @@ func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int,
 	}
 
 	//
-	// getting supplierref
+	// getting supplier_ref
 	//
 	if !public {
 		wg.Add(1)
@@ -566,16 +565,16 @@ func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int,
 			for i, pr := range products {
 				// note: do not modify p but products[i] instead
 				reqSupplierref.Reset()
-				reqSupplierref.WriteString(`SELECT supplierref_id, 
-			supplierref_label,
+				reqSupplierref.WriteString(`SELECT supplier_ref_id,
+			supplier_ref_label,
 			supplier.supplier_id AS "supplier.supplier_id",
 			supplier.supplier_label AS "supplier.supplier_label"
-			FROM supplierref`)
-				reqSupplierref.WriteString(" JOIN productsupplierrefs ON productsupplierrefs.productsupplierrefs_supplierref_id = supplierref.supplierref_id AND productsupplierrefs.productsupplierrefs_product_id = ?")
-				reqSupplierref.WriteString(" JOIN supplier ON supplierref.supplier = supplier.supplier_id")
+			FROM supplier_ref`)
+				reqSupplierref.WriteString(" JOIN productsupplierrefs ON productsupplierrefs.productsupplierrefs_supplier_ref_id = supplier_ref.supplier_ref_id AND productsupplierrefs.productsupplierrefs_product_id = ?")
+				reqSupplierref.WriteString(" JOIN supplier ON supplier_ref.supplier = supplier.supplier_id")
 
 				if err = db.Select(&products[i].SupplierRefs, reqSupplierref.String(), pr.ProductID); err != nil {
-					logger.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts:goroutine:supplierref")
+					logger.Log.WithFields(logrus.Fields{"err": err}).Error("GetProducts:goroutine:supplier_ref")
 				}
 			}
 
@@ -644,9 +643,9 @@ func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int,
 		for i, pr := range products {
 			// note: do not modify p but products[i] instead
 			reqCoc.Reset()
-			reqCoc.WriteString("SELECT classofcompound_id, classofcompound_label FROM classofcompound")
-			reqCoc.WriteString(" JOIN productclassofcompound ON productclassofcompound.productclassofcompound_classofcompound_id = classofcompound.classofcompound_id")
-			reqCoc.WriteString(" JOIN product ON productclassofcompound.productclassofcompound_product_id = product.product_id")
+			reqCoc.WriteString("SELECT class_of_compound_id, class_of_compound_label FROM class_of_compound")
+			reqCoc.WriteString(" JOIN productclass_of_compound ON productclass_of_compound.productclass_of_compound_class_of_compound_id = class_of_compound.class_of_compound_id")
+			reqCoc.WriteString(" JOIN product ON productclass_of_compound.productclass_of_compound_product_id = product.product_id")
 			reqCoc.WriteString(" WHERE product.product_id = ?")
 
 			if err = db.Select(&products[i].ClassOfCompound, reqCoc.String(), pr.ProductID); err != nil {
@@ -692,8 +691,8 @@ func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int,
 		for i, pr := range products {
 			// note: do not modify p but products[i] instead
 			reqHS.Reset()
-			reqHS.WriteString("SELECT hazardstatement_id, hazardstatement_label, hazardstatement_reference, hazardstatement_cmr FROM hazardstatement")
-			reqHS.WriteString(" JOIN producthazardstatements ON producthazardstatements.producthazardstatements_hazardstatement_id = hazardstatement.hazardstatement_id")
+			reqHS.WriteString("SELECT hazard_statement_id, hazard_statement_label, hazard_statement_reference, hazard_statement_cmr FROM hazard_statement")
+			reqHS.WriteString(" JOIN producthazardstatements ON producthazardstatements.producthazardstatements_hazard_statement_id = hazard_statement.hazard_statement_id")
 			reqHS.WriteString(" JOIN product ON producthazardstatements.producthazardstatements_product_id = product.product_id")
 			reqHS.WriteString(" WHERE product.product_id = ?")
 
@@ -716,8 +715,8 @@ func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int,
 		for i, pr := range products {
 			// note: do not modify p but products[i] instead
 			reqPS.Reset()
-			reqPS.WriteString("SELECT precautionarystatement_id, precautionarystatement_label, precautionarystatement_reference FROM precautionarystatement")
-			reqPS.WriteString(" JOIN productprecautionarystatements ON productprecautionarystatements.productprecautionarystatements_precautionarystatement_id = precautionarystatement.precautionarystatement_id")
+			reqPS.WriteString("SELECT precautionary_statement_id, precautionary_statement_label, precautionary_statement_reference FROM precautionary_statement")
+			reqPS.WriteString(" JOIN productprecautionarystatements ON productprecautionarystatements.productprecautionarystatements_precautionary_statement_id = precautionary_statement.precautionary_statement_id")
 			reqPS.WriteString(" JOIN product ON productprecautionarystatements.productprecautionarystatements_product_id = product.product_id")
 			reqPS.WriteString(" WHERE product.product_id = ?")
 
@@ -764,16 +763,16 @@ func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int,
 					// getting the storage count of the logged user entities
 					reqsc.Reset()
 					reqsc.WriteString("SELECT count(DISTINCT storage_id) from storage")
-					reqsc.WriteString(" JOIN storelocation ON storage.storelocation = storelocation.storelocation_id")
-					reqsc.WriteString(" JOIN entity ON storelocation.entity = entity.entity_id")
+					reqsc.WriteString(" JOIN store_location ON storage.store_location = store_location.store_location_id")
+					reqsc.WriteString(" JOIN entity ON store_location.entity = entity.entity_id")
 					reqsc.WriteString(" JOIN personentities ON (entity.entity_id = personentities.personentities_entity_id) AND")
 					reqsc.WriteString(" (personentities.personentities_person_id = ?)")
 					reqsc.WriteString(" WHERE storage.product = ? AND storage.storage IS NULL AND storage.storage_archive == false")
 
 					reqasc.Reset()
 					reqasc.WriteString("SELECT count(DISTINCT storage_id) from storage")
-					reqasc.WriteString(" JOIN storelocation ON storage.storelocation = storelocation.storelocation_id")
-					reqasc.WriteString(" JOIN entity ON storelocation.entity = entity.entity_id")
+					reqasc.WriteString(" JOIN store_location ON storage.store_location = store_location.store_location_id")
+					reqasc.WriteString(" JOIN entity ON store_location.entity = entity.entity_id")
 					reqasc.WriteString(" JOIN personentities ON (entity.entity_id = personentities.personentities_entity_id) AND")
 					reqasc.WriteString(" (personentities.personentities_person_id = ?)")
 					reqasc.WriteString(" WHERE storage.product = ? AND storage.storage_archive == true")
@@ -850,39 +849,39 @@ func (db *SQLiteDataStore) GetProduct(id int) (models.Product, error) {
 	product.product_inchikey,
 	product.product_specificity,
 	product.product_canonical_smiles, 
-	product.product_molecularweight,
+	product.product_molecular_weight,
 	product_msds,
 	product_restricted,
 	product_radioactive,
-	product_threedformula,
-	product_twodformula,
-	product_disposalcomment,
+	product_threed_formula,
+	product_twod_formula,
+	product_disposal_comment,
 	product_remark,
 	product_sheet,
 	product_temperature,
 	product_number_per_carton,
 	product_number_per_bag,
-	linearformula.linearformula_id AS "linearformula.linearformula_id",
-	linearformula.linearformula_label AS "linearformula.linearformula_label",
-	empiricalformula.empiricalformula_id AS "empiricalformula.empiricalformula_id",
-	empiricalformula.empiricalformula_label AS "empiricalformula.empiricalformula_label",
-	physicalstate.physicalstate_id AS "physicalstate.physicalstate_id",
-	physicalstate.physicalstate_label AS "physicalstate.physicalstate_label",
-	signalword.signalword_id AS "signalword.signalword_id",
-	signalword.signalword_label AS "signalword.signalword_label",
+	linear_formula.linear_formula_id AS "linear_formula.linear_formula_id",
+	linear_formula.linear_formula_label AS "linear_formula.linear_formula_label",
+	empirical_formula.empirical_formula_id AS "empirical_formula.empirical_formula_id",
+	empirical_formula.empirical_formula_label AS "empirical_formula.empirical_formula_label",
+	physical_state.physical_state_id AS "physical_state.physical_state_id",
+	physical_state.physical_state_label AS "physical_state.physical_state_label",
+	signal_word.signal_word_id AS "signal_word.signal_word_id",
+	signal_word.signal_word_label AS "signal_word.signal_word_label",
 	person.person_id AS "person.person_id",
 	person.person_email AS "person.person_email",
 	name.name_id AS "name.name_id",
 	name.name_label AS "name.name_label",
-	cenumber.cenumber_id AS "cenumber.cenumber_id",
-	cenumber.cenumber_label AS "cenumber.cenumber_label",
-	casnumber.casnumber_id AS "casnumber.casnumber_id",
-	casnumber.casnumber_label AS "casnumber.casnumber_label",
-	casnumber.casnumber_cmr AS "casnumber.casnumber_cmr",
-	producerref.producerref_id AS "producerref.producerref_id",
-	producerref.producerref_label AS "producerref.producerref_label",
-	producer.producer_id AS "producerref.producer.producer_id",
-	producer.producer_label AS "producerref.producer.producer_label",
+	ce_number.ce_number_id AS "ce_number.ce_number_id",
+	ce_number.ce_number_label AS "ce_number.ce_number_label",
+	cas_number.cas_number_id AS "cas_number.cas_number_id",
+	cas_number.cas_number_label AS "cas_number.cas_number_label",
+	cas_number.cas_number_cmr AS "cas_number.cas_number_cmr",
+	producer_ref.producer_ref_id AS "producer_ref.producer_ref_id",
+	producer_ref.producer_ref_label AS "producer_ref.producer_ref_label",
+	producer.producer_id AS "producer_ref.producer.producer_id",
+	producer.producer_label AS "producer_ref.producer.producer_label",
 	ut.unit_id AS "unit_temperature.unit_id",
 	ut.unit_label AS "unit_temperature.unit_label",
 	umw.unit_id AS "unit_molecularweight.unit_id",
@@ -891,33 +890,33 @@ func (db *SQLiteDataStore) GetProduct(id int) (models.Product, error) {
 	category.category_label AS "category.category_label"
 	FROM product
 	JOIN name ON product.name = name.name_id
-	LEFT JOIN casnumber ON product.casnumber = casnumber.casnumber_id
-	LEFT JOIN cenumber ON product.cenumber = cenumber.cenumber_id
+	LEFT JOIN cas_number ON product.cas_number = cas_number.cas_number_id
+	LEFT JOIN ce_number ON product.ce_number = ce_number.ce_number_id
 	JOIN person ON product.person = person.person_id
-	LEFT JOIN empiricalformula ON product.empiricalformula = empiricalformula.empiricalformula_id
-	LEFT JOIN linearformula ON product.linearformula = linearformula.linearformula_id
-	LEFT JOIN physicalstate ON product.physicalstate = physicalstate.physicalstate_id
-	LEFT JOIN signalword ON product.signalword = signalword.signalword_id
+	LEFT JOIN empirical_formula ON product.empirical_formula = empirical_formula.empirical_formula_id
+	LEFT JOIN linear_formula ON product.linear_formula = linear_formula.linear_formula_id
+	LEFT JOIN physical_state ON product.physical_state = physical_state.physical_state_id
+	LEFT JOIN signal_word ON product.signal_word = signal_word.signal_word_id
 	LEFT JOIN category ON product.category = category.category_id
 	LEFT JOIN unit ut ON product.unit_temperature = ut.unit_id
 	LEFT JOIN unit umw ON product.unit_temperature = umw.unit_id
-	LEFT JOIN producerref ON product.producerref = producerref.producerref_id
-	LEFT JOIN producer ON producerref.producer = producer.producer_id
+	LEFT JOIN producer_ref ON product.producer_ref = producer_ref.producer_ref_id
+	LEFT JOIN producer ON producer_ref.producer = producer.producer_id
 	WHERE product_id = ?`
 	if err = db.Get(&product, sqlr, id); err != nil {
 		return models.Product{}, err
 	}
 
 	//
-	// getting supplierref
+	// getting supplier_ref
 	//
-	sqlr = `SELECT supplierref_id, 
-	supplierref_label,
+	sqlr = `SELECT supplier_ref_id,
+	supplier_ref_label,
 	supplier.supplier_id AS "supplier.supplier_id",
 	supplier.supplier_label AS "supplier.supplier_label"
-	FROM supplierref
-	JOIN productsupplierrefs ON productsupplierrefs.productsupplierrefs_supplierref_id = supplierref.supplierref_id AND productsupplierrefs.productsupplierrefs_product_id = ?
-	JOIN supplier ON supplierref.supplier = supplier.supplier_id`
+	FROM supplier_ref
+	JOIN productsupplierrefs ON productsupplierrefs.productsupplierrefs_supplier_ref_id = supplier_ref.supplier_ref_id AND productsupplierrefs.productsupplierrefs_product_id = ?
+	JOIN supplier ON supplier_ref.supplier = supplier.supplier_id`
 	if err = db.Select(&product.SupplierRefs, sqlr, product.ProductID); err != nil {
 		return product, err
 	}
@@ -958,9 +957,9 @@ func (db *SQLiteDataStore) GetProduct(id int) (models.Product, error) {
 	//
 	// getting classes of compounds
 	//
-	sqlr = `SELECT classofcompound_id, classofcompound_label FROM classofcompound
-	JOIN productclassofcompound ON productclassofcompound.productclassofcompound_classofcompound_id = classofcompound.classofcompound_id
-	JOIN product ON productclassofcompound.productclassofcompound_product_id = product.product_id
+	sqlr = `SELECT class_of_compound_id, class_of_compound_label FROM class_of_compound
+	JOIN productclass_of_compound ON productclass_of_compound.productclass_of_compound_class_of_compound_id = class_of_compound.class_of_compound_id
+	JOIN product ON productclass_of_compound.productclass_of_compound_product_id = product.product_id
 	WHERE product.product_id = ?`
 	if err = db.Select(&product.ClassOfCompound, sqlr, product.ProductID); err != nil {
 		return product, err
@@ -969,8 +968,8 @@ func (db *SQLiteDataStore) GetProduct(id int) (models.Product, error) {
 	//
 	// getting hazard statements
 	//
-	sqlr = `SELECT hazardstatement_id, hazardstatement_label, hazardstatement_reference, hazardstatement_cmr FROM hazardstatement
-	JOIN producthazardstatements ON producthazardstatements.producthazardstatements_hazardstatement_id = hazardstatement.hazardstatement_id
+	sqlr = `SELECT hazard_statement_id, hazard_statement_label, hazard_statement_reference, hazard_statement_cmr FROM hazard_statement
+	JOIN producthazardstatements ON producthazardstatements.producthazardstatements_hazard_statement_id = hazard_statement.hazard_statement_id
 	JOIN product ON producthazardstatements.producthazardstatements_product_id = product.product_id
 	WHERE product.product_id = ?`
 	if err = db.Select(&product.HazardStatements, sqlr, product.ProductID); err != nil {
@@ -980,8 +979,8 @@ func (db *SQLiteDataStore) GetProduct(id int) (models.Product, error) {
 	//
 	// getting precautionary statements
 	//
-	sqlr = `SELECT precautionarystatement_id, precautionarystatement_label, precautionarystatement_reference FROM precautionarystatement
-	JOIN productprecautionarystatements ON productprecautionarystatements.productprecautionarystatements_precautionarystatement_id = precautionarystatement.precautionarystatement_id
+	sqlr = `SELECT precautionary_statement_id, precautionary_statement_label, precautionary_statement_reference FROM precautionary_statement
+	JOIN productprecautionarystatements ON productprecautionarystatements.productprecautionarystatements_precautionary_statement_id = precautionary_statement.precautionary_statement_id
 	JOIN product ON productprecautionarystatements.productprecautionarystatements_product_id = product.product_id
 	WHERE product.product_id = ?`
 	if err = db.Select(&product.PrecautionaryStatements, sqlr, product.ProductID); err != nil {
@@ -989,9 +988,9 @@ func (db *SQLiteDataStore) GetProduct(id int) (models.Product, error) {
 	}
 
 	switch {
-	case product.ProductNumberPerCarton.Valid:
+	case product.ProductNumberPerCarton != nil:
 		product.ProductType = "CONS"
-	case product.ProducerRef.ProducerRefID.Valid:
+	case product.ProducerRef.ProducerRefID != nil:
 		product.ProductType = "BIO"
 	default:
 		product.ProductType = "CHEM"
@@ -1030,7 +1029,7 @@ func (db *SQLiteDataStore) DeleteProduct(id int) error {
 	}
 
 	// deleting classes of compounds
-	sqlr = `DELETE FROM productclassofcompound WHERE productclassofcompound.productclassofcompound_product_id = (?)`
+	sqlr = `DELETE FROM productclass_of_compound WHERE productclass_of_compound.productclass_of_compound_product_id = (?)`
 	if _, err = db.Exec(sqlr, id); err != nil {
 		return err
 	}
@@ -1059,7 +1058,6 @@ func (db *SQLiteDataStore) DeleteProduct(id int) error {
 // CreateUpdateProduct insert/update the product p into the database.
 func (db *SQLiteDataStore) CreateUpdateProduct(p models.Product, update bool) (lastInsertID int64, err error) {
 	var (
-		v    driver.Value
 		sqlr string
 		args []interface{}
 		tx   *sql.Tx
@@ -1091,10 +1089,11 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p models.Product, update bool) (l
 	}()
 
 	// if CasNumberID = -1 then it is a new cas
-	if v, err = p.CasNumber.CasNumberID.Value(); p.CasNumber.CasNumberID.Valid && err == nil && v.(int64) == -1 {
-		logger.Log.Debug("new casnumber " + p.CasNumberLabel.String)
+	if p.CasNumber.CasNumberID != nil && err == nil && *p.CasNumber.CasNumberID == -1 {
+		// logger.Log.Debug("new cas_number " + p.CasNumberLabel)
+		logger.Log.Debug("new cas_number " + *p.CasNumberLabel)
 
-		sqlr = `INSERT INTO casnumber (casnumber_label) VALUES (?)`
+		sqlr = `INSERT INTO cas_number (cas_number_label) VALUES (?)`
 
 		if res, err = tx.Exec(sqlr, p.CasNumberLabel); err != nil {
 			return
@@ -1104,16 +1103,17 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p models.Product, update bool) (l
 			return
 		}
 		// updating the product CasNumberID (CasNumberLabel already set)
-		p.CasNumber.CasNumberID = sql.NullInt64{Valid: true, Int64: lastInsertID}
+		// p.CasNumber.CasNumberID = sql.NullInt64{Valid: true, Int64: lastInsertID}
+		p.CasNumber.CasNumberID = &lastInsertID
 	}
 
 	// if CeNumberID = -1 then it is a new ce
-	if v, err = p.CeNumber.CeNumberID.Value(); p.CeNumber.CeNumberID.Valid && err == nil && v.(int64) == -1 {
-		logger.Log.Debug("new cenumber " + p.CeNumberLabel.String)
+	if p.CeNumber.CeNumberID != nil && err == nil && *p.CeNumber.CeNumberID == -1 {
+		logger.Log.Debug("new ce_number " + *p.CeNumberLabel)
 
-		sqlr = `INSERT INTO cenumber (cenumber_label) VALUES (?)`
+		sqlr = `INSERT INTO ce_number (ce_number_label) VALUES (?)`
 
-		if res, err = tx.Exec(sqlr, p.CeNumberLabel.String); err != nil {
+		if res, err = tx.Exec(sqlr, *p.CeNumberLabel); err != nil {
 			return
 		}
 		// getting the last inserted id
@@ -1121,11 +1121,14 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p models.Product, update bool) (l
 			return
 		}
 		// updating the product CeNumberID (CeNumberLabel already set)
-		p.CeNumber.CeNumberID = sql.NullInt64{Valid: true, Int64: lastInsertID}
+		var CeNumberIDPointer *int64
+		CeNumberIDPointer = new(int64)
+		*CeNumberIDPointer = lastInsertID
+		p.CeNumber.CeNumberID = CeNumberIDPointer
 	}
 
 	if err != nil {
-		logger.Log.Error("cenumber error - " + err.Error())
+		logger.Log.Error("ce_number error - " + err.Error())
 		return
 	}
 
@@ -1169,9 +1172,9 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p models.Product, update bool) (l
 	// if ClassOfCompoundID = -1 then it is a new class of compounds
 	for i, coc := range p.ClassOfCompound {
 		if coc.ClassOfCompoundID == -1 {
-			logger.Log.Debug("new classofcompound " + coc.ClassOfCompoundLabel)
+			logger.Log.Debug("new class_of_compound " + coc.ClassOfCompoundLabel)
 
-			sqlr = `INSERT INTO classofcompound (classofcompound_label) VALUES (?)`
+			sqlr = `INSERT INTO class_of_compound (class_of_compound_label) VALUES (?)`
 
 			if res, err = tx.Exec(sqlr, strings.ToUpper(coc.ClassOfCompoundLabel)); err != nil {
 				return
@@ -1188,9 +1191,9 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p models.Product, update bool) (l
 	// if SupplierRefID = -1 then it is a new supplier ref
 	for i, sr := range p.SupplierRefs {
 		if sr.SupplierRefID == -1 {
-			logger.Log.Debug("new supplierref " + sr.SupplierRefLabel)
+			logger.Log.Debug("new supplier_ref " + sr.SupplierRefLabel)
 
-			sqlr = `INSERT INTO supplierref (supplierref_label, supplier) VALUES (?, ?)`
+			sqlr = `INSERT INTO supplier_ref (supplier_ref_label, supplier) VALUES (?, ?)`
 
 			if res, err = tx.Exec(sqlr, sr.SupplierRefLabel, sr.Supplier.SupplierID); err != nil {
 				return
@@ -1224,10 +1227,10 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p models.Product, update bool) (l
 	}
 
 	// if EmpiricalFormulaID = -1 then it is a new empirical formula
-	if v, err = p.EmpiricalFormula.EmpiricalFormulaID.Value(); p.EmpiricalFormula.EmpiricalFormulaID.Valid && err == nil && v.(int64) == -1 {
-		logger.Log.Debug("new empiricalformula " + p.EmpiricalFormulaLabel.String)
+	if p.EmpiricalFormula.EmpiricalFormulaID != nil && err == nil && *p.EmpiricalFormula.EmpiricalFormulaID == -1 {
+		logger.Log.Debug("new empirical_formula " + *p.EmpiricalFormulaLabel)
 
-		sqlr = `INSERT INTO empiricalformula (empiricalformula_label) VALUES (?)`
+		sqlr = `INSERT INTO empirical_formula (empirical_formula_label) VALUES (?)`
 
 		if res, err = tx.Exec(sqlr, p.EmpiricalFormulaLabel); err != nil {
 			return
@@ -1236,17 +1239,20 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p models.Product, update bool) (l
 		if lastInsertID, err = res.LastInsertId(); err != nil {
 			return
 		}
-		// updating the product EmpiricalFormulaID (EmpiricalFormulaLabel already set)
-		p.EmpiricalFormula.EmpiricalFormulaID = sql.NullInt64{Valid: true, Int64: lastInsertID}
+		// updating the product EmpiricalFormulaIDPointer (EmpiricalFormulaLabel already set)
+		var EmpiricalFormulaIDPointer *int64
+		EmpiricalFormulaIDPointer = new(int64)
+		*EmpiricalFormulaIDPointer = lastInsertID
+		p.EmpiricalFormula.EmpiricalFormulaID = EmpiricalFormulaIDPointer
 	}
 
 	// if LinearFormulaID = -1 then it is a new linear formula
-	if v, err = p.LinearFormula.LinearFormulaID.Value(); p.LinearFormula.LinearFormulaID.Valid && err == nil && v.(int64) == -1 {
-		logger.Log.Debug("new linearformula " + p.LinearFormulaLabel.String)
+	if p.LinearFormula.LinearFormulaID != nil && err == nil && *p.LinearFormula.LinearFormulaID == -1 {
+		logger.Log.Debug("new linear_formula " + *p.LinearFormulaLabel)
 
-		sqlr = `INSERT INTO linearformula (linearformula_label) VALUES (?)`
+		sqlr = `INSERT INTO linear_formula (linear_formula_label) VALUES (?)`
 
-		if res, err = tx.Exec(sqlr, p.LinearFormulaLabel.String); err != nil {
+		if res, err = tx.Exec(sqlr, p.LinearFormulaLabel); err != nil {
 			return
 		}
 		// getting the last inserted id
@@ -1254,16 +1260,19 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p models.Product, update bool) (l
 			return
 		}
 		// updating the product LinearFormulaID (LinearFormulaLabel already set)
-		p.LinearFormula.LinearFormulaID = sql.NullInt64{Valid: true, Int64: lastInsertID}
+		var LinearFormulaID *int64
+		LinearFormulaID = new(int64)
+		*LinearFormulaID = lastInsertID
+		p.LinearFormula.LinearFormulaID = LinearFormulaID
 	}
 
 	// if PhysicalStateID = -1 then it is a new physical state
-	if v, err = p.PhysicalState.PhysicalStateID.Value(); p.PhysicalState.PhysicalStateID.Valid && err == nil && v.(int64) == -1 {
-		logger.Log.Debug("new physicalstate " + p.PhysicalStateLabel.String)
+	if p.PhysicalState.PhysicalStateID != nil && err == nil && *p.PhysicalState.PhysicalStateID == -1 {
+		logger.Log.Debug("new physical_state " + *p.PhysicalStateLabel)
 
-		sqlr = `INSERT INTO physicalstate (physicalstate_label) VALUES (?)`
+		sqlr = `INSERT INTO physical_state (physical_state_label) VALUES (?)`
 
-		if res, err = tx.Exec(sqlr, p.PhysicalStateLabel.String); err != nil {
+		if res, err = tx.Exec(sqlr, *p.PhysicalStateLabel); err != nil {
 			return
 		}
 		// getting the last inserted id
@@ -1271,16 +1280,19 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p models.Product, update bool) (l
 			return
 		}
 		// updating the product PhysicalStateID (PhysicalStateLabel already set)
-		p.PhysicalState.PhysicalStateID = sql.NullInt64{Valid: true, Int64: lastInsertID}
+		var PhysicalStateIDPointer *int64
+		PhysicalStateIDPointer = new(int64)
+		*PhysicalStateIDPointer = lastInsertID
+		p.PhysicalState.PhysicalStateID = PhysicalStateIDPointer
 	}
 
 	// if CategoryID = -1 then it is a new category
-	if v, err = p.Category.CategoryID.Value(); p.Category.CategoryID.Valid && err == nil && v.(int64) == -1 {
-		logger.Log.Debug("new category " + p.CategoryLabel.String)
+	if p.Category.CategoryID != nil && err == nil && *p.Category.CategoryID == -1 {
+		logger.Log.Debug("new category " + *p.CategoryLabel)
 
 		sqlr = `INSERT INTO category (category_label) VALUES (?)`
 
-		if res, err = tx.Exec(sqlr, p.CategoryLabel.String); err != nil {
+		if res, err = tx.Exec(sqlr, *p.CategoryLabel); err != nil {
 			return
 		}
 		// getting the last inserted id
@@ -1288,16 +1300,19 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p models.Product, update bool) (l
 			return
 		}
 		// updating the product PhysicalStateID (PhysicalStateLabel already set)
-		p.Category.CategoryID = sql.NullInt64{Valid: true, Int64: lastInsertID}
+		var CategoryIDPointer *int64
+		CategoryIDPointer = new(int64)
+		*CategoryIDPointer = lastInsertID
+		p.Category.CategoryID = CategoryIDPointer
 	}
 
 	// if ProducerRefID = -1 then it is a new producer ref
-	if v, err = p.ProducerRef.ProducerRefID.Value(); p.ProducerRef.ProducerRefID.Valid && err == nil && v.(int64) == -1 {
-		logger.Log.Debug("new producerref " + p.ProducerRefLabel.String)
+	if p.ProducerRef.ProducerRefID != nil && err == nil && *p.ProducerRef.ProducerRefID == -1 {
+		logger.Log.Debug("new producer_ref " + *p.ProducerRefLabel)
 
-		sqlr = `INSERT INTO producerref (producerref_label, producer) VALUES (?, ?)`
+		sqlr = `INSERT INTO producer_ref (producer_ref_label, producer) VALUES (?, ?)`
 
-		if res, err = tx.Exec(sqlr, p.ProducerRefLabel.String, p.Producer.ProducerID); err != nil {
+		if res, err = tx.Exec(sqlr, p.ProducerRefLabel, p.Producer.ProducerID); err != nil {
 			return
 		}
 		// getting the last inserted id
@@ -1305,171 +1320,176 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p models.Product, update bool) (l
 			return
 		}
 		// updating the product ProducerRefID (ProducerRefLabel already set)
-		p.ProducerRef.ProducerRefID = sql.NullInt64{Valid: true, Int64: lastInsertID}
+		var ProducerRefIDPointer *int64
+		ProducerRefIDPointer = new(int64)
+		*ProducerRefIDPointer = lastInsertID
+		p.ProducerRef.ProducerRefID = ProducerRefIDPointer
 	}
 
 	// finally updating the product
 	insertCols := goqu.Record{}
 
-	if p.ProductInchi.Valid {
-		insertCols["product_inchi"] = p.ProductInchi.String
+	if p.ProductInchi != nil {
+		insertCols["product_inchi"] = *p.ProductInchi
 	} else {
 		insertCols["product_inchi"] = nil
 	}
 
-	if p.ProductInchikey.Valid {
-		insertCols["product_inchikey"] = p.ProductInchikey.String
+	if p.ProductInchikey != nil {
+		insertCols["product_inchikey"] = *p.ProductInchikey
 	} else {
 		insertCols["product_inchikey"] = nil
 	}
 
-	if p.ProductCanonicalSmiles.Valid {
-		insertCols["product_canonical_smiles"] = p.ProductCanonicalSmiles.String
+	if p.ProductCanonicalSmiles != nil {
+		insertCols["product_canonical_smiles"] = *p.ProductCanonicalSmiles
 	} else {
 		insertCols["product_canonical_smiles"] = nil
 	}
 
-	if p.ProductMolecularWeight.Valid {
-		insertCols["product_molecularweight"] = p.ProductMolecularWeight.Float64
+	if p.ProductMolecularWeight != nil {
+		insertCols["product_molecular_weight"] = *p.ProductMolecularWeight
 	} else {
-		insertCols["product_molecularweight"] = nil
+		insertCols["product_molecular_weight"] = nil
 	}
 
-	if p.ProductSpecificity.Valid {
-		insertCols["product_specificity"] = p.ProductSpecificity.String
+	if p.ProductSpecificity != nil {
+		insertCols["product_specificity"] = *p.ProductSpecificity
 	} else {
 		insertCols["product_specificity"] = nil
 	}
 
-	if p.ProductMSDS.Valid {
-		insertCols["product_msds"] = p.ProductMSDS.String
+	if p.ProductMSDS != nil {
+		insertCols["product_msds"] = *p.ProductMSDS
 	} else {
 		insertCols["product_msds"] = nil
 	}
 
-	if p.ProductSheet.Valid {
-		insertCols["product_sheet"] = p.ProductSheet.String
+	if p.ProductSheet != nil {
+		insertCols["product_sheet"] = *p.ProductSheet
 	} else {
 		insertCols["product_sheet"] = nil
 	}
 
-	if p.ProductTemperature.Valid {
-		insertCols["product_temperature"] = int(p.ProductTemperature.Int64)
+	if p.ProductTemperature != nil {
+		insertCols["product_temperature"] = int(*p.ProductTemperature)
 	} else {
 		insertCols["product_temperature"] = nil
 	}
 
-	if p.ProductRestricted.Valid {
-		insertCols["product_restricted"] = p.ProductRestricted.Bool
+	if p.ProductRestricted {
+		insertCols["product_restricted"] = p.ProductRestricted
 	} else {
 		insertCols["product_restricted"] = false
 	}
 
-	if p.ProductRadioactive.Valid {
-		insertCols["product_radioactive"] = p.ProductRadioactive.Bool
+	if p.ProductRadioactive {
+		insertCols["product_radioactive"] = p.ProductRadioactive
 	} else {
 		insertCols["product_radioactive"] = false
 	}
 
-	if p.Category.CategoryID.Valid {
-		insertCols["category"] = int(p.Category.CategoryID.Int64)
+	if p.Category.CategoryID != nil {
+		insertCols["category"] = int(*p.Category.CategoryID)
 	} else {
 		insertCols["category"] = nil
 	}
 
-	if p.UnitTemperature.UnitID.Valid {
-		insertCols["unit_temperature"] = int(p.UnitTemperature.UnitID.Int64)
+	if p.UnitTemperature.UnitID != nil {
+		insertCols["unit_temperature"] = int(*p.UnitTemperature.UnitID)
 	} else {
 		insertCols["unit_temperature"] = nil
 	}
 
-	if p.UnitMolecularWeight.UnitID.Valid {
-		insertCols["unit_molecularweight"] = int(p.UnitMolecularWeight.UnitID.Int64)
+	if p.UnitMolecularWeight.UnitID != nil {
+		insertCols["unit_molecular_weight"] = int(*p.UnitMolecularWeight.UnitID)
 	} else {
-		insertCols["unit_molecularweight"] = nil
+		insertCols["unit_molecular_weight"] = nil
 	}
 
-	if p.ProductThreeDFormula.Valid {
-		insertCols["product_threedformula"] = p.ProductThreeDFormula.String
+	if p.ProductThreeDFormula != nil {
+		insertCols["product_threed_formula"] = *p.ProductThreeDFormula
 	} else {
-		insertCols["product_threedformula"] = nil
+		insertCols["product_threed_formula"] = nil
 	}
 
-	if p.ProductTwoDFormula.Valid {
-		insertCols["product_twodformula"] = p.ProductTwoDFormula.String
+	if p.ProductTwoDFormula != nil {
+		insertCols["product_twod_formula"] = *p.ProductTwoDFormula
 	}
 	// } else {
-	// 	insertCols["product_twodformula"] = nil
+	// 	insertCols["product_twod_formula"] = nil
 	// }
 
-	if p.ProductDisposalComment.Valid {
-		insertCols["product_disposalcomment"] = p.ProductDisposalComment.String
+	if p.ProductDisposalComment != nil {
+		insertCols["product_disposal_comment"] = *p.ProductDisposalComment
 	} else {
-		insertCols["product_disposalcomment"] = nil
+		insertCols["product_disposal_comment"] = nil
 	}
 
-	if p.ProductRemark.Valid {
-		insertCols["product_remark"] = p.ProductRemark.String
+	if p.ProductRemark != nil {
+		insertCols["product_remark"] = *p.ProductRemark
 	} else {
 		insertCols["product_remark"] = nil
 	}
 
-	if p.ProductNumberPerCarton.Valid {
-		insertCols["product_number_per_carton"] = p.ProductNumberPerCarton.Int64
+	if p.ProductNumberPerCarton != nil {
+		insertCols["product_number_per_carton"] = *p.ProductNumberPerCarton
 	} else {
 		insertCols["product_number_per_carton"] = nil
 	}
 
-	if p.ProductNumberPerBag.Valid {
-		insertCols["product_number_per_bag"] = p.ProductNumberPerBag.Int64
+	if p.ProductNumberPerBag != nil {
+		insertCols["product_number_per_bag"] = *p.ProductNumberPerBag
 	} else {
 		insertCols["product_number_per_bag"] = nil
 	}
 
-	if p.EmpiricalFormulaID.Valid {
-		insertCols["empiricalformula"] = int(p.EmpiricalFormulaID.Int64)
+	if p.EmpiricalFormulaID != nil {
+		insertCols["empirical_formula"] = *p.EmpiricalFormulaID
 	} else {
-		insertCols["empiricalformula"] = nil
+		insertCols["empirical_formula"] = nil
 	}
 
-	if p.LinearFormulaID.Valid {
-		insertCols["linearformula"] = int(p.LinearFormulaID.Int64)
+	if p.LinearFormulaID != nil {
+		insertCols["linear_formula"] = *p.LinearFormulaID
 	} else {
-		insertCols["linearformula"] = nil
+		insertCols["linear_formula"] = nil
 	}
 
-	if p.PhysicalStateID.Valid {
-		insertCols["physicalstate"] = int(p.PhysicalStateID.Int64)
+	if p.PhysicalStateID != nil {
+		insertCols["physical_state"] = int(*p.PhysicalStateID)
 	} else {
-		insertCols["physicalstate"] = nil
+		insertCols["physical_state"] = nil
 	}
 
-	if p.SignalWordID.Valid {
-		insertCols["signalword"] = int(p.SignalWordID.Int64)
+	if p.SignalWordID != nil {
+		insertCols["signal_word"] = int(*p.SignalWordID)
 	} else {
-		insertCols["signalword"] = nil
+		insertCols["signal_word"] = nil
 	}
 
-	if p.CasNumberID.Valid {
-		insertCols["casnumber"] = int(p.CasNumberID.Int64)
+	// if p.CasNumberID!= nil {
+	if p.CasNumberID != nil {
+		// insertCols["cas_number"] = int(p.CasNumberID)
+		insertCols["cas_number"] = int(*p.CasNumberID)
 	} else {
-		insertCols["casnumber"] = nil
+		insertCols["cas_number"] = nil
 	}
 
-	if p.CeNumberID.Valid {
-		insertCols["cenumber"] = int(p.CeNumberID.Int64)
+	if p.CeNumberID != nil {
+		insertCols["ce_number"] = int(*p.CeNumberID)
 	} else {
-		insertCols["cenumber"] = nil
+		insertCols["ce_number"] = nil
 	}
 
-	if p.ProducerRefID.Valid {
-		insertCols["producerref"] = int(p.ProducerRefID.Int64)
+	if p.ProducerRefID != nil {
+		insertCols["producer_ref"] = int(*p.ProducerRefID)
 	} else {
-		insertCols["producerref"] = nil
+		insertCols["producer_ref"] = nil
 	}
 
-	// if p.ProductMolFormula.Valid {
-	// 	insertCols["product_molformula"] = p.ProductMolFormula.String
+	// if p.ProductMolFormula!= nil {
+	// 	insertCols["product_molformula"] = p.ProductMolFormula
 	// } else {
 	// 	insertCols["product_molformula"] = nil
 	// }
@@ -1505,7 +1525,7 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p models.Product, update bool) (l
 		p.ProductID = int(lastInsertID)
 	}
 
-	// adding supplierrefs
+	// adding supplier_refs
 	if update {
 		sqlr = `DELETE FROM productsupplierrefs WHERE productsupplierrefs.productsupplierrefs_product_id = (?)`
 		if _, err = tx.Exec(sqlr, p.ProductID); err != nil {
@@ -1515,7 +1535,7 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p models.Product, update bool) (l
 	}
 
 	for _, sr := range p.SupplierRefs {
-		sqlr = `INSERT INTO productsupplierrefs (productsupplierrefs_product_id, productsupplierrefs_supplierref_id) VALUES (?,?)`
+		sqlr = `INSERT INTO productsupplierrefs (productsupplierrefs_product_id, productsupplierrefs_supplier_ref_id) VALUES (?,?)`
 		if _, err = tx.Exec(sqlr, p.ProductID, sr.SupplierRefID); err != nil {
 			logger.Log.Error("error INSERT INTO productsupplierrefs")
 			return
@@ -1558,17 +1578,17 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p models.Product, update bool) (l
 
 	// adding classes of compounds
 	if update {
-		sqlr = `DELETE FROM productclassofcompound WHERE productclassofcompound.productclassofcompound_product_id = (?)`
+		sqlr = `DELETE FROM productclass_of_compound WHERE productclass_of_compound.productclass_of_compound_product_id = (?)`
 		if _, err = tx.Exec(sqlr, p.ProductID); err != nil {
-			logger.Log.Error("error DELETE FROM productclassofcompound")
+			logger.Log.Error("error DELETE FROM productclass_of_compound")
 			return
 		}
 	}
 
 	for _, coc := range p.ClassOfCompound {
-		sqlr = `INSERT INTO productclassofcompound (productclassofcompound_product_id, productclassofcompound_classofcompound_id) VALUES (?,?)`
+		sqlr = `INSERT INTO productclass_of_compound (productclass_of_compound_product_id, productclass_of_compound_class_of_compound_id) VALUES (?,?)`
 		if _, err = tx.Exec(sqlr, p.ProductID, coc.ClassOfCompoundID); err != nil {
-			logger.Log.Error("error INSERT INTO productclassofcompound")
+			logger.Log.Error("error INSERT INTO productclass_of_compound")
 			return
 		}
 	}
@@ -1583,7 +1603,7 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p models.Product, update bool) (l
 	}
 
 	for _, hs := range p.HazardStatements {
-		sqlr = `INSERT INTO producthazardstatements (producthazardstatements_product_id, producthazardstatements_hazardstatement_id) VALUES (?,?)`
+		sqlr = `INSERT INTO producthazardstatements (producthazardstatements_product_id, producthazardstatements_hazard_statement_id) VALUES (?,?)`
 		if _, err = tx.Exec(sqlr, p.ProductID, hs.HazardStatementID); err != nil {
 			logger.Log.Error("error INSERT INTO producthazardstatements")
 			return
@@ -1600,7 +1620,7 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p models.Product, update bool) (l
 	}
 
 	for _, ps := range p.PrecautionaryStatements {
-		sqlr = `INSERT INTO productprecautionarystatements (productprecautionarystatements_product_id, productprecautionarystatements_precautionarystatement_id) VALUES (?,?)`
+		sqlr = `INSERT INTO productprecautionarystatements (productprecautionarystatements_product_id, productprecautionarystatements_precautionary_statement_id) VALUES (?,?)`
 		if _, err = tx.Exec(sqlr, p.ProductID, ps.PrecautionaryStatementID); err != nil {
 			logger.Log.Error("error INSERT INTO productprecautionarystatements")
 			return

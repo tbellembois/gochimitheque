@@ -1,13 +1,13 @@
 package handlers
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 
+	"github.com/barweiss/go-tuple"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/datastores"
@@ -24,10 +24,35 @@ func sanitizeProduct(p *models.Product) {
 	}
 
 	p.NameLabel = strings.Trim(p.NameLabel, " ")
-	p.LinearFormulaLabel.String = strings.Trim(p.LinearFormulaLabel.String, " ")
-	p.EmpiricalFormulaLabel.String = strings.Trim(p.EmpiricalFormulaLabel.String, " ")
-	p.CasNumberLabel.String = strings.Trim(p.CasNumberLabel.String, " ")
-	p.CeNumberLabel.String = strings.Trim(p.CeNumberLabel.String, " ")
+
+	if p.LinearFormulaLabel != nil {
+		var LinearFormulaLabelPointer *string
+		LinearFormulaLabelPointer = new(string)
+		*LinearFormulaLabelPointer = strings.Trim(*p.LinearFormulaLabel, " ")
+		p.LinearFormulaLabel = LinearFormulaLabelPointer
+	}
+
+	if p.EmpiricalFormulaLabel != nil {
+		var EmpiricalFormulaLabelPointer *string
+		EmpiricalFormulaLabelPointer = new(string)
+		*EmpiricalFormulaLabelPointer = strings.Trim(*p.EmpiricalFormulaLabel, " ")
+		p.EmpiricalFormulaLabel = EmpiricalFormulaLabelPointer
+	}
+	// p.CasNumberLabel.String = strings.Trim(p.CasNumberLabel.String, " ")
+
+	if p.CasNumberLabel != nil {
+		var CasNumberLabelPointer *string
+		CasNumberLabelPointer = new(string)
+		*CasNumberLabelPointer = strings.Trim(*p.CasNumberLabel, " ")
+		p.CasNumberLabel = CasNumberLabelPointer
+	}
+
+	if p.CeNumberLabel != nil {
+		var CeNumberLabelPointer *string
+		CeNumberLabelPointer = new(string)
+		*CeNumberLabelPointer = strings.Trim(*p.CeNumberLabel, " ")
+		p.CeNumberLabel = CeNumberLabelPointer
+	}
 }
 
 /*
@@ -64,7 +89,7 @@ func (env *Env) VPubchemHandler(w http.ResponseWriter, r *http.Request) *models.
 	REST handlers
 */
 
-// GetProductsProducerRefsHandler returns a json list of the producerref.
+// GetProductsProducerRefsHandler returns a json list of the producer_ref.
 func (env *Env) GetProductsProducerRefsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 
 	logger.Log.Debug("GetProductsProducerRefsHandler")
@@ -82,13 +107,42 @@ func (env *Env) GetProductsProducerRefsHandler(w http.ResponseWriter, r *http.Re
 		}
 	}
 
+	// Convert Rust response to former one.
+	var tuple tuple.T2[interface{}, int]
+	if err = json.Unmarshal(jsonRawMessage, &tuple); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling jsonRawMessage",
+		}
+	}
+
+	resp := struct {
+		Rows     interface{} `json:"rows"`
+		Total    int         `json:"total"`
+		Exportfn string      `json:"exportfn"`
+	}{
+		Rows:     tuple.V1,
+		Total:    tuple.V2,
+		Exportfn: "",
+	}
+
+	var jsonresp []byte
+	if jsonresp, err = json.Marshal(resp); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error marshalling response",
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Write(jsonRawMessage)
+	w.Write(jsonresp)
 
 	return nil
 }
 
-// GetProductsSupplierRefsHandler returns a json list of the producerref.
+// GetProductsSupplierRefsHandler returns a json list of the producer_ref.
 func (env *Env) GetProductsSupplierRefsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	logger.Log.Debug("GetProductsSupplierRefsHandler")
 
@@ -105,8 +159,37 @@ func (env *Env) GetProductsSupplierRefsHandler(w http.ResponseWriter, r *http.Re
 		}
 	}
 
+	// Convert Rust response to former one.
+	var tuple tuple.T2[interface{}, int]
+	if err = json.Unmarshal(jsonRawMessage, &tuple); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling jsonRawMessage",
+		}
+	}
+
+	resp := struct {
+		Rows     interface{} `json:"rows"`
+		Total    int         `json:"total"`
+		Exportfn string      `json:"exportfn"`
+	}{
+		Rows:     tuple.V1,
+		Total:    tuple.V2,
+		Exportfn: "",
+	}
+
+	var jsonresp []byte
+	if jsonresp, err = json.Marshal(resp); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error marshalling response",
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Write(jsonRawMessage)
+	w.Write(jsonresp)
 
 	return nil
 }
@@ -219,8 +302,37 @@ func (env *Env) GetProductsCategoriesHandler(w http.ResponseWriter, r *http.Requ
 		}
 	}
 
+	// Convert Rust response to former one.
+	var tuple tuple.T2[interface{}, int]
+	if err = json.Unmarshal(jsonRawMessage, &tuple); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling jsonRawMessage",
+		}
+	}
+
+	resp := struct {
+		Rows     interface{} `json:"rows"`
+		Total    int         `json:"total"`
+		Exportfn string      `json:"exportfn"`
+	}{
+		Rows:     tuple.V1,
+		Total:    tuple.V2,
+		Exportfn: "",
+	}
+
+	var jsonresp []byte
+	if jsonresp, err = json.Marshal(resp); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error marshalling response",
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Write(jsonRawMessage)
+	w.Write(jsonresp)
 
 	return nil
 }
@@ -242,8 +354,37 @@ func (env *Env) GetProductsTagsHandler(w http.ResponseWriter, r *http.Request) *
 		}
 	}
 
+	// Convert Rust response to former one.
+	var tuple tuple.T2[interface{}, int]
+	if err = json.Unmarshal(jsonRawMessage, &tuple); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling jsonRawMessage",
+		}
+	}
+
+	resp := struct {
+		Rows     interface{} `json:"rows"`
+		Total    int         `json:"total"`
+		Exportfn string      `json:"exportfn"`
+	}{
+		Rows:     tuple.V1,
+		Total:    tuple.V2,
+		Exportfn: "",
+	}
+
+	var jsonresp []byte
+	if jsonresp, err = json.Marshal(resp); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error marshalling response",
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Write(jsonRawMessage)
+	w.Write(jsonresp)
 
 	return nil
 }
@@ -265,8 +406,37 @@ func (env *Env) GetProductsProducersHandler(w http.ResponseWriter, r *http.Reque
 		}
 	}
 
+	// Convert Rust response to former one.
+	var tuple tuple.T2[interface{}, int]
+	if err = json.Unmarshal(jsonRawMessage, &tuple); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling jsonRawMessage",
+		}
+	}
+
+	resp := struct {
+		Rows     interface{} `json:"rows"`
+		Total    int         `json:"total"`
+		Exportfn string      `json:"exportfn"`
+	}{
+		Rows:     tuple.V1,
+		Total:    tuple.V2,
+		Exportfn: "",
+	}
+
+	var jsonresp []byte
+	if jsonresp, err = json.Marshal(resp); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error marshalling response",
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Write(jsonRawMessage)
+	w.Write(jsonresp)
 
 	return nil
 }
@@ -288,8 +458,37 @@ func (env *Env) GetProductsSuppliersHandler(w http.ResponseWriter, r *http.Reque
 		}
 	}
 
+	// Convert Rust response to former one.
+	var tuple tuple.T2[interface{}, int]
+	if err = json.Unmarshal(jsonRawMessage, &tuple); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling jsonRawMessage",
+		}
+	}
+
+	resp := struct {
+		Rows     interface{} `json:"rows"`
+		Total    int         `json:"total"`
+		Exportfn string      `json:"exportfn"`
+	}{
+		Rows:     tuple.V1,
+		Total:    tuple.V2,
+		Exportfn: "",
+	}
+
+	var jsonresp []byte
+	if jsonresp, err = json.Marshal(resp); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error marshalling response",
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Write(jsonRawMessage)
+	w.Write(jsonresp)
 
 	return nil
 }
@@ -374,8 +573,37 @@ func (env *Env) GetProductsCasNumbersHandler(w http.ResponseWriter, r *http.Requ
 		}
 	}
 
+	// Convert Rust response to former one.
+	var tuple tuple.T2[interface{}, int]
+	if err = json.Unmarshal(jsonRawMessage, &tuple); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling jsonRawMessage",
+		}
+	}
+
+	resp := struct {
+		Rows     interface{} `json:"rows"`
+		Total    int         `json:"total"`
+		Exportfn string      `json:"exportfn"`
+	}{
+		Rows:     tuple.V1,
+		Total:    tuple.V2,
+		Exportfn: "",
+	}
+
+	var jsonresp []byte
+	if jsonresp, err = json.Marshal(resp); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error marshalling response",
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Write(jsonRawMessage)
+	w.Write(jsonresp)
 
 	return nil
 
@@ -415,8 +643,8 @@ func (env *Env) GetProductsCasNumbersHandler(w http.ResponseWriter, r *http.Requ
 	// 	filter.Search = fmt.Sprintf("%s-%s-%s", md["groupone"], md["grouptwo"], md["groupthree"])
 	// }
 
-	// // casnumbers, count, err := env.DB.GetCasNumbers(*filter)
-	// casnumbers, count, err := datastores.GetByMany(models.CasNumber{}, env.DB.GetDB(), filter)
+	// // cas_numbers, count, err := env.DB.GetCasNumbers(*filter)
+	// cas_numbers, count, err := datastores.GetByMany(models.CasNumber{}, env.DB.GetDB(), filter)
 
 	// if err != nil {
 	// 	return &models.AppError{
@@ -433,7 +661,7 @@ func (env *Env) GetProductsCasNumbersHandler(w http.ResponseWriter, r *http.Requ
 
 	// w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	// if err = json.NewEncoder(w).Encode(resp{Rows: casnumbers, Total: count}); err != nil {
+	// if err = json.NewEncoder(w).Encode(resp{Rows: cas_numbers, Total: count}); err != nil {
 	// 	return &models.AppError{
 	// 		Code:    http.StatusInternalServerError,
 	// 		Message: err.Error(),
@@ -459,8 +687,37 @@ func (env *Env) GetProductsCeNumbersHandler(w http.ResponseWriter, r *http.Reque
 		}
 	}
 
+	// Convert Rust response to former one.
+	var tuple tuple.T2[interface{}, int]
+	if err = json.Unmarshal(jsonRawMessage, &tuple); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling jsonRawMessage",
+		}
+	}
+
+	resp := struct {
+		Rows     interface{} `json:"rows"`
+		Total    int         `json:"total"`
+		Exportfn string      `json:"exportfn"`
+	}{
+		Rows:     tuple.V1,
+		Total:    tuple.V2,
+		Exportfn: "",
+	}
+
+	var jsonresp []byte
+	if jsonresp, err = json.Marshal(resp); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error marshalling response",
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Write(jsonRawMessage)
+	w.Write(jsonresp)
 
 	return nil
 }
@@ -482,8 +739,37 @@ func (env *Env) GetProductsPhysicalStatesHandler(w http.ResponseWriter, r *http.
 		}
 	}
 
+	// Convert Rust response to former one.
+	var tuple tuple.T2[interface{}, int]
+	if err = json.Unmarshal(jsonRawMessage, &tuple); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling jsonRawMessage",
+		}
+	}
+
+	resp := struct {
+		Rows     interface{} `json:"rows"`
+		Total    int         `json:"total"`
+		Exportfn string      `json:"exportfn"`
+	}{
+		Rows:     tuple.V1,
+		Total:    tuple.V2,
+		Exportfn: "",
+	}
+
+	var jsonresp []byte
+	if jsonresp, err = json.Marshal(resp); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error marshalling response",
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Write(jsonRawMessage)
+	w.Write(jsonresp)
 
 	return nil
 }
@@ -505,8 +791,37 @@ func (env *Env) GetProductsSignalWordsHandler(w http.ResponseWriter, r *http.Req
 		}
 	}
 
+	// Convert Rust response to former one.
+	var tuple tuple.T2[interface{}, int]
+	if err = json.Unmarshal(jsonRawMessage, &tuple); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling jsonRawMessage",
+		}
+	}
+
+	resp := struct {
+		Rows     interface{} `json:"rows"`
+		Total    int         `json:"total"`
+		Exportfn string      `json:"exportfn"`
+	}{
+		Rows:     tuple.V1,
+		Total:    tuple.V2,
+		Exportfn: "",
+	}
+
+	var jsonresp []byte
+	if jsonresp, err = json.Marshal(resp); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error marshalling response",
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Write(jsonRawMessage)
+	w.Write(jsonresp)
 
 	return nil
 }
@@ -528,8 +843,37 @@ func (env *Env) GetProductsClassOfCompoundsHandler(w http.ResponseWriter, r *htt
 		}
 	}
 
+	// Convert Rust response to former one.
+	var tuple tuple.T2[interface{}, int]
+	if err = json.Unmarshal(jsonRawMessage, &tuple); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling jsonRawMessage",
+		}
+	}
+
+	resp := struct {
+		Rows     interface{} `json:"rows"`
+		Total    int         `json:"total"`
+		Exportfn string      `json:"exportfn"`
+	}{
+		Rows:     tuple.V1,
+		Total:    tuple.V2,
+		Exportfn: "",
+	}
+
+	var jsonresp []byte
+	if jsonresp, err = json.Marshal(resp); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error marshalling response",
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Write(jsonRawMessage)
+	w.Write(jsonresp)
 
 	return nil
 }
@@ -551,8 +895,37 @@ func (env *Env) GetProductsEmpiricalFormulasHandler(w http.ResponseWriter, r *ht
 		}
 	}
 
+	// Convert Rust response to former one.
+	var tuple tuple.T2[interface{}, int]
+	if err = json.Unmarshal(jsonRawMessage, &tuple); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling jsonRawMessage",
+		}
+	}
+
+	resp := struct {
+		Rows     interface{} `json:"rows"`
+		Total    int         `json:"total"`
+		Exportfn string      `json:"exportfn"`
+	}{
+		Rows:     tuple.V1,
+		Total:    tuple.V2,
+		Exportfn: "",
+	}
+
+	var jsonresp []byte
+	if jsonresp, err = json.Marshal(resp); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error marshalling response",
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Write(jsonRawMessage)
+	w.Write(jsonresp)
 
 	return nil
 	// logger.Log.Debug("GetProductsEmpiricalFormulasHandler")
@@ -636,8 +1009,37 @@ func (env *Env) GetProductsLinearFormulasHandler(w http.ResponseWriter, r *http.
 		}
 	}
 
+	// Convert Rust response to former one.
+	var tuple tuple.T2[interface{}, int]
+	if err = json.Unmarshal(jsonRawMessage, &tuple); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling jsonRawMessage",
+		}
+	}
+
+	resp := struct {
+		Rows     interface{} `json:"rows"`
+		Total    int         `json:"total"`
+		Exportfn string      `json:"exportfn"`
+	}{
+		Rows:     tuple.V1,
+		Total:    tuple.V2,
+		Exportfn: "",
+	}
+
+	var jsonresp []byte
+	if jsonresp, err = json.Marshal(resp); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error marshalling response",
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Write(jsonRawMessage)
+	w.Write(jsonresp)
 
 	return nil
 }
@@ -743,8 +1145,8 @@ func (env *Env) GetProductsSignalWordHandler(w http.ResponseWriter, r *http.Requ
 		}
 	}
 
-	// signalword, err := env.DB.GetSignalWord(id)
-	signalword, err := datastores.GetByID(models.SignalWord{}, env.DB.GetDB(), id)
+	// signal_word, err := env.DB.GetSignalWord(id)
+	signal_word, err := datastores.GetByID(models.SignalWord{}, env.DB.GetDB(), id)
 
 	if err != nil {
 		return &models.AppError{
@@ -756,7 +1158,7 @@ func (env *Env) GetProductsSignalWordHandler(w http.ResponseWriter, r *http.Requ
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	if err = json.NewEncoder(w).Encode(signalword); err != nil {
+	if err = json.NewEncoder(w).Encode(signal_word); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
 			Message: err.Error(),
@@ -782,8 +1184,37 @@ func (env *Env) GetProductsSymbolsHandler(w http.ResponseWriter, r *http.Request
 		}
 	}
 
+	// Convert Rust response to former one.
+	var tuple tuple.T2[interface{}, int]
+	if err = json.Unmarshal(jsonRawMessage, &tuple); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling jsonRawMessage",
+		}
+	}
+
+	resp := struct {
+		Rows     interface{} `json:"rows"`
+		Total    int         `json:"total"`
+		Exportfn string      `json:"exportfn"`
+	}{
+		Rows:     tuple.V1,
+		Total:    tuple.V2,
+		Exportfn: "",
+	}
+
+	var jsonresp []byte
+	if jsonresp, err = json.Marshal(resp); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error marshalling response",
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Write(jsonRawMessage)
+	w.Write(jsonresp)
 
 	return nil
 }
@@ -846,13 +1277,42 @@ func (env *Env) GetProductsHazardStatementsHandler(w http.ResponseWriter, r *htt
 		}
 	}
 
+	// Convert Rust response to former one.
+	var tuple tuple.T2[interface{}, int]
+	if err = json.Unmarshal(jsonRawMessage, &tuple); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling jsonRawMessage",
+		}
+	}
+
+	resp := struct {
+		Rows     interface{} `json:"rows"`
+		Total    int         `json:"total"`
+		Exportfn string      `json:"exportfn"`
+	}{
+		Rows:     tuple.V1,
+		Total:    tuple.V2,
+		Exportfn: "",
+	}
+
+	var jsonresp []byte
+	if jsonresp, err = json.Marshal(resp); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error marshalling response",
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Write(jsonRawMessage)
+	w.Write(jsonresp)
 
 	return nil
 }
 
-// GetProductsHazardStatementHandler returns a json of the hazardstatement matching the id.
+// GetProductsHazardStatementHandler returns a json of the hazard_statement matching the id.
 func (env *Env) GetProductsHazardStatementHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	logger.Log.Debug("GetProductsHazardStatementHandler")
 
@@ -878,7 +1338,7 @@ func (env *Env) GetProductsHazardStatementHandler(w http.ResponseWriter, r *http
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error getting the hazardstatement",
+			Message:       "error getting the hazard_statement",
 		}
 	}
 
@@ -910,13 +1370,42 @@ func (env *Env) GetProductsPrecautionaryStatementsHandler(w http.ResponseWriter,
 		}
 	}
 
+	// Convert Rust response to former one.
+	var tuple tuple.T2[interface{}, int]
+	if err = json.Unmarshal(jsonRawMessage, &tuple); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling jsonRawMessage",
+		}
+	}
+
+	resp := struct {
+		Rows     interface{} `json:"rows"`
+		Total    int         `json:"total"`
+		Exportfn string      `json:"exportfn"`
+	}{
+		Rows:     tuple.V1,
+		Total:    tuple.V2,
+		Exportfn: "",
+	}
+
+	var jsonresp []byte
+	if jsonresp, err = json.Marshal(resp); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error marshalling response",
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Write(jsonRawMessage)
+	w.Write(jsonresp)
 
 	return nil
 }
 
-// GetProductsPrecautionaryStatementHandler returns a json of the precautionarystatement matching the id.
+// GetProductsPrecautionaryStatementHandler returns a json of the precautionary_statement matching the id.
 func (env *Env) GetProductsPrecautionaryStatementHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	logger.Log.Debug("GetProductsPrecautionaryStatementHandler")
 
@@ -942,7 +1431,7 @@ func (env *Env) GetProductsPrecautionaryStatementHandler(w http.ResponseWriter, 
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error getting the precautionarystatement",
+			Message:       "error getting the precautionary_statement",
 		}
 	}
 
@@ -974,8 +1463,37 @@ func (env *Env) GetProductsNamesHandler(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 
+	// Convert Rust response to former one.
+	var tuple tuple.T2[interface{}, int]
+	if err = json.Unmarshal(jsonRawMessage, &tuple); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling jsonRawMessage",
+		}
+	}
+
+	resp := struct {
+		Rows     interface{} `json:"rows"`
+		Total    int         `json:"total"`
+		Exportfn string      `json:"exportfn"`
+	}{
+		Rows:     tuple.V1,
+		Total:    tuple.V2,
+		Exportfn: "",
+	}
+
+	var jsonresp []byte
+	if jsonresp, err = json.Marshal(resp); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error marshalling response",
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Write(jsonRawMessage)
+	w.Write(jsonresp)
 
 	return nil
 	// logger.Log.Debug("GetProductsNamesHandler")
@@ -1089,8 +1607,37 @@ func (env *Env) GetProductsSynonymsHandler(w http.ResponseWriter, r *http.Reques
 		}
 	}
 
+	// Convert Rust response to former one.
+	var tuple tuple.T2[interface{}, int]
+	if err = json.Unmarshal(jsonRawMessage, &tuple); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling jsonRawMessage",
+		}
+	}
+
+	resp := struct {
+		Rows     interface{} `json:"rows"`
+		Total    int         `json:"total"`
+		Exportfn string      `json:"exportfn"`
+	}{
+		Rows:     tuple.V1,
+		Total:    tuple.V2,
+		Exportfn: "",
+	}
+
+	var jsonresp []byte
+	if jsonresp, err = json.Marshal(resp); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error marshalling response",
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Write(jsonRawMessage)
+	w.Write(jsonresp)
 
 	return nil
 }
@@ -1161,8 +1708,37 @@ func (env *Env) GetProductsHandler(w http.ResponseWriter, r *http.Request) *mode
 		}
 	}
 
+	// Convert Rust response to former one.
+	var tuple tuple.T2[interface{}, int]
+	if err = json.Unmarshal(jsonRawMessage, &tuple); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling jsonRawMessage",
+		}
+	}
+
+	resp := struct {
+		Rows     interface{} `json:"rows"`
+		Total    int         `json:"total"`
+		Exportfn string      `json:"exportfn"`
+	}{
+		Rows:     tuple.V1,
+		Total:    tuple.V2,
+		Exportfn: "",
+	}
+
+	var jsonresp []byte
+	if jsonresp, err = json.Marshal(resp); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error marshalling response",
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Write(jsonRawMessage)
+	w.Write(jsonresp)
 
 	return nil
 }
@@ -1497,7 +2073,7 @@ func (env *Env) CreateSupplierHandler(w http.ResponseWriter, r *http.Request) *m
 			Code:          http.StatusInternalServerError,
 		}
 	}
-	sup.SupplierID = sql.NullInt64{Valid: true, Int64: id}
+	*sup.SupplierID = id
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
@@ -1535,7 +2111,7 @@ func (env *Env) CreateProducerHandler(w http.ResponseWriter, r *http.Request) *m
 			Code:          http.StatusInternalServerError,
 		}
 	}
-	pr.ProducerID = sql.NullInt64{Valid: true, Int64: id}
+	*pr.ProducerID = id
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 

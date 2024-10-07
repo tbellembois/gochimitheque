@@ -6,14 +6,14 @@ block CONTENT
 
     #edit-collapse(data-parent='#accordion')
 
-        +titleicon(iconitem="information-outline" label="welcomeannounce_text_title")
+        +titleicon(iconitem="information-outline" label="welcome_announce_text_title")
 
-        form#welcomeannounce
+        form#welcome_announce
           
             .form-group.row
                 .form-group.col-sm-12
-                    +inputtext(name="welcomeannounce_text", label="", type="textarea")
-                    //div#welcomeannounce_text
+                    +inputtext(name="welcome_announce_text", label="", type="textarea")
+                    //div#welcome_announce_text
 
         button#save.btn.btn-link(type='button', onclick='WelcomeAnnounce_saveWelcomeAnnounce()')
             span.mdi.mdi-content-save.mdi-24px.iconlabel

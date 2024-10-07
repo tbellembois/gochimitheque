@@ -52,13 +52,13 @@ nav.navbar.navbar-expand-lg.navbar-light
                             span.iconlabel
                                 = T("create", 1)
                         hr.dropdown-divider
-                    div#menu_storelocations.collapse
+                    div#menu_store_locations.collapse
                         span.p-2.mdi.mdi-docker.mdi-24px
-                            = T("menu_storelocation", 1)
-                        a(href="#", onclick="Menu_loadContent('storelocation', '" + c.AppURL + c.AppPath + "v/storelocations', 'StoreLocation_list')").dropdown-item
+                            = T("menu_store_location", 1)
+                        a(href="#", onclick="Menu_loadContent('store_location', '" + c.AppURL + c.AppPath + "v/storelocations', 'StoreLocation_list')").dropdown-item
                             span.iconlabel
                                 = T("list", 1)
-                        a#menu_create_storelocation.collapse(href="#", onclick="Menu_loadContent('storelocation', '" + c.AppURL + c.AppPath + "vc/storelocations', 'StoreLocation_create')").dropdown-item
+                        a#menu_create_store_location.collapse(href="#", onclick="Menu_loadContent('store_location', '" + c.AppURL + c.AppPath + "vc/storelocations', 'StoreLocation_create')").dropdown-item
                             span.iconlabel
                                 = T("create", 1)
                         hr.dropdown-divider
@@ -75,9 +75,9 @@ nav.navbar.navbar-expand-lg.navbar-light
                     div#menu_settings.collapse
                         span.p-2.mdi.mdi-cog.mdi-24px
                             = T("menu_settings", 1)
-                        a#menu_update_welcomeannounce.dropdown-item(href="#", onclick="Menu_loadContent('welcome', '" + c.AppURL + c.AppPath + "v/welcomeannounce', 'WelcomeAnnounce_list')")
+                        a#menu_update_welcome_announce.dropdown-item(href="#", onclick="Menu_loadContent('welcome', '" + c.AppURL + c.AppPath + "v/welcomeannounce', 'WelcomeAnnounce_list')")
                             span.iconlabel
-                                = T("menu_welcomeannounce", 1)
+                                = T("menu_welcome_announce", 1)
 
             li.nav-item.dropdown#menu_account
                 a(href="#").nav-link.dropdown-toggle#navbarDropdown(

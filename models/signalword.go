@@ -1,30 +1,28 @@
 package models
 
-import "database/sql"
-
 // SignalWord is a product signal word.
 type SignalWord struct {
 	// nullable values to handle optional Product foreign key (gorilla shema nil values)
-	SignalWordID    sql.NullInt64  `db:"signalword_id" json:"signalword_id" schema:"signalword_id" `
-	SignalWordLabel sql.NullString `db:"signalword_label" json:"signalword_label" schema:"signalword_label" `
+	SignalWordID    *int64  `db:"signal_word_id" json:"signal_word_id" schema:"signal_word_id" `
+	SignalWordLabel *string `db:"signal_word_label" json:"signal_word_label" schema:"signal_word_label" `
 }
 
-func (signalword SignalWord) SetC(count int) Searchable {
-	return signalword
+func (signal_word SignalWord) SetC(count int) Searchable {
+	return signal_word
 }
 
-func (signalword SignalWord) GetTableName() string {
-	return ("signalword")
+func (signal_word SignalWord) GetTableName() string {
+	return ("signal_word")
 }
 
-func (signalword SignalWord) GetIDFieldName() string {
-	return ("signalword_id")
+func (signal_word SignalWord) GetIDFieldName() string {
+	return ("signal_word_id")
 }
 
-func (signalword SignalWord) GetTextFieldName() string {
-	return ("signalword_label")
+func (signal_word SignalWord) GetTextFieldName() string {
+	return ("signal_word_label")
 }
 
-func (signalword SignalWord) GetID() int64 {
-	return signalword.SignalWordID.Int64
+func (signal_word SignalWord) GetID() int64 {
+	return *signal_word.SignalWordID
 }

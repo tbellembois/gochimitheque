@@ -95,7 +95,7 @@ var LOCALES_FR = []byte(`
 
 [members]
 	one = "membres"
-[storelocations]
+[store_locations]
 	one = "entrepôts"
 
 [magical_selector]
@@ -185,9 +185,9 @@ var LOCALES_FR = []byte(`
 [logo_information2]
 	one = "Ne pas utiliser ou copier sans sa permission."
 
-[welcomeannounce_text_title]
+[welcome_announce_text_title]
 	one = "Texte complémentaire de la page d'accueil"
-[welcomeannounce_text_modificationsuccess]
+[welcome_announce_text_modificationsuccess]
 	one = "Texte modifié"
 
 [s_tags]
@@ -196,29 +196,29 @@ var LOCALES_FR = []byte(`
 	one = "categorie"
 [s_entity]
 	one = "entité"
-[s_storelocation]
+[s_store_location]
 	one = "entrepôt"
 [s_custom_name_part_of]
 	one = "partie du nom"
-[s_producerref]
+[s_producer_ref]
 	one = "numéro référence fabriquant"
 [s_name]
 	one = "nom ou synonyme exact"
-[s_casnumber]
+[s_cas_number]
 	one = "numéro CAS"
-[s_empiricalformula]
+[s_empirical_formula]
 	one = "formule brute"
 [s_storage_barecode]
 	one = "code barre"
-[s_signalword]
+[s_signal_word]
 	one = "mention d'avertissement"
 [s_symbols]
 	one = "pictogramme(s)"
-[s_hazardstatements]
+[s_hazard_statements]
 	one = "mention(s) de danger H-EUH"
-[s_precautionarystatements]
+[s_precautionary_statements]
 	one = "conseil(s) de prudence P"
-[s_casnumber_cmr]
+[s_cas_number_cmr]
 	one = "CMR"
 [s_borrowing]
 	one = "stockages empruntés"
@@ -237,11 +237,11 @@ var LOCALES_FR = []byte(`
 	one = "créer une fiche"
 [menu_entity]
 	one = "entités"
-[menu_storelocation]
+[menu_store_location]
 	one = "entrepôts"
 [menu_people]
 	one = "utilisateurs"
-[menu_welcomeannounce]
+[menu_welcome_announce]
 	one = "message de page d'accueil"
 [menu_password]
 	one = "changer mon mot de passe"
@@ -299,7 +299,7 @@ var LOCALES_FR = []byte(`
 	one = "unité"
 [supplier_label_title]
 	one = "fournisseur"
-[supplierref_label_title]
+[supplier_ref_label_title]
 	one = "numéro référence fournisseur"
 
 [add_producer_title]
@@ -350,7 +350,7 @@ var LOCALES_FR = []byte(`
 [storage_updated_message]
 	one = "stockage mis à jour"
 
-[storage_storelocation_title]
+[storage_store_location_title]
 	one = "entrepôt"
 [storage_concentration_title]
 	one = "concentration"
@@ -360,15 +360,15 @@ var LOCALES_FR = []byte(`
 	one = "code barre"
 [storage_create_barecode_comment]
 	one = "si vous laissez ce champs vide, un code barre sera autogénéré"
-[storage_batchnumber_title]
+[storage_batch_number_title]
 	one = "lot"
-[storage_entrydate_title]
+[storage_entry_date_title]
 	one = "date d'entrée"
-[storage_exitdate_title]
+[storage_exit_date_title]
 	one = "date de sortie"
-[storage_openingdate_title]
+[storage_opening_date_title]
 	one = "date d'ouverture"
-[storage_expirationdate_title]
+[storage_expiration_date_title]
 	one = "date d'expiration"
 [storage_borrower_title]
 	one = "emprunteur"
@@ -376,17 +376,17 @@ var LOCALES_FR = []byte(`
 	one = "commentaire"
 [storage_reference_title]
 	one = "référence"
-[storage_todestroy_title]
+[storage_to_destroy_title]
 	one = "à détruire"
 [storage_product_table_header]
 	one = "produit"
-[storage_storelocation_table_header]
+[storage_store_location_table_header]
 	one = "entrepôt"
 [storage_quantity_table_header]
 	one = "quantité"
 [storage_barecode_table_header]
 	one = "code barre"
-[storage_storelocation_placeholder]
+[storage_store_location_placeholder]
 	one = "selectionnez un entrepôt"
 [storage_borrower_placeholder]
 	one = "selectionnez un emprunteur"
@@ -407,32 +407,32 @@ var LOCALES_FR = []byte(`
 [storage_one_number_required]
 	one = "au moins un des nombres requis"
 
-[stock_storelocation_title]
+[stock_store_location_title]
 	one = "dans cet entrepôt"
-[stock_storelocation_sub_title]
+[stock_store_location_sub_title]
 	one = "avec les sous entrepôts"
 
-[empiricalformula_label_title]
+[empirical_formula_label_title]
 	one = "formule brute"
-[cenumber_label_title]
+[ce_number_label_title]
 	one = "CE"
-[casnumber_label_title]
+[cas_number_label_title]
 	one = "CAS"
-[casnumber_cmr_title]
+[cas_number_cmr_title]
 	one = "CMR"
-[signalword_label_title]
+[signal_word_label_title]
 	one = "mention d'avertissement"
 [symbol_label_title]
 	one = "symbole(s)"
-[linearformula_label_title]
+[linear_formula_label_title]
 	one = "formule linéaire"
-[hazardstatement_label_title]
+[hazard_statement_label_title]
 	one = "mention(s) de danger H-EUH"
-[precautionarystatement_label_title]
+[precautionary_statement_label_title]
 	one = "conseil(s) de prudence P"
-[classofcompound_label_title]
+[class_of_compound_label_title]
 	one = "famille(s) chimique(s)"
-[physicalstate_label_title]
+[physical_state_label_title]
 	one = "état physique"
 [name_label_title]
 	one = "nom"
@@ -456,15 +456,15 @@ var LOCALES_FR = []byte(`
 	one = "code inchi"
 [product_smiles_title]
 	one = "SMILES"
-[product_molecularweight_title]
+[product_molecular_weight_title]
 	one = "poids moléculaire"
 [product_inchi_key_title]
 	one = "clé inchi"
-[product_threedformula_title]
+[product_threed_formula_title]
 	one = "formule 3D"
-[product_twodformula_title]
+[product_twod_formula_title]
 	one = "image molécule"
-[product_threedformula_mol_title]
+[product_threed_formula_mol_title]
 	one = "fichier MOL formule 3D"
 [product_msds_title]
 	one = "lien FDS"
@@ -478,17 +478,17 @@ var LOCALES_FR = []byte(`
 	one = "nombre d'unités par sachet"
 [producer_label_title]
 	one = "fabriquant"
-[producerref_label_title]
+[producer_ref_label_title]
 	one = "numéro référence fabriquant"
-[producerref_create_needproducer]
+[producer_ref_create_needproducer]
 	one = "pour créer une nouvelle référence sélectionnez un fabriquant d'abord"
-[supplierref_create_needsupplier]
+[supplier_ref_create_needsupplier]
 	one = "pour créer une nouvelle référence sélectionnez un fournisseur d'abord"
 [category_label_title]
 	one = "catégorie"
 [tag_label_title]
 	one = "tag(s)"
-[product_disposalcomment_title]
+[product_disposal_comment_title]
 	one = "commentaire de destruction"
 [product_remark_title]
 	one = "remarque"
@@ -500,7 +500,7 @@ var LOCALES_FR = []byte(`
 	one = "accès restreint"
 [product_name_table_header]
 	one = "nom"
-[product_empiricalformula_table_header]
+[product_empirical_formula_table_header]
 	one = "formule br."
 [product_cas_table_header]
 	one = "CAS"
@@ -510,35 +510,35 @@ var LOCALES_FR = []byte(`
 	one = "sélectionnez ou entrez un numéro CAS"
 [product_ce_placeholder]
 	one = "sélectionnez ou entrez un numéro CE"
-[product_physicalstate_placeholder]
+[product_physical_state_placeholder]
 	one = "sélectionnez ou entrez un état physique"
-[product_signalword_placeholder]
+[product_signal_word_placeholder]
 	one = "sélectionnez une mention"
-[product_classofcompound_placeholder]
+[product_class_of_compound_placeholder]
 	one = "sélectionnez ou entrez une ou plusieurs famille(s)"
 [product_name_placeholder]
 	one = "sélectionnez ou entrez un nom"
 [product_synonyms_placeholder]
 	one = "sélectionnez ou entrez un ou plusieurs nom(s)"
-[producerref_placeholder]
+[producer_ref_placeholder]
 	one = "sélectionnez ou entrez une référence"
-[product_empiricalformula_placeholder]
+[product_empirical_formula_placeholder]
 	one = "sélectionnez ou entrez une formule"
-[product_linearformula_placeholder]
+[product_linear_formula_placeholder]
 	one = "sélectionnez ou entrez une formule"
 [product_symbols_placeholder]
 	one = "sélectionnez un ou plusieurs symbole(s)"
-[product_hazardstatements_placeholder]
+[product_hazard_statements_placeholder]
 	one = "sélectionnez une ou plusieurs mention(s)"
-[product_precautionarystatements_placeholder]
+[product_precautionary_statements_placeholder]
 	one = "sélectionnez un ou plusieurs conseil(s)"
 [product_producer_placeholder]
 	one = "sélectionnez un fabriquant"
-[product_producerref_placeholder]
+[product_producer_ref_placeholder]
 	one = "sélectionnez ou entrez une référence fabriquant"
 [product_supplier_placeholder]
 	one = "sélectionnez un fournisseur"
-[product_supplierref_placeholder]
+[product_supplier_ref_placeholder]
 	one = "sélectionnez ou entrez une ou plusieurs référence(s) fournisseur"
 [product_tag_placeholder]
 	one = "sélectionnez ou entrez un ou plusieurs tag(s)"
@@ -605,39 +605,39 @@ var LOCALES_FR = []byte(`
 [permission_crud]
 	one = "voir, modifier, créer et supprimer"
 
-[storelocation_create_title]
+[store_location_create_title]
 	one = "créer un entrepôt"
-[storelocation_update_title]
+[store_location_update_title]
 	one = "mettre à jour entrepôt"
-[storelocation_deleted_message]
+[store_location_deleted_message]
 	one = "entrepôt supprimé"
-[storelocation_created_message]
+[store_location_created_message]
 	one = "entrepôt créé"
-[storelocation_updated_message]
+[store_location_updated_message]
 	one = "entrepôt mis à jour"
-[storelocation_parent_title]
+[store_location_parent_title]
 	one = "parent"
-[storelocation_entity_title]
+[store_location_entity_title]
 	one = "entité"
-[storelocation_canstore_title]
+[store_location_can_store_title]
 	one = "peut stocker"
-[storelocation_color_title]
+[store_location_color_title]
 	one = "couleur"
-[storelocation_name_title]
+[store_location_name_title]
 	one = "nom"
-[storelocation_name_table_header]
+[store_location_name_table_header]
 	one = "nom"
-[storelocation_entity_table_header]
+[store_location_entity_table_header]
 	one = "entité"
-[storelocation_color_table_header]
+[store_location_color_table_header]
 	one = "couleur"
-[storelocation_canstore_table_header]
+[store_location_can_store_table_header]
 	one = "peut stocker"
-[storelocation_parent_table_header]
+[store_location_parent_table_header]
 	one = "parent"
-[storelocation_entity_placeholder]
+[store_location_entity_placeholder]
 	one = "sélectionnez une entité"
-[storelocation_storelocation_placeholder]
+[store_location_store_location_placeholder]
 	one = "sélectionnez une entité d'abord"
 
 [entity_create_title]
@@ -667,12 +667,12 @@ var LOCALES_FR = []byte(`
 	one = "une entité avec ce nom existe déjà"
 [person_emailexist_validate]
 	one = "une personne avec cet email existe déjà"
-[empiricalformula_validate]
+[empirical_formula_validate]
 	one = "formule brute invalide"
-[casnumber_validate_wrongcas]
+[cas_number_validate_wrongcas]
 	one = "numéro CAS invalide"
-[casnumber_validate_casspecificity]
+[cas_number_validate_casspecificity]
 	one = "le couple numéro CAS/spécificité existe déjà"
-[cenumber_validate]
+[ce_number_validate]
 	one = "numéro CE invalide"
 `)

@@ -239,7 +239,7 @@ func (db *SQLiteDataStore) GetProducerRefs(f zmqclient.RequestFilter) ([]models.
 	// logger.Log.WithFields(logrus.Fields{"f": f}).Debug("GetProducerRefs")
 
 	// if f.OrderBy == "" {
-	// 	f.OrderBy = "producerref_id"
+	// 	f.OrderBy = "producer_ref_id"
 	// }
 
 	// // hack to bypass optionnal default on the Rust part.
@@ -251,23 +251,23 @@ func (db *SQLiteDataStore) GetProducerRefs(f zmqclient.RequestFilter) ([]models.
 	// exactSearch = strings.TrimSuffix(exactSearch, "%")
 
 	// dialect := goqu.Dialect("sqlite3")
-	// producerrefTable := goqu.T("producerref")
+	// producer_refTable := goqu.T("producer_ref")
 
 	// // Join, where.
 	// whereAnd := []goqu.Expression{
-	// 	goqu.I("producerref.producerref_label").Like(f.Search),
+	// 	goqu.I("producer_ref.producer_ref_label").Like(f.Search),
 	// }
 	// if f.Producer != 0 {
-	// 	whereAnd = append(whereAnd, goqu.I("producerref.producer").Eq(f.Producer))
+	// 	whereAnd = append(whereAnd, goqu.I("producer_ref.producer").Eq(f.Producer))
 	// }
 
 	// joinClause := dialect.From(
-	// 	producerrefTable,
+	// 	producer_refTable,
 	// ).Join(
 	// 	goqu.T("producer"),
 	// 	goqu.On(
 	// 		goqu.Ex{
-	// 			"producerref.producer": goqu.I("producer.producer_id"),
+	// 			"producer_ref.producer": goqu.I("producer.producer_id"),
 	// 		},
 	// 	),
 	// ).Where(
@@ -275,19 +275,19 @@ func (db *SQLiteDataStore) GetProducerRefs(f zmqclient.RequestFilter) ([]models.
 	// )
 
 	// if countSQL, countArgs, err = joinClause.Select(
-	// 	goqu.COUNT(goqu.I("producerref.producerref_id").Distinct()),
+	// 	goqu.COUNT(goqu.I("producer_ref.producer_ref_id").Distinct()),
 	// ).ToSQL(); err != nil {
 	// 	return nil, 0, err
 	// }
 
 	// if selectSQL, selectArgs, err = joinClause.Select(
-	// 	goqu.I("producerref_id"),
-	// 	goqu.I("producerref_label"),
+	// 	goqu.I("producer_ref_id"),
+	// 	goqu.I("producer_ref_label"),
 	// 	goqu.I("producer_id").As(goqu.C("producer.producer_id")),
 	// 	goqu.I("producer_label").As(goqu.C("producer.producer_label")),
 	// ).Order(
-	// 	goqu.L("INSTR(producerref_label, ?)", exactSearch).Asc(),
-	// 	goqu.C("producerref_label").Asc(),
+	// 	goqu.L("INSTR(producer_ref_label, ?)", exactSearch).Asc(),
+	// 	goqu.C("producer_ref_label").Asc(),
 	// ).Limit(uint(f.Limit)).Offset(uint(f.Offset)).ToSQL(); err != nil {
 	// 	return nil, 0, err
 	// }
@@ -302,11 +302,11 @@ func (db *SQLiteDataStore) GetProducerRefs(f zmqclient.RequestFilter) ([]models.
 	// }
 
 	// // Setting the C attribute for formula matching exactly the search.
-	// sQuery := dialect.From(producerrefTable).Where(
-	// 	goqu.I("producerref_label").Eq(exactSearch),
+	// sQuery := dialect.From(producer_refTable).Where(
+	// 	goqu.I("producer_ref_label").Eq(exactSearch),
 	// ).Select(
-	// 	"producerref_id",
-	// 	"producerref_label",
+	// 	"producer_ref_id",
+	// 	"producer_ref_label",
 	// )
 
 	// var (

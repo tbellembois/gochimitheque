@@ -319,7 +319,7 @@ func main() {
 
 	initAdmins()
 
-	router := buildEndpoints(env.AppFullURL, *paramFakeAuth)
+	router := buildEndpoints(*paramFakeAuth)
 
 	initStaticResources(router)
 

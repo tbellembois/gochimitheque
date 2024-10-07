@@ -59,6 +59,217 @@ Viability Test
 Western Blot
 `
 
+const CLASSOFCOMPOUND = `
+amine
+haloalkane
+carboxylic acid
+indicateur coloré
+solvant_organique
+sel
+reactif_divers
+matiere_active_poudre
+matiere_active_solution
+aldehyde
+alkane
+alcohol
+amino acid
+amide
+oxime
+ester
+alcyne
+diazo
+keton
+lanthanide
+chiral
+halogenoformiate
+alcene
+phosphorous coumpound
+silane
+silyl
+carbodiimide
+peptidic coupling reagent
+ether
+palladium complex
+nitrile
+acyl halide
+lactone
+Colorant
+Aralkyl Amine
+hydrazine
+carbamate
+imine
+phenol
+Nitro
+N-hydroxylamine
+iodo
+thiol
+isocyanate
+pyridine
+quinone
+chloro
+phosphine
+N-oxyde
+siloxane
+imidazole
+aromatic
+boronic acid
+nitroso
+triazolyl
+sucre
+bromo
+iron complex
+thiazol
+nitrite
+pyridazine
+fluoro
+enone
+aniline
+boronic ester
+thioether
+oxazoline
+morpholine
+sulfonic acid
+thiocyanate
+anhydride
+aluminium
+nitrate
+sulfate
+acetal
+mercapto
+acyl bromide
+epoxyde
+chloroformate
+cyanide
+benzopyran
+furan
+halogenated aromatic
+ammonium salt
+phosphonium salt
+catalyst
+platinium complex
+piperazine
+azo
+metal
+cetone
+sulfone
+acide
+radical
+indole
+cerium
+phosphate
+borate
+carboxylate salt
+oxyde métallique
+porphyrin
+organomagnesien
+lanthanum
+amidine
+urée
+hydrure
+metallocene
+bore
+protective group
+titanium complex
+polymer
+hydrate
+sulfonate
+lactam
+nucleotide
+enzyme
+hydrazide
+manganese complex
+peracid
+perchlorate
+peroxide
+thiocarbamoyl
+organotin
+carbonate
+sulfide
+alloy
+azide
+pyrocarbonate
+sodium
+tungsten
+imide
+molybdenum complex
+organolithium
+Rhenium
+thiophene
+acridone
+fluorene
+protein
+tetrazol
+ruthenium
+triazine
+phosphie
+phosphite
+silver salt
+cyanuric acid
+diazomethane precursor
+acrylate
+benzophenone
+phosphoramidite
+phosphonate
+diacid
+iridium complex
+iridium
+oxirane
+tosylate
+strontium
+hydroxide
+piperidine
+zirconium
+alkoxyde
+alkoxide
+vanadium
+acetophenone
+phosphine oxide
+phosphoester
+sulfonimide
+sulfinate
+buffer
+anthracene
+germanium
+lipase
+tetrazole
+quinine
+quinidine
+complex
+allyl
+tin
+carbohydrate
+platinum complex
+chlorydrate
+phtalimide
+deuterated solvent
+gadolinium complex
+peptides
+carbazole
+arene
+thiocarbonyl
+organometallic
+diol
+copper salt
+silazane
+phenanthrolin
+Bromide
+ionic liquid
+magnesium complex
+benzothiazole
+antibiotic
+tensio-actifs
+Zinc
+pyrimidine
+resin
+sel métallique
+gold salt
+nitride
+benzaldehyde
+pyrazole
+benzoic acid
+pyridinim salt
+`
+
 // CATEGORY is the list of chemical products categories
 // They are inserted into the database during its creation.
 const CATEGORY = `

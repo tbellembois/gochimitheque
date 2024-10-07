@@ -1,37 +1,37 @@
 package models
 
-import "database/sql"
-
 // CasNumber is a product CAS number.
 type CasNumber struct {
-	MatchExactSearch bool           `db:"match_exact_case" json:"match_exact_case"` // not stored in db but db:"c" set for sqlx
-	CasNumberID      sql.NullInt64  `db:"casnumber_id" json:"casnumber_id" schema:"casnumber_id" `
-	CasNumberLabel   sql.NullString `db:"casnumber_label" json:"casnumber_label" schema:"casnumber_label" `
-	CasNumberCMR     sql.NullString `db:"casnumber_cmr" json:"casnumber_cmr" schema:"casnumber_cmr" `
+	MatchExactSearch bool `db:"match_exact_case" json:"match_exact_case"` // not stored in db but db:"c" set for sqlx
+	// CasNumberID      sql.NullInt64  `db:"cas_number_id" json:"cas_number_id" schema:"cas_number_id" `
+	CasNumberID    *int64  `db:"cas_number_id" json:"cas_number_id" schema:"cas_number_id" `
+	CasNumberLabel *string `db:"cas_number_label" json:"cas_number_label" schema:"cas_number_label" `
+	CasNumberCMR   *string `db:"cas_number_cmr" json:"cas_number_cmr" schema:"cas_number_cmr" `
 }
 
-func (casnumber CasNumber) SetC(count int) Searchable {
+func (cas_number CasNumber) SetC(count int) Searchable {
 	if count > 1 {
-		casnumber.MatchExactSearch = true
+		cas_number.MatchExactSearch = true
 	} else {
-		casnumber.MatchExactSearch = false
+		cas_number.MatchExactSearch = false
 	}
 
-	return casnumber
+	return cas_number
 }
 
-func (casnumber CasNumber) GetTableName() string {
-	return ("casnumber")
+func (cas_number CasNumber) GetTableName() string {
+	return ("cas_number")
 }
 
-func (casnumber CasNumber) GetIDFieldName() string {
-	return ("casnumber_id")
+func (cas_number CasNumber) GetIDFieldName() string {
+	return ("cas_number_id")
 }
 
-func (casnumber CasNumber) GetTextFieldName() string {
-	return ("casnumber_label")
+func (cas_number CasNumber) GetTextFieldName() string {
+	return ("cas_number_label")
 }
 
-func (casnumber CasNumber) GetID() int64 {
-	return casnumber.CasNumberID.Int64
+func (cas_number CasNumber) GetID() int64 {
+	// return cas_number.CasNumberID.Int64
+	return *cas_number.CasNumberID
 }

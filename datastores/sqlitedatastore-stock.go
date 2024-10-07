@@ -24,7 +24,7 @@ func (db *SQLiteDataStore) computeStockStorelocationConsumable(p models.Product,
 		err                   error
 		currentStock          float64
 		totalStock            float64
-		storelocationChildren []models.StoreLocation
+		store_locationChildren []models.StoreLocation
 		sqlr                  string
 		args                  []interface{}
 	)
@@ -39,7 +39,7 @@ func (db *SQLiteDataStore) computeStockStorelocationConsumable(p models.Product,
 	).Where(
 		goqu.I("storage.storage_archive").IsFalse(),
 		goqu.I("storage.storage").IsNull(),
-		goqu.I("storage.storelocation").Eq(s.Storelocation.StoreLocationID.Int64),
+		goqu.I("storage.store_location").Eq(s.Storelocation.StoreLocationID.Int64),
 		goqu.I("storage.product").Eq(p.ProductID),
 	).Select(
 		goqu.SUM(goqu.L("product.product_number_per_bag * storage.storage_number_of_bag")).As("bag"),
@@ -91,17 +91,17 @@ func (db *SQLiteDataStore) computeStockStorelocationConsumable(p models.Product,
 
 	// Getting the children store locations.
 	mu.Lock()
-	if storelocationChildren, err = db.GetStoreLocationChildren(int(s.Storelocation.StoreLocationID.Int64)); err != nil {
+	if store_locationChildren, err = db.GetStoreLocationChildren(int(s.Storelocation.StoreLocationID.Int64)); err != nil {
 		logger.Log.Error(err)
 		return 0
 	}
 	mu.Unlock()
 
-	for i := range storelocationChildren {
-		s.Storelocation.Children = append(s.Storelocation.Children, &storelocationChildren[i])
+	for i := range store_locationChildren {
+		s.Storelocation.Children = append(s.Storelocation.Children, &store_locationChildren[i])
 
 		totalStock += db.computeStockStorelocationConsumable(p, &SyncStoreLocation{
-			Storelocation: &storelocationChildren[i],
+			Storelocation: &store_locationChildren[i],
 		}, mu)
 	}
 
@@ -118,7 +118,7 @@ func (db *SQLiteDataStore) computeStockStorelocation(p models.Product, s *SyncSt
 		err                   error
 		currentStock          float64
 		totalStock            float64
-		storelocationChildren []models.StoreLocation
+		store_locationChildren []models.StoreLocation
 		sqlr                  string
 		args                  []interface{}
 	)
@@ -131,14 +131,14 @@ func (db *SQLiteDataStore) computeStockStorelocation(p models.Product, s *SyncSt
 		goqu.T("unit"),
 		goqu.On(goqu.Ex{"storage.unit_quantity": goqu.I("unit.unit_id")}),
 	).Where(
-		goqu.I("storage.storelocation").Eq(s.Storelocation.StoreLocationID.Int64),
+		goqu.I("storage.store_location").Eq(s.Storelocation.StoreLocationID.Int64),
 		goqu.I("storage.storage").IsNull(),
 		goqu.I("storage.storage_quantity").IsNotNull(),
 		goqu.I("storage.storage_archive").IsFalse(),
 		goqu.I("storage.product").Eq(p.ProductID),
 		goqu.Or(
-			goqu.I("storage.unit_quantity").Eq(u.UnitID.Int64),
-			goqu.I("unit.unit").Eq(u.UnitID.Int64),
+			goqu.I("storage.unit_quantity").Eq(*u.UnitID),
+			goqu.I("unit.unit").Eq(*u.UnitID),
 		),
 	).Select(
 		goqu.L("SUM(storage.storage_quantity * unit_multiplier)"),
@@ -172,17 +172,17 @@ func (db *SQLiteDataStore) computeStockStorelocation(p models.Product, s *SyncSt
 	}).Debug("computeStockStorelocation")
 
 	mu.Lock()
-	if storelocationChildren, err = db.GetStoreLocationChildren(int(s.Storelocation.StoreLocationID.Int64)); err != nil {
+	if store_locationChildren, err = db.GetStoreLocationChildren(int(s.Storelocation.StoreLocationID.Int64)); err != nil {
 		logger.Log.Error(err)
 		return 0
 	}
 	mu.Unlock()
 
-	for i := range storelocationChildren {
-		s.Storelocation.Children = append(s.Storelocation.Children, &storelocationChildren[i])
+	for i := range store_locationChildren {
+		s.Storelocation.Children = append(s.Storelocation.Children, &store_locationChildren[i])
 
 		totalStock += db.computeStockStorelocation(p, &SyncStoreLocation{
-			Storelocation: &storelocationChildren[i],
+			Storelocation: &store_locationChildren[i],
 		}, u, mu)
 	}
 
@@ -198,7 +198,7 @@ func (db *SQLiteDataStore) computeStockStorelocationNoUnit(p models.Product, s *
 	var (
 		currentStock          float64
 		totalStock            float64
-		storelocationChildren []models.StoreLocation
+		store_locationChildren []models.StoreLocation
 		err                   error
 		sqlrNotNull, sqlrNull string
 		argsNotNull, argsNull []interface{}
@@ -209,7 +209,7 @@ func (db *SQLiteDataStore) computeStockStorelocationNoUnit(p models.Product, s *
 
 	// Getting the store location current stock.
 	sQueryNotNull := dialect.From(t).Where(
-		goqu.I("storage.storelocation").Eq(s.Storelocation.StoreLocationID.Int64),
+		goqu.I("storage.store_location").Eq(s.Storelocation.StoreLocationID.Int64),
 		goqu.I("storage.storage").IsNull(),
 		goqu.And(
 			goqu.I("storage.storage_quantity").IsNotNull(),
@@ -228,7 +228,7 @@ func (db *SQLiteDataStore) computeStockStorelocationNoUnit(p models.Product, s *
 	}
 
 	sQueryNull := dialect.From(t).Where(
-		goqu.I("storage.storelocation").Eq(s.Storelocation.StoreLocationID.Int64),
+		goqu.I("storage.store_location").Eq(s.Storelocation.StoreLocationID.Int64),
 		goqu.I("storage.storage").IsNull(),
 		goqu.Or(
 			goqu.I("storage.storage_quantity").IsNull(),
@@ -281,17 +281,17 @@ func (db *SQLiteDataStore) computeStockStorelocationNoUnit(p models.Product, s *
 
 	// Getting the children store locations.
 	mu.Lock()
-	if storelocationChildren, err = db.GetStoreLocationChildren(int(s.Storelocation.StoreLocationID.Int64)); err != nil {
+	if store_locationChildren, err = db.GetStoreLocationChildren(int(s.Storelocation.StoreLocationID.Int64)); err != nil {
 		logger.Log.Error(err)
 		return 0
 	}
 	mu.Unlock()
 
-	for i := range storelocationChildren {
-		s.Storelocation.Children = append(s.Storelocation.Children, &storelocationChildren[i])
+	for i := range store_locationChildren {
+		s.Storelocation.Children = append(s.Storelocation.Children, &store_locationChildren[i])
 
 		totalStock += db.computeStockStorelocationNoUnit(p, &SyncStoreLocation{
-			Storelocation: &storelocationChildren[i],
+			Storelocation: &store_locationChildren[i],
 		}, mu)
 	}
 
@@ -307,7 +307,7 @@ func (db *SQLiteDataStore) computeStockStorelocationNoUnit(p models.Product, s *
 func (db *SQLiteDataStore) ComputeStockEntity(p models.Product, r *http.Request) []models.StoreLocation {
 	var (
 		units              []models.Unit // reference units
-		syncstorelocations []SyncStoreLocation
+		syncstore_locations []SyncStoreLocation
 		entities           []models.Entity
 		eids               []int
 		err                error
@@ -361,14 +361,14 @@ func (db *SQLiteDataStore) ComputeStockEntity(p models.Product, r *http.Request)
 	}
 
 	// Getting the root store locations.
-	t = goqu.T("storelocation")
+	t = goqu.T("store_location")
 	sQuery := dialect.From(t).Where(
-		goqu.I("storelocation.storelocation").IsNull(),
-		goqu.I("storelocation.entity").In(eids),
+		goqu.I("store_location.store_location").IsNull(),
+		goqu.I("store_location.entity").In(eids),
 	).Select(
-		goqu.I("storelocation.storelocation_id"),
-		goqu.I("storelocation.storelocation_name"),
-		goqu.I("storelocation.storelocation_color"),
+		goqu.I("store_location.store_location_id"),
+		goqu.I("store_location.store_location_name"),
+		goqu.I("store_location.store_location_color"),
 	)
 
 	if sqlr, args, err = sQuery.ToSQL(); err != nil {
@@ -383,7 +383,7 @@ func (db *SQLiteDataStore) ComputeStockEntity(p models.Product, r *http.Request)
 	}
 
 	for i := range rootStoreLocations {
-		syncstorelocations = append(syncstorelocations, SyncStoreLocation{
+		syncstore_locations = append(syncstore_locations, SyncStoreLocation{
 			Storelocation: &rootStoreLocations[i],
 		})
 	}
@@ -393,40 +393,40 @@ func (db *SQLiteDataStore) ComputeStockEntity(p models.Product, r *http.Request)
 	mu := &sync.Mutex{}
 
 	// Computing stocks for storages with units.
-	for i := range syncstorelocations {
+	for i := range syncstore_locations {
 		for j := range units {
 			wg.Add(1)
 
 			go func(u models.Unit, sl *SyncStoreLocation) {
 				db.computeStockStorelocation(p, sl, u, mu)
 				wg.Done()
-			}(units[j], &syncstorelocations[i])
+			}(units[j], &syncstore_locations[i])
 		}
 	}
 	// Computing stocks for storages without units.
-	for i := range syncstorelocations {
+	for i := range syncstore_locations {
 		wg.Add(1)
 
 		go func(sl *SyncStoreLocation) {
 			db.computeStockStorelocationNoUnit(p, sl, mu)
 			wg.Done()
-		}(&syncstorelocations[i])
+		}(&syncstore_locations[i])
 	}
 	// Computing stocks for consumables storages.
-	for i := range syncstorelocations {
+	for i := range syncstore_locations {
 		wg.Add(1)
 
 		go func(sl *SyncStoreLocation) {
 			db.computeStockStorelocationConsumable(p, sl, mu)
 			wg.Done()
-		}(&syncstorelocations[i])
+		}(&syncstore_locations[i])
 	}
 
 	wg.Wait()
 
 	var result []models.StoreLocation
-	for i := range syncstorelocations {
-		result = append(result, *syncstorelocations[i].Storelocation)
+	for i := range syncstore_locations {
+		result = append(result, *syncstore_locations[i].Storelocation)
 	}
 
 	return result

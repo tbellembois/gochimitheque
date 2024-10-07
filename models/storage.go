@@ -58,21 +58,21 @@ func (t *MyTime) Scan(src interface{}) error {
 // Storage is a product storage in a store location.
 type Storage struct {
 	StorageID                sql.NullInt64   `db:"storage_id" json:"storage_id" schema:"storage_id" `
-	StorageCreationDate      MyTime          `db:"storage_creationdate" json:"storage_creationdate" schema:"storage_creationdate"`
-	StorageModificationDate  MyTime          `db:"storage_modificationdate" json:"storage_modificationdate" schema:"storage_modificationdate"`
-	StorageEntryDate         MyNullTime      `db:"storage_entrydate" json:"storage_entrydate" schema:"storage_entrydate" `
-	StorageExitDate          MyNullTime      `db:"storage_exitdate" json:"storage_exitdate" schema:"storage_exitdate" `
-	StorageOpeningDate       MyNullTime      `db:"storage_openingdate" json:"storage_openingdate" schema:"storage_openingdate" `
-	StorageExpirationDate    MyNullTime      `db:"storage_expirationdate" json:"storage_expirationdate" schema:"storage_expirationdate" `
+	StorageCreationDate      MyTime          `db:"storage_creation_date" json:"storage_creation_date" schema:"storage_creation_date"`
+	StorageModificationDate  MyTime          `db:"storage_modification_date" json:"storage_modification_date" schema:"storage_modification_date"`
+	StorageEntryDate         MyNullTime      `db:"storage_entry_date" json:"storage_entry_date" schema:"storage_entry_date" `
+	StorageExitDate          MyNullTime      `db:"storage_exit_date" json:"storage_exit_date" schema:"storage_exit_date" `
+	StorageOpeningDate       MyNullTime      `db:"storage_opening_date" json:"storage_opening_date" schema:"storage_opening_date" `
+	StorageExpirationDate    MyNullTime      `db:"storage_expiration_date" json:"storage_expiration_date" schema:"storage_expiration_date" `
 	StorageComment           sql.NullString  `db:"storage_comment" json:"storage_comment" schema:"storage_comment" `
 	StorageReference         sql.NullString  `db:"storage_reference" json:"storage_reference" schema:"storage_reference" `
-	StorageBatchNumber       sql.NullString  `db:"storage_batchnumber" json:"storage_batchnumber" schema:"storage_batchnumber" `
+	StorageBatchNumber       sql.NullString  `db:"storage_batch_number" json:"storage_batch_number" schema:"storage_batch_number" `
 	StorageQuantity          sql.NullFloat64 `db:"storage_quantity" json:"storage_quantity" schema:"storage_quantity" `
 	StorageNbItem            int             `db:"-" json:"storage_nbitem" schema:"storage_nbitem"`
 	StorageIdenticalBarecode sql.NullBool    `db:"-" json:"storage_identicalbarecode" schema:"storage_identicalbarecode" `
 	StorageBarecode          sql.NullString  `db:"storage_barecode" json:"storage_barecode" schema:"storage_barecode" `
 	StorageQRCode            []byte          `db:"storage_qrcode" json:"storage_qrcode" schema:"storage_qrcode"`
-	StorageToDestroy         sql.NullBool    `db:"storage_todestroy" json:"storage_todestroy" schema:"storage_todestroy" `
+	StorageToDestroy         sql.NullBool    `db:"storage_to_destroy" json:"storage_to_destroy" schema:"storage_to_destroy" `
 	StorageArchive           sql.NullBool    `db:"storage_archive" json:"storage_archive" schema:"storage_archive" `
 	StorageConcentration     sql.NullInt64   `db:"storage_concentration" json:"storage_concentration" schema:"storage_concentration" `
 	StorageNumberOfUnit      sql.NullInt64   `db:"storage_number_of_unit" json:"storage_number_of_unit" schema:"storage_number_of_unit" `
@@ -80,7 +80,7 @@ type Storage struct {
 	StorageNumberOfCarton    sql.NullInt64   `db:"storage_number_of_carton" json:"storage_number_of_carton" schema:"storage_number_of_carton" `
 	Person                   `db:"person" json:"person" schema:"person"`
 	Product                  `db:"product" json:"product" schema:"product"`
-	StoreLocation            `db:"storelocation" json:"storelocation" schema:"storelocation"`
+	StoreLocation            `db:"store_location" json:"store_location" schema:"store_location"`
 	UnitQuantity             Unit `db:"unit_quantity" json:"unit_quantity" schema:"unit_quantity"`
 	UnitConcentration        Unit `db:"unit_concentration" json:"unit_concentration" schema:"unit_concentration"`
 	Supplier                 `db:"supplier" json:"supplier" schema:"supplier"`
@@ -96,15 +96,16 @@ func (s Storage) StorageToStringSlice() []string {
 
 	ret = append(ret, strconv.FormatInt(s.StorageID.Int64, 10))
 	ret = append(ret, s.Product.Name.NameLabel)
-	ret = append(ret, s.Product.CasNumber.CasNumberLabel.String)
-	ret = append(ret, s.Product.ProductSpecificity.String)
+	// ret = append(ret, s.Product.CasNumber.CasNumberLabel.String)
+	ret = append(ret, *s.Product.CasNumber.CasNumberLabel)
+	ret = append(ret, *s.Product.ProductSpecificity)
 
 	ret = append(ret, s.StoreLocation.StoreLocationFullPath)
 
 	ret = append(ret, strconv.FormatFloat(s.StorageQuantity.Float64, 'E', -1, 64))
-	ret = append(ret, s.UnitQuantity.UnitLabel.String)
+	ret = append(ret, *s.UnitQuantity.UnitLabel)
 	ret = append(ret, s.StorageBarecode.String)
-	ret = append(ret, s.Supplier.SupplierLabel.String)
+	ret = append(ret, *s.Supplier.SupplierLabel)
 
 	ret = append(ret, s.StorageCreationDate.Format("2006-01-02"))
 	ret = append(ret, s.StorageModificationDate.Format("2006-01-02"))
@@ -134,9 +135,9 @@ func StoragesToCSV(sts []Storage) (string, error) {
 	header := []string{
 		"storage_id",
 		"product_name",
-		"product_casnumber",
+		"product_cas_number",
 		"product_specificity",
-		"storelocation",
+		"store_location",
 		"quantity",
 		"unit",
 		"barecode",
