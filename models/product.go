@@ -62,7 +62,7 @@ type Product struct {
 	// storage barecode concatenation
 	ProductSL *string `db:"product_sl" json:"product_sl" schema:"product_sl" ` // not in db but sqlx requires the "db" entry
 	// hazard statement CMR concatenation
-	HazardStatementCMR *string `db:"hazard_statement_cmr" json:"hazard_statement_cmr" schema:"hazard_statement_cmr" ` // not in db but sqlx requires the "db" entry
+	HazardStatementCMR *string `db:"product_hs_cmr" json:"product_hs_cmr" schema:"product_hs_cmr" ` // not in db but sqlx requires the "db" entry
 }
 
 func (p Product) ProductToStringSlice() []string {

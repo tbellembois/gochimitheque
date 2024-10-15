@@ -517,7 +517,7 @@ func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int,
 	}()
 
 	//
-	// cleaning product_sl
+	// cleaning product_sl (storage barecodes concatenation)
 	//
 	if !public {
 		wg.Add(1)
@@ -644,8 +644,8 @@ func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int,
 			// note: do not modify p but products[i] instead
 			reqCoc.Reset()
 			reqCoc.WriteString("SELECT class_of_compound_id, class_of_compound_label FROM class_of_compound")
-			reqCoc.WriteString(" JOIN productclass_of_compound ON productclass_of_compound.productclass_of_compound_class_of_compound_id = class_of_compound.class_of_compound_id")
-			reqCoc.WriteString(" JOIN product ON productclass_of_compound.productclass_of_compound_product_id = product.product_id")
+			reqCoc.WriteString(" JOIN productclassesofcompounds ON productclassesofcompounds.productclassesofcompounds_class_of_compound_id = class_of_compound.class_of_compound_id")
+			reqCoc.WriteString(" JOIN product ON productclassesofcompounds.productclassesofcompounds_product_id = product.product_id")
 			reqCoc.WriteString(" WHERE product.product_id = ?")
 
 			if err = db.Select(&products[i].ClassOfCompound, reqCoc.String(), pr.ProductID); err != nil {
@@ -884,8 +884,8 @@ func (db *SQLiteDataStore) GetProduct(id int) (models.Product, error) {
 	producer.producer_label AS "producer_ref.producer.producer_label",
 	ut.unit_id AS "unit_temperature.unit_id",
 	ut.unit_label AS "unit_temperature.unit_label",
-	umw.unit_id AS "unit_molecularweight.unit_id",
-	umw.unit_label AS "unit_molecularweight.unit_label",
+	umw.unit_id AS "unit_molecular_weight.unit_id",
+	umw.unit_label AS "unit_molecular_weight.unit_label",
 	category.category_id AS "category.category_id",
 	category.category_label AS "category.category_label"
 	FROM product
@@ -958,8 +958,8 @@ func (db *SQLiteDataStore) GetProduct(id int) (models.Product, error) {
 	// getting classes of compounds
 	//
 	sqlr = `SELECT class_of_compound_id, class_of_compound_label FROM class_of_compound
-	JOIN productclass_of_compound ON productclass_of_compound.productclass_of_compound_class_of_compound_id = class_of_compound.class_of_compound_id
-	JOIN product ON productclass_of_compound.productclass_of_compound_product_id = product.product_id
+	JOIN productclassesofcompounds ON productclassesofcompounds.productclassesofcompounds_class_of_compound_id = class_of_compound.class_of_compound_id
+	JOIN product ON productclassesofcompounds.productclassesofcompounds_product_id = product.product_id
 	WHERE product.product_id = ?`
 	if err = db.Select(&product.ClassOfCompound, sqlr, product.ProductID); err != nil {
 		return product, err
@@ -1029,7 +1029,7 @@ func (db *SQLiteDataStore) DeleteProduct(id int) error {
 	}
 
 	// deleting classes of compounds
-	sqlr = `DELETE FROM productclass_of_compound WHERE productclass_of_compound.productclass_of_compound_product_id = (?)`
+	sqlr = `DELETE FROM productclassesofcompounds WHERE productclassesofcompounds.productclassesofcompounds_product_id = (?)`
 	if _, err = db.Exec(sqlr, id); err != nil {
 		return err
 	}
@@ -1578,17 +1578,17 @@ func (db *SQLiteDataStore) CreateUpdateProduct(p models.Product, update bool) (l
 
 	// adding classes of compounds
 	if update {
-		sqlr = `DELETE FROM productclass_of_compound WHERE productclass_of_compound.productclass_of_compound_product_id = (?)`
+		sqlr = `DELETE FROM productclassesofcompounds WHERE productclassesofcompounds.productclassesofcompounds_product_id = (?)`
 		if _, err = tx.Exec(sqlr, p.ProductID); err != nil {
-			logger.Log.Error("error DELETE FROM productclass_of_compound")
+			logger.Log.Error("error DELETE FROM productclassesofcompounds")
 			return
 		}
 	}
 
 	for _, coc := range p.ClassOfCompound {
-		sqlr = `INSERT INTO productclass_of_compound (productclass_of_compound_product_id, productclass_of_compound_class_of_compound_id) VALUES (?,?)`
+		sqlr = `INSERT INTO productclassesofcompounds (productclassesofcompounds_product_id, productclassesofcompounds_class_of_compound_id) VALUES (?,?)`
 		if _, err = tx.Exec(sqlr, p.ProductID, coc.ClassOfCompoundID); err != nil {
-			logger.Log.Error("error INSERT INTO productclass_of_compound")
+			logger.Log.Error("error INSERT INTO productclassesofcompounds")
 			return
 		}
 	}
