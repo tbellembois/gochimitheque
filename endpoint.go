@@ -88,10 +88,9 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 	// store locations
 	router.Handle("/{view:v}/{item:storelocations}", secureChain.Then(env.AppMiddleware(env.VGetStoreLocationsHandler))).Methods("GET")
 	router.Handle("/{view:vc}/{item:storelocations}", secureChain.Then(env.AppMiddleware(env.VCreateStoreLocationHandler))).Methods("GET")
-	router.Handle("/{item:storelocations}", secureChain.Then(env.AppMiddleware(env.GetStoreLocationsHandler))).Methods("GET")
-	router.Handle("/{item:storelocations-bstable}", secureChain.Then(env.AppMiddleware(env.GetStoreLocationsBSTABLEHandler))).Methods("GET")
 
-	router.Handle("/{item:storelocations}/{id}", secureChain.Then(env.AppMiddleware(env.GetStoreLocationHandler))).Methods("GET")
+	router.Handle("/{item:storelocations}?store_location={id:[0-9]+}", secureChain.Then(env.AppMiddleware(env.GetStoreLocationsHandler))).Methods("GET")
+	router.Handle("/{item:storelocations}", secureChain.Then(env.AppMiddleware(env.GetStoreLocationsHandler))).Methods("GET")
 	router.Handle("/{item:storelocations}/{id}", secureChain.Then(env.AppMiddleware(env.UpdateStoreLocationHandler))).Methods("PUT")
 	router.Handle("/{item:storelocations}", secureChain.Then(env.AppMiddleware(env.CreateStoreLocationHandler))).Methods("POST")
 	router.Handle("/{item:storelocations}/{id}", secureChain.Then(env.AppMiddleware(env.DeleteStoreLocationHandler))).Methods("DELETE")
@@ -192,7 +191,7 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 
 	// validators
 	router.Handle("/{item:validate}/entity/{id}/name/", secureChain.Then(env.AppMiddleware(env.ValidateEntityNameHandler))).Methods("POST")
-	router.Handle("/{item:validate}/person/{id}/email/", secureChain.Then(env.AppMiddleware(env.ValidatePersonEmailHandler))).Methods("POST")
+	router.Handle("/{item:validate}/person/{id}/email/{email}", secureChain.Then(env.AppMiddleware(env.ValidatePersonEmailHandler))).Methods("GET")
 	router.Handle("/{item:validate}/product/{id}/cas_number/", secureChain.Then(env.AppMiddleware(env.ValidateProductCasNumberHandler))).Methods("POST")
 	router.Handle("/{item:validate}/product/{id}/cenumber/", secureChain.Then(env.AppMiddleware(env.ValidateProductCeNumberHandler))).Methods("POST")
 	router.Handle("/{item:validate}/product/{id}/name/", secureChain.Then(env.AppMiddleware(env.ValidateProductNameHandler))).Methods("POST")

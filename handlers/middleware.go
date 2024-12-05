@@ -3,6 +3,8 @@ package handlers
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -14,6 +16,7 @@ import (
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
 	"github.com/tbellembois/gochimitheque/request"
+	"github.com/tbellembois/gochimitheque/zmqclient"
 	"golang.org/x/oauth2"
 )
 
@@ -268,6 +271,8 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			}
 		}
 
+		logger.Log.WithFields(logrus.Fields{"r.Method": fmt.Sprintf("%+v", r.Method)}).Debug("AuthorizeMiddleware")
+
 		//
 		// pre checks
 		//
@@ -306,7 +311,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 				// we can not delete a manager
 				m, e := env.DB.IsPersonManager(itemidInt)
 				if e != nil {
-					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
+					logger.Log.WithFields(logrus.Fields{"e": e.Error()}).Error("AuthorizeMiddleware")
 					http.Error(w, e.Error(), http.StatusInternalServerError)
 					return
 				}
@@ -317,7 +322,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 				// we can not delete an admin
 				a, e := env.DB.IsPersonAdmin(itemidInt)
 				if e != nil {
-					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
+					logger.Log.WithFields(logrus.Fields{"e": e.Error()}).Error("AuthorizeMiddleware")
 					http.Error(w, e.Error(), http.StatusInternalServerError)
 					return
 				}
@@ -325,35 +330,43 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 					http.Error(w, "can not delete an admin", http.StatusBadRequest)
 					return
 				}
-			case "store_locations":
+			case "storelocations":
 				// itemid is an int
 				if itemidInt, err = strconv.Atoi(itemid); err != nil {
 					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Debug("AuthorizeMiddleware")
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
-				// can not delete store location with children
-				c, e := env.DB.GetStoreLocationChildren(itemidInt)
-				if e != nil {
+
+				// getting the store location
+				var (
+					jsonRawMessage json.RawMessage
+					storeLocation  models.StoreLocation
+				)
+				if jsonRawMessage, err = zmqclient.DBGetStorelocations("http://localhost/?store_location="+strconv.Itoa(int(itemidInt)), personid); err != nil {
 					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
-					http.Error(w, e.Error(), http.StatusInternalServerError)
+					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
-				if len(c) != 0 {
+
+				if storeLocation, err = ConvertDBJSONToStorelocation(jsonRawMessage); err != nil {
+					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+
+				// can not delete store location with children
+				if storeLocation.StoreLocationNbChildren != nil && *storeLocation.StoreLocationNbChildren > 0 {
 					http.Error(w, "can not delete store location with children", http.StatusBadRequest)
 					return
 				}
-				// we can not delete a non empty store location
-				m, e := env.DB.HasStorelocationStorage(itemidInt)
-				if e != nil {
-					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
-					http.Error(w, e.Error(), http.StatusInternalServerError)
-					return
-				}
-				if !m {
+
+				// can not delete a non empty store location
+				if storeLocation.StoreLocationNbStorage != nil && *storeLocation.StoreLocationNbStorage > 0 {
 					http.Error(w, "can not delete a non empty store location", http.StatusBadRequest)
 					return
 				}
+
 			case "products":
 				// itemid is an int
 				if itemidInt, err = strconv.Atoi(itemid); err != nil {
@@ -382,12 +395,12 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 					m, e1 := env.DB.HasEntityMember(itemidInt)
 					n, e2 := env.DB.HasEntityStorelocation(itemidInt)
 					if e1 != nil {
-						logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
+						logger.Log.WithFields(logrus.Fields{"e1": e1.Error()}).Error("AuthorizeMiddleware")
 						http.Error(w, e1.Error(), http.StatusBadRequest)
 						return
 					}
 					if e2 != nil {
-						logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
+						logger.Log.WithFields(logrus.Fields{"e2": e2.Error()}).Error("AuthorizeMiddleware")
 						http.Error(w, e2.Error(), http.StatusBadRequest)
 						return
 					}
@@ -400,6 +413,9 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 						return
 					}
 				}
+			default:
+				http.Error(w, "unknown item: "+item, http.StatusBadRequest)
+				return
 			}
 		}
 

@@ -1,4 +1,4 @@
-FROM golang:1.22-bullseye as builder
+FROM golang:1.23-bullseye as builder
 LABEL author="Thomas Bellembois"
 ARG BuildID
 ENV BuildID=${BuildID}

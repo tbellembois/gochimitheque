@@ -30,7 +30,7 @@ func DBUpdateGHSStatements() (json.RawMessage, error) {
 		return json.RawMessage{}, err
 	}
 
-	message := `{"DBUpdateGHSStatements":""}`
+	message := `{"DBUpdateGHSStatements"}`
 
 	if _, err = s.Send(message, 0); err != nil {
 		return json.RawMessage{}, err

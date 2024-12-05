@@ -2,13 +2,16 @@ package casbin
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"strconv"
 
+	"github.com/barweiss/go-tuple"
 	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/datastores"
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
+	"github.com/tbellembois/gochimitheque/zmqclient"
 )
 
 func matchPeople(datastore datastores.Datastore, personID string, itemID string, entityID string) bool {
@@ -68,10 +71,11 @@ func MatchPeopleFuncWrapper(datastore datastores.Datastore) func(args ...interfa
 
 func matchStorelocation(datastore datastores.Datastore, personID string, itemID string, entityID string) bool {
 	var (
-		pid, iid      int
-		err           error
-		m             bool
+		pid, iid       int
+		err            error
+		m              bool
 		store_location models.StoreLocation
+		jsonRawMessage json.RawMessage
 	)
 
 	logger.Log.WithFields(logrus.Fields{"personId": personID, "itemId": itemID, "entityId": entityID}).Debug("matchStorelocation")
@@ -86,10 +90,24 @@ func matchStorelocation(datastore datastores.Datastore, personID string, itemID 
 		return false
 	}
 
-	if store_location, err = datastore.GetStoreLocation(iid); err != nil && err != sql.ErrNoRows {
-		logger.Log.Error("matchStorelocation: " + err.Error())
+	// getting the store location matching the id
+	if jsonRawMessage, err = zmqclient.DBGetStorelocations("http://localhost/?store_location="+strconv.Itoa(iid), pid); err != nil {
+		logger.Log.Error("matchStorelocation - error calling zmqclient.DBGetStorelocations: " + err.Error())
 		return false
 	}
+
+	// unmarshalling response
+	var tuple tuple.T2[[]models.StoreLocation, int]
+	if err = json.Unmarshal(jsonRawMessage, &tuple); err != nil {
+		logger.Log.Error("matchStorelocation - error calling zmqclient.DBGetStorelocations: " + err.Error())
+		return false
+	}
+
+	store_location = tuple.V1[0]
+	// if store_location, err = datastore.GetStoreLocation(iid); err != nil && err != sql.ErrNoRows {
+	// 	logger.Log.Error("matchStorelocation: " + err.Error())
+	// 	return false
+	// }
 
 	if err == sql.ErrNoRows {
 		return false

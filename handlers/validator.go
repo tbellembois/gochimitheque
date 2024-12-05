@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/barweiss/go-tuple"
 	"github.com/gorilla/mux"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/sirupsen/logrus"
@@ -28,32 +29,20 @@ func sendResponse(w http.ResponseWriter, response string) {
 // If an id is given is the request, the validator ignore the email of the person with this id.
 func (env *Env) ValidatePersonEmailHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	var (
-		err      error
-		res      bool
-		resp     string
-		person   models.Person
-		personID int
-		filter   zmqclient.RequestFilter
+		err            error
+		res            bool
+		resp           string
+		count          int
+		person         models.Person
+		personID       int
+		personEmail    string
+		jsonRawMessage json.RawMessage
 	)
 
 	vars := mux.Vars(r)
 
 	// retrieving the logged user id from request context
 	c := request.ContainerFromRequestContext(r)
-
-	// init db request parameters
-	// if filter, aerr = request.NewFilter(r); aerr != nil {
-	// 	logger.Log.Error("NewdbselectparamPerson error")
-	// 	resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "person_emailexist_validate", PluralCount: 1})
-	// 	sendResponse(w, resp)
-	// 	return nil
-	// }
-	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
-		logger.Log.Error("error calling zmqclient.Request_filter")
-		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "person_emailexist_validate", PluralCount: 1})
-		sendResponse(w, resp)
-		return nil
-	}
 
 	// converting the id
 	if personID, err = strconv.Atoi(vars["id"]); err != nil {
@@ -64,23 +53,29 @@ func (env *Env) ValidatePersonEmailHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	// getting the email
-	if err = r.ParseForm(); err != nil {
-		logger.Log.Error("ParseForm error")
-		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "person_emailexist_validate", PluralCount: 1})
-		sendResponse(w, resp)
-		return nil
-	}
-
-	filter.Search = r.Form.Get("person_email")
+	personEmail = vars["email"]
 
 	// getting the people matching the email
-	people, count, err := env.DB.GetPeople(filter, c.PersonID)
-	if err != nil {
-		logger.Log.Error("GetPeople error")
-		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "person_emailexist_validate", PluralCount: 1})
-		sendResponse(w, resp)
-		return nil
+	if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/?search="+personEmail, c.PersonID); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.DBGetPeople",
+		}
 	}
+
+	// unmarshalling response
+	var tuple tuple.T2[[]models.Person, int]
+	if err = json.Unmarshal(jsonRawMessage, &tuple); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling jsonRawMessage",
+		}
+	}
+
+	people := tuple.V1
+	count = tuple.V2
 
 	if count == 0 {
 		res = false

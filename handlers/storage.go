@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/barweiss/go-tuple"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/logger"
@@ -112,95 +113,20 @@ func (env *Env) GetStoragesUnitsHandler(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 
+	var (
+		jsonresp []byte
+		appErr   *models.AppError
+	)
+	if jsonresp, appErr = ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
+		return appErr
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Write(jsonRawMessage)
+	w.Write(jsonresp)
 
 	return nil
-	// logger.Log.Debug("GetStoragesUnitsHandler")
 
-	// var (
-	// 	err    error
-	// 	filter zmqclient.RequestFilter
-	// )
-
-	// // init db request parameters
-	// if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
-	// 	return &models.AppError{
-	// 		OriginalError: err,
-	// 		Code:          http.StatusInternalServerError,
-	// 		Message:       "error calling zmqclient.Request_filter",
-	// 	}
-	// }
-
-	// units, count, err := env.DB.GetStoragesUnits(filter)
-	// if err != nil {
-	// 	return &models.AppError{
-	// 		OriginalError: err,
-	// 		Code:          http.StatusInternalServerError,
-	// 		Message:       "error getting the units",
-	// 	}
-	// }
-
-	// w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	// if err = json.NewEncoder(w).Encode(models.UnitsResp{Rows: units, Total: count}); err != nil {
-	// 	return &models.AppError{
-	// 		Code:    http.StatusInternalServerError,
-	// 		Message: err.Error(),
-	// 	}
-	// }
-	// return nil
 }
-
-// GetStoragesSuppliersHandler godoc
-// @Summary Get the suppliers.
-// @tags supplier
-// @Produce json
-// @Success 200 {object} models.Supplier
-// @Failure 500
-// @Failure 403
-// @Router /storages/suppliers [get].
-// func (env *Env) GetStoragesSuppliersHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-// 	logger.Log.Debug("GetStoragesSuppliersHandler")
-
-// 	var (
-// 		err    error
-// 		filter zmqclient.RequestFilter
-// 	)
-
-// 	// init db request parameters
-// 	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
-// 		return &models.AppError{
-// 			OriginalError: err,
-// 			Code:          http.StatusInternalServerError,
-// 			Message:       "error calling zmqclient.Request_filter",
-// 		}
-// 	}
-
-// 	suppliers, count, err := env.DB.GetSuppliers(filter)
-// 	if err != nil {
-// 		return &models.AppError{
-// 			OriginalError: err,
-// 			Code:          http.StatusInternalServerError,
-// 			Message:       "error getting the suppliers",
-// 		}
-// 	}
-
-// 	type resp struct {
-// 		Rows  []models.Supplier `json:"rows"`
-// 		Total int               `json:"total"`
-// 	}
-
-// 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-// 	if err = json.NewEncoder(w).Encode(resp{Rows: suppliers, Total: count}); err != nil {
-// 		return &models.AppError{
-// 			Code:    http.StatusInternalServerError,
-// 			Message: err.Error(),
-// 		}
-// 	}
-// 	return nil
-// }
 
 // GetOtherStoragesHandler returns a json list of the storages matching the search criteria
 // in other entities with no storage details.
@@ -510,9 +436,10 @@ func (env *Env) CreateStorageHandler(w http.ResponseWriter, r *http.Request) *mo
 	logger.Log.Debug("CreateStorageHandler")
 
 	var (
-		s   models.Storage
-		err error
-		id  int64
+		s              models.Storage
+		err            error
+		id             int64
+		jsonRawMessage json.RawMessage
 	)
 
 	if err = json.NewDecoder(r.Body).Decode(&s); err != nil {
@@ -526,15 +453,26 @@ func (env *Env) CreateStorageHandler(w http.ResponseWriter, r *http.Request) *mo
 	// retrieving the logged user id from request context
 	c := request.ContainerFromRequestContext(r)
 
-	// retrieving the full store location
-	// we need its entity id to compute the barecode
-	if s.StoreLocation, err = env.DB.GetStoreLocation(int(s.StoreLocationID.Int64)); err != nil {
+	// getting the store location matching the id
+	if jsonRawMessage, err = zmqclient.DBGetStorelocations("http://localhost/?store_location="+strconv.Itoa(int(s.StoreLocationID.Int64)), c.PersonID); err != nil {
 		return &models.AppError{
 			OriginalError: err,
-			Message:       "error retrieving the storage store location",
 			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.DBGetStorelocations",
 		}
 	}
+
+	// unmarshalling response
+	var tuple tuple.T2[[]models.StoreLocation, int]
+	if err = json.Unmarshal(jsonRawMessage, &tuple); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling jsonRawMessage",
+		}
+	}
+
+	s.StoreLocation = tuple.V1[0]
 
 	s.StorageCreationDate = models.MyTime{time.Now()}
 	s.StorageModificationDate = models.MyTime{time.Now()}

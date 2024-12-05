@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"bytes"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
@@ -33,7 +32,7 @@ func (env *Env) DownloadExportHandler(w http.ResponseWriter, r *http.Request) *m
 
 	var fileData []byte
 
-	if fileData, err = ioutil.ReadFile(fileFullPath); err != nil {
+	if fileData, err = os.ReadFile(fileFullPath); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,

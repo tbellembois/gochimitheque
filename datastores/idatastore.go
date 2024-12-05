@@ -1,8 +1,6 @@
 package datastores
 
 import (
-	"net/http"
-
 	"github.com/jmoiron/sqlx"
 	"github.com/tbellembois/gochimitheque/models"
 	"github.com/tbellembois/gochimitheque/zmqclient"
@@ -21,7 +19,7 @@ type Datastore interface {
 	GetWelcomeAnnounce() (models.WelcomeAnnounce, error)
 	UpdateWelcomeAnnounce(w models.WelcomeAnnounce) error
 
-	GetProducts(zmqclient.RequestFilter, int, bool) ([]models.Product, int, error)
+	// GetProducts(zmqclient.RequestFilter, int, bool) ([]models.Product, int, error)
 	GetProduct(id int) (models.Product, error)
 	CountProductStorages(id int) (int, error)
 	CountProducts() (int, error)
@@ -59,15 +57,15 @@ type Datastore interface {
 
 	// store locations
 	// GetStoreLocations(zmqclient.RequestFilter, int) ([]models.StoreLocation, int, error)
-	GetStoreLocation(id int) (models.StoreLocation, error)
+	// GetStoreLocation(id int) (models.StoreLocation, error)
 	GetStoreLocationChildren(id int) ([]models.StoreLocation, error)
 	DeleteStoreLocation(id int) error
-	CreateStoreLocation(s models.StoreLocation) (int64, error)
-	UpdateStoreLocation(s models.StoreLocation) error
-	HasStorelocationStorage(id int) (bool, error)
+	// CreateStoreLocation(s models.StoreLocation) (int64, error)
+	// UpdateStoreLocation(s models.StoreLocation) error
+	// HasStorelocationStorage(id int) (bool, error)
 
 	// entities
-	ComputeStockEntity(p models.Product, r *http.Request) []models.StoreLocation
+	// ComputeStockEntity(p models.Product, r *http.Request) []models.StoreLocation
 
 	GetEntities(zmqclient.RequestFilter, int) ([]models.Entity, int, error)
 	GetEntity(id int) (models.Entity, error)
@@ -79,7 +77,7 @@ type Datastore interface {
 	HasEntityStorelocation(id int) (bool, error)
 
 	// people
-	GetPeople(zmqclient.RequestFilter, int) ([]models.Person, int, error)
+	// GetPeople(zmqclient.RequestFilter, int) ([]models.Person, int, error)
 	GetOrphanPeople() ([]models.Person, error)
 	IsOrphanPerson(id int) (bool, error)
 	GetPerson(id int) (models.Person, error)

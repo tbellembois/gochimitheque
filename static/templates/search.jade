@@ -7,17 +7,17 @@ include mixins
 
     #searchType.row.collapse.show.mb-sm-2
         .col-sm-4
-            input#searchshowchem(checked="checked" type="checkbox" value="chem")
+            input#searchshowchem(checked="checked" type="radio" value="chem" name="typechooser")
             label.form-check-label(for="searchshowchem")
                 span.mdi.mdi-atom.mdi-24px.iconlabel(title=T("chemical_product", 1 ))
                     =T("chemical_product", 1 )
         .col-sm-4
-            input#searchshowbio(checked="checked" type="checkbox" value="bio")
+            input#searchshowbio(type="radio" value="bio" name="typechooser")
             label.form-check-label(for="searchshowbio")
                 span.mdi.mdi-dna.mdi-24px.iconlabel(title=T("biological_product", 1 ))
                     =T("biological_product", 1 )
         .col-sm-4
-            input#searchshowconsu(checked="checked" type="checkbox" value="consu")
+            input#searchshowconsu(type="radio" value="consu" name="typechooser")
             label.form-check-label(for="searchshowconsu")
                 span.mdi.mdi-cube-scan.mdi-24px.iconlabel(title=T("consumable_product", 1 ))
                     =T("consumable_product", 1 ) 
@@ -104,10 +104,6 @@ include mixins
             button#s_storage_archive_button.btn.btn-outline-primary.invisible(type="button" data-toggle="button" aria-pressed="true" autocomplete="off")
                 span.mdi.mdi-archive-outline.mdi-24px.iconlabel
                     = T("showdeleted_text", 1) 
-            button#s_storage_stock_button.btn.btn-outline-primary.invisible(type="button" data-toggle="button" aria-pressed="true" autocomplete="off")
-                span.mdi.mdi-sigma.mdi-24px.iconlabel
-                    = T("totalstock_text", 1) 
-
     .col-sm-5
         //- div
         //-     span.text-uppercase.text-primary
@@ -118,5 +114,5 @@ include mixins
                     
         div#filter-item
 
-#stock
+#stock.row.mt-3.ml-5.mr-5
     

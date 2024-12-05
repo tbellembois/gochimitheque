@@ -46,46 +46,31 @@ func (env *Env) GetPeopleHandler(w http.ResponseWriter, r *http.Request) *models
 	logger.Log.Debug("GetPeopleHandler")
 
 	var (
-		err    error
-		filter zmqclient.RequestFilter
+		err            error
+		jsonRawMessage json.RawMessage
 	)
 
 	c := request.ContainerFromRequestContext(r)
 
-	// init db request parameters
-	// if filter, aerr = request.NewFilter(r); aerr != nil {
-	// 	return aerr
-	// }
-	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/?"+r.URL.RawQuery, c.PersonID); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.Request_filter",
+			Message:       "error calling zmqclient.DBGetPeople",
 		}
 	}
 
-	people, count, err := env.DB.GetPeople(filter, c.PersonID)
-	if err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error getting the people",
-		}
-	}
-
-	type resp struct {
-		Rows  []models.Person `json:"rows"`
-		Total int             `json:"total"`
+	var (
+		jsonresp []byte
+		appErr   *models.AppError
+	)
+	if jsonresp, appErr = ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
+		return appErr
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonresp)
 
-	if err = json.NewEncoder(w).Encode(resp{Rows: people, Total: count}); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
 }
 

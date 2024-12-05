@@ -92,17 +92,20 @@ func (env *Env) GetEntitiesHandler(w http.ResponseWriter, r *http.Request) *mode
 	return nil
 }
 
-// GetEntityStockHandler returns a json of the stock of the entity with the requested id.
 func (env *Env) GetEntityStockHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+	logger.Log.Debug("GetEntityStockHandler")
+
 	vars := mux.Vars(r)
 
 	var (
-		pid int
-		p   models.Product
-		err error
+		err            error
+		jsonRawMessage json.RawMessage
+		product_id     int
 	)
 
-	if pid, err = strconv.Atoi(vars["id"]); err != nil {
+	c := request.ContainerFromRequestContext(r)
+
+	if product_id, err = strconv.Atoi(vars["id"]); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Message:       "id atoi conversion",
@@ -110,27 +113,59 @@ func (env *Env) GetEntityStockHandler(w http.ResponseWriter, r *http.Request) *m
 		}
 	}
 
-	if p, err = env.DB.GetProduct(pid); err != nil {
+	if jsonRawMessage, err = zmqclient.DBComputeStock(product_id, c.PersonID); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error getting the product",
+			Message:       "error calling zmqclient.DBGetProducts",
 		}
 	}
-
-	m := env.DB.ComputeStockEntity(p, r)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	if err = json.NewEncoder(w).Encode(m); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
+	w.Write(jsonRawMessage)
 
 	return nil
 }
+
+// GetEntityStockHandler returns a json of the stock of the entity with the requested id.
+// func (env *Env) GetEntityStockHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+// 	vars := mux.Vars(r)
+//
+// 	var (
+// 		pid int
+// 		p   models.Product
+// 		err error
+// 	)
+//
+// 	if pid, err = strconv.Atoi(vars["id"]); err != nil {
+// 		return &models.AppError{
+// 			OriginalError: err,
+// 			Message:       "id atoi conversion",
+// 			Code:          http.StatusBadRequest,
+// 		}
+// 	}
+//
+// 	if p, err = env.DB.GetProduct(pid); err != nil {
+// 		return &models.AppError{
+// 			OriginalError: err,
+// 			Code:          http.StatusInternalServerError,
+// 			Message:       "error getting the product",
+// 		}
+// 	}
+//
+// 	m := env.DB.ComputeStockEntity(p, r)
+//
+// 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+//
+// 	if err = json.NewEncoder(w).Encode(m); err != nil {
+// 		return &models.AppError{
+// 			Code:    http.StatusInternalServerError,
+// 			Message: err.Error(),
+// 		}
+// 	}
+//
+// 	return nil
+// }
 
 // GetEntityHandler returns a json of the entity with the requested id.
 func (env *Env) GetEntityHandler(w http.ResponseWriter, r *http.Request) *models.AppError {

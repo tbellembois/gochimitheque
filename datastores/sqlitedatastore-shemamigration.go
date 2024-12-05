@@ -846,6 +846,7 @@ ALTER TABLE producer_ref_new RENAME TO producer_ref;
 
 CREATE TABLE product_new (
 	product_id	INTEGER,
+	product_type TEXT NOT NULL,
 	product_inchi TEXT,
 	product_inchikey TEXT,
 	product_canonical_smiles TEXT,
@@ -892,6 +893,7 @@ CREATE TABLE product_new (
 ) STRICT;
 INSERT into product_new (
 	product_id,
+	product_type,
 	product_specificity,
 	product_msds,
 	product_restricted,
@@ -919,6 +921,7 @@ INSERT into product_new (
 	product_number_per_bag
 )
 SELECT product_id,
+	random(),
 	product_specificity,
 	product_msds,
 	product_restricted,
@@ -946,6 +949,11 @@ SELECT product_id,
 	product_number_per_bag
 FROM product;
 DROP TABLE product;
+
+UPDATE product_new SET product_type = "cons" WHERE (product_number_per_carton IS NOT NULL AND product_number_per_carton != 0);
+UPDATE product_new SET product_type = "bio" WHERE (producer_ref IS NOT NULL AND (product_number_per_carton IS NULL OR product_number_per_carton == 0));
+UPDATE product_new SET product_type = "chem" WHERE (producer_ref IS NULL AND (product_number_per_carton IS NULL OR product_number_per_carton == 0));
+
 ALTER TABLE product_new RENAME TO product; 
 
 CREATE TABLE signal_word_new (
