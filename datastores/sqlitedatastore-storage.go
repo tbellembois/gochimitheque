@@ -46,78 +46,6 @@ func (db *SQLiteDataStore) ToogleStorageBorrowing(s models.Storage) error {
 	return nil
 }
 
-// GetStoragesUnits return the units.
-func (db *SQLiteDataStore) GetStoragesUnits(f zmqclient.RequestFilter) ([]models.Unit, int, error) {
-
-	// migrated to Rust.
-	panic("migrated to Rust")
-
-	// var (
-	// 	units                              []models.Unit
-	// 	count                              int
-	// 	precreq, presreq, comreq, postsreq strings.Builder
-	// 	cnstmt                             *sqlx.NamedStmt
-	// 	snstmt                             *sqlx.NamedStmt
-	// 	err                                error
-	// )
-
-	// // hack to bypass optionnal default on the Rust part.
-	// if f.Search == "" {
-	// 	f.Search = "%%"
-	// }
-
-	// if f.OrderBy == "" {
-	// 	f.OrderBy = "unit_id"
-	// }
-
-	// precreq.WriteString(" SELECT count(DISTINCT unit.unit_id)")
-	// presreq.WriteString(" SELECT unit_id, unit_label, unit_type")
-
-	// comreq.WriteString(" FROM unit")
-	// comreq.WriteString(" WHERE unit_label LIKE :search")
-
-	// if f.UnitType != "" {
-	// 	comreq.WriteString(" AND unit_type=:unit_type")
-	// }
-
-	// postsreq.WriteString(" ORDER BY unit.unit_type, unit_id  " + f.Order)
-
-	// // limit
-	// if f.Limit != ^uint64(0) {
-	// 	postsreq.WriteString(" LIMIT :limit OFFSET :offset")
-	// }
-
-	// // building count and select statements
-	// if cnstmt, err = db.PrepareNamed(precreq.String() + comreq.String()); err != nil {
-	// 	return nil, 0, err
-	// }
-	// if snstmt, err = db.PrepareNamed(presreq.String() + comreq.String() + postsreq.String()); err != nil {
-	// 	return nil, 0, err
-	// }
-
-	// // building argument map
-	// m := map[string]interface{}{
-	// 	"search":    f.Search,
-	// 	"order":     f.Order,
-	// 	"limit":     f.Limit,
-	// 	"offset":    f.Offset,
-	// 	"unit_type": f.UnitType,
-	// }
-
-	// // Select.
-	// if err = snstmt.Select(&units, m); err != nil {
-	// 	return nil, 0, err
-	// }
-	// // Count.
-	// if err = cnstmt.Get(&count, m); err != nil {
-	// 	return nil, 0, err
-	// }
-
-	// logger.Log.WithFields(logrus.Fields{"units": units}).Debug("GetStoragesUnits")
-
-	// return units, count, nil
-}
-
 // GetStorages returns the storages matching the request parameters p.
 // Only storages that the logged user can see are returned given his permissions
 // and membership.
@@ -172,7 +100,6 @@ func (db *SQLiteDataStore) GetStorages(f zmqclient.RequestFilter, person_id int)
 		s.storage_concentration,
 		s.storage_number_of_carton,
 		s.storage_number_of_bag,
-		s.storage_number_of_unit,
 		storage.storage_id AS "storage.storage_id",
 		uq.unit_id AS "unit_quantity.unit_id",
 		uq.unit_label AS "unit_quantity.unit_label",
@@ -634,7 +561,6 @@ func (db *SQLiteDataStore) GetStorage(id int) (models.Storage, error) {
 	storage.storage_archive,
 	storage.storage_number_of_carton,
 	storage.storage_number_of_bag,
-	storage.storage_number_of_unit,
 	uq.unit_id AS "unit_quantity.unit_id",
 	uq.unit_label AS "unit_quantity.unit_label",
 	uc.unit_id AS "unit_concentration.unit_id",
@@ -836,7 +762,6 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s models.Storage, itemNumber int,
 		storage_to_destroy,
 		storage_archive,
 		storage_concentration,
-		storage_number_of_unit,
 		storage_number_of_bag,
 		storage_number_of_carton,
 		person,
@@ -859,7 +784,6 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s models.Storage, itemNumber int,
 				storage_to_destroy,
 				storage_archive,
 				storage_concentration,
-				storage_number_of_unit,
 				storage_number_of_bag,
 				storage_number_of_carton,
 				person,
@@ -1081,12 +1005,6 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s models.Storage, itemNumber int,
 		insertCols["storage_number_of_carton"] = int(s.StorageNumberOfCarton.Int64)
 	} else {
 		insertCols["storage_number_of_carton"] = nil
-	}
-
-	if s.StorageNumberOfUnit.Valid {
-		insertCols["storage_number_of_unit"] = int(s.StorageNumberOfUnit.Int64)
-	} else {
-		insertCols["storage_number_of_unit"] = nil
 	}
 
 	if s.UnitConcentration.UnitID != nil {

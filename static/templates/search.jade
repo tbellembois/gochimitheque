@@ -6,21 +6,26 @@ include mixins
 .border.rounded.mb-sm-2.p-sm-3.mx-auto.w-75
 
     #searchType.row.collapse.show.mb-sm-2
-        .col-sm-4
-            input#searchshowchem(checked="checked" type="radio" value="chem" name="typechooser")
+        .col-sm-3
+            input#searchshowchem(type="radio" value="chem" name="typechooser")
             label.form-check-label(for="searchshowchem")
                 span.mdi.mdi-atom.mdi-24px.iconlabel(title=T("chemical_product", 1 ))
                     =T("chemical_product", 1 )
-        .col-sm-4
+        .col-sm-3
             input#searchshowbio(type="radio" value="bio" name="typechooser")
             label.form-check-label(for="searchshowbio")
                 span.mdi.mdi-dna.mdi-24px.iconlabel(title=T("biological_product", 1 ))
                     =T("biological_product", 1 )
-        .col-sm-4
+        .col-sm-3
             input#searchshowconsu(type="radio" value="consu" name="typechooser")
             label.form-check-label(for="searchshowconsu")
                 span.mdi.mdi-cube-scan.mdi-24px.iconlabel(title=T("consumable_product", 1 ))
                     =T("consumable_product", 1 ) 
+        .col-sm-3
+            input#searchshowall(checked="checked" type="radio" value="all" name="typechooser")
+            label.form-check-label(for="searchshowall")
+                span.mdi.mdi-circle.mdi-24px.iconlabel(title=T("all_product", 1 ))
+                    =T("all_product", 1 )
 
     #search.row.collapse.show
 

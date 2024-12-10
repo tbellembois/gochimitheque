@@ -75,7 +75,6 @@ type Storage struct {
 	StorageToDestroy         sql.NullBool    `db:"storage_to_destroy" json:"storage_to_destroy" schema:"storage_to_destroy" `
 	StorageArchive           sql.NullBool    `db:"storage_archive" json:"storage_archive" schema:"storage_archive" `
 	StorageConcentration     sql.NullInt64   `db:"storage_concentration" json:"storage_concentration" schema:"storage_concentration" `
-	StorageNumberOfUnit      sql.NullInt64   `db:"storage_number_of_unit" json:"storage_number_of_unit" schema:"storage_number_of_unit" `
 	StorageNumberOfBag       sql.NullInt64   `db:"storage_number_of_bag" json:"storage_number_of_bag" schema:"storage_number_of_bag" `
 	StorageNumberOfCarton    sql.NullInt64   `db:"storage_number_of_carton" json:"storage_number_of_carton" schema:"storage_number_of_carton" `
 	Person                   `db:"person" json:"person" schema:"person"`

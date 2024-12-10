@@ -28,6 +28,10 @@ var LOCALES_FR = []byte(`
 	one = "créé"
 [modified]
 	one = "modifié"
+[selected]
+	one = "sélectionné"
+[select]
+	one = "sélectionner"
 [select_all]
 	one = "sélectionner tout"
 [none]
@@ -55,6 +59,8 @@ var LOCALES_FR = []byte(`
 	one = "sélectionner tout"
 [import]
 	one = "importer"
+[replace]
+	one = "remplacer"
 
 [required_input]
 	one = "champs requis"
@@ -273,6 +279,8 @@ var LOCALES_FR = []byte(`
 	one = "réactif biologique"
 [consumable_product]
 	one = "consommable"
+[all_product]
+	one = "tous les produits"
 
 [switchproductview_text]
 	one = "vue par produits"

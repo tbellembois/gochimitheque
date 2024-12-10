@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strconv"
 
+	"github.com/gorilla/mux"
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
 	"github.com/tbellembois/gochimitheque/request"
@@ -12,14 +14,32 @@ import (
 )
 
 // CreateSupplierHandler creates the supplier from the request form.
-func (env *Env) CreateProductFromPubchemHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	logger.Log.Debug("CreateProductFromPubchemHandler")
+func (env *Env) CreateUpdateProductFromPubchemHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+	logger.Log.Debug("CreateUpdateProductFromPubchemHandler")
+
+	vars := mux.Vars(r)
 
 	var (
 		jsonRawMessage json.RawMessage
 		body           []byte
 		err            error
+		product_id     *int
 	)
+
+	if len(vars["id"]) == 0 {
+		product_id = nil
+	} else {
+		var id int
+		if id, err = strconv.Atoi(vars["id"]); err != nil {
+			return &models.AppError{
+				OriginalError: err,
+				Message:       "id atoi conversion",
+				Code:          http.StatusInternalServerError,
+			}
+		}
+
+		product_id = &id
+	}
 
 	c := request.ContainerFromRequestContext(r)
 
@@ -32,11 +52,11 @@ func (env *Env) CreateProductFromPubchemHandler(w http.ResponseWriter, r *http.R
 	}
 	logger.Log.Debug("body " + string(body))
 
-	if jsonRawMessage, err = zmqclient.DBCreateProductFromPubchem(body, c.PersonID); err != nil {
+	if jsonRawMessage, err = zmqclient.DBCreateUpdateProductFromPubchem(body, c.PersonID, product_id); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.DBCreateProductFromPubchem",
+			Message:       "error calling zmqclient.DBCreateUpdateProductFromPubchem",
 		}
 	}
 

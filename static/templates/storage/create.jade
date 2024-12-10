@@ -40,7 +40,7 @@ block CONTENT
                         = T("storage_one_number_required", 1)
                 .form-group.row.consu.collapse
                     .col-sm-4
-                        +inputnumber(name="storage_number_of_unit", label="storage_number_of_unit", step="1", min="0", max="10000000")
+                        +inputnumber(name="storage_quantity", label="storage_quantity_title", step="any", min="0", max="10000000")
                     .col-sm-4
                         +inputnumber(name="storage_number_of_bag", label="storage_number_of_bag", step="1", min="0", max="10000000", value="", help=T("storage_number_of_bag_comment", 1))
                     .col-sm-4

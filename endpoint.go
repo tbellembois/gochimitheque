@@ -159,7 +159,8 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 	router.Handle("/{item:products}/pubchemautocomplete/{name}", secureChain.Then(env.AppMiddleware(env.PubchemAutocompleteHandler))).Methods("GET")
 	router.Handle("/{item:products}/pubchemgetcompoundbyname/{name}", secureChain.Then(env.AppMiddleware(env.PubchemGetCompoundByNameHandler))).Methods("GET")
 	router.Handle("/{item:products}/pubchemgetproductbyname/{name}", secureChain.Then(env.AppMiddleware(env.PubchemGetProductByNameHandler))).Methods("GET")
-	router.Handle("/{item:products}/pubchemcreateproduct", secureChain.Then(env.AppMiddleware(env.CreateProductFromPubchemHandler))).Methods("POST")
+	router.Handle("/{item:products}/pubchemcreateproduct", secureChain.Then(env.AppMiddleware(env.CreateUpdateProductFromPubchemHandler))).Methods("POST")
+	router.Handle("/{item:products}/pubchemcreateproduct/{id}", secureChain.Then(env.AppMiddleware(env.CreateUpdateProductFromPubchemHandler))).Methods("POST")
 
 	router.Handle("/f/{view:v}/{item:products}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 	router.Handle("/f/{view:vc}/{item:products}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")

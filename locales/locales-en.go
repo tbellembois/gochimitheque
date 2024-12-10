@@ -28,6 +28,10 @@ var LOCALES_EN = []byte(`
 	one = "created"
 [modified]
 	one = "modified"
+[selected]
+	one = "selected"
+[select]
+	one = "select"
 [select_all]
 	one = "select all"
 [none]
@@ -55,6 +59,8 @@ var LOCALES_EN = []byte(`
 	one = "check all"
 [import]
 	one = "import"
+[replace]
+	one = "replace"
 
 [required_input]
 	one = "required input"
@@ -273,6 +279,8 @@ var LOCALES_EN = []byte(`
 	one = "biological reagent"
 [consumable_product]
 	one = "lab consumable"
+[all_product]
+	one = "all products"
 
 [switchproductview_text]
 	one = "switch to product view"

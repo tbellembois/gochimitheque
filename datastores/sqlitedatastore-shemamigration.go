@@ -971,6 +971,8 @@ FROM signalword;
 DROP TABLE signalword;
 ALTER TABLE signal_word_new RENAME TO signal_word;
 
+UPDATE storage SET storage_quantity = storage_number_of_unit WHERE storage_number_of_unit IS NOT NULL;
+
 CREATE TABLE storage_new (
 	storage_id	INTEGER,
 	storage_creation_date	INTEGER NOT NULL DEFAULT current_timestamp,
@@ -988,7 +990,6 @@ CREATE TABLE storage_new (
 	storage_archive	INTEGER DEFAULT 0,
 	storage_qrcode	BLOB,
 	storage_concentration	REAL,
-	storage_number_of_unit	INTEGER,
 	storage_number_of_bag	INTEGER,
 	storage_number_of_carton	INTEGER,
 	person	INTEGER NOT NULL,
@@ -1024,7 +1025,6 @@ INSERT INTO storage_new (
 	storage_archive,
 	storage_qrcode,
 	storage_concentration,
-	storage_number_of_unit,
 	storage_number_of_bag,
 	storage_number_of_carton,
 	person,
@@ -1051,7 +1051,6 @@ storage_todestroy,
 storage_archive,
 storage_qrcode,
 storage_concentration,
-storage_number_of_unit,
 storage_number_of_bag,
 storage_number_of_carton,
 person,
