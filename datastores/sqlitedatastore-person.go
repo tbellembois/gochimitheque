@@ -10,15 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
-	"github.com/tbellembois/gochimitheque/zmqclient"
 )
-
-// GetPeople select the people matching p
-// and visible by the connected user.
-func (db *SQLiteDataStore) GetPeople(f zmqclient.RequestFilter, person_id int) ([]models.Person, int, error) {
-	// migrated to Rust.
-	panic("migrated to Rust")
-}
 
 func (db *SQLiteDataStore) IsOrphanPerson(id int) (bool, error) {
 

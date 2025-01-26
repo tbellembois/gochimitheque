@@ -58,8 +58,8 @@ type Datastore interface {
 	// store locations
 	// GetStoreLocations(zmqclient.RequestFilter, int) ([]models.StoreLocation, int, error)
 	// GetStoreLocation(id int) (models.StoreLocation, error)
-	GetStoreLocationChildren(id int) ([]models.StoreLocation, error)
-	DeleteStoreLocation(id int) error
+	// GetStoreLocationChildren(id int) ([]models.StoreLocation, error)
+	// DeleteStoreLocation(id int) error
 	// CreateStoreLocation(s models.StoreLocation) (int64, error)
 	// UpdateStoreLocation(s models.StoreLocation) error
 	// HasStorelocationStorage(id int) (bool, error)

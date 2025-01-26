@@ -73,7 +73,7 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 	router.Handle("/{item:people}/{id}/permissions", secureChain.Then(env.AppMiddleware(env.GetPersonPermissionsHandler))).Methods("GET")
 	router.Handle("/{item:people}/{id}", secureChain.Then(env.AppMiddleware(env.UpdatePersonHandler))).Methods("PUT")
 	// router.Handle("/{item:people}", secureChain.Then(env.AppMiddleware(env.CreatePersonHandler))).Methods("POST")
-	// router.Handle("/{item:people}/{id}", secureChain.Then(env.AppMiddleware(env.DeletePersonHandler))).Methods("DELETE")
+	router.Handle("/{item:people}/{id}", secureChain.Then(env.AppMiddleware(env.DeletePersonHandler))).Methods("DELETE")
 	router.Handle("/f/{view:v}/{item:people}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 	router.Handle("/f/{view:vc}/{item:people}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 	router.Handle("/f/{item:people}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")

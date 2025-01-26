@@ -9,7 +9,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
-	"github.com/tbellembois/gochimitheque/datastores"
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
 	"github.com/tbellembois/gochimitheque/request"
@@ -655,8 +654,9 @@ func (env *Env) GetProductsEmpiricalFormulaHandler(w http.ResponseWriter, r *htt
 	vars := mux.Vars(r)
 
 	var (
-		id  int
-		err error
+		id             int
+		err            error
+		jsonRawMessage json.RawMessage
 	)
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
@@ -667,25 +667,17 @@ func (env *Env) GetProductsEmpiricalFormulaHandler(w http.ResponseWriter, r *htt
 		}
 	}
 
-	// ef, err := env.DB.GetEmpiricalFormula(id)
-	ef, err := datastores.GetByID(models.EmpiricalFormula{}, env.DB.GetDB(), id)
-
-	if err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetEmpiricalformula(id); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error getting the empirical formula",
+			Message:       "error calling zmqclient.DBGetEmpiricalformula",
 		}
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
-	if err = json.NewEncoder(w).Encode(ef); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
 }
 
@@ -696,8 +688,9 @@ func (env *Env) GetProductsCasNumberHandler(w http.ResponseWriter, r *http.Reque
 	vars := mux.Vars(r)
 
 	var (
-		id  int
-		err error
+		id             int
+		err            error
+		jsonRawMessage json.RawMessage
 	)
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
@@ -708,25 +701,17 @@ func (env *Env) GetProductsCasNumberHandler(w http.ResponseWriter, r *http.Reque
 		}
 	}
 
-	// cas, err := env.DB.GetCasNumber(id)
-	cas, err := datastores.GetByID(models.CasNumber{}, env.DB.GetDB(), id)
-
-	if err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetCasnumber(id); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error getting the cas number",
+			Message:       "error calling zmqclient.DBGetCasnumber",
 		}
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
-	if err = json.NewEncoder(w).Encode(cas); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
 }
 
@@ -737,8 +722,9 @@ func (env *Env) GetProductsSignalWordHandler(w http.ResponseWriter, r *http.Requ
 	vars := mux.Vars(r)
 
 	var (
-		id  int
-		err error
+		id             int
+		err            error
+		jsonRawMessage json.RawMessage
 	)
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
@@ -749,25 +735,17 @@ func (env *Env) GetProductsSignalWordHandler(w http.ResponseWriter, r *http.Requ
 		}
 	}
 
-	// signal_word, err := env.DB.GetSignalWord(id)
-	signal_word, err := datastores.GetByID(models.SignalWord{}, env.DB.GetDB(), id)
-
-	if err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetSignalword(id); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error getting the signal word",
+			Message:       "error calling zmqclient.DBGetSignalword",
 		}
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
-	if err = json.NewEncoder(w).Encode(signal_word); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
 }
 
@@ -809,8 +787,9 @@ func (env *Env) GetProductsSymbolHandler(w http.ResponseWriter, r *http.Request)
 	vars := mux.Vars(r)
 
 	var (
-		id  int
-		err error
+		id             int
+		err            error
+		jsonRawMessage json.RawMessage
 	)
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
@@ -821,25 +800,17 @@ func (env *Env) GetProductsSymbolHandler(w http.ResponseWriter, r *http.Request)
 		}
 	}
 
-	// symbol, err := env.DB.GetSymbol(id)
-	symbol, err := datastores.GetByID(models.Symbol{}, env.DB.GetDB(), id)
-
-	if err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetSymbol(id); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error getting the symbol",
+			Message:       "error calling zmqclient.DBGetSymbol",
 		}
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
-	if err = json.NewEncoder(w).Encode(symbol); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
 }
 
@@ -881,8 +852,9 @@ func (env *Env) GetProductsHazardStatementHandler(w http.ResponseWriter, r *http
 	vars := mux.Vars(r)
 
 	var (
-		id  int
-		err error
+		id             int
+		err            error
+		jsonRawMessage json.RawMessage
 	)
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
@@ -893,25 +865,17 @@ func (env *Env) GetProductsHazardStatementHandler(w http.ResponseWriter, r *http
 		}
 	}
 
-	// hs, err := env.DB.GetHazardStatement(id)
-	hs, err := datastores.GetByID(models.HazardStatement{}, env.DB.GetDB(), id)
-
-	if err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetHazardstatement(id); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error getting the hazard_statement",
+			Message:       "error calling zmqclient.DBGetHazardstatement",
 		}
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
-	if err = json.NewEncoder(w).Encode(hs); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
 }
 
@@ -953,8 +917,9 @@ func (env *Env) GetProductsPrecautionaryStatementHandler(w http.ResponseWriter, 
 	vars := mux.Vars(r)
 
 	var (
-		id  int
-		err error
+		id             int
+		err            error
+		jsonRawMessage json.RawMessage
 	)
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
@@ -965,25 +930,17 @@ func (env *Env) GetProductsPrecautionaryStatementHandler(w http.ResponseWriter, 
 		}
 	}
 
-	// ps, err := env.DB.GetPrecautionaryStatement(id)
-	ps, err := datastores.GetByID(models.PrecautionaryStatement{}, env.DB.GetDB(), id)
-
-	if err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetPrecautionarystatement(id); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error getting the precautionary_statement",
+			Message:       "error calling zmqclient.DBGetPrecautionarystatement",
 		}
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
-	if err = json.NewEncoder(w).Encode(ps); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
 }
 
@@ -1026,8 +983,9 @@ func (env *Env) GetProductsNameHandler(w http.ResponseWriter, r *http.Request) *
 	vars := mux.Vars(r)
 
 	var (
-		id  int
-		err error
+		id             int
+		err            error
+		jsonRawMessage json.RawMessage
 	)
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
@@ -1038,25 +996,17 @@ func (env *Env) GetProductsNameHandler(w http.ResponseWriter, r *http.Request) *
 		}
 	}
 
-	// name, err := env.DB.GetName(id)
-	name, err := datastores.GetByID(models.Name{}, env.DB.GetDB(), id)
-
-	if err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetName(id); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error getting the name",
+			Message:       "error calling zmqclient.DBGetName",
 		}
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
-	if err = json.NewEncoder(w).Encode(name); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
 }
 
@@ -1073,7 +1023,7 @@ func (env *Env) GetProductsSynonymsHandler(w http.ResponseWriter, r *http.Reques
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.GetProductsSynonymsHandler",
+			Message:       "error calling zmqclient.DBGetNames",
 		}
 	}
 

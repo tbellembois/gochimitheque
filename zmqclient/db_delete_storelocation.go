@@ -7,15 +7,20 @@ import (
 	zmq "github.com/pebbe/zmq4"
 )
 
+// Request.
+type DBDeleteStorelocationReq struct {
+	DBDeleteStorelocation int `json:"DBDeleteStorelocation"`
+}
+
 // Response.
-type DBUpdateGHSStatementsOk struct {
+type DBDeleteStorelocationsOk struct {
 	Ok json.RawMessage
 }
-type DBUpdateGHSStatementsErr struct {
+type DBDeleteStorelocationErr struct {
 	Err string
 }
 
-func DBUpdateGHSStatements() (json.RawMessage, error) {
+func DBDeleteStorelocation(StoreLocationId int) (json.RawMessage, error) {
 	var (
 		s   *zmq.Socket
 		err error
@@ -30,9 +35,17 @@ func DBUpdateGHSStatements() (json.RawMessage, error) {
 		return json.RawMessage{}, err
 	}
 
-	message := `{"DBUpdateGHSStatements":""}`
+	var (
+		message []byte
+	)
 
-	if _, err = s.Send(message, 0); err != nil {
+	if message, err = json.Marshal(DBDeleteStorelocationReq{
+		DBDeleteStorelocation: StoreLocationId,
+	}); err != nil {
+		return json.RawMessage{}, err
+	}
+
+	if _, err = s.Send(string(message), 0); err != nil {
 		return json.RawMessage{}, err
 	}
 
@@ -42,7 +55,7 @@ func DBUpdateGHSStatements() (json.RawMessage, error) {
 
 		if msg[0:5] == `{"Ok"` {
 
-			var resp DBUpdateGHSStatementsOk
+			var resp DBDeleteStorelocationsOk
 			err = json.Unmarshal([]byte(msg), &resp)
 
 			if err != nil {
@@ -53,7 +66,7 @@ func DBUpdateGHSStatements() (json.RawMessage, error) {
 
 		} else if msg[0:6] == `{"Err"` {
 
-			var resp DBUpdateGHSStatementsErr
+			var resp DBDeleteStorelocationErr
 			err = json.Unmarshal([]byte(msg), &resp)
 
 			if err != nil {

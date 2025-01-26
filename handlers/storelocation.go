@@ -104,11 +104,11 @@ func (env *Env) CreateStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 	}
 	logger.Log.Debug("body " + string(body))
 
-	if jsonRawMessage, err = zmqclient.DBCreateStorelocation(body); err != nil {
+	if jsonRawMessage, err = zmqclient.DBCreateUpdateStorelocation(body); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.DBCreateStorelocation",
+			Message:       "error calling zmqclient.DBCreateUpdateStorelocation",
 		}
 	}
 
@@ -137,11 +137,11 @@ func (env *Env) UpdateStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 	}
 	logger.Log.Debug("body " + string(body))
 
-	if jsonRawMessage, err = zmqclient.DBUpdateStorelocation(body); err != nil {
+	if jsonRawMessage, err = zmqclient.DBCreateUpdateStorelocation(body); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.DBUpdateStorelocation",
+			Message:       "error calling zmqclient.DBCreateUpdateStorelocation",
 		}
 	}
 
@@ -156,8 +156,9 @@ func (env *Env) DeleteStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 	vars := mux.Vars(r)
 
 	var (
-		id  int
-		err error
+		id             int
+		err            error
+		jsonRawMessage json.RawMessage
 	)
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
@@ -168,12 +169,16 @@ func (env *Env) DeleteStoreLocationHandler(w http.ResponseWriter, r *http.Reques
 		}
 	}
 
-	if err = env.DB.DeleteStoreLocation(id); err != nil {
+	if jsonRawMessage, err = zmqclient.DBDeleteStorelocation(id); err != nil {
 		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.DBDeleteStorelocation",
 		}
 	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
 	return nil
 }

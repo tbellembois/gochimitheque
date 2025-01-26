@@ -397,11 +397,11 @@ func (db *SQLiteDataStore) GetStorages(f zmqclient.RequestFilter, person_id int)
 	//
 	for i, st := range storages {
 		if st.Product.ProductNumberPerCarton != nil {
-			storages[i].Product.ProductType = "CONS"
+			storages[i].Product.ProductType = "cons"
 		} else if st.Product.ProducerRef.ProducerRefID != nil {
-			storages[i].Product.ProductType = "BIO"
+			storages[i].Product.ProductType = "bio"
 		} else {
-			storages[i].Product.ProductType = "CHEM"
+			storages[i].Product.ProductType = "chem"
 		}
 	}
 
@@ -598,11 +598,11 @@ func (db *SQLiteDataStore) GetStorage(id int) (models.Storage, error) {
 	}
 
 	if storage.Product.ProductNumberPerCarton != nil {
-		storage.Product.ProductType = "CONS"
+		storage.Product.ProductType = "cons"
 	} else if storage.Product.ProducerRef.ProducerRefID != nil {
-		storage.Product.ProductType = "BIO"
+		storage.Product.ProductType = "bio"
 	} else {
-		storage.Product.ProductType = "CHEM"
+		storage.Product.ProductType = "chem"
 	}
 
 	logger.Log.WithFields(logrus.Fields{"ID": id, "storage": storage}).Debug("GetStorage")

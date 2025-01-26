@@ -11,7 +11,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
-	"github.com/tbellembois/gochimitheque/zmqclient"
 )
 
 // IsProductBookmark returns true if there is a bookmark for the product pr for the person pe.
@@ -127,12 +126,6 @@ func (db *SQLiteDataStore) DeleteProductBookmark(pr models.Product, pe models.Pe
 	}
 
 	return nil
-}
-
-// GetProducts return the products matching the search criteria.
-func (db *SQLiteDataStore) GetProducts(f zmqclient.RequestFilter, person_id int, public bool) ([]models.Product, int, error) {
-	// migrated to Rust.
-	panic("migrated to Rust")
 }
 
 // CountProducts returns the number of products.
@@ -324,11 +317,11 @@ func (db *SQLiteDataStore) GetProduct(id int) (models.Product, error) {
 
 	switch {
 	case product.ProductNumberPerCarton != nil:
-		product.ProductType = "CONS"
+		product.ProductType = "cons"
 	case product.ProducerRef.ProducerRefID != nil:
-		product.ProductType = "BIO"
+		product.ProductType = "bio"
 	default:
-		product.ProductType = "CHEM"
+		product.ProductType = "chem"
 	}
 
 	logger.Log.WithFields(logrus.Fields{"id": id, "product": product}).Debug("GetProduct")

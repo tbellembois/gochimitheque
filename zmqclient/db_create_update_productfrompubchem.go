@@ -7,15 +7,20 @@ import (
 	zmq "github.com/pebbe/zmq4"
 )
 
+// Request.
+type DBCreateUpdateProductFromPubchemReq struct {
+	DBCreateUpdateProductFromPubchem []interface{} `json:"DBCreateUpdateProductFromPubchem"`
+}
+
 // Response.
-type DBUpdateGHSStatementsOk struct {
+type DBCreateUpdateProductFromPubchemsOk struct {
 	Ok json.RawMessage
 }
-type DBUpdateGHSStatementsErr struct {
+type DBCreateUpdateProductFromPubchemErr struct {
 	Err string
 }
 
-func DBUpdateGHSStatements() (json.RawMessage, error) {
+func DBCreateUpdateProductFromPubchem(puchemProductRawString json.RawMessage, person_id int, product_id *int) (json.RawMessage, error) {
 	var (
 		s   *zmq.Socket
 		err error
@@ -30,9 +35,22 @@ func DBUpdateGHSStatements() (json.RawMessage, error) {
 		return json.RawMessage{}, err
 	}
 
-	message := `{"DBUpdateGHSStatements":""}`
+	var (
+		message []byte
+	)
 
-	if _, err = s.Send(message, 0); err != nil {
+	req := make([]interface{}, 0)
+	req = append(req, puchemProductRawString)
+	req = append(req, person_id)
+	req = append(req, product_id)
+
+	if message, err = json.Marshal(DBCreateUpdateProductFromPubchemReq{
+		DBCreateUpdateProductFromPubchem: req,
+	}); err != nil {
+		return json.RawMessage{}, err
+	}
+
+	if _, err = s.Send(string(message), 0); err != nil {
 		return json.RawMessage{}, err
 	}
 
@@ -42,7 +60,7 @@ func DBUpdateGHSStatements() (json.RawMessage, error) {
 
 		if msg[0:5] == `{"Ok"` {
 
-			var resp DBUpdateGHSStatementsOk
+			var resp DBCreateUpdateProductFromPubchemsOk
 			err = json.Unmarshal([]byte(msg), &resp)
 
 			if err != nil {
@@ -53,7 +71,7 @@ func DBUpdateGHSStatements() (json.RawMessage, error) {
 
 		} else if msg[0:6] == `{"Err"` {
 
-			var resp DBUpdateGHSStatementsErr
+			var resp DBCreateUpdateProductFromPubchemErr
 			err = json.Unmarshal([]byte(msg), &resp)
 
 			if err != nil {

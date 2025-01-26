@@ -361,29 +361,29 @@ func (env *Env) UpdatePersonHandler(w http.ResponseWriter, r *http.Request) *mod
 }
 
 // // DeletePersonHandler deletes the person with the requested id.
-// func (env *Env) DeletePersonHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-// 	vars := mux.Vars(r)
+func (env *Env) DeletePersonHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+	vars := mux.Vars(r)
 
-// 	var (
-// 		id  int
-// 		err error
-// 	)
+	var (
+		id  int
+		err error
+	)
 
-// 	if id, err = strconv.Atoi(vars["id"]); err != nil {
-// 		return &models.AppError{
-// 			OriginalError: err,
-// 			Message:       "id atoi conversion",
-// 			Code:          http.StatusInternalServerError,
-// 		}
-// 	}
+	if id, err = strconv.Atoi(vars["id"]); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Message:       "id atoi conversion",
+			Code:          http.StatusInternalServerError,
+		}
+	}
 
-// 	if err := env.DB.DeletePerson(id); err != nil {
-// 		return &models.AppError{
-// 			OriginalError: err,
-// 			Message:       "delete person error",
-// 			Code:          http.StatusInternalServerError,
-// 		}
-// 	}
+	if err := env.DB.DeletePerson(id); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Message:       "delete person error",
+			Code:          http.StatusInternalServerError,
+		}
+	}
 
-// 	return nil
-// }
+	return nil
+}
