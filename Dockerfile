@@ -55,7 +55,7 @@ RUN go generate
 RUN if [ -z $BuildID ]; then BuildID=$(date "+%Y%m%d"); fi; echo "BuildID=$BuildID"; go build -ldflags "-X main.BuildID=$BuildID"
 
 #
-# Chimithèque utils sources.
+# Chimithèque Rust sources.
 #
 
 # Install Rust.
@@ -67,10 +67,10 @@ WORKDIR /go/src/rust
 RUN git clone https://github.com/tbellembois/chimitheque_db.git
 RUN git clone https://github.com/tbellembois/chimitheque_types.git
 RUN git clone https://github.com/tbellembois/chimitheque_utils.git
-RUN git clone https://github.com/tbellembois/chimitheque_utils_service.git
+RUN git clone https://github.com/tbellembois/chimitheque_zmq_server.git
 
 # Compile.
-WORKDIR /go/src/rust/chimitheque_utils_service
+WORKDIR /go/src/rust/chimitheque_zmq_server
 RUN cargo build --release
 
 #
@@ -104,9 +104,9 @@ COPY --from=builder /go/src/github.com/tbellembois/gochimitheque/gochimitheque /
 RUN chown chimitheque /var/www-data/gochimitheque \
     && chmod +x /var/www-data/gochimitheque
 
-COPY --from=builder /go/src/rust/chimitheque_utils_service/target/release/chimitheque_utils_service /var/www-data/
-RUN chown chimitheque /var/www-data/chimitheque_utils_service \
-    && chmod +x /var/www-data/chimitheque_utils_service
+COPY --from=builder /go/src/rust/chimitheque_zmq_server/target/release/chimitheque_zmq_server /var/www-data/
+RUN chown chimitheque /var/www-data/chimitheque_zmq_server \
+    && chmod +x /var/www-data/chimitheque_zmq_server
 
 # Copying entrypoint.
 COPY docker/entrypoint.sh /

@@ -95,19 +95,19 @@ html
                 }
             });
         }
-        function scanPersonQR() {
-            $("#video").removeClass("invisible")
-            const video = document.getElementById("qr-video");
-            window.qrScanner = new window.QrScanner(video, result => Person_scanQRdone(result));
-            QrScanner.hasCamera().then(hasCamera => {
-                if (hasCamera) {
-                    window.qrScanner.start();
-                } else {
-                    alert(Utils_translate("nocamera", c.PersonLanguage));
-                    Storage_closeQR();
-                }
-            });
-        }
+        // function scanPersonQR() {
+        //     $("#video").removeClass("invisible")
+        //     const video = document.getElementById("qr-video");
+        //     window.qrScanner = new window.QrScanner(video, result => Person_scanQRdone(result));
+        //     QrScanner.hasCamera().then(hasCamera => {
+        //         if (hasCamera) {
+        //             window.qrScanner.start();
+        //         } else {
+        //             alert(Utils_translate("nocamera", c.PersonLanguage));
+        //             Storage_closeQR();
+        //         }
+        //     });
+        // }
         function closeQR() {
             $("div#video").addClass("invisible")
             window.qrScanner.destroy();

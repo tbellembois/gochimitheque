@@ -8,19 +8,19 @@ import (
 )
 
 // Request.
-type DBCreateStorelocationReq struct {
-	DBCreateStorelocation json.RawMessage `json:"DBCreateStorelocation"`
+type DBCreateUpdateSupplierReq struct {
+	DBCreateUpdateSupplier json.RawMessage `json:"DBCreateUpdateSupplier"`
 }
 
 // Response.
-type DBCreateStorelocationsOk struct {
+type DBCreateUpdateSupplierOk struct {
 	Ok json.RawMessage
 }
-type DBCreateStorelocationErr struct {
+type DBCreateUpdateSupplierErr struct {
 	Err string
 }
 
-func DBCreateStorelocation(StorelocationtRawString json.RawMessage) (json.RawMessage, error) {
+func DBCreateUpdateSupplier(SuppliertRawString json.RawMessage) (json.RawMessage, error) {
 	var (
 		s   *zmq.Socket
 		err error
@@ -39,8 +39,8 @@ func DBCreateStorelocation(StorelocationtRawString json.RawMessage) (json.RawMes
 		message []byte
 	)
 
-	if message, err = json.Marshal(DBCreateStorelocationReq{
-		DBCreateStorelocation: StorelocationtRawString,
+	if message, err = json.Marshal(DBCreateUpdateSupplierReq{
+		DBCreateUpdateSupplier: SuppliertRawString,
 	}); err != nil {
 		return json.RawMessage{}, err
 	}
@@ -55,7 +55,7 @@ func DBCreateStorelocation(StorelocationtRawString json.RawMessage) (json.RawMes
 
 		if msg[0:5] == `{"Ok"` {
 
-			var resp DBCreateStorelocationsOk
+			var resp DBCreateUpdateSupplierOk
 			err = json.Unmarshal([]byte(msg), &resp)
 
 			if err != nil {
@@ -66,7 +66,7 @@ func DBCreateStorelocation(StorelocationtRawString json.RawMessage) (json.RawMes
 
 		} else if msg[0:6] == `{"Err"` {
 
-			var resp DBCreateStorelocationErr
+			var resp DBCreateUpdateSupplierErr
 			err = json.Unmarshal([]byte(msg), &resp)
 
 			if err != nil {

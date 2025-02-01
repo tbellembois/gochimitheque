@@ -67,7 +67,7 @@ $command
 
 sleep 2
 
-command="/var/www-data/chimitheque_utils_service --db-path /data/storage.db"
+command="/var/www-data/chimitheque_zmq_server --db-path /data/storage.db"
 echo "command:"
 echo $command
 $command &

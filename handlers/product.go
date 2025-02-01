@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -1317,36 +1318,31 @@ func (env *Env) CreateSupplierHandler(w http.ResponseWriter, r *http.Request) *m
 	logger.Log.Debug("CreateSupplierHandler")
 
 	var (
-		sup models.Supplier
-		err error
-		id  int64
+		jsonRawMessage json.RawMessage
+		body           []byte
+		err            error
 	)
 
-	if err = json.NewDecoder(r.Body).Decode(&sup); err != nil {
+	if body, err = io.ReadAll(r.Body); err != nil {
 		return &models.AppError{
 			OriginalError: err,
-			Message:       "JSON decoding error",
 			Code:          http.StatusInternalServerError,
+			Message:       "error reading request body",
 		}
 	}
+	logger.Log.Debug("body " + string(body))
 
-	if id, err = env.DB.CreateSupplier(sup); err != nil {
+	if jsonRawMessage, err = zmqclient.DBCreateUpdateSupplier(body); err != nil {
 		return &models.AppError{
 			OriginalError: err,
-			Message:       "create supplier error",
 			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.DBCreateUpdateSupplier",
 		}
 	}
-	*sup.SupplierID = id
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
-	if err = json.NewEncoder(w).Encode(sup); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
 }
 
@@ -1355,35 +1351,30 @@ func (env *Env) CreateProducerHandler(w http.ResponseWriter, r *http.Request) *m
 	logger.Log.Debug("CreateProducerHandler")
 
 	var (
-		pr  models.Producer
-		err error
-		id  int64
+		jsonRawMessage json.RawMessage
+		body           []byte
+		err            error
 	)
 
-	if err = json.NewDecoder(r.Body).Decode(&pr); err != nil {
+	if body, err = io.ReadAll(r.Body); err != nil {
 		return &models.AppError{
 			OriginalError: err,
-			Message:       "JSON decoding error",
 			Code:          http.StatusInternalServerError,
+			Message:       "error reading request body",
 		}
 	}
+	logger.Log.Debug("body " + string(body))
 
-	if id, err = env.DB.CreateProducer(pr); err != nil {
+	if jsonRawMessage, err = zmqclient.DBCreateUpdateProducer(body); err != nil {
 		return &models.AppError{
 			OriginalError: err,
-			Message:       "create producer error",
 			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.DBCreateUpdateProducer",
 		}
 	}
-	*pr.ProducerID = id
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
-	if err = json.NewEncoder(w).Encode(pr); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
 }

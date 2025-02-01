@@ -13,7 +13,7 @@ type DBCreateUpdateStorelocationReq struct {
 }
 
 // Response.
-type DBCreateUpdateStorelocationsOk struct {
+type DBCreateUpdateStorelocationOk struct {
 	Ok json.RawMessage
 }
 type DBCreateUpdateStorelocationErr struct {
@@ -55,7 +55,7 @@ func DBCreateUpdateStorelocation(StorelocationtRawString json.RawMessage) (json.
 
 		if msg[0:5] == `{"Ok"` {
 
-			var resp DBCreateUpdateStorelocationsOk
+			var resp DBCreateUpdateStorelocationOk
 			err = json.Unmarshal([]byte(msg), &resp)
 
 			if err != nil {
