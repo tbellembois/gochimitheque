@@ -345,6 +345,8 @@ var LOCALES_FR = []byte(`
 	one = "voir historique"
 [storage_history]
 	one = "historique"
+[storage_archive]
+	one = "archive"
 [storage_restored_message]
 	one = "stockage restauré"
 [storage_trashed_message]

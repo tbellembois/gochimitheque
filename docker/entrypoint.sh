@@ -60,14 +60,14 @@ then
       echo $updateqrcode
 fi
 
-command="/var/www-data/gochimitheque -dbpath /data $appurl $apppath $dockerport $oidcdiscoverurl $oidcclientid $oidcclientsecret $admins $debug $updateqrcode"
-echo "command:"
-echo $command
-$command
-
-sleep 2
+export SQLITE_EXTENSION_DIR="/var/www-data/extensions"
 
 command="/var/www-data/chimitheque_zmq_server --db-path /data/storage.db"
 echo "command:"
 echo $command
 $command &
+
+command="/var/www-data/gochimitheque -dbpath /data $appurl $apppath $dockerport $oidcdiscoverurl $oidcclientid $oidcclientsecret $admins $debug $updateqrcode"
+echo "command:"
+echo $command
+$command

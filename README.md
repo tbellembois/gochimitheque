@@ -1,13 +1,13 @@
 # Chimithèque
 
-Chimithèque is an open source *chemical product, biological reagent and lab consumables* management application started by the ENS-Lyon (France) and co-developped with the Université Clermont-Auvergne (France). It is written in *Golang*.
+Chimithèque is an open source *chemical product, biological reagent and lab consumables* management application started by the ENS-Lyon (France) and co-developped with the Université Clermont-Auvergne (France). It is written in *Golang* and *Rust*.
 
 The project was started in 2015 and has moved to Github in 2017.
 
 ## Team
 
-- *projet leaders*: Delphine Pitrat - ENS-Lyon (delphine[dot]pitrat[at]ens-lyon[dot]fr) - Thomas Bellembois - UCA
-- *technical referent - chemistry*: Delphine Pitrat  
+- *projet leaders*: Delphine Pitrat - ENS-Lyon (delphine[dot]pitrat[at]ens-lyon[dot]fr) - Thomas Bellembois - UCA (thomas[dot]bellembois[at]uca[dot]fr)
+- *technical referent - chemistry*: Delphine Pitrat
 
 ## Screenshot
 
@@ -32,67 +32,121 @@ Here is the list of the major changes from the `2.1.0` version:
 
 # Requirements
 
-- a *Linux AMD64* machine
+- a *Linux AMD64* machine (glibc 2.29 min)
 - [Docker](https://docs.docker.com/get-docker/) and [docker-compose](https://docs.docker.com/compose/install/)
 - an SMTP server
+- an HTTPS certificate
+
+# Upgrading from 2.0.8
+
+Important: if you upgrade to a `2.1.*` version coming from a `2.0.*` version you *must* first perform the upgrades to the `2.0.8` version. 
+
+1. Backup your *entire* installation folder.
+
+2. Retrieve the latest release of the `chimitheque_people_keycloak_exporter` binary from <https://github.com/tbellembois/chimitheque_people_keycloak_exporter/releases>.
+
+3. Copy the binary in your *current* Chimithèque installation (where the `storage.db` file is).
+
+4. Run the binary:
+```
+chmod +x chimitheque_people_keycloak_exporter
+./chimitheque_people_keycloak_exporter
+```
+
+The exporter will create a `keycloak.json` file. Keep it for later use.
 
 # Installation
 
-Retrieve the Chimithèque `docker-compose.yml` file:
+1. Retrieve the Chimithèque `docker-compose.yml` and `compose-prod.env` files:
 ```bash
-  wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/docker-compose.yml -O docker-compose.yml
+cd /root
+wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/docker-compose.yml -O docker-compose.yml
+wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/compose-prod.env -O .env
 ```
 
-TODO: add docker directory
+2. Edit the `.env` file, it is self documented.
 
-Create the data directories for the containers:
+3. Create the `data` directory (and sub directories) for the container data.
 ```bash
+mkdir -p /root/docker/keycloak
 mkdir /data
-mkdir /data/docker-chimitheque
-mkdir /data/docker-chimitheque/chimitheque-db
-mkdir /data/docker-keycloak
-mkdir /data/docker-keycloak/import
-mkdir /data/docker-keycloak/templates
-mkdir /data/docker-postgres
-mkdir /data/docker-postgres/data
-mkdir /data/docker-nginx
-mkdir /data/docker-nginx/nginx-auth
-mkdir /data/docker-nginx/nginx-auth/certs
-mkdir /data/docker-nginx/nginx-templates
-mkdir /data/docker-nginx/nginx-conf
-cp docker/keycloak/chimitheque-realm-template.json /data/docker-keycloak/templates/
-cp docker/nginx/default.conf.template /data/docker-nginx/nginx-templates/
-cp docker/nginx/nginx.conf /data/docker-nginx/nginx-conf/
-cp /path/to/my/chimitheque.crt /data/docker-nginx/nginx-auth/certs/chimitheque.crt
-cp /path/to/my/chimitheque.key /data/docker-nginx/nginx-auth/certs/chimitheque.key
-cp /path/to/my/old/chimitheque/storage.db* /data/docker-chimitheque/chimitheque-db/
-
-chmod 777 /data/docker-chimitheque/chimitheque-db
+mkdir -p /data/docker-keycloak/templates/
+mkdir -p /data/docker-nginx/nginx-templates/
+mkdir -p /data/docker-nginx/nginx-conf/
+mkdir -p /data/docker-nginx/nginx-auth/certs/
+mkdir -p /data/docker-chimitheque/chimitheque-db/
 ```
+> If you want to choose another directory you will have to replace the `/data` strings in the `docker-compose.yml` file (`volumes` sections). In this documentation we assume that the default directory is kept.
 
-TODO: edit nginx template: certs + listen port
-
-Start up:
+4. Retrieve the containers configuration files:
 ```bash
-  docker compose up -d
+wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/docker/keycloak/Dockerfile -O /root/docker/keycloak/Dockerfile
+wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/docker/keycloak/chimitheque-realm-template.json -O /data/docker-keycloak/templates/chimitheque-realm-template.json
+wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/docker/nginx/default.conf.template -O /data/docker-nginx/nginx-templates/default.conf.template
+wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/docker/nginx/nginx.conf -O /data/docker-nginx/nginx-conf/nginx.conf
 ```
 
-TODO: connect to keycloak:
+5. Copy your https certifcate `crt` and `key` files in `/data/docker-nginx/nginx-auth/certs/`. Your certificate *must* contain the certification chain.
+
+6. If you upgrade from a previous version copy the `storage.db`, `storage.db-shm` and `storage.db-wal` files in `/data/docker-chimitheque/chimitheque-db/`.
+
+7. Configure Nginx, edit the `/data/docker-nginx/nginx-templates/default.conf.template` file. The sections to edit are spotted with the `# CONFIGURE:` string.
+
+8. Start up:
+```bash
+docker compose up -d
+```
+
+# Configuration
+
+## Admin user creation
+
+1. Connect to the OIDC server at <https://your_chimitheque_url/keycloak> with the username `admin@chimitheque.fr` and the value of your `KEYCLOAK_ADMIN_PASSWORD` for password.
+
+2. On the top left corner drop-down list choose the `chimitheque` realm. Then click on `Users` on the left column. 
+
+3. Click the `Create new user` button and enter the following informations:
+```
+Email verified: yes
+Email: admin@chimitheque.fr
+```
+And click the `Create` button.
+
+> We have to do this operation because the installation process create the admin@chimitheque.fr user in the Default realm not the chimitheque realm.
+
+4. Then click on the `Credentials` tab and the `Set password` button. Enter the value of your `KEYCLOAK_ADMIN_PASSWORD`, uncheck `Temporary` and click on `Save`.
+
+## Importing previous users (migration from 2.0.8 only)
+
+If you migrate from a `2.0.8` version you should have a `keycloak.json` file from the `Upgrading from 2.0.8` section.
+
+1. Click on `Realm settings` on the left colums, then on the top right drop-down list `Action` choose `Partial import`.
+
+2. Browse and upload your `keycloak.json` file, click on the `Choose the resources your want to import` checkbox and click on the `Import` button.
+
+## Setup the smtp configuration
+
+1. Click on `Realm settings` on the left colums, then the `Email` tab.
+
+2. Fill in the required information.
+
+
+<!--TODO: connect to keycloak:
 - change admin password
 - set admin email
 - create admin@chimitheque.fr user and password
 - import users
 - configure mail server
-- enable user registration
+- enable user registration-->
 
 
-## Connection
+# Connection
 
-Then open your web browser at `http://your_chimitheque_url/chimitheque`
+Then open your web browser at `https://your_chimitheque_url`
 
 Et voilà !
 
-Now login with the email `admin@chimitheque.fr` and password `chimitheque`, and change the password immediatly.
+Now login with the email `admin@chimitheque.fr` and the value of your `KEYCLOAK_ADMIN_PASSWORD` password.
 
 # Administrators
 

@@ -1,10 +1,9 @@
 server {
 
-    # CONFIGURE first line: https mode, second line: http mode
-    #listen 443 ssl;
-    listen 80;
+    listen 443 ssl;
+    #listen 80;
     
-    # CONFIGURE change server_name
+    # CONFIGURE: change 127.0.0.1 with the FQDN of your server
     server_name 127.0.0.1;
  
     charset utf-8;
@@ -28,15 +27,13 @@ server {
         application/rss+xml
         image/svg+xml;
 
-    # CONFIGURE uncomment and adapt to enable HTTPS
-    # ATTENTION: ensure to include the certificate chain.
-    # cat mycert.pem mycert_intercert.pem > mybundle.pem 
-    #ssl_certificate /etc/nginx/certs/chimitheque.crt;
-    #ssl_certificate_key /etc/nginx/certs/chimitheque.key;
+    # CONFIGURE: change the name (not the path) of the certificates with yours
+    ssl_certificate /etc/nginx/certs/chimitheque.crt;
+    ssl_certificate_key /etc/nginx/certs/chimitheque.key;
     
     location = / {
-        # CONFIGURE change to the FQDN of your server
-        return 301 http://localhost/app;
+        # CONFIGURE: change 127.0.0.1 with the FQDN of your server, keep the /app suffix
+        return 301 https://127.0.0.1/app;
     }
 
     location /app/ {

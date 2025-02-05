@@ -148,6 +148,8 @@ func initOIDC() {
 		log.Fatal(err)
 	}
 
+	logger.Log.Info("- OICD body: " + string(body))
+
 	oidcDiscover := OIDCDiscover{}
 	if err = json.Unmarshal(body, &oidcDiscover); err != nil {
 		log.Fatal(err)
