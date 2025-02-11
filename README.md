@@ -55,6 +55,8 @@ chmod +x chimitheque_people_keycloak_exporter
 
 The exporter will create a `keycloak.json` file. Keep it for later use.
 
+Note that the exporter will panic if your database contains duplicate emails.
+
 # Installation
 
 1. Retrieve the Chimithèque `docker-compose.yml` and `compose-prod.env` files:
@@ -82,6 +84,7 @@ mkdir -p /data/docker-chimitheque/chimitheque-db/
 ```bash
 wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/docker/keycloak/Dockerfile -O /root/docker/keycloak/Dockerfile
 wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/docker/keycloak/chimitheque-realm-template.json -O /data/docker-keycloak/templates/chimitheque-realm-template.json
+wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/docker/keycloak/chimitheque-users-0.json -O /data/docker-keycloak/templates/chimitheque-users-0.json
 wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/docker/nginx/default.conf.template -O /data/docker-nginx/nginx-templates/default.conf.template
 wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/docker/nginx/nginx.conf -O /data/docker-nginx/nginx-conf/nginx.conf
 ```
@@ -92,7 +95,7 @@ wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/docker/n
 
 7. Configure Nginx, edit the `/data/docker-nginx/nginx-templates/default.conf.template` file. The sections to edit are spotted with the `# CONFIGURE:` string.
 
-8. Start up:
+8. Wait a moment (it can take several minutes for the containers to start) and start up:
 ```bash
 docker compose up -d
 ```
@@ -150,7 +153,7 @@ Now login with the email `admin@chimitheque.fr` and the value of your `KEYCLOAK_
 
 # Administrators
 
-A static administrator `admin@chimitheque.fr` is created during the installation. His password must be changed after the first connection.
+A static administrator `admin@chimitheque.fr` is created during the installation.
 
 You can add a comma separated list of admins emails. Accounts must have been created in the application before. You should limit the number of admins and set entity managers instead.
 
@@ -209,30 +212,3 @@ Then, any of these samples could be borrowed or archived, for example.
 For instance, for conservation conditions, it could be recommended to limit freeze-thaw cycles. 
 To avoid that, the product could be sampled in different dishes with the same volume or mass. 
 To store them on Chimitheque, the "identical bare-code" option will permit to create QRcodes linked with all the samples, so that any of them could be destocked when one of them is used. 
-
-# List of public database Chimithèque instances
-
-- ENS de Lyon: `https://chimitheque.ens-lyon.fr`
-
-If you want to share your product database please send an email to the mailing list or create a Github issue.
-
-# Developpement
-
-run `chimitheque_utils` service:
-
-```bash
-cd /home/thbellem/workspace/workspace_rust/chimitheque_utils_service
-RUST_LOG=debug cargo run .
-```
-
-run `casdoor` container:
-```bash
-docker run -p 7001:8000 -v /data/docker-casdoor/casdoor-db:/data -v /data/docker-casdoor/casdoor-init/init_data.json:/init_data.json:ro casbin/casdoor-all-in-one
-```
-
-run `chimitheque`:
-
-```bash
-cd /home/thbellem/workspace/workspace_go/src/github.com/tbellembois/gochimitheque
-go run .
-```

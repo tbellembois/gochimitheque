@@ -547,8 +547,8 @@ CREATE TABLE bookmark_new (
 	bookmark_id	INTEGER,
 	person	INTEGER NOT NULL,
 	product	INTEGER NOT NULL,
-	FOREIGN KEY(person) REFERENCES person(person_id),
-	FOREIGN KEY(product) REFERENCES product(product_id),
+	FOREIGN KEY(person) REFERENCES person(person_id) ON DELETE CASCADE,
+	FOREIGN KEY(product) REFERENCES product(product_id) ON DELETE CASCADE,
 	PRIMARY KEY(bookmark_id)
 ) STRICT;
 INSERT INTO bookmark_new (
@@ -569,9 +569,9 @@ CREATE TABLE borrowing_new (
 	person	INTEGER NOT NULL,
 	borrower	INTEGER NOT NULL,
 	storage	INTEGER NOT NULL UNIQUE,
-	FOREIGN KEY(person) REFERENCES person(person_id),
-	FOREIGN KEY(storage) REFERENCES storage(storage_id),
-	FOREIGN KEY(borrower) REFERENCES person(person_id),
+	FOREIGN KEY(person) REFERENCES person(person_id) ON DELETE CASCADE,
+	FOREIGN KEY(storage) REFERENCES storage(storage_id) ON DELETE CASCADE,
+	FOREIGN KEY(borrower) REFERENCES person(person_id) ON DELETE CASCADE,
 	PRIMARY KEY(borrowing_id)
 ) STRICT;
 INSERT INTO borrowing_new (
@@ -743,7 +743,7 @@ CREATE TABLE permission_new (
 	permission_perm_name	TEXT NOT NULL,
 	permission_item_name	TEXT NOT NULL,
 	permission_entity_id	INTEGER,
-	FOREIGN KEY(person) REFERENCES person(person_id),
+	FOREIGN KEY(person) REFERENCES person(person_id) ON DELETE CASCADE,
 	PRIMARY KEY(permission_id)
 ) STRICT;
 INSERT INTO permission_new (
@@ -829,7 +829,7 @@ CREATE TABLE producer_ref_new (
 	producer_ref_id	INTEGER,
 	producer_ref_label	TEXT NOT NULL,
 	producer	INTEGER,
-	FOREIGN KEY(producer) REFERENCES producer(producer_id),
+	FOREIGN KEY(producer) REFERENCES producer(producer_id) ON DELETE CASCADE,
 	PRIMARY KEY(producer_ref_id)
 ) STRICT;
 INSERT INTO producer_ref_new (
@@ -1121,7 +1121,7 @@ CREATE TABLE supplier_ref_new (
 	supplier_ref_id	INTEGER,
 	supplier_ref_label	TEXT NOT NULL,
 	supplier	INTEGER,
-	FOREIGN KEY(supplier) REFERENCES supplier(supplier_id),
+	FOREIGN KEY(supplier) REFERENCES supplier(supplier_id) ON DELETE CASCADE,
 	PRIMARY KEY(supplier_ref_id)
 ) STRICT;
 INSERT INTO supplier_ref_new (
@@ -1206,8 +1206,8 @@ CREATE TABLE productclassesofcompounds (
 	productclassesofcompounds_product_id INTEGER NOT NULL,
 	productclassesofcompounds_class_of_compound_id INTEGER NOT NULL,
 	PRIMARY KEY (productclassesofcompounds_product_id, productclassesofcompounds_class_of_compound_id),
-	FOREIGN KEY (productclassesofcompounds_product_id) REFERENCES product(product_id),
-	FOREIGN KEY (productclassesofcompounds_class_of_compound_id) REFERENCES class_of_compound(class_of_compound_id)
+	FOREIGN KEY (productclassesofcompounds_product_id) REFERENCES product(product_id) ON DELETE CASCADE,
+	FOREIGN KEY (productclassesofcompounds_class_of_compound_id) REFERENCES class_of_compound(class_of_compound_id) ON DELETE CASCADE
 ) STRICT;
 INSERT INTO productclassesofcompounds (
 	productclassesofcompounds_product_id,
@@ -1222,8 +1222,8 @@ CREATE TABLE producthazardstatements_new (
 	producthazardstatements_product_id INTEGER NOT NULL,
 	producthazardstatements_hazard_statement_id INTEGER NOT NULL,
 	PRIMARY KEY (producthazardstatements_product_id, producthazardstatements_hazard_statement_id),
-	FOREIGN KEY (producthazardstatements_product_id) REFERENCES product(product_id),
-	FOREIGN KEY (producthazardstatements_hazard_statement_id) REFERENCES hazard_statement(hazard_statement_id)
+	FOREIGN KEY (producthazardstatements_product_id) REFERENCES product(product_id) ON DELETE CASCADE,
+	FOREIGN KEY (producthazardstatements_hazard_statement_id) REFERENCES hazard_statement(hazard_statement_id) ON DELETE CASCADE
 ) STRICT;
 INSERT INTO producthazardstatements_new (
 	producthazardstatements_product_id,
@@ -1239,8 +1239,8 @@ CREATE TABLE productprecautionarystatements_new (
 productprecautionarystatements_product_id INTEGER NOT NULL,
 productprecautionarystatements_precautionary_statement_id INTEGER NOT NULL,
 PRIMARY KEY (productprecautionarystatements_product_id, productprecautionarystatements_precautionary_statement_id),
-FOREIGN KEY (productprecautionarystatements_product_id) REFERENCES product(product_id),
-FOREIGN KEY (productprecautionarystatements_precautionary_statement_id) REFERENCES precautionary_statement(precautionary_statement_id)
+FOREIGN KEY (productprecautionarystatements_product_id) REFERENCES product(product_id) ON DELETE CASCADE,
+FOREIGN KEY (productprecautionarystatements_precautionary_statement_id) REFERENCES precautionary_statement(precautionary_statement_id) ON DELETE CASCADE
 ) STRICT;
 INSERT INTO productprecautionarystatements_new (
 productprecautionarystatements_product_id,
@@ -1256,8 +1256,8 @@ CREATE TABLE productsupplierrefs_new (
 productsupplierrefs_product_id INTEGER NOT NULL,
 productsupplierrefs_supplier_ref_id INTEGER NOT NULL,
 PRIMARY KEY (productsupplierrefs_product_id, productsupplierrefs_supplier_ref_id),
-FOREIGN KEY (productsupplierrefs_product_id) REFERENCES product(product_id),
-FOREIGN KEY (productsupplierrefs_supplier_ref_id) REFERENCES supplier_ref(supplier_ref_id)
+FOREIGN KEY (productsupplierrefs_product_id) REFERENCES product(product_id) ON DELETE CASCADE,
+FOREIGN KEY (productsupplierrefs_supplier_ref_id) REFERENCES supplier_ref(supplier_ref_id) ON DELETE CASCADE
 ) STRICT;
 INSERT INTO productsupplierrefs_new (
 productsupplierrefs_product_id,

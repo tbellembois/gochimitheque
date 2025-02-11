@@ -18,7 +18,7 @@ block CONTENT
                         thead
                             tr
                                 //th(data-field='entity_id') ID
-                                th(data-field='entity_name' data-sortable='true')
+                                th(data-field='entity_name' data-sortable='true' data-formatter='Entity_nameFormatter')
                                     = T("entity_name_table_header", 1)
                                 th(data-field='entity_description')
                                     = T("entity_description_table_header", 1)

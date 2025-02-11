@@ -148,7 +148,7 @@ func (db *SQLiteDataStore) GetEntities(f zmqclient.RequestFilter, person_id int)
 			return nil, 0, err
 		}
 
-		if err = db.Get(&entities[i].EntitySLC, sqlr, args...); err != nil {
+		if err = db.Get(&entities[i].EntityNbStoreLocations, sqlr, args...); err != nil {
 			return nil, 0, err
 		}
 	}
@@ -173,7 +173,7 @@ func (db *SQLiteDataStore) GetEntities(f zmqclient.RequestFilter, person_id int)
 			return nil, 0, err
 		}
 
-		if err = db.Get(&entities[i].EntityPC, sqlr, args...); err != nil {
+		if err = db.Get(&entities[i].EntityNbPeople, sqlr, args...); err != nil {
 			return nil, 0, err
 		}
 	}

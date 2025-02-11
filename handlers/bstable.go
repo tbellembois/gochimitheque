@@ -11,6 +11,65 @@ import (
 	"github.com/tbellembois/gochimitheque/models"
 )
 
+// Convert a JSON response from the chimitheque_db Rust library to a entity.
+func ConvertDBJSONToEntity(jsonRawMessage json.RawMessage) (models.Entity, error) {
+
+	logger.Log.Debug("ConvertDBJSONToEntity")
+	logger.Log.WithFields(logrus.Fields{"jsonRawMessage": fmt.Sprintf("%+v", jsonRawMessage)}).Debug("ConvertDBJSONToEntity")
+
+	var (
+		tuple tuple.T2[[]models.Entity, int]
+		err   error
+	)
+
+	if err = json.Unmarshal(jsonRawMessage, &tuple); err != nil {
+		return models.Entity{}, &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling jsonRawMessage",
+		}
+	}
+
+	resp := tuple.V1[0]
+
+	logger.Log.WithFields(logrus.Fields{"resp": fmt.Sprintf("%+v", resp)}).Debug("ConvertDBJSONToEntity")
+
+	return resp, nil
+}
+
+// Convert a JSON response from the chimitheque_db Rust library to a entity JSON.
+func ConvertDBJSONToEntityJSON(jsonRawMessage json.RawMessage) ([]byte, *models.AppError) {
+
+	logger.Log.Debug("ConvertDBJSONToEntityJSON")
+	logger.Log.WithFields(logrus.Fields{"jsonRawMessage": fmt.Sprintf("%+v", jsonRawMessage)}).Debug("ConvertDBJSONToEntityJSON")
+
+	var (
+		entity models.Entity
+		err    error
+	)
+
+	if entity, err = ConvertDBJSONToEntity(jsonRawMessage); err != nil {
+		return nil, &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling to store location",
+		}
+	}
+
+	logger.Log.WithFields(logrus.Fields{"entity": fmt.Sprintf("%+v", entity)}).Debug("ConvertDBJSONToStorelocationJSON")
+
+	var jsonresp []byte
+	if jsonresp, err = json.Marshal(entity); err != nil {
+		return nil, &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error marshalling response",
+		}
+	}
+
+	return jsonresp, nil
+}
+
 // Convert a JSON response from the chimitheque_db Rust library to a store location.
 func ConvertDBJSONToStorelocation(jsonRawMessage json.RawMessage) (models.StoreLocation, error) {
 

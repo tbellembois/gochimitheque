@@ -47,7 +47,7 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 	router.Handle("/{view:v}/{item:entities}", secureChain.Then(env.AppMiddleware(env.VGetEntitiesHandler))).Methods("GET")
 	router.Handle("/{view:vc}/{item:entities}", secureChain.Then(env.AppMiddleware(env.VCreateEntityHandler))).Methods("GET")
 	router.Handle("/{item:entities}", secureChain.Then(env.AppMiddleware(env.GetEntitiesHandler))).Methods("GET")
-	router.Handle("/{item:entities}/{id}", secureChain.Then(env.AppMiddleware(env.GetEntityHandler))).Methods("GET")
+	router.Handle("/{item:entities}?entity={id:[0-9]+}", secureChain.Then(env.AppMiddleware(env.GetEntitiesHandler))).Methods("GET")
 	router.Handle("/{item:entities}/{id}/people", secureChain.Then(env.AppMiddleware(env.GetEntityPeopleHandler))).Methods("GET")
 	router.Handle("/{item:entities}", secureChain.Then(env.AppMiddleware(env.CreateEntityHandler))).Methods("POST")
 	router.Handle("/{item:entities}/{id}", secureChain.Then(env.AppMiddleware(env.UpdateEntityHandler))).Methods("PUT")

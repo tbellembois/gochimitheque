@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -46,48 +47,41 @@ func (env *Env) GetEntitiesHandler(w http.ResponseWriter, r *http.Request) *mode
 	logger.Log.Debug("GetEntitiesHandler")
 
 	var (
-		err      error
-		entities []models.Entity
-		count    int
-		filter   zmqclient.RequestFilter
+		err            error
+		jsonRawMessage json.RawMessage
 	)
 
-	// retrieving the logged user id from request context
 	c := request.ContainerFromRequestContext(r)
 
-	// init db request parameters
-	// if filter, aerr = request.NewFilter(r); err != nil {
-	// 	return aerr
-	// }
-	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetEntities("http://localhost/?"+r.URL.RawQuery, c.PersonID); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.Request_filter",
+			Message:       "error calling zmqclient.DBGetEntities",
 		}
 	}
 
-	if entities, count, err = env.DB.GetEntities(filter, c.PersonID); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error getting the entities",
-		}
-	}
+	var (
+		jsonresp []byte
+		appErr   *models.AppError
+	)
 
-	type resp struct {
-		Rows  []models.Entity `json:"rows"`
-		Total int             `json:"total"`
+	if r.URL.Query().Get("entity") != "" {
+		if jsonresp, appErr = ConvertDBJSONToEntityJSON(jsonRawMessage); appErr != nil {
+			logger.Log.WithFields(logrus.Fields{"ConvertDBJSONToEntityJSON appErr": fmt.Sprintf("%+v", appErr)}).Debug("GetEntitiesHandler")
+
+			return appErr
+		}
+	} else {
+		if jsonresp, appErr = ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
+			logger.Log.WithFields(logrus.Fields{"ConvertDBJSONToBSTableJSON appErr": fmt.Sprintf("%+v", appErr)}).Debug("GetEntitiesHandler")
+
+			return appErr
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	if err = json.NewEncoder(w).Encode(resp{Rows: entities, Total: count}); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
+	w.Write(jsonresp)
 
 	return nil
 }
@@ -123,86 +117,6 @@ func (env *Env) GetEntityStockHandler(w http.ResponseWriter, r *http.Request) *m
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.Write(jsonRawMessage)
-
-	return nil
-}
-
-// GetEntityStockHandler returns a json of the stock of the entity with the requested id.
-// func (env *Env) GetEntityStockHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-// 	vars := mux.Vars(r)
-//
-// 	var (
-// 		pid int
-// 		p   models.Product
-// 		err error
-// 	)
-//
-// 	if pid, err = strconv.Atoi(vars["id"]); err != nil {
-// 		return &models.AppError{
-// 			OriginalError: err,
-// 			Message:       "id atoi conversion",
-// 			Code:          http.StatusBadRequest,
-// 		}
-// 	}
-//
-// 	if p, err = env.DB.GetProduct(pid); err != nil {
-// 		return &models.AppError{
-// 			OriginalError: err,
-// 			Code:          http.StatusInternalServerError,
-// 			Message:       "error getting the product",
-// 		}
-// 	}
-//
-// 	m := env.DB.ComputeStockEntity(p, r)
-//
-// 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-//
-// 	if err = json.NewEncoder(w).Encode(m); err != nil {
-// 		return &models.AppError{
-// 			Code:    http.StatusInternalServerError,
-// 			Message: err.Error(),
-// 		}
-// 	}
-//
-// 	return nil
-// }
-
-// GetEntityHandler returns a json of the entity with the requested id.
-func (env *Env) GetEntityHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	vars := mux.Vars(r)
-
-	var (
-		id     int
-		err    error
-		entity models.Entity
-	)
-
-	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "id atoi conversion",
-			Code:          http.StatusInternalServerError,
-		}
-	}
-
-	if entity, err = env.DB.GetEntity(id); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error getting the entity",
-		}
-	}
-
-	logger.Log.WithFields(logrus.Fields{"entity": entity}).Debug("GetEntityHandler")
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	if err = json.NewEncoder(w).Encode(entity); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 
 	return nil
 }

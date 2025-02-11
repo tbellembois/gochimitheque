@@ -8,9 +8,9 @@ type Entity struct {
 	Managers          []*Person `db:"-" json:"managers" schema:"managers"`
 
 	// total store location count
-	EntitySLC int `db:"entity_slc" json:"entity_slc" schema:"entity_slc"` // not in db but sqlx requires the "db" entry
+	EntityNbStoreLocations *int64 `db:"entity_nb_store_locations" json:"entity_nb_store_locations" schema:"entity_nb_store_locations"` // not in db but sqlx requires the "db" entry
 	// total person count
-	EntityPC int `db:"entity_pc" json:"entity_pc" schema:"entity_pc"` // not in db but sqlx requires the "db" entry
+	EntityNbPeople *int64 `db:"entity_nb_people" json:"entity_nb_people" schema:"entity_nb_people"` // not in db but sqlx requires the "db" entry
 }
 
 // Equal tests the entity equality.

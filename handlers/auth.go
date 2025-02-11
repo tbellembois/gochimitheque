@@ -214,7 +214,7 @@ func (env *Env) CallbackHandler(w http.ResponseWriter, r *http.Request) *models.
 	}
 
 	// Check the email.
-	reEmail := regexp.MustCompile(`^[0-9A-Za-z_\.]+@[0-9A-Za-z_\.]+\.[0-9A-Za-z]{2,4}$`)
+	reEmail := regexp.MustCompile(`^[0-9A-Za-z_\.-]+@[0-9A-Za-z_\.-]+\.[0-9A-Za-z]{2,4}$`)
 	if !reEmail.MatchString(claims.Email) {
 		http.Error(w, "no email in claims", http.StatusBadRequest)
 		return &models.AppError{
