@@ -121,46 +121,6 @@ func (env *Env) GetEntityStockHandler(w http.ResponseWriter, r *http.Request) *m
 	return nil
 }
 
-// GetEntityPeopleHandler return the entity managers.
-func (env *Env) GetEntityPeopleHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	vars := mux.Vars(r)
-
-	var (
-		id     int
-		err    error
-		people []models.Person
-	)
-
-	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "id atoi conversion",
-			Code:          http.StatusInternalServerError,
-		}
-	}
-
-	if people, err = env.DB.GetEntityManager(id); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error getting the entity people",
-		}
-	}
-
-	logger.Log.WithFields(logrus.Fields{"people": people}).Debug("GetEntityPeopleHandler")
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	if err = json.NewEncoder(w).Encode(people); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
-
-	return nil
-}
-
 // CreateEntityHandler creates the entity from the request form.
 func (env *Env) CreateEntityHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	var (
@@ -210,6 +170,8 @@ func (env *Env) UpdateEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 		e, updatede models.Entity
 	)
 
+	c := request.ContainerFromRequestContext(r)
+
 	if err = json.NewDecoder(r.Body).Decode(&e); err != nil {
 		return &models.AppError{
 			OriginalError: err,
@@ -228,7 +190,21 @@ func (env *Env) UpdateEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 		}
 	}
 
-	if updatede, err = env.DB.GetEntity(id); err != nil {
+	// getting the entity
+	var (
+		jsonRawMessage json.RawMessage
+	)
+	if jsonRawMessage, err = zmqclient.DBGetEntities("http://localhost/?entity="+strconv.Itoa(id), c.PersonID); err != nil {
+		logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
+		return &models.AppError{
+			OriginalError: err,
+			Message:       "get entity error",
+			Code:          http.StatusInternalServerError,
+		}
+	}
+
+	if updatede, err = ConvertDBJSONToEntity(jsonRawMessage); err != nil {
+		logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
 		return &models.AppError{
 			OriginalError: err,
 			Message:       "get entity error",

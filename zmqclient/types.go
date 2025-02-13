@@ -141,6 +141,7 @@ type RequestFilter struct {
 	CustomNamePartOf        string `json:"custom_name_part_of"`
 	EmpiricalFormula        int    `json:"empirical_formula"`
 	Entity                  int    `json:"entity"`
+	EntityName              string `json:"entity_name"`
 	HazardStatements        []int  `json:"hazard_statements"`
 	History                 bool   `json:"history"`
 	Ids                     []int  `json:"storages"`

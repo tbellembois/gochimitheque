@@ -112,7 +112,6 @@ func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request
 		err      error
 		res      bool
 		resp     string
-		entity   models.Entity
 		entityID int
 		filter   zmqclient.RequestFilter
 	)
@@ -120,13 +119,6 @@ func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request
 	// retrieving the logged user id from request context
 	c := request.ContainerFromRequestContext(r)
 
-	// init db request parameters
-	// if filter, aerr = request.NewFilter(r); aerr != nil {
-	// 	logger.Log.Error("NewdbselectparamEntity error")
-	// 	resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "entity_nameexist_validate", PluralCount: 1})
-	// 	sendResponse(w, resp)
-	// 	return nil
-	// }
 	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
 		logger.Log.Error("error calling zmqclient.Request_filter")
 		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "entity_nameexist_validate", PluralCount: 1})
@@ -150,34 +142,49 @@ func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request
 		return nil
 	}
 
-	filter.Search = r.Form.Get("entity_name")
+	filter.EntityName = r.Form.Get("entity_name")
 
 	// getting the entities matching the name
-	entities, count, err := env.DB.GetEntities(filter, c.PersonID)
-	if err != nil {
-		logger.Log.Error("GetEntities error")
-		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "entity_nameexist_validate", PluralCount: 1})
-		sendResponse(w, resp)
-		return nil
+	var (
+		jsonRawMessage json.RawMessage
+		entities       []models.Entity
+		count          int
+	)
+	if jsonRawMessage, err = zmqclient.DBGetEntities("http://localhost/?entity_name="+filter.EntityName, c.PersonID); err != nil {
+		logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return &models.AppError{
+			OriginalError: err,
+			Message:       "get entity error",
+			Code:          http.StatusInternalServerError,
+		}
 	}
 
-	if count == 0 {
-		res = false
-	} else if entityID == -1 {
-		res = (count == 1)
-	} else {
-		// getting the entity
-		if entity, err = env.DB.GetEntity(entityID); err != nil {
-			logger.Log.Error("GetEntity error")
-			resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "entity_nameexist_validate", PluralCount: 1})
-			sendResponse(w, resp)
-			return nil
+	if entities, err = ConvertDBJSONToEntities(jsonRawMessage); err != nil {
+		logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return &models.AppError{
+			OriginalError: err,
+			Message:       "get entities error",
+			Code:          http.StatusInternalServerError,
 		}
-		res = (entity.EntityID != entities[0].EntityID)
+	}
+
+	count = len(entities)
+	logger.Log.WithFields(logrus.Fields{"count": count}).Debug("ValidateEntityNameHandler")
+
+	if count == 0 {
+		res = true
+	} else if entityID == -1 {
+		res = (count == 0)
+	} else {
+		logger.Log.WithFields(logrus.Fields{"entityID": entityID, "entities[0].EntityID": entities[0].EntityID}).Debug("ValidateEntityNameHandler")
+
+		res = (entityID == entities[0].EntityID)
 	}
 
 	logger.Log.WithFields(logrus.Fields{"vars": vars, "res": res}).Debug("ValidateEntityNameHandler")
-	if res {
+	if !res {
 		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "entity_nameexist_validate", PluralCount: 1})
 	} else {
 		resp = "true"

@@ -1075,43 +1075,43 @@ func (env *Env) GetProductsHandler(w http.ResponseWriter, r *http.Request) *mode
 }
 
 // GetProductHandler returns a json of the product with the requested id.
-func (env *Env) GetProductHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	vars := mux.Vars(r)
-
-	var (
-		id  int
-		err error
-	)
-
-	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "id atoi conversion",
-			Code:          http.StatusInternalServerError,
-		}
-	}
-
-	product, err := env.DB.GetProduct(id)
-	if err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error getting the product",
-		}
-	}
-
-	logger.Log.WithFields(logrus.Fields{"product": product}).Debug("GetProductHandler")
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	if err = json.NewEncoder(w).Encode(product); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
-	return nil
-}
+// func (env *Env) GetProductHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+// 	vars := mux.Vars(r)
+//
+// 	var (
+// 		id  int
+// 		err error
+// 	)
+//
+// 	if id, err = strconv.Atoi(vars["id"]); err != nil {
+// 		return &models.AppError{
+// 			OriginalError: err,
+// 			Message:       "id atoi conversion",
+// 			Code:          http.StatusInternalServerError,
+// 		}
+// 	}
+//
+// 	product, err := env.DB.GetProduct(id)
+// 	if err != nil {
+// 		return &models.AppError{
+// 			OriginalError: err,
+// 			Code:          http.StatusInternalServerError,
+// 			Message:       "error getting the product",
+// 		}
+// 	}
+//
+// 	logger.Log.WithFields(logrus.Fields{"product": product}).Debug("GetProductHandler")
+//
+// 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+//
+// 	if err = json.NewEncoder(w).Encode(product); err != nil {
+// 		return &models.AppError{
+// 			Code:    http.StatusInternalServerError,
+// 			Message: err.Error(),
+// 		}
+// 	}
+// 	return nil
+// }
 
 // CreateProductHandler creates the product from the request form.
 func (env *Env) CreateProductHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
@@ -1196,13 +1196,27 @@ func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *mo
 
 	var updatedp models.Product
 
-	if updatedp, err = env.DB.GetProduct(id); err != nil {
+	// getting the product
+	var (
+		jsonRawMessage json.RawMessage
+	)
+	if jsonRawMessage, err = zmqclient.DBGetProducts("http://localhost/?product="+strconv.Itoa(id), p.PersonID); err != nil {
 		return &models.AppError{
 			OriginalError: err,
-			Message:       "get product",
+			Message:       "zmqclient.DBGetProducts",
+			Code:          http.StatusInternalServerError,
+		}
+
+	}
+
+	if updatedp, err = ConvertDBJSONToProduct(jsonRawMessage); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Message:       "ConvertDBJSONToProduct",
 			Code:          http.StatusInternalServerError,
 		}
 	}
+
 	updatedp.CasNumber = p.CasNumber
 	updatedp.CeNumber = p.CeNumber
 	updatedp.EmpiricalFormula = p.EmpiricalFormula

@@ -20,7 +20,7 @@ type Datastore interface {
 	UpdateWelcomeAnnounce(w models.WelcomeAnnounce) error
 
 	// GetProducts(zmqclient.RequestFilter, int, bool) ([]models.Product, int, error)
-	GetProduct(id int) (models.Product, error)
+	// GetProduct(id int) (models.Product, error)
 	CountProductStorages(id int) (int, error)
 	CountProducts() (int, error)
 	DeleteProduct(id int) error
@@ -67,14 +67,14 @@ type Datastore interface {
 	// entities
 	// ComputeStockEntity(p models.Product, r *http.Request) []models.StoreLocation
 
-	GetEntities(zmqclient.RequestFilter, int) ([]models.Entity, int, error)
-	GetEntity(id int) (models.Entity, error)
-	GetEntityManager(id int) ([]models.Person, error)
+	// GetEntities(zmqclient.RequestFilter, int) ([]models.Entity, int, error)
+	// GetEntity(id int) (models.Entity, error)
+	// GetEntityManager(id int) ([]models.Person, error)
 	DeleteEntity(id int) error
 	CreateEntity(e models.Entity) (int64, error)
 	UpdateEntity(e models.Entity) error
-	HasEntityMember(id int) (bool, error)
-	HasEntityStorelocation(id int) (bool, error)
+	// HasEntityMember(id int) (bool, error)
+	// HasEntityStorelocation(id int) (bool, error)
 
 	// people
 	// GetPeople(zmqclient.RequestFilter, int) ([]models.Person, int, error)

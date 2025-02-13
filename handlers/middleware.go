@@ -392,18 +392,26 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 						http.Error(w, err.Error(), http.StatusInternalServerError)
 						return
 					}
-					m, e1 := env.DB.HasEntityMember(itemidInt)
-					n, e2 := env.DB.HasEntityStorelocation(itemidInt)
-					if e1 != nil {
-						logger.Log.WithFields(logrus.Fields{"e1": e1.Error()}).Error("AuthorizeMiddleware")
-						http.Error(w, e1.Error(), http.StatusBadRequest)
+
+					// getting the entity
+					var (
+						jsonRawMessage json.RawMessage
+						entity         models.Entity
+					)
+					if jsonRawMessage, err = zmqclient.DBGetEntities("http://localhost/?entity="+strconv.Itoa(itemidInt), personid); err != nil {
+						logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
+						http.Error(w, err.Error(), http.StatusInternalServerError)
 						return
 					}
-					if e2 != nil {
-						logger.Log.WithFields(logrus.Fields{"e2": e2.Error()}).Error("AuthorizeMiddleware")
-						http.Error(w, e2.Error(), http.StatusBadRequest)
+
+					if entity, err = ConvertDBJSONToEntity(jsonRawMessage); err != nil {
+						logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
+						http.Error(w, err.Error(), http.StatusInternalServerError)
 						return
 					}
+
+					m := (entity.EntityNbPeople != nil && *entity.EntityNbPeople == 0)
+					n := (entity.EntityNbStoreLocations != nil && *entity.EntityNbStoreLocations == 0)
 					if m {
 						http.Error(w, "can not delete an entity with members", http.StatusBadRequest)
 						return

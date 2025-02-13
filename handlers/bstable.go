@@ -11,6 +11,32 @@ import (
 	"github.com/tbellembois/gochimitheque/models"
 )
 
+// Convert a JSON response from the chimitheque_db Rust library to a slice of entity.
+func ConvertDBJSONToEntities(jsonRawMessage json.RawMessage) ([]models.Entity, error) {
+
+	logger.Log.Debug("ConvertDBJSONToEntities")
+	logger.Log.WithFields(logrus.Fields{"jsonRawMessage": fmt.Sprintf("%+v", jsonRawMessage)}).Debug("ConvertDBJSONToEntities")
+
+	var (
+		tuple tuple.T2[[]models.Entity, int]
+		err   error
+	)
+
+	if err = json.Unmarshal(jsonRawMessage, &tuple); err != nil {
+		return []models.Entity{}, &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling jsonRawMessage",
+		}
+	}
+
+	resp := tuple.V1
+
+	logger.Log.WithFields(logrus.Fields{"resp": fmt.Sprintf("%+v", resp)}).Debug("ConvertDBJSONToEntities")
+
+	return resp, nil
+}
+
 // Convert a JSON response from the chimitheque_db Rust library to a entity.
 func ConvertDBJSONToEntity(jsonRawMessage json.RawMessage) (models.Entity, error) {
 
@@ -37,6 +63,39 @@ func ConvertDBJSONToEntity(jsonRawMessage json.RawMessage) (models.Entity, error
 	return resp, nil
 }
 
+// Convert a JSON response from the chimitheque_db Rust library to a slice of entity JSON.
+func ConvertDBJSONToEntitiesJSON(jsonRawMessage json.RawMessage) ([]byte, *models.AppError) {
+
+	logger.Log.Debug("ConvertDBJSONToEntitiesJSON")
+	logger.Log.WithFields(logrus.Fields{"jsonRawMessage": fmt.Sprintf("%+v", jsonRawMessage)}).Debug("ConvertDBJSONToEntitiesJSON")
+
+	var (
+		entities []models.Entity
+		err      error
+	)
+
+	if entities, err = ConvertDBJSONToEntities(jsonRawMessage); err != nil {
+		return nil, &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling jsonRawMessage",
+		}
+	}
+
+	logger.Log.WithFields(logrus.Fields{"entity": fmt.Sprintf("%+v", entities)}).Debug("ConvertDBJSONToEntitiesJSON")
+
+	var jsonresp []byte
+	if jsonresp, err = json.Marshal(entities); err != nil {
+		return nil, &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error marshalling entities",
+		}
+	}
+
+	return jsonresp, nil
+}
+
 // Convert a JSON response from the chimitheque_db Rust library to a entity JSON.
 func ConvertDBJSONToEntityJSON(jsonRawMessage json.RawMessage) ([]byte, *models.AppError) {
 
@@ -52,7 +111,7 @@ func ConvertDBJSONToEntityJSON(jsonRawMessage json.RawMessage) ([]byte, *models.
 		return nil, &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error unmarshalling to store location",
+			Message:       "error unmarshalling jsonRawMessage",
 		}
 	}
 
@@ -63,7 +122,7 @@ func ConvertDBJSONToEntityJSON(jsonRawMessage json.RawMessage) ([]byte, *models.
 		return nil, &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error marshalling response",
+			Message:       "error marshalling entity",
 		}
 	}
 
@@ -111,7 +170,7 @@ func ConvertDBJSONToStorelocationJSON(jsonRawMessage json.RawMessage) ([]byte, *
 		return nil, &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error unmarshalling to store location",
+			Message:       "error unmarshalling jsonRawMessage",
 		}
 	}
 
@@ -122,7 +181,66 @@ func ConvertDBJSONToStorelocationJSON(jsonRawMessage json.RawMessage) ([]byte, *
 		return nil, &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error marshalling response",
+			Message:       "error marshalling storelocation",
+		}
+	}
+
+	return jsonresp, nil
+}
+
+// Convert a JSON response from the chimitheque_db Rust library to a product.
+func ConvertDBJSONToProduct(jsonRawMessage json.RawMessage) (models.Product, error) {
+
+	logger.Log.Debug("ConvertDBJSONToProduct")
+	logger.Log.WithFields(logrus.Fields{"jsonRawMessage": fmt.Sprintf("%+v", jsonRawMessage)}).Debug("ConvertDBJSONToProduct")
+
+	var (
+		tuple tuple.T2[[]models.Product, int]
+		err   error
+	)
+
+	if err = json.Unmarshal(jsonRawMessage, &tuple); err != nil {
+		return models.Product{}, &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling jsonRawMessage",
+		}
+	}
+
+	resp := tuple.V1[0]
+
+	logger.Log.WithFields(logrus.Fields{"resp": fmt.Sprintf("%+v", resp)}).Debug("ConvertDBJSONToProduct")
+
+	return resp, nil
+}
+
+// Convert a JSON response from the chimitheque_db Rust library to a Product JSON.
+func ConvertDBJSONToProductJSON(jsonRawMessage json.RawMessage) ([]byte, *models.AppError) {
+
+	logger.Log.Debug("ConvertDBJSONToProductJSON")
+	logger.Log.WithFields(logrus.Fields{"jsonRawMessage": fmt.Sprintf("%+v", jsonRawMessage)}).Debug("ConvertDBJSONToProductJSON")
+
+	var (
+		product models.Product
+		err     error
+	)
+
+	if product, err = ConvertDBJSONToProduct(jsonRawMessage); err != nil {
+		return nil, &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling jsonRawMessage",
+		}
+	}
+
+	logger.Log.WithFields(logrus.Fields{"product": fmt.Sprintf("%+v", product)}).Debug("ConvertDBJSONToProductJSON")
+
+	var jsonresp []byte
+	if jsonresp, err = json.Marshal(product); err != nil {
+		return nil, &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error marshalling product",
 		}
 	}
 
