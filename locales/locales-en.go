@@ -581,6 +581,10 @@ var LOCALES_EN = []byte(`
 	one = "permissions"
 [person_email_table_header]
 	one = "email"
+[person_member_of_table_header]
+	one = "member of"
+[person_manager_of_table_header]
+	one = "manager of"
 [person_can_not_remove_entity_manager]
 	one = "this entity can not be removed, the user is one of its manager"
 [person_created_message]

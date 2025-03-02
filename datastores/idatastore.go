@@ -78,14 +78,14 @@ type Datastore interface {
 
 	// people
 	// GetPeople(zmqclient.RequestFilter, int) ([]models.Person, int, error)
-	GetOrphanPeople() ([]models.Person, error)
-	IsOrphanPerson(id int) (bool, error)
-	GetPerson(id int) (models.Person, error)
-	GetPersonByEmail(email string) (models.Person, error)
-	GetPersonPermissions(id int) ([]models.Permission, error)
-	GetPersonEntities(loggedpersonID int, id int) ([]models.Entity, error)
-	GetPersonManageEntities(id int) ([]models.Entity, error)
-	DoesPersonBelongsTo(id int, entities []models.Entity) (bool, error)
+	// GetOrphanPeople() ([]models.Person, error)
+	// IsOrphanPerson(id int) (bool, error)
+	// GetPerson(id int) (models.Person, error)
+	// GetPersonByEmail(email string) (models.Person, error)
+	// GetPersonPermissions(id int) ([]models.Permission, error)
+	// GetPersonEntities(loggedpersonID int, id int) ([]models.Entity, error)
+	// GetPersonManageEntities(id int) ([]models.Entity, error)
+	// DoesPersonBelongsTo(id int, entities []models.Entity) (bool, error)
 	CreatePerson(p models.Person) (int64, error)
 	UpdatePerson(p models.Person) error
 	DeletePerson(id int) error
@@ -93,6 +93,6 @@ type Datastore interface {
 	IsPersonAdmin(id int) (bool, error)
 	UnsetPersonAdmin(id int) error
 	SetPersonAdmin(id int) error
-	IsPersonManager(id int) (bool, error)
+	// IsPersonManager(id int) (bool, error)
 	HasPersonReadRestrictedProductPermission(id int) (bool, error)
 }

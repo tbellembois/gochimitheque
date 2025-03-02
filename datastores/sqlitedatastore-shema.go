@@ -92,11 +92,11 @@ var schema = `
 	CREATE TABLE IF NOT EXISTS permission (
 		permission_id integer PRIMARY KEY,
 		person integer NOT NULL,
-		permission_perm_name string NOT NULL,
+		permission_name string NOT NULL,
 		permission_item_name string NOT NULL,
-		permission_entity_id integer,
+		permission_entity integer,
 		FOREIGN KEY(person) references person(person_id));
-	CREATE UNIQUE INDEX IF NOT EXISTS idx_permission ON permission(person, permission_item_name, permission_perm_name, permission_entity_id);
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_permission ON permission(person, permission_item_name, permission_name, permission_entity);
 
 	-- entities people belongs to
 	CREATE TABLE IF NOT EXISTS personentities (

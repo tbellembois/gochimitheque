@@ -66,13 +66,13 @@ func (env *Env) GetStoreLocationsHandler(w http.ResponseWriter, r *http.Request)
 	)
 
 	if r.URL.Query().Get("store_location") != "" {
-		if jsonresp, appErr = ConvertDBJSONToStorelocationJSON(jsonRawMessage); appErr != nil {
+		if jsonresp, appErr = zmqclient.ConvertDBJSONToStorelocationJSON(jsonRawMessage); appErr != nil {
 			logger.Log.WithFields(logrus.Fields{"ConvertDBJSONToStorelocationJSON appErr": fmt.Sprintf("%+v", appErr)}).Debug("GetStoreLocationsHandler")
 
 			return appErr
 		}
 	} else {
-		if jsonresp, appErr = ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
+		if jsonresp, appErr = zmqclient.ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
 			logger.Log.WithFields(logrus.Fields{"ConvertDBJSONToBSTableJSON appErr": fmt.Sprintf("%+v", appErr)}).Debug("GetStoreLocationsHandler")
 
 			return appErr

@@ -543,13 +543,13 @@ var migrationTen = `PRAGMA foreign_keys=off;
 
 BEGIN TRANSACTION;
 
-CREATE TABLE bookmark_new (
-	bookmark_id	INTEGER,
-	person	INTEGER NOT NULL,
-	product	INTEGER NOT NULL,
-	FOREIGN KEY(person) REFERENCES person(person_id) ON DELETE CASCADE,
-	FOREIGN KEY(product) REFERENCES product(product_id) ON DELETE CASCADE,
-	PRIMARY KEY(bookmark_id)
+CREATE TABLE "bookmark_new" (
+	"bookmark_id"	INTEGER,
+	"person"	INTEGER NOT NULL,
+	"product"	INTEGER NOT NULL,
+	PRIMARY KEY("bookmark_id"),
+	FOREIGN KEY("person") REFERENCES "person"("person_id") ON DELETE CASCADE,
+	FOREIGN KEY("product") REFERENCES "product"("product_id") ON DELETE CASCADE
 ) STRICT;
 INSERT INTO bookmark_new (
 	bookmark_id,
@@ -563,16 +563,18 @@ FROM bookmark;
 DROP TABLE bookmark;
 ALTER TABLE bookmark_new RENAME TO bookmark; 
 
-CREATE TABLE borrowing_new (
-	borrowing_id	INTEGER,
-	borrowing_comment	TEXT,
-	person	INTEGER NOT NULL,
-	borrower	INTEGER NOT NULL,
-	storage	INTEGER NOT NULL UNIQUE,
-	FOREIGN KEY(person) REFERENCES person(person_id) ON DELETE CASCADE,
-	FOREIGN KEY(storage) REFERENCES storage(storage_id) ON DELETE CASCADE,
-	FOREIGN KEY(borrower) REFERENCES person(person_id) ON DELETE CASCADE,
-	PRIMARY KEY(borrowing_id)
+
+
+CREATE TABLE "borrowing_new" (
+	"borrowing_id"	INTEGER,
+	"borrowing_comment"	TEXT,
+	"person"	INTEGER NOT NULL,
+	"borrower"	INTEGER NOT NULL,
+	"storage"	INTEGER NOT NULL UNIQUE,
+	PRIMARY KEY("borrowing_id"),
+	FOREIGN KEY("borrower") REFERENCES "person"("person_id") ON DELETE CASCADE,
+	FOREIGN KEY("person") REFERENCES "person"("person_id") ON DELETE CASCADE,
+	FOREIGN KEY("storage") REFERENCES "storage"("storage_id") ON DELETE CASCADE
 ) STRICT;
 INSERT INTO borrowing_new (
 	borrowing_id,
@@ -590,11 +592,13 @@ FROM borrowing;
 DROP TABLE borrowing;
 ALTER TABLE borrowing_new RENAME TO borrowing; 
 
-CREATE TABLE cas_number_new (
-	cas_number_id	INTEGER,
-	cas_number_label	TEXT NOT NULL UNIQUE,
-	cas_number_cmr	TEXT,
-	PRIMARY KEY(cas_number_id)
+
+
+CREATE TABLE "cas_number_new" (
+	"cas_number_id"	INTEGER,
+	"cas_number_label"	TEXT NOT NULL UNIQUE,
+	"cas_number_cmr"	TEXT,
+	PRIMARY KEY("cas_number_id")
 ) STRICT;
 INSERT INTO cas_number_new (
 	cas_number_id,
@@ -608,10 +612,12 @@ FROM casnumber;
 DROP TABLE casnumber;
 ALTER TABLE cas_number_new RENAME TO cas_number;
 
-CREATE TABLE category_new (
-	category_id	INTEGER,
-	category_label	TEXT NOT NULL UNIQUE,
-	PRIMARY KEY(category_id)
+
+
+CREATE TABLE "category_new" (
+	"category_id"	INTEGER,
+	"category_label"	TEXT NOT NULL UNIQUE,
+	PRIMARY KEY("category_id")
 ) STRICT;
 INSERT INTO category_new (
 	category_id,
@@ -623,10 +629,12 @@ FROM category;
 DROP TABLE category;
 ALTER TABLE category_new RENAME TO category; 
 
-CREATE TABLE ce_number_new (
-	ce_number_id	INTEGER,
-	ce_number_label	TEXT NOT NULL UNIQUE,
-	PRIMARY KEY(ce_number_id)
+
+
+CREATE TABLE "ce_number_new" (
+	"ce_number_id"	INTEGER,
+	"ce_number_label"	TEXT NOT NULL UNIQUE,
+	PRIMARY KEY("ce_number_id")
 ) STRICT;
 INSERT INTO ce_number_new (
 	ce_number_id,
@@ -638,10 +646,12 @@ FROM cenumber;
 DROP TABLE cenumber;
 ALTER TABLE ce_number_new RENAME TO ce_number;
 
-CREATE TABLE class_of_compound_new (
-	class_of_compound_id	INTEGER,
-	class_of_compound_label	TEXT NOT NULL UNIQUE,
-	PRIMARY KEY(class_of_compound_id)
+
+
+CREATE TABLE "class_of_compound_new" (
+	"class_of_compound_id"	INTEGER,
+	"class_of_compound_label"	TEXT NOT NULL UNIQUE,
+	PRIMARY KEY("class_of_compound_id")
 ) STRICT;
 INSERT INTO class_of_compound_new (
 	class_of_compound_id,
@@ -653,10 +663,12 @@ FROM classofcompound;
 DROP TABLE classofcompound;
 ALTER TABLE class_of_compound_new RENAME TO class_of_compound;
 
-CREATE TABLE empirical_formula_new (
-	empirical_formula_id	INTEGER,
-	empirical_formula_label	TEXT NOT NULL UNIQUE,
-	PRIMARY KEY(empirical_formula_id)
+
+
+CREATE TABLE "empirical_formula_new" (
+	"empirical_formula_id"	INTEGER,
+	"empirical_formula_label"	TEXT NOT NULL UNIQUE,
+	PRIMARY KEY("empirical_formula_id")
 ) STRICT;
 INSERT INTO empirical_formula_new (
 	empirical_formula_id,
@@ -668,11 +680,13 @@ FROM empiricalformula;
 DROP TABLE empiricalformula;
 ALTER TABLE empirical_formula_new RENAME TO empirical_formula;
 
-CREATE TABLE entity_new (
-	entity_id	INTEGER,
-	entity_name	TEXT NOT NULL UNIQUE,
-	entity_description	TEXT,
-	PRIMARY KEY(entity_id)
+
+
+CREATE TABLE "entity_new" (
+	"entity_id"	INTEGER,
+	"entity_name"	TEXT NOT NULL UNIQUE,
+	"entity_description"	TEXT,
+	PRIMARY KEY("entity_id")
 ) STRICT;
 INSERT INTO entity_new (
 	entity_id,
@@ -686,12 +700,32 @@ FROM entity;
 DROP TABLE entity;
 ALTER TABLE entity_new RENAME TO entity; 
 
-CREATE TABLE hazard_statement_new (
-	hazard_statement_id	INTEGER,
-	hazard_statement_label	TEXT NOT NULL,
-	hazard_statement_reference	TEXT NOT NULL UNIQUE,
-	hazard_statement_cmr	TEXT,
-	PRIMARY KEY(hazard_statement_id)
+
+
+CREATE TABLE "entitypeople_new" (
+	"entitypeople_entity_id"	integer NOT NULL,
+	"entitypeople_person_id"	integer NOT NULL,
+	PRIMARY KEY("entitypeople_entity_id","entitypeople_person_id"),
+	FOREIGN KEY("entitypeople_entity_id") REFERENCES "entity"("entity_id") ON DELETE CASCADE,
+	FOREIGN KEY("entitypeople_person_id") REFERENCES "person"("person_id") ON DELETE CASCADE
+) STRICT;
+INSERT into entitypeople_new (
+	entitypeople_entity_id,
+	entitypeople_person_id
+)
+SELECT entitypeople_entity_id, entitypeople_person_id
+FROM entitypeople;
+DROP TABLE entitypeople;
+ALTER TABLE entitypeople_new RENAME TO entitypeople;
+
+
+
+CREATE TABLE "hazard_statement_new" (
+	"hazard_statement_id"	INTEGER,
+	"hazard_statement_label"	TEXT NOT NULL,
+	"hazard_statement_reference"	TEXT NOT NULL UNIQUE,
+	"hazard_statement_cmr"	TEXT,
+	PRIMARY KEY("hazard_statement_id")
 ) STRICT;
 INSERT INTO hazard_statement_new (
 	hazard_statement_id,
@@ -706,6 +740,8 @@ SELECT hazardstatement_id,
 FROM hazardstatement;
 DROP TABLE hazardstatement;
 ALTER TABLE hazard_statement_new RENAME TO hazard_statement;
+
+
 
 CREATE TABLE linear_formula_new (
 	linear_formula_id	INTEGER,
@@ -737,21 +773,23 @@ FROM name;
 DROP TABLE name;
 ALTER TABLE name_new RENAME TO name; 
 
-CREATE TABLE permission_new (
-	permission_id	INTEGER,
-	person	INTEGER NOT NULL,
-	permission_perm_name	TEXT NOT NULL,
-	permission_item_name	TEXT NOT NULL,
-	permission_entity_id	INTEGER,
-	FOREIGN KEY(person) REFERENCES person(person_id) ON DELETE CASCADE,
-	PRIMARY KEY(permission_id)
+
+
+CREATE TABLE "permission_new" (
+	"permission_id"	INTEGER,
+	"person"	INTEGER NOT NULL,
+	"permission_name"	TEXT NOT NULL,
+	"permission_item"	TEXT NOT NULL,
+	"permission_entity"	INTEGER NOT NULL,
+	PRIMARY KEY("permission_id"),
+	FOREIGN KEY("person") REFERENCES "person"("person_id") ON DELETE CASCADE
 ) STRICT;
 INSERT INTO permission_new (
 	permission_id,
 	person,
-	permission_perm_name,
-	permission_item_name,
-	permission_entity_id
+	permission_name,
+	permission_item,
+	permission_entity
 )
 SELECT permission_id,
 	person,
@@ -761,6 +799,8 @@ SELECT permission_id,
 FROM permission;
 DROP TABLE permission;
 ALTER TABLE permission_new RENAME TO permission; 
+
+
 
 CREATE TABLE person_new (
 	person_id	INTEGER,
@@ -777,6 +817,26 @@ FROM person;
 DROP TABLE person;
 ALTER TABLE person_new RENAME TO person; 
 
+
+
+CREATE TABLE "personentities_new" (
+	"personentities_person_id"	integer NOT NULL,
+	"personentities_entity_id"	integer NOT NULL,
+	PRIMARY KEY("personentities_person_id","personentities_entity_id"),
+	FOREIGN KEY("personentities_entity_id") REFERENCES "entity"("entity_id") ON DELETE CASCADE,
+	FOREIGN KEY("personentities_person_id") REFERENCES "person"("person_id") ON DELETE CASCADE
+) STRICT;
+INSERT INTO personentities_new (
+	personentities_person_id,
+	personentities_entity_id
+)
+SELECT personentities_person_id, personentities_entity_id
+FROM personentities;
+DROP TABLE personentities;
+ALTER TABLE personentities_new RENAME TO personentities;
+
+
+
 CREATE TABLE physical_state_new (
 	physical_state_id	INTEGER,
 	physical_state_label	TEXT NOT NULL UNIQUE,
@@ -791,6 +851,8 @@ SELECT physicalstate_id,
 FROM physicalstate;
 DROP TABLE physicalstate;
 ALTER TABLE physical_state_new RENAME TO physical_state;
+
+
 
 CREATE TABLE precautionary_statement_new (
 	precautionary_statement_id	INTEGER,
@@ -810,6 +872,8 @@ FROM precautionarystatement;
 DROP TABLE precautionarystatement;
 ALTER TABLE precautionary_statement_new RENAME TO precautionary_statement;
 
+
+
 CREATE TABLE producer_new (
 	producer_id	INTEGER,
 	producer_label	TEXT NOT NULL UNIQUE,
@@ -825,9 +889,11 @@ FROM producer;
 DROP TABLE producer;
 ALTER TABLE producer_new RENAME TO producer; 
 
+
+
 CREATE TABLE producer_ref_new (
 	producer_ref_id	INTEGER,
-	producer_ref_label	TEXT NOT NULL,
+	producer_ref_label	TEXT NOT NULL UNIQUE,
 	producer	INTEGER,
 	FOREIGN KEY(producer) REFERENCES producer(producer_id) ON DELETE CASCADE,
 	PRIMARY KEY(producer_ref_id)
@@ -843,6 +909,8 @@ SELECT producerref_id,
 FROM producerref;
 DROP TABLE producerref;
 ALTER TABLE producer_ref_new RENAME TO producer_ref;
+
+
 
 CREATE TABLE product_new (
 	product_id	INTEGER,
@@ -953,8 +1021,141 @@ DROP TABLE product;
 UPDATE product_new SET product_type = "cons" WHERE (product_number_per_carton IS NOT NULL AND product_number_per_carton != 0);
 UPDATE product_new SET product_type = "bio" WHERE (producer_ref IS NOT NULL AND (product_number_per_carton IS NULL OR product_number_per_carton == 0));
 UPDATE product_new SET product_type = "chem" WHERE (producer_ref IS NULL AND (product_number_per_carton IS NULL OR product_number_per_carton == 0));
-
 ALTER TABLE product_new RENAME TO product; 
+
+
+
+CREATE TABLE "productclassesofcompounds_new" (
+	"productclassesofcompounds_product_id"	INTEGER NOT NULL,
+	"productclassesofcompounds_class_of_compound_id"	INTEGER NOT NULL,
+	PRIMARY KEY("productclassesofcompounds_product_id","productclassesofcompounds_class_of_compound_id"),
+	FOREIGN KEY("productclassesofcompounds_class_of_compound_id") REFERENCES "class_of_compound"("class_of_compound_id") ON DELETE CASCADE,
+	FOREIGN KEY("productclassesofcompounds_product_id") REFERENCES "product"("product_id") ON DELETE CASCADE
+) STRICT;
+INSERT INTO productclassesofcompounds_new (
+	productclassesofcompounds_product_id,
+	productclassesofcompounds_class_of_compound_id
+)
+SELECT productclassofcompound_product_id,
+productclassofcompound_classofcompound_id
+FROM productclassofcompound;
+DROP TABLE productclassofcompound;
+ALTER TABLE productclassesofcompounds_new RENAME TO productclassesofcompounds;
+
+
+
+CREATE TABLE "producthazardstatements_new" (
+	"producthazardstatements_product_id"	INTEGER NOT NULL,
+	"producthazardstatements_hazard_statement_id"	INTEGER NOT NULL,
+	PRIMARY KEY("producthazardstatements_product_id","producthazardstatements_hazard_statement_id"),
+	FOREIGN KEY("producthazardstatements_hazard_statement_id") REFERENCES "hazard_statement"("hazard_statement_id") ON DELETE CASCADE,
+	FOREIGN KEY("producthazardstatements_product_id") REFERENCES "product"("product_id") ON DELETE CASCADE
+) STRICT;
+INSERT INTO producthazardstatements_new (
+	producthazardstatements_product_id,
+	producthazardstatements_hazard_statement_id
+)
+SELECT producthazardstatements_product_id,
+producthazardstatements_hazardstatement_id
+FROM producthazardstatements;
+DROP TABLE producthazardstatements;
+ALTER TABLE producthazardstatements_new RENAME TO producthazardstatements;
+
+
+
+CREATE TABLE "productprecautionarystatements_new" (
+	"productprecautionarystatements_product_id"	INTEGER NOT NULL,
+"productprecautionarystatements_precautionary_statement_id"	INTEGER NOT NULL,
+PRIMARY KEY("productprecautionarystatements_product_id","productprecautionarystatements_precautionary_statement_id"),
+FOREIGN KEY("productprecautionarystatements_precautionary_statement_id") REFERENCES "precautionary_statement"("precautionary_statement_id") ON DELETE CASCADE,
+FOREIGN KEY("productprecautionarystatements_product_id") REFERENCES "product"("product_id") ON DELETE CASCADE
+) STRICT;
+INSERT INTO productprecautionarystatements_new (
+	productprecautionarystatements_product_id,
+	productprecautionarystatements_precautionary_statement_id
+)
+SELECT productprecautionarystatements_product_id,
+productprecautionarystatements_precautionarystatement_id
+FROM productprecautionarystatements;
+DROP TABLE productprecautionarystatements;
+ALTER TABLE productprecautionarystatements_new RENAME TO productprecautionarystatements;
+
+
+
+CREATE TABLE "productsupplierrefs_new" (
+	"productsupplierrefs_product_id"	INTEGER NOT NULL,
+	"productsupplierrefs_supplier_ref_id"	INTEGER NOT NULL,
+	PRIMARY KEY("productsupplierrefs_product_id","productsupplierrefs_supplier_ref_id"),
+	FOREIGN KEY("productsupplierrefs_product_id") REFERENCES "product"("product_id") ON DELETE CASCADE,
+	FOREIGN KEY("productsupplierrefs_supplier_ref_id") REFERENCES "supplier_ref"("supplier_ref_id") ON DELETE CASCADE
+) STRICT;
+INSERT INTO productsupplierrefs_new (
+	productsupplierrefs_product_id,
+	productsupplierrefs_supplier_ref_id
+)
+SELECT productsupplierrefs_product_id,
+productsupplierrefs_supplierref_id
+FROM productsupplierrefs;
+DROP TABLE productsupplierrefs;
+ALTER TABLE productsupplierrefs_new RENAME TO productsupplierrefs;
+
+
+
+CREATE TABLE "productsymbols_new" (
+	"productsymbols_product_id"	integer NOT NULL,
+	"productsymbols_symbol_id"	integer NOT NULL,
+	PRIMARY KEY("productsymbols_product_id","productsymbols_symbol_id"),
+	FOREIGN KEY("productsymbols_product_id") REFERENCES "product"("product_id") ON DELETE CASCADE,
+	FOREIGN KEY("productsymbols_symbol_id") REFERENCES "symbol"("symbol_id") ON DELETE CASCADE
+);
+INSERT INTO productsymbols_new (
+	productsymbols_product_id,
+	productsymbols_symbol_id
+)
+SELECT productsymbols_product_id,
+productsymbols_symbol_id
+FROM productsymbols;
+DROP TABLE productsymbols;
+ALTER TABLE productsymbols_new RENAME TO productsymbols;
+
+
+
+CREATE TABLE "productsynonyms_new" (
+	"productsynonyms_product_id"	integer NOT NULL,
+	"productsynonyms_name_id"	integer NOT NULL,
+	PRIMARY KEY("productsynonyms_product_id","productsynonyms_name_id"),
+	FOREIGN KEY("productsynonyms_name_id") REFERENCES "name"("name_id") ON DELETE CASCADE,
+	FOREIGN KEY("productsynonyms_product_id") REFERENCES "product"("product_id") ON DELETE CASCADE
+);
+INSERT INTO productsynonyms_new (
+	productsynonyms_product_id,
+	productsynonyms_name_id
+)
+SELECT productsynonyms_product_id,
+productsynonyms_name_id
+FROM productsynonyms;
+DROP TABLE productsynonyms;
+ALTER TABLE productsynonyms_new RENAME TO productsynonyms;
+
+
+
+CREATE TABLE "producttags_new" (
+	"producttags_product_id"	integer NOT NULL,
+	"producttags_tag_id"	integer NOT NULL,
+	PRIMARY KEY("producttags_product_id","producttags_tag_id"),
+	FOREIGN KEY("producttags_product_id") REFERENCES "product"("product_id") ON DELETE CASCADE,
+	FOREIGN KEY("producttags_tag_id") REFERENCES "tag"("tag_id") ON DELETE CASCADE
+);
+INSERT INTO producttags_new (
+	producttags_product_id,
+	producttags_tag_id
+)
+SELECT producttags_product_id, producttags_tag_id
+FROM producttags;
+DROP TABLE producttags;
+ALTER TABLE producttags_new RENAME TO producttags;
+
+
 
 CREATE TABLE signal_word_new (
 	signal_word_id	INTEGER,
@@ -970,6 +1171,8 @@ SELECT signalword_id,
 FROM signalword;
 DROP TABLE signalword;
 ALTER TABLE signal_word_new RENAME TO signal_word;
+
+
 
 UPDATE storage SET storage_quantity = storage_number_of_unit WHERE storage_number_of_unit IS NOT NULL;
 
@@ -1102,6 +1305,8 @@ FROM storelocation;
 DROP TABLE storelocation;
 ALTER TABLE store_location_new RENAME TO store_location;
 
+
+
 CREATE TABLE supplier_new (
 	supplier_id	INTEGER,
 	supplier_label	TEXT NOT NULL UNIQUE,
@@ -1116,6 +1321,8 @@ SELECT supplier_id,
 FROM supplier;
 DROP TABLE supplier;
 ALTER TABLE supplier_new RENAME TO supplier;
+
+
 
 CREATE TABLE supplier_ref_new (
 	supplier_ref_id	INTEGER,
@@ -1136,6 +1343,8 @@ FROM supplierref;
 DROP TABLE supplierref;
 ALTER TABLE supplier_ref_new RENAME TO supplier_ref;
 
+
+
 CREATE TABLE symbol_new (
 	symbol_id	INTEGER,
 	symbol_label	TEXT NOT NULL UNIQUE,
@@ -1146,6 +1355,8 @@ INSERT INTO symbol_new (symbol_label) VALUES ("GHS01"), ("GHS02"), ("GHS03"), ("
 
 DROP TABLE symbol;
 ALTER TABLE symbol_new RENAME TO symbol;
+
+
 
 CREATE TABLE tag_new (
 	tag_id	INTEGER,
@@ -1161,6 +1372,8 @@ SELECT tag_id,
 FROM tag;
 DROP TABLE tag;
 ALTER TABLE tag_new RENAME TO tag;
+
+
 
 CREATE TABLE unit_new (
 	unit_id	INTEGER,
@@ -1187,6 +1400,8 @@ FROM unit;
 DROP TABLE unit;
 ALTER TABLE unit_new RENAME TO unit;
 
+
+
 CREATE TABLE welcome_announce_new (
 	welcome_announce_id	INTEGER,
 	welcome_announce_text	TEXT,
@@ -1202,72 +1417,9 @@ FROM welcomeannounce;
 DROP TABLE welcomeannounce;
 ALTER TABLE welcome_announce_new RENAME TO welcome_announce;
 
-CREATE TABLE productclassesofcompounds (
-	productclassesofcompounds_product_id INTEGER NOT NULL,
-	productclassesofcompounds_class_of_compound_id INTEGER NOT NULL,
-	PRIMARY KEY (productclassesofcompounds_product_id, productclassesofcompounds_class_of_compound_id),
-	FOREIGN KEY (productclassesofcompounds_product_id) REFERENCES product(product_id) ON DELETE CASCADE,
-	FOREIGN KEY (productclassesofcompounds_class_of_compound_id) REFERENCES class_of_compound(class_of_compound_id) ON DELETE CASCADE
-) STRICT;
-INSERT INTO productclassesofcompounds (
-	productclassesofcompounds_product_id,
-	productclassesofcompounds_class_of_compound_id
-)
-SELECT productclassofcompound_product_id,
-	productclassofcompound_classofcompound_id
-FROM productclassofcompound;
-DROP TABLE productclassofcompound;
 
-CREATE TABLE producthazardstatements_new (
-	producthazardstatements_product_id INTEGER NOT NULL,
-	producthazardstatements_hazard_statement_id INTEGER NOT NULL,
-	PRIMARY KEY (producthazardstatements_product_id, producthazardstatements_hazard_statement_id),
-	FOREIGN KEY (producthazardstatements_product_id) REFERENCES product(product_id) ON DELETE CASCADE,
-	FOREIGN KEY (producthazardstatements_hazard_statement_id) REFERENCES hazard_statement(hazard_statement_id) ON DELETE CASCADE
-) STRICT;
-INSERT INTO producthazardstatements_new (
-	producthazardstatements_product_id,
-	producthazardstatements_hazard_statement_id
-)
-SELECT producthazardstatements_product_id,
-producthazardstatements_hazardstatement_id
-FROM producthazardstatements;
-DROP TABLE producthazardstatements;
-ALTER TABLE producthazardstatements_new RENAME TO producthazardstatements;
 
-CREATE TABLE productprecautionarystatements_new (
-productprecautionarystatements_product_id INTEGER NOT NULL,
-productprecautionarystatements_precautionary_statement_id INTEGER NOT NULL,
-PRIMARY KEY (productprecautionarystatements_product_id, productprecautionarystatements_precautionary_statement_id),
-FOREIGN KEY (productprecautionarystatements_product_id) REFERENCES product(product_id) ON DELETE CASCADE,
-FOREIGN KEY (productprecautionarystatements_precautionary_statement_id) REFERENCES precautionary_statement(precautionary_statement_id) ON DELETE CASCADE
-) STRICT;
-INSERT INTO productprecautionarystatements_new (
-productprecautionarystatements_product_id,
-productprecautionarystatements_precautionary_statement_id
-)
-SELECT productprecautionarystatements_product_id,
-productprecautionarystatements_precautionarystatement_id
-FROM productprecautionarystatements;
-DROP TABLE productprecautionarystatements;
-ALTER TABLE productprecautionarystatements_new RENAME TO productprecautionarystatements;
 
-CREATE TABLE productsupplierrefs_new (
-productsupplierrefs_product_id INTEGER NOT NULL,
-productsupplierrefs_supplier_ref_id INTEGER NOT NULL,
-PRIMARY KEY (productsupplierrefs_product_id, productsupplierrefs_supplier_ref_id),
-FOREIGN KEY (productsupplierrefs_product_id) REFERENCES product(product_id) ON DELETE CASCADE,
-FOREIGN KEY (productsupplierrefs_supplier_ref_id) REFERENCES supplier_ref(supplier_ref_id) ON DELETE CASCADE
-) STRICT;
-INSERT INTO productsupplierrefs_new (
-productsupplierrefs_product_id,
-productsupplierrefs_supplier_ref_id
-)
-SELECT productsupplierrefs_product_id,
-productsupplierrefs_supplierref_id
-FROM productsupplierrefs;
-DROP TABLE productsupplierrefs;
-ALTER TABLE productsupplierrefs_new RENAME TO productsupplierrefs;
 
 DROP INDEX IF EXISTS idx_producerref_label;
 DROP INDEX IF EXISTS idx_supplierref_label;

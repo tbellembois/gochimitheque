@@ -134,7 +134,7 @@ func (db *SQLiteDataStore) ToCasbinJSONAdapter() ([]byte, error) {
 		sqlr string
 	)
 
-	sqlr = `SELECT person AS "person.person_id", permission_perm_name, permission_item_name, permission_entity_id 
+	sqlr = `SELECT person AS "person.person_id", permission_name, permission_item, permission_entity
 	FROM permission`
 	if err = db.Select(&ps, sqlr); err != nil {
 		return nil, err
@@ -146,9 +146,9 @@ func (db *SQLiteDataStore) ToCasbinJSONAdapter() ([]byte, error) {
 		js = append(js, CasbinJSON{
 			PType: "p",
 			V0:    strconv.Itoa(p.Person.PersonID),
-			V1:    p.PermissionPermName,
-			V2:    p.PermissionItemName,
-			V3:    strconv.Itoa(p.PermissionEntityID),
+			V1:    p.PermissionName,
+			V2:    p.PermissionItem,
+			V3:    strconv.Itoa(p.PermissionEntity),
 		})
 	}
 
@@ -450,7 +450,7 @@ func (db *SQLiteDataStore) CreateDatabase() error {
 
 		admin = &models.Person{
 			PersonEmail: "admin@chimitheque.fr",
-			Permissions: []*models.Permission{{PermissionPermName: "all", PermissionItemName: "all", PermissionEntityID: -1}},
+			Permissions: []*models.Permission{{PermissionName: "all", PermissionItem: "all", PermissionEntity: -1}},
 		}
 
 		if _, err = db.CreatePerson(*admin); err != nil {

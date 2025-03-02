@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"crypto/rand"
-	"database/sql"
 	"encoding/base64"
 	"encoding/json"
 	"io"
@@ -18,6 +17,7 @@ import (
 	"github.com/tbellembois/gochimitheque/models"
 	"github.com/tbellembois/gochimitheque/request"
 	"github.com/tbellembois/gochimitheque/static/jade"
+	"github.com/tbellembois/gochimitheque/zmqclient"
 )
 
 /*
@@ -225,22 +225,34 @@ func (env *Env) CallbackHandler(w http.ResponseWriter, r *http.Request) *models.
 	}
 
 	// Insert user if DB if needed.
-	if _, err = env.DB.GetPersonByEmail(claims.Email); err != nil {
-		if err == sql.ErrNoRows {
-			if _, err = env.DB.CreatePerson(models.Person{PersonEmail: claims.Email}); err != nil {
-				http.Error(w, "error creating user"+err.Error(), http.StatusInternalServerError)
-				return &models.AppError{
-					Code:          http.StatusInternalServerError,
-					OriginalError: nil,
-					Message:       "error creating user",
-				}
-			}
-		} else {
-			http.Error(w, "error getting user"+err.Error(), http.StatusInternalServerError)
+	// TODO: remove 1 by connected user id.
+	var (
+		jsonRawMessage json.RawMessage
+		person         *models.Person
+	)
+	if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/?search="+claims.Email, 1); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Message:       "zmqclient.DBGetPeople",
+			Code:          http.StatusInternalServerError,
+		}
+	}
+
+	if person, err = zmqclient.ConvertDBJSONToPerson(jsonRawMessage); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Message:       "ConvertDBJSONToPerson",
+			Code:          http.StatusInternalServerError,
+		}
+	}
+
+	if person == nil {
+		if _, err = env.DB.CreatePerson(models.Person{PersonEmail: claims.Email}); err != nil {
+			http.Error(w, "error creating user"+err.Error(), http.StatusInternalServerError)
 			return &models.AppError{
 				Code:          http.StatusInternalServerError,
 				OriginalError: nil,
-				Message:       "error getting user",
+				Message:       "error creating user",
 			}
 		}
 	}

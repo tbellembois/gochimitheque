@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -185,18 +184,33 @@ func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 			"userInfo": userInfo,
 		}).Debug("AuthenticateMiddleware")
 
-		// getting the user id
+		// getting the connected user
 		var (
-			person models.Person
+			jsonRawMessage json.RawMessage
+			person         *models.Person
 		)
-		if person, err = env.DB.GetPersonByEmail(userInfo.Email); err != nil {
-			if err == sql.ErrNoRows && env.AutoCreateUser {
-			} else {
-				logger.Log.Debug("can not get logged user: " + err.Error())
-				http.Error(w, "can not get logged user: "+err.Error(), http.StatusBadRequest)
-				return
-			}
+		if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/?search="+userInfo.Email, 1); err != nil {
+			logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
+
+		if person, err = zmqclient.ConvertDBJSONToPerson(jsonRawMessage); err != nil {
+			logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		// var (
+		// 	person models.Person
+		// )
+		// if person, err = env.DB.GetPersonByEmail(userInfo.Email); err != nil {
+		// 	if err == sql.ErrNoRows && env.AutoCreateUser {
+		// 	} else {
+		// 		logger.Log.Debug("can not get logged user: " + err.Error())
+		// 		http.Error(w, "can not get logged user: "+err.Error(), http.StatusBadRequest)
+		// 		return
+		// 	}
+		// }
 
 		// getting the request container
 		ctxcontainer := ctx.Value(request.ChimithequeContextKey("container"))
@@ -257,6 +271,23 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 		// id = an int or ""
 		itemid = vars["id"]
 
+		// getting the connected user
+		var (
+			jsonRawMessage json.RawMessage
+			person         *models.Person
+		)
+		if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/?person="+strconv.Itoa(personid), 1); err != nil {
+			logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if person, err = zmqclient.ConvertDBJSONToPerson(jsonRawMessage); err != nil {
+			logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		// action = r or w
 		switch {
 		case view == "v":
@@ -309,13 +340,13 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 					return
 				}
 				// we can not delete a manager
-				m, e := env.DB.IsPersonManager(itemidInt)
-				if e != nil {
-					logger.Log.WithFields(logrus.Fields{"e": e.Error()}).Error("AuthorizeMiddleware")
-					http.Error(w, e.Error(), http.StatusInternalServerError)
-					return
-				}
-				if m {
+				// m, e := env.DB.IsPersonManager(itemidInt)
+				// if e != nil {
+				// 	logger.Log.WithFields(logrus.Fields{"e": e.Error()}).Error("AuthorizeMiddleware")
+				// 	http.Error(w, e.Error(), http.StatusInternalServerError)
+				// 	return
+				// }
+				if person.ManagedEntities == nil || len(person.ManagedEntities) != 0 {
 					http.Error(w, "can not delete a manager", http.StatusBadRequest)
 					return
 				}
@@ -341,7 +372,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 				// getting the store location
 				var (
 					jsonRawMessage json.RawMessage
-					storeLocation  models.StoreLocation
+					storeLocation  *models.StoreLocation
 				)
 				if jsonRawMessage, err = zmqclient.DBGetStorelocations("http://localhost/?store_location="+strconv.Itoa(int(itemidInt)), personid); err != nil {
 					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
@@ -349,7 +380,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 					return
 				}
 
-				if storeLocation, err = ConvertDBJSONToStorelocation(jsonRawMessage); err != nil {
+				if storeLocation, err = zmqclient.ConvertDBJSONToStorelocation(jsonRawMessage); err != nil {
 					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
@@ -396,7 +427,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 					// getting the entity
 					var (
 						jsonRawMessage json.RawMessage
-						entity         models.Entity
+						entity         *models.Entity
 					)
 					if jsonRawMessage, err = zmqclient.DBGetEntities("http://localhost/?entity="+strconv.Itoa(itemidInt), personid); err != nil {
 						logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
@@ -404,7 +435,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 						return
 					}
 
-					if entity, err = ConvertDBJSONToEntity(jsonRawMessage); err != nil {
+					if entity, err = zmqclient.ConvertDBJSONToEntity(jsonRawMessage); err != nil {
 						logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
 						http.Error(w, err.Error(), http.StatusInternalServerError)
 						return

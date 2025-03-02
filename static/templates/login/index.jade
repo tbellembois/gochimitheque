@@ -5,17 +5,17 @@ block CONTENT
         Login(c ViewContainer)
     header
         .row
-            div.card.mx-auto.text-center(style="width: 18rem; border: none;")
-                img(src=c.AppURL + c.AppPath + "static/img/openid.svg", alt="openid")
+            div.card.mx-auto.text-center(style="width: 18rem; border: 1px dotted black; padding: 5px;")
+                img(src=c.AppURL + c.AppPath + "static/img/openid.svg", alt="openid", width="100px")
                 .card-body 
                     h5.card-title
                         //- = T("login_openid", 1 )
                     p.card-text 
                         //- = T("login_openid_text", 1 )
-                    a(href=c.AppURL + c.AppPath + "get-token")
+                    a(href=c.AppURL + c.AppPath + "get-token" class="mdi mdi-location-enter mdi-24px iconlabel")
                         = T("login_openid_link", 1 )
 
-            #wannounce.col.col-sm-8.offset-sm-2.mt-5
+            #wannounce.col.col-sm-8(style="position: absolute; bottom: 0;")
 
     a(href="https://github.com/tbellembois/gochimitheque")
         img(style="position: absolute; top: 0; right: 0; border: 0;" src=c.AppURL + c.AppPath + "static/img/forkme_github.png" alt="Fork me on GitHub")

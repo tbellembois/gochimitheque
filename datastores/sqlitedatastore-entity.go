@@ -143,7 +143,7 @@ func (db *SQLiteDataStore) CreateEntity(e models.Entity) (lastInsertID int64, er
 		if sqlr, args, err = dialect.From(goqu.T("permission")).Where(
 			goqu.Ex{
 				"person":               m.PersonID,
-				"permission_entity_id": e.EntityID,
+				"permission_entity": e.EntityID,
 			},
 		).Delete().ToSQL(); err != nil {
 			return
@@ -157,9 +157,9 @@ func (db *SQLiteDataStore) CreateEntity(e models.Entity) (lastInsertID int64, er
 		if sqlr, args, err = dialect.From(goqu.T("permission")).Prepared(true).Insert().Rows(
 			goqu.Record{
 				"person":               m.PersonID,
-				"permission_perm_name": "all",
-				"permission_item_name": "all",
-				"permission_entity_id": e.EntityID,
+				"permission_name": "all",
+				"permission_item": "all",
+				"permission_entity": e.EntityID,
 			},
 		).ToSQL(); err != nil {
 			return
@@ -172,9 +172,9 @@ func (db *SQLiteDataStore) CreateEntity(e models.Entity) (lastInsertID int64, er
 		if sqlr, args, err = dialect.From(goqu.T("permission")).Insert().Rows(
 			goqu.Record{
 				"person":               m.PersonID,
-				"permission_perm_name": "w",
-				"permission_item_name": "products",
-				"permission_entity_id": e.EntityID,
+				"permission_name": "w",
+				"permission_item": "products",
+				"permission_entity": e.EntityID,
 			},
 		).OnConflict(goqu.DoNothing()).ToSQL(); err != nil {
 			logger.Log.Errorf("error preparing inserting manager new permissions w products -1: %v", err)
@@ -189,9 +189,9 @@ func (db *SQLiteDataStore) CreateEntity(e models.Entity) (lastInsertID int64, er
 		if sqlr, args, err = dialect.From(goqu.T("permission")).Insert().Rows(
 			goqu.Record{
 				"person":               m.PersonID,
-				"permission_perm_name": "w",
-				"permission_item_name": "rproducts",
-				"permission_entity_id": e.EntityID,
+				"permission_name": "w",
+				"permission_item": "rproducts",
+				"permission_entity": e.EntityID,
 			},
 		).OnConflict(goqu.DoNothing()).ToSQL(); err != nil {
 			logger.Log.Errorf("error preparing inserting manager new permissions w rproducts -1: %v", err)
@@ -325,7 +325,7 @@ func (db *SQLiteDataStore) UpdateEntity(e models.Entity) (err error) {
 		if sqlr, args, err = dialect.From(goqu.T("permission")).Where(
 			goqu.Ex{
 				"person":               manager.PersonID,
-				"permission_entity_id": e.EntityID,
+				"permission_entity": e.EntityID,
 			},
 		).ToSQL(); err != nil {
 			logger.Log.Errorf("error preparing deleting manager permissions: %v", err)
@@ -342,9 +342,9 @@ func (db *SQLiteDataStore) UpdateEntity(e models.Entity) (err error) {
 		if sqlr, args, err = dialect.From(goqu.T("permission")).Insert().Rows(
 			goqu.Record{
 				"person":               manager.PersonID,
-				"permission_perm_name": "all",
-				"permission_item_name": "all",
-				"permission_entity_id": e.EntityID,
+				"permission_name": "all",
+				"permission_item": "all",
+				"permission_entity": e.EntityID,
 			},
 		).OnConflict(goqu.DoNothing()).ToSQL(); err != nil {
 			logger.Log.Errorf("error preparing inserting manager new permissions: %v", err)
@@ -359,9 +359,9 @@ func (db *SQLiteDataStore) UpdateEntity(e models.Entity) (err error) {
 		if sqlr, args, err = dialect.From(goqu.T("permission")).Insert().Rows(
 			goqu.Record{
 				"person":               manager.PersonID,
-				"permission_perm_name": "w",
-				"permission_item_name": "products",
-				"permission_entity_id": "-1",
+				"permission_name": "w",
+				"permission_item": "products",
+				"permission_entity": "-1",
 			},
 		).OnConflict(goqu.DoNothing()).ToSQL(); err != nil {
 			logger.Log.Errorf("error preparing inserting manager new permissions w products -1: %v", err)
@@ -376,9 +376,9 @@ func (db *SQLiteDataStore) UpdateEntity(e models.Entity) (err error) {
 		if sqlr, args, err = dialect.From(goqu.T("permission")).Insert().Rows(
 			goqu.Record{
 				"person":               manager.PersonID,
-				"permission_perm_name": "w",
-				"permission_item_name": "rproducts",
-				"permission_entity_id": "-1",
+				"permission_name": "w",
+				"permission_item": "rproducts",
+				"permission_entity": "-1",
 			},
 		).OnConflict(goqu.DoNothing()).ToSQL(); err != nil {
 			logger.Log.Errorf("error preparing inserting manager new permissions w rproducts -1: %v", err)

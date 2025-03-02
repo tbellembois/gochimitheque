@@ -67,13 +67,13 @@ func (env *Env) GetEntitiesHandler(w http.ResponseWriter, r *http.Request) *mode
 	)
 
 	if r.URL.Query().Get("entity") != "" {
-		if jsonresp, appErr = ConvertDBJSONToEntityJSON(jsonRawMessage); appErr != nil {
+		if jsonresp, appErr = zmqclient.ConvertDBJSONToEntityJSON(jsonRawMessage); appErr != nil {
 			logger.Log.WithFields(logrus.Fields{"ConvertDBJSONToEntityJSON appErr": fmt.Sprintf("%+v", appErr)}).Debug("GetEntitiesHandler")
 
 			return appErr
 		}
 	} else {
-		if jsonresp, appErr = ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
+		if jsonresp, appErr = zmqclient.ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
 			logger.Log.WithFields(logrus.Fields{"ConvertDBJSONToBSTableJSON appErr": fmt.Sprintf("%+v", appErr)}).Debug("GetEntitiesHandler")
 
 			return appErr
@@ -167,7 +167,8 @@ func (env *Env) UpdateEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 	var (
 		id          int
 		err         error
-		e, updatede models.Entity
+		e models.Entity
+		updatede *models.Entity
 	)
 
 	c := request.ContainerFromRequestContext(r)
@@ -203,7 +204,7 @@ func (env *Env) UpdateEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 		}
 	}
 
-	if updatede, err = ConvertDBJSONToEntity(jsonRawMessage); err != nil {
+	if updatede, err = zmqclient.ConvertDBJSONToEntity(jsonRawMessage); err != nil {
 		logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
 		return &models.AppError{
 			OriginalError: err,
@@ -218,7 +219,7 @@ func (env *Env) UpdateEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 
 	logger.Log.WithFields(logrus.Fields{"updatede": updatede}).Debug("UpdateEntityHandler")
 
-	if err = env.DB.UpdateEntity(updatede); err != nil {
+	if err = env.DB.UpdateEntity(*updatede); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Message:       "update entity error",

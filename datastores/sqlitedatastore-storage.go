@@ -207,7 +207,7 @@ func (db *SQLiteDataStore) GetStorages(f zmqclient.RequestFilter, person_id int)
 
 	// filter by permissions
 	comreq.WriteString(` JOIN permission AS perm, entity as e ON
-	perm.person = :personid and (perm.permission_item_name in ("all", "storages")) and (perm.permission_perm_name in ("all", "r", "w")) and (perm.permission_entity_id in (-1, e.entity_id))
+	perm.person = :personid and (perm.permission_item in ("all", "storages")) and (perm.permission_name in ("all", "r", "w")) and (perm.permission_entity in (-1, e.entity_id))
 	`)
 	comreq.WriteString(" WHERE 1")
 	if len(f.Ids) > 0 {

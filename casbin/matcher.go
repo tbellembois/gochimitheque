@@ -16,36 +16,54 @@ import (
 
 func matchPeople(datastore datastores.Datastore, personID string, itemID string, entityID string) bool {
 	var (
-		orphan   bool
-		pid, iid int
-		err      error
-		ent      []models.Entity
+		orphan bool
+		err    error
+		ent    []*models.Entity
 	)
 
 	logger.Log.WithFields(logrus.Fields{"personId": personID, "itemId": itemID, "entityId": entityID}).Debug("matchPeople")
 
-	if orphan, err = datastore.IsOrphanPerson(iid); err != nil {
-		logger.Log.Error("matchPeople: " + err.Error())
+	// TODO: remove 1 by connected user id.
+	var (
+		jsonRawMessage json.RawMessage
+		person         *models.Person
+	)
+
+	if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/?person="+personID, 1); err != nil {
+		logger.Log.Error("zmqclient.DBGetPeople: " + err.Error())
 		return false
 	}
+
+	if person, err = zmqclient.ConvertDBJSONToPerson(jsonRawMessage); err != nil {
+		logger.Log.Error("ConvertDBJSONToPerson: " + err.Error())
+		return false
+	}
+
+	orphan = len(person.Entities) == 0
+
+	// if orphan, err = datastore.IsOrphanPerson(iid); err != nil {
+	// 	logger.Log.Error("matchPeople: " + err.Error())
+	// 	return false
+	// }
 	if orphan {
 		return true
 	}
 
-	if pid, err = strconv.Atoi(personID); err != nil {
-		logger.Log.Error("matchPeople: " + err.Error())
-		return false
-	}
+	// if pid, err = strconv.Atoi(personID); err != nil {
+	// 	logger.Log.Error("matchPeople: " + err.Error())
+	// 	return false
+	// }
 
-	if iid, err = strconv.Atoi(itemID); err != nil {
-		logger.Log.Error("matchPeople: " + err.Error())
-		return false
-	}
+	// if iid, err = strconv.Atoi(itemID); err != nil {
+	// 	logger.Log.Error("matchPeople: " + err.Error())
+	// 	return false
+	// }
 
-	if ent, err = datastore.GetPersonEntities(pid, iid); err != nil {
-		logger.Log.Error("matchPeople: " + err.Error())
-		return false
-	}
+	ent = person.Entities
+	// if ent, err = datastore.GetPersonEntities(pid, iid); err != nil {
+	// 	logger.Log.Error("matchPeople: " + err.Error())
+	// 	return false
+	// }
 
 	found := false
 
@@ -117,11 +135,33 @@ func matchStorelocation(datastore datastores.Datastore, personID string, itemID 
 		return false
 	}
 
-	if m, err = datastore.DoesPersonBelongsTo(pid, []models.Entity{store_location.Entity}); err != nil {
-		logger.Log.Error("matchStorelocation: " + err.Error())
+	// if m, err = datastore.DoesPersonBelongsTo(pid, []models.Entity{store_location.Entity}); err != nil {
+	// 	logger.Log.Error("matchStorelocation: " + err.Error())
+	// 	return false
+	// }
+	// Getting the person.
+	var (
+		person *models.Person
+	)
+
+	if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/?person="+strconv.Itoa(pid), pid); err != nil {
+		logger.Log.Error("zmqclient.DBGetPeople: " + err.Error())
+		return false
+
+	}
+
+	if person, err = zmqclient.ConvertDBJSONToPerson(jsonRawMessage); err != nil {
+		logger.Log.Error("zmqclient.ConvertDBJSONToPerson: " + err.Error())
 		return false
 	}
 
+	m = false
+	for _, entity := range person.Entities {
+		if entity.EntityID == store_location.Entity.EntityID {
+			m = true
+			break
+		}
+	}
 	logger.Log.WithFields(logrus.Fields{"m": m}).Debug("matchStorelocation")
 
 	return m
@@ -164,9 +204,34 @@ func matchStorage(datastore datastores.Datastore, personID string, itemID string
 		return false
 	}
 
-	if m, err = datastore.DoesPersonBelongsTo(pid, []models.Entity{ent}); err != nil {
-		logger.Log.Error(fmt.Sprintf("matchStorage: %v %s", ent, err.Error()))
+	// if m, err = datastore.DoesPersonBelongsTo(pid, []models.Entity{ent}); err != nil {
+	// 	logger.Log.Error(fmt.Sprintf("matchStorage: %v %s", ent, err.Error()))
+	// 	return false
+	// }
+
+	// Getting the person.
+	var (
+		person         *models.Person
+		jsonRawMessage json.RawMessage
+	)
+
+	if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/?person="+strconv.Itoa(pid), pid); err != nil {
+		logger.Log.Error("zmqclient.DBGetPeople: " + err.Error())
 		return false
+
+	}
+
+	if person, err = zmqclient.ConvertDBJSONToPerson(jsonRawMessage); err != nil {
+		logger.Log.Error("zmqclient.ConvertDBJSONToPerson: " + err.Error())
+		return false
+	}
+
+	m = false
+	for _, entity := range person.Entities {
+		if entity.EntityID == ent.EntityID {
+			m = true
+			break
+		}
 	}
 
 	logger.Log.WithFields(logrus.Fields{"m": m}).Debug("matchStorage")
@@ -201,9 +266,34 @@ func matchEntity(datastore datastores.Datastore, personID string, entityID strin
 		return false
 	}
 
-	if m, err = datastore.DoesPersonBelongsTo(pid, []models.Entity{{EntityID: eid}}); err != nil {
-		logger.Log.Error("matchEntity: " + err.Error())
+	// if m, err = datastore.DoesPersonBelongsTo(pid, []models.Entity{{EntityID: eid}}); err != nil {
+	// 	logger.Log.Error("matchEntity: " + err.Error())
+	// 	return false
+	// }
+
+	// Getting the person.
+	var (
+		person         *models.Person
+		jsonRawMessage json.RawMessage
+	)
+
+	if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/?person="+strconv.Itoa(pid), pid); err != nil {
+		logger.Log.Error("zmqclient.DBGetPeople: " + err.Error())
 		return false
+
+	}
+
+	if person, err = zmqclient.ConvertDBJSONToPerson(jsonRawMessage); err != nil {
+		logger.Log.Error("zmqclient.ConvertDBJSONToPerson: " + err.Error())
+		return false
+	}
+
+	m = false
+	for _, entity := range person.Entities {
+		if entity.EntityID == eid {
+			m = true
+			break
+		}
 	}
 
 	logger.Log.WithFields(logrus.Fields{"personId": personID, "entityId": entityID, "m": m}).Debug("matchEntity")

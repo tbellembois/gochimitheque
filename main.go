@@ -8,7 +8,6 @@ package main
 // BuildID="v2.1.0" && go build -ldflags "-X main.BuildID=$BuildID".
 import (
 	"context"
-	"database/sql"
 	"embed"
 	"encoding/json"
 	"flag"
@@ -210,8 +209,8 @@ func initDB() {
 
 func initAdmins() {
 	var (
-		err           error
-		p             models.Person
+		err error
+		// p             models.Person
 		formerAdmins  []models.Person
 		currentAdmins []string
 		isStillAdmin  bool
@@ -247,18 +246,30 @@ func initAdmins() {
 	if len(currentAdmins) > 0 {
 		for _, ca := range currentAdmins {
 			logger.Log.Info("additional admin: " + ca)
-			if p, err = env.DB.GetPersonByEmail(ca); err != nil {
-				if err == sql.ErrNoRows {
-					logger.Log.Info("user " + ca + " not found in database, creating it")
-					if _, err = env.DB.CreatePerson(models.Person{PersonEmail: ca}); err != nil {
-						logger.Log.Fatal(err)
-					}
-				} else {
-					logger.Log.Fatal(err)
-				}
+
+			// TODO: remove 1 by connected user id.
+			var (
+				jsonRawMessage json.RawMessage
+				person         *models.Person
+			)
+			if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/?person_email="+ca, 1); err != nil {
+				logger.Log.Fatal(err)
 			}
 
-			if err = env.DB.SetPersonAdmin(p.PersonID); err != nil {
+			if person, err = zmqclient.ConvertDBJSONToPerson(jsonRawMessage); err != nil {
+				logger.Log.Fatal(err)
+			}
+
+			if person == nil {
+				logger.Log.Info("user " + ca + " not found in database, creating it")
+				if _, err = env.DB.CreatePerson(models.Person{PersonEmail: ca}); err != nil {
+					logger.Log.Fatal(err)
+				}
+			} else {
+				logger.Log.Fatal(err)
+			}
+
+			if err = env.DB.SetPersonAdmin(person.PersonID); err != nil {
 				logger.Log.Fatal(err)
 			}
 		}

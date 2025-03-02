@@ -33,7 +33,6 @@ func (env *Env) ValidatePersonEmailHandler(w http.ResponseWriter, r *http.Reques
 		res            bool
 		resp           string
 		count          int
-		person         models.Person
 		personID       int
 		personEmail    string
 		jsonRawMessage json.RawMessage
@@ -82,13 +81,35 @@ func (env *Env) ValidatePersonEmailHandler(w http.ResponseWriter, r *http.Reques
 	} else if personID == -1 {
 		res = (count == 1)
 	} else {
-		// getting the person
-		if person, err = env.DB.GetPerson(personID); err != nil {
-			logger.Log.Error("GetPerson error")
-			resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "person_emailexist_validate", PluralCount: 1})
-			sendResponse(w, resp)
-			return nil
+
+		// TODO: remove 1 by connected user id.
+		var (
+			jsonRawMessage json.RawMessage
+			person         *models.Person
+		)
+
+		if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/?person="+strconv.Itoa(personID), 1); err != nil {
+			return &models.AppError{
+				OriginalError: err,
+				Message:       "zmqclient.DBGetPeople",
+				Code:          http.StatusInternalServerError,
+			}
 		}
+
+		if person, err = zmqclient.ConvertDBJSONToPerson(jsonRawMessage); err != nil {
+			return &models.AppError{
+				OriginalError: err,
+				Message:       "ConvertDBJSONToPerson",
+				Code:          http.StatusInternalServerError,
+			}
+		}
+		// getting the person
+		// if person, err = env.DB.GetPerson(personID); err != nil {
+		// 	logger.Log.Error("GetPerson error")
+		// 	resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "person_emailexist_validate", PluralCount: 1})
+		// 	sendResponse(w, resp)
+		// 	return nil
+		// }
 		res = (person.PersonID != people[0].PersonID)
 	}
 
@@ -160,7 +181,7 @@ func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request
 		}
 	}
 
-	if entities, err = ConvertDBJSONToEntities(jsonRawMessage); err != nil {
+	if entities, err = zmqclient.ConvertDBJSONToEntities(jsonRawMessage); err != nil {
 		logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return &models.AppError{

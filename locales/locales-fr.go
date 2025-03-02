@@ -581,6 +581,10 @@ var LOCALES_FR = []byte(`
 	one = "permissions"
 [person_email_table_header]
 	one = "mail"
+[person_member_of_table_header]
+	one = "membre de"
+[person_manager_of_table_header]
+	one = "gestionnaire de"
 [person_can_not_remove_entity_manager]
 	one = "cette entité ne peut pas être supprimée, l'utilisateur est un de ses gestionnaires"
 [person_created_message]

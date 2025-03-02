@@ -110,7 +110,7 @@ func (env *Env) GetProductsProducerRefsHandler(w http.ResponseWriter, r *http.Re
 		jsonresp []byte
 		appErr   *models.AppError
 	)
-	if jsonresp, appErr = ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
+	if jsonresp, appErr = zmqclient.ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
 		return appErr
 	}
 
@@ -141,7 +141,7 @@ func (env *Env) GetProductsSupplierRefsHandler(w http.ResponseWriter, r *http.Re
 		jsonresp []byte
 		appErr   *models.AppError
 	)
-	if jsonresp, appErr = ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
+	if jsonresp, appErr = zmqclient.ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
 		return appErr
 	}
 
@@ -263,7 +263,7 @@ func (env *Env) GetProductsCategoriesHandler(w http.ResponseWriter, r *http.Requ
 		jsonresp []byte
 		appErr   *models.AppError
 	)
-	if jsonresp, appErr = ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
+	if jsonresp, appErr = zmqclient.ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
 		return appErr
 	}
 
@@ -294,7 +294,7 @@ func (env *Env) GetProductsTagsHandler(w http.ResponseWriter, r *http.Request) *
 		jsonresp []byte
 		appErr   *models.AppError
 	)
-	if jsonresp, appErr = ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
+	if jsonresp, appErr = zmqclient.ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
 		return appErr
 	}
 
@@ -325,7 +325,7 @@ func (env *Env) GetProductsProducersHandler(w http.ResponseWriter, r *http.Reque
 		jsonresp []byte
 		appErr   *models.AppError
 	)
-	if jsonresp, appErr = ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
+	if jsonresp, appErr = zmqclient.ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
 		return appErr
 	}
 
@@ -356,7 +356,7 @@ func (env *Env) GetProductsSuppliersHandler(w http.ResponseWriter, r *http.Reque
 		jsonresp []byte
 		appErr   *models.AppError
 	)
-	if jsonresp, appErr = ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
+	if jsonresp, appErr = zmqclient.ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
 		return appErr
 	}
 
@@ -450,7 +450,7 @@ func (env *Env) GetProductsCasNumbersHandler(w http.ResponseWriter, r *http.Requ
 		jsonresp []byte
 		appErr   *models.AppError
 	)
-	if jsonresp, appErr = ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
+	if jsonresp, appErr = zmqclient.ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
 		return appErr
 	}
 
@@ -482,7 +482,7 @@ func (env *Env) GetProductsCeNumbersHandler(w http.ResponseWriter, r *http.Reque
 		jsonresp []byte
 		appErr   *models.AppError
 	)
-	if jsonresp, appErr = ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
+	if jsonresp, appErr = zmqclient.ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
 		return appErr
 	}
 
@@ -513,7 +513,7 @@ func (env *Env) GetProductsPhysicalStatesHandler(w http.ResponseWriter, r *http.
 		jsonresp []byte
 		appErr   *models.AppError
 	)
-	if jsonresp, appErr = ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
+	if jsonresp, appErr = zmqclient.ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
 		return appErr
 	}
 
@@ -544,7 +544,7 @@ func (env *Env) GetProductsSignalWordsHandler(w http.ResponseWriter, r *http.Req
 		jsonresp []byte
 		appErr   *models.AppError
 	)
-	if jsonresp, appErr = ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
+	if jsonresp, appErr = zmqclient.ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
 		return appErr
 	}
 
@@ -575,7 +575,7 @@ func (env *Env) GetProductsClassOfCompoundsHandler(w http.ResponseWriter, r *htt
 		jsonresp []byte
 		appErr   *models.AppError
 	)
-	if jsonresp, appErr = ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
+	if jsonresp, appErr = zmqclient.ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
 		return appErr
 	}
 
@@ -606,7 +606,7 @@ func (env *Env) GetProductsEmpiricalFormulasHandler(w http.ResponseWriter, r *ht
 		jsonresp []byte
 		appErr   *models.AppError
 	)
-	if jsonresp, appErr = ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
+	if jsonresp, appErr = zmqclient.ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
 		return appErr
 	}
 
@@ -638,7 +638,7 @@ func (env *Env) GetProductsLinearFormulasHandler(w http.ResponseWriter, r *http.
 		jsonresp []byte
 		appErr   *models.AppError
 	)
-	if jsonresp, appErr = ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
+	if jsonresp, appErr = zmqclient.ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
 		return appErr
 	}
 
@@ -771,7 +771,7 @@ func (env *Env) GetProductsSymbolsHandler(w http.ResponseWriter, r *http.Request
 		jsonresp []byte
 		appErr   *models.AppError
 	)
-	if jsonresp, appErr = ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
+	if jsonresp, appErr = zmqclient.ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
 		return appErr
 	}
 
@@ -836,7 +836,7 @@ func (env *Env) GetProductsHazardStatementsHandler(w http.ResponseWriter, r *htt
 		jsonresp []byte
 		appErr   *models.AppError
 	)
-	if jsonresp, appErr = ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
+	if jsonresp, appErr = zmqclient.ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
 		return appErr
 	}
 
@@ -901,7 +901,7 @@ func (env *Env) GetProductsPrecautionaryStatementsHandler(w http.ResponseWriter,
 		jsonresp []byte
 		appErr   *models.AppError
 	)
-	if jsonresp, appErr = ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
+	if jsonresp, appErr = zmqclient.ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
 		return appErr
 	}
 
@@ -966,7 +966,7 @@ func (env *Env) GetProductsNamesHandler(w http.ResponseWriter, r *http.Request) 
 		jsonresp []byte
 		appErr   *models.AppError
 	)
-	if jsonresp, appErr = ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
+	if jsonresp, appErr = zmqclient.ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
 		return appErr
 	}
 
@@ -1032,7 +1032,7 @@ func (env *Env) GetProductsSynonymsHandler(w http.ResponseWriter, r *http.Reques
 		jsonresp []byte
 		appErr   *models.AppError
 	)
-	if jsonresp, appErr = ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
+	if jsonresp, appErr = zmqclient.ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
 		return appErr
 	}
 
@@ -1064,7 +1064,7 @@ func (env *Env) GetProductsHandler(w http.ResponseWriter, r *http.Request) *mode
 		jsonresp []byte
 		appErr   *models.AppError
 	)
-	if jsonresp, appErr = ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
+	if jsonresp, appErr = zmqclient.ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
 		return appErr
 	}
 
@@ -1194,7 +1194,7 @@ func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *mo
 		}
 	}
 
-	var updatedp models.Product
+	var updatedp *models.Product
 
 	// getting the product
 	var (
@@ -1209,7 +1209,7 @@ func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *mo
 
 	}
 
-	if updatedp, err = ConvertDBJSONToProduct(jsonRawMessage); err != nil {
+	if updatedp, err = zmqclient.ConvertDBJSONToProduct(jsonRawMessage); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Message:       "ConvertDBJSONToProduct",
@@ -1255,8 +1255,8 @@ func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *mo
 
 	logger.Log.WithFields(logrus.Fields{"updatedp": fmt.Sprintf("%+v", updatedp)}).Debug("UpdateProductHandler")
 
-	sanitizeProduct(&updatedp)
-	if _, err := env.DB.CreateUpdateProduct(updatedp, true); err != nil {
+	sanitizeProduct(updatedp)
+	if _, err := env.DB.CreateUpdateProduct(*updatedp, true); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Message:       "update product error",

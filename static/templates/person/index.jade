@@ -21,6 +21,10 @@ block CONTENT
                                 //th(data-field='person_id' data-sortable='true') ID
                                 th(data-field='person_email' data-sortable='true')
                                     = T("person_email_table_header", 1)
+                                th(data-field='member_of' data-formatter='Person_memberofFormatter')
+                                    = T("person_member_of_table_header", 1)
+                                th(data-field='manager_of' data-formatter='Person_managerofFormatter')
+                                    = T("person_manager_of_table_header", 1)
                                 th(data-field='operate', data-formatter='Person_operateFormatter', data-events='operateEvents')
 
         #edit-collapse.collapse(data-parent='#accordion')
