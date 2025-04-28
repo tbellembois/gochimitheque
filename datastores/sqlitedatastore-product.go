@@ -128,42 +128,6 @@ func (db *SQLiteDataStore) DeleteProductBookmark(pr models.Product, pe models.Pe
 	return nil
 }
 
-// CountProducts returns the number of products.
-func (db *SQLiteDataStore) CountProducts() (int, error) {
-	var (
-		count int
-		sqlr  string
-		err   error
-	)
-
-	sqlr = `SELECT count(*) FROM product`
-	if err = db.Get(&count, sqlr); err != nil {
-		return 0, err
-	}
-
-	logger.Log.WithFields(logrus.Fields{"count": count}).Debug("CountProducts")
-
-	return count, nil
-}
-
-// CountProductStorages returns the number of storages for the product with the given id.
-func (db *SQLiteDataStore) CountProductStorages(id int) (int, error) {
-	var (
-		count int
-		sqlr  string
-		err   error
-	)
-
-	sqlr = `SELECT count(*) FROM storage WHERE product = ?`
-	if err = db.Get(&count, sqlr, id); err != nil {
-		return 0, err
-	}
-
-	logger.Log.WithFields(logrus.Fields{"count": count}).Debug("CountProductStorages")
-
-	return count, nil
-}
-
 // GetProduct returns the product with the given id.
 func (db *SQLiteDataStore) GetProduct(id int) (models.Product, error) {
 	var (

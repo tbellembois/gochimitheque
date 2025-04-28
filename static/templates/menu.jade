@@ -55,10 +55,10 @@ nav.navbar.navbar-expand-lg.navbar-light
                     div#menu_store_locations.collapse
                         span.p-2.mdi.mdi-docker.mdi-24px
                             = T("menu_store_location", 1)
-                        a(href="#", onclick="Menu_loadContent('store_location', '" + c.AppURL + c.AppPath + "v/storelocations', 'StoreLocation_list')").dropdown-item
+                        a(href="#", onclick="Menu_loadContent('store_location', '" + c.AppURL + c.AppPath + "v/store_locations', 'StoreLocation_list')").dropdown-item
                             span.iconlabel
                                 = T("list", 1)
-                        a#menu_create_store_location.collapse(href="#", onclick="Menu_loadContent('store_location', '" + c.AppURL + c.AppPath + "vc/storelocations', 'StoreLocation_create')").dropdown-item
+                        a#menu_create_store_location.collapse(href="#", onclick="Menu_loadContent('store_location', '" + c.AppURL + c.AppPath + "vc/store_locations', 'StoreLocation_create')").dropdown-item
                             span.iconlabel
                                 = T("create", 1)
                         hr.dropdown-divider

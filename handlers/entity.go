@@ -111,7 +111,7 @@ func (env *Env) GetEntityStockHandler(w http.ResponseWriter, r *http.Request) *m
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.DBGetProducts",
+			Message:       "error calling zmqclient.DBComputeStock",
 		}
 	}
 
@@ -165,9 +165,9 @@ func (env *Env) UpdateEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 	vars := mux.Vars(r)
 
 	var (
-		id          int
-		err         error
-		e models.Entity
+		id       int
+		err      error
+		e        models.Entity
 		updatede *models.Entity
 	)
 

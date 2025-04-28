@@ -95,7 +95,7 @@ func (env *Env) FakeMiddleware(h http.Handler) http.Handler {
 		container := ctxcontainer.(request.Container)
 
 		// setting up auth person informations
-		container.PersonEmail = "thomas.bellembois@uca.fr"
+		container.PersonEmail = "admin@chimitheque.fr"
 		container.PersonID = 1
 
 		ctx = context.WithValue(
@@ -126,7 +126,7 @@ func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 			return
 		}
 
-		if refresh_token, err = r.Cookie("refresh_token"); err != nil || access_token == nil {
+		if refresh_token, err = r.Cookie("refresh_token"); err != nil {
 			logger.Log.Debug("refresh token not found in cookies")
 			http.Error(w, "refresh token not found in cookies, please log in", http.StatusUnauthorized)
 			return
@@ -180,9 +180,9 @@ func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 			}
 		}
 
-		logger.Log.WithFields(logrus.Fields{
-			"userInfo": userInfo,
-		}).Debug("AuthenticateMiddleware")
+		// logger.Log.WithFields(logrus.Fields{
+		// 	"userInfo": userInfo,
+		// }).Debug("AuthenticateMiddleware")
 
 		// getting the connected user
 		var (
@@ -200,17 +200,6 @@ func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		// var (
-		// 	person models.Person
-		// )
-		// if person, err = env.DB.GetPersonByEmail(userInfo.Email); err != nil {
-		// 	if err == sql.ErrNoRows && env.AutoCreateUser {
-		// 	} else {
-		// 		logger.Log.Debug("can not get logged user: " + err.Error())
-		// 		http.Error(w, "can not get logged user: "+err.Error(), http.StatusBadRequest)
-		// 		return
-		// 	}
-		// }
 
 		// getting the request container
 		ctxcontainer := ctx.Value(request.ChimithequeContextKey("container"))
@@ -247,6 +236,8 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			err         error
 		)
 
+		logger.Log.WithFields(logrus.Fields{"r.RequestURI": fmt.Sprintf("%+v", r.RequestURI)}).Debug("AuthorizeMiddleware")
+
 		// extracting the logged user email from context
 		ctx := r.Context()
 		ctxcontainer := ctx.Value(request.ChimithequeContextKey("container"))
@@ -270,6 +261,8 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 		item = vars["item"]
 		// id = an int or ""
 		itemid = vars["id"]
+
+		logger.Log.WithFields(logrus.Fields{"vars": fmt.Sprintf("%+v", vars)}).Debug("AuthorizeMiddleware")
 
 		// getting the connected user
 		var (
@@ -295,8 +288,10 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 		case view == "vc":
 			action = "w"
 		default:
-			if r.Method == "GET" {
+			if r.Method == "GET" || r.RequestURI == "/storages/borrow" {
 				action = "r"
+				itemid = "-2"
+				r.Method = "GET" // "/storages/borrow" is a PUT so we need to rewrite the Method to GET
 			} else {
 				action = "w"
 			}
@@ -340,12 +335,6 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 					return
 				}
 				// we can not delete a manager
-				// m, e := env.DB.IsPersonManager(itemidInt)
-				// if e != nil {
-				// 	logger.Log.WithFields(logrus.Fields{"e": e.Error()}).Error("AuthorizeMiddleware")
-				// 	http.Error(w, e.Error(), http.StatusInternalServerError)
-				// 	return
-				// }
 				if person.ManagedEntities == nil || len(person.ManagedEntities) != 0 {
 					http.Error(w, "can not delete a manager", http.StatusBadRequest)
 					return
@@ -399,22 +388,44 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 				}
 
 			case "products":
+				logger.Log.Debug("DELETE -> products")
+
 				// itemid is an int
 				if itemidInt, err = strconv.Atoi(itemid); err != nil {
 					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
 					http.Error(w, err.Error(), http.StatusInternalServerError)
-				}
-				// we can not delete a product with storages
-				c, e := env.DB.CountProductStorages(itemidInt)
-				if e != nil {
-					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
-					http.Error(w, e.Error(), http.StatusInternalServerError)
 					return
 				}
-				if c != 0 {
+				logger.Log.WithFields(logrus.Fields{"itemidInt": itemidInt}).Debug("AuthorizeMiddleware")
+
+				// getting the product
+				var (
+					jsonRawMessage json.RawMessage
+					product        *models.Product
+					count          int
+				)
+				if jsonRawMessage, err = zmqclient.DBGetProducts("http://localhost/?product="+itemid, personid); err != nil {
+					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+
+				}
+
+				if product, err = zmqclient.ConvertDBJSONToProduct(jsonRawMessage); err != nil {
+					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+				logger.Log.WithFields(logrus.Fields{"product": fmt.Sprintf("%#v", product)}).Debug("AuthorizeMiddleware")
+
+				// we can not delete a product with storages
+				count = product.ProductSC
+				if count != 0 {
 					http.Error(w, "can not delete a product with storages", http.StatusBadRequest)
 					return
 				}
+				logger.Log.WithFields(logrus.Fields{"count": count}).Debug("AuthorizeMiddleware")
+
 			case "entities":
 				if r.Method == "DELETE" {
 					// itemid is an int
@@ -452,9 +463,6 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 						return
 					}
 				}
-			default:
-				http.Error(w, "unknown item: "+item, http.StatusBadRequest)
-				return
 			}
 		}
 

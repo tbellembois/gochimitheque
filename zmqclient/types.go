@@ -128,6 +128,7 @@ type PubchemAutocomplete struct {
 
 type RequestFilter struct {
 	Search  string `json:"search"`
+	Id      uint64 `json:"id"`
 	OrderBy string `json:"order_by"`
 	Order   string `json:"order"`
 	Offset  uint64 `json:"offset"`

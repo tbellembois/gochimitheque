@@ -14,317 +14,6 @@ import (
 	"github.com/tbellembois/gochimitheque/zmqclient"
 )
 
-// func (db *SQLiteDataStore) IsOrphanPerson(id int) (bool, error) {
-//
-// 	dialect := goqu.Dialect("sqlite3")
-// 	tablePersonEntity := goqu.T("personentities")
-//
-// 	// Build query.
-// 	var (
-// 		err       error
-// 		countSQL  string
-// 		countArgs []interface{}
-// 		count     int
-// 	)
-//
-// 	if countSQL, countArgs, err = dialect.From(tablePersonEntity).Select(
-// 		goqu.COUNT("personentities_person_id"),
-// 	).Where(
-// 		goqu.I("personentities_person_id").Eq(id),
-// 	).ToSQL(); err != nil {
-// 		return false, err
-// 	}
-//
-// 	if err = db.Get(&count, countSQL, countArgs...); err != nil {
-// 		return false, err
-// 	}
-//
-// 	logger.Log.WithFields(logrus.Fields{"count": count}).Debug("IsOrphanPerson")
-//
-// 	return count == 0, nil
-//
-// }
-
-// // GetPerson select the person by id.
-// func (db *SQLiteDataStore) GetPerson(id int) (models.Person, error) {
-// 	dialect := goqu.Dialect("sqlite3")
-// 	tablePerson := goqu.T("person")
-//
-// 	sQuery := dialect.From(tablePerson).Where(
-// 		goqu.I("person_id").Eq(id),
-// 	).Select(
-// 		goqu.I("person_id"),
-// 		goqu.I("person_email"),
-// 	)
-//
-// 	var (
-// 		err    error
-// 		sqlr   string
-// 		args   []interface{}
-// 		person models.Person
-// 	)
-//
-// 	if sqlr, args, err = sQuery.ToSQL(); err != nil {
-// 		logger.Log.Error(err)
-// 		return models.Person{}, err
-// 	}
-//
-// 	if err = db.Get(&person, sqlr, args...); err != nil {
-// 		return models.Person{}, err
-// 	}
-//
-// 	return person, nil
-// }
-
-// // GetPersonByEmail select the person by email.
-// func (db *SQLiteDataStore) GetPersonByEmail(email string) (models.Person, error) {
-// 	email = strings.ToLower(email)
-//
-// 	dialect := goqu.Dialect("sqlite3")
-// 	tablePerson := goqu.T("person")
-//
-// 	sQuery := dialect.From(tablePerson).Where(
-// 		goqu.I("person_email").Eq(email),
-// 	).Select(
-// 		goqu.I("person_id"),
-// 		goqu.I("person_email"),
-// 	)
-//
-// 	var (
-// 		err    error
-// 		sqlr   string
-// 		args   []interface{}
-// 		person models.Person
-// 	)
-//
-// 	if sqlr, args, err = sQuery.ToSQL(); err != nil {
-// 		logger.Log.Error(err)
-// 		return models.Person{}, err
-// 	}
-//
-// 	if err = db.Get(&person, sqlr, args...); err != nil {
-// 		return models.Person{}, err
-// 	}
-//
-// 	return person, nil
-// }
-
-// GetPersonPermissions return person permissions.
-// func (db *SQLiteDataStore) GetPersonPermissions(id int) ([]models.Permission, error) {
-// 	dialect := goqu.Dialect("sqlite3")
-// 	tablePermission := goqu.T("permission")
-//
-// 	sQuery := dialect.From(tablePermission).Where(
-// 		goqu.I("person").Eq(id),
-// 	).Select(
-// 		goqu.I("permission_id"),
-// 		goqu.I("permission_name"),
-// 		goqu.I("permission_item"),
-// 		goqu.I("permission_entity"),
-// 	)
-//
-// 	var (
-// 		err         error
-// 		sqlr        string
-// 		args        []interface{}
-// 		permissions []models.Permission
-// 	)
-//
-// 	if sqlr, args, err = sQuery.ToSQL(); err != nil {
-// 		logger.Log.Error(err)
-// 		return nil, err
-// 	}
-//
-// 	if err = db.Select(&permissions, sqlr, args...); err != nil {
-// 		return nil, err
-// 	}
-//
-// 	return permissions, nil
-// }
-
-// GetPersonManageEntities returns the entities the person if manager of.
-// func (db *SQLiteDataStore) GetPersonManageEntities(id int) ([]models.Entity, error) {
-// 	dialect := goqu.Dialect("sqlite3")
-// 	tableEntity := goqu.T("entity")
-//
-// 	sQuery := dialect.From(tableEntity).LeftJoin(
-// 		goqu.T("entitypeople"),
-// 		goqu.On(goqu.Ex{"entitypeople.entitypeople_entity_id": goqu.I("entity.entity_id")}),
-// 	).Where(
-// 		goqu.I("entitypeople.entitypeople_person_id").Eq(id),
-// 	).Select(
-// 		goqu.I("entity_id"),
-// 		goqu.I("entity_name"),
-// 		goqu.I("entity_description"),
-// 	)
-//
-// 	var (
-// 		err      error
-// 		sqlr     string
-// 		args     []interface{}
-// 		entities []models.Entity
-// 	)
-//
-// 	if sqlr, args, err = sQuery.ToSQL(); err != nil {
-// 		logger.Log.Error(err)
-// 		return nil, err
-// 	}
-//
-// 	if err = db.Select(&entities, sqlr, args...); err != nil {
-// 		return nil, err
-// 	}
-//
-// 	return entities, nil
-// }
-
-// GetPeople select the person entities
-// and visible by the connected user.
-// func (db *SQLiteDataStore) GetPersonEntities(loggedPersonID int, personID int) ([]models.Entity, error) {
-// 	var err error
-//
-// 	dialect := goqu.Dialect("sqlite3")
-// 	tablePerson := goqu.T("person")
-// 	tableEntity := goqu.T("entity")
-// 	tablePersonentities := goqu.T("personentities")
-//
-// 	// Is the logged user an admin?
-// 	var isadmin bool
-//
-// 	if isadmin, err = db.IsPersonAdmin(loggedPersonID); err != nil {
-// 		return nil, err
-// 	}
-//
-// 	// Build join clause.
-// 	var joinClause *goqu.SelectDataset
-// 	if !isadmin {
-// 		joinClause = dialect.From(
-// 			tableEntity.As("e"),
-// 			tablePerson.As("p"),
-// 			tablePersonentities.As("pe"),
-// 		).Join(
-// 			goqu.T("permission").As("perm"),
-// 			goqu.On(
-// 				goqu.Or(
-// 					goqu.And(
-// 						goqu.I("perm.person").Eq(personID),
-// 						goqu.I("perm.permission_item").Eq("all"),
-// 						goqu.I("perm.permission_name").Eq("all"),
-// 						goqu.I("perm.permission_entity").Eq(goqu.I("e.entity_id")),
-// 					),
-// 					goqu.And(
-// 						goqu.I("perm.person").Eq(personID),
-// 						goqu.I("perm.permission_item").Eq("all"),
-// 						goqu.I("perm.permission_name").Eq("all"),
-// 						goqu.I("perm.permission_entity").Eq(-1),
-// 					),
-// 					goqu.And(
-// 						goqu.I("perm.person").Eq(personID),
-// 						goqu.I("perm.permission_item").Eq("all"),
-// 						goqu.I("perm.permission_name").Eq("r"),
-// 						goqu.I("perm.permission_entity").Eq(-1),
-// 					),
-// 					goqu.And(
-// 						goqu.I("perm.person").Eq(personID),
-// 						goqu.I("perm.permission_item").Eq("entities"),
-// 						goqu.I("perm.permission_name").Eq("all"),
-// 						goqu.I("perm.permission_entity").Eq(goqu.I("e.entity_id")),
-// 					),
-// 					goqu.And(
-// 						goqu.I("perm.person").Eq(personID),
-// 						goqu.I("perm.permission_item").Eq("entities"),
-// 						goqu.I("perm.permission_name").Eq("all"),
-// 						goqu.I("perm.permission_entity").Eq(-1),
-// 					),
-// 					goqu.And(
-// 						goqu.I("perm.person").Eq(personID),
-// 						goqu.I("perm.permission_item").Eq("entities"),
-// 						goqu.I("perm.permission_name").Eq("r"),
-// 						goqu.I("perm.permission_entity").Eq(-1),
-// 					),
-// 					goqu.And(
-// 						goqu.I("perm.person").Eq(personID),
-// 						goqu.I("perm.permission_item").Eq("entities"),
-// 						goqu.I("perm.permission_name").Eq("r"),
-// 						goqu.I("perm.permission_entity").Eq(goqu.I("e.entity_id")),
-// 					),
-// 				),
-// 			),
-// 		)
-// 	} else {
-// 		joinClause = dialect.From(
-// 			tableEntity.As("e"),
-// 			tablePerson.As("p"),
-// 			tablePersonentities.As("pe"),
-// 		)
-// 	}
-//
-// 	joinClause = joinClause.Where(
-// 		goqu.Ex{
-// 			"pe.personentities_person_id": personID,
-// 			"e.entity_id":                 goqu.I("pe.personentities_entity_id"),
-// 		},
-// 	).GroupBy(goqu.I("e.entity_id")).Order(goqu.I("e.entity_name").Asc())
-//
-// 	var (
-// 		sqlr     string
-// 		args     []interface{}
-// 		entities []models.Entity
-// 	)
-//
-// 	if sqlr, args, err = joinClause.Select(
-// 		goqu.I("e.entity_id"),
-// 		goqu.I("e.entity_name"),
-// 		goqu.I("e.entity_description"),
-// 	).ToSQL(); err != nil {
-// 		logger.Log.Error(err)
-// 		return nil, err
-// 	}
-//
-// 	if err = db.Select(&entities, sqlr, args...); err != nil {
-// 		return nil, err
-// 	}
-//
-// 	return entities, nil
-// }
-
-// DoesPersonBelongsTo returns true if the person belongs to the entities.
-// func (db *SQLiteDataStore) DoesPersonBelongsTo(id int, entities []models.Entity) (bool, error) {
-// 	var (
-// 		err   error
-// 		sqlr  string
-// 		args  []interface{}
-// 		count int
-// 	)
-//
-// 	dialect := goqu.Dialect("sqlite3")
-// 	tablePersonentities := goqu.T("personentities")
-//
-// 	var entityIds []int
-// 	for _, i := range entities {
-// 		entityIds = append(entityIds, i.EntityID)
-// 	}
-//
-// 	sQuery := dialect.From(tablePersonentities).Select(
-// 		goqu.COUNT("*"),
-// 	).Where(
-// 		goqu.Ex{
-// 			"personentities_person_id": id,
-// 			"personentities_entity_id": entityIds,
-// 		},
-// 	)
-//
-// 	if sqlr, args, err = sQuery.ToSQL(); err != nil {
-// 		logger.Log.Error(err)
-// 		return false, err
-// 	}
-//
-// 	if err = db.Get(&count, sqlr, args...); err != nil {
-// 		return false, err
-// 	}
-//
-// 	return count != 0, nil
-// }
-
 // DeletePerson deletes the person with id "id".
 func (db *SQLiteDataStore) DeletePerson(id int) (err error) {
 	var (
@@ -572,9 +261,9 @@ func (db *SQLiteDataStore) CreatePerson(p models.Person) (lastInsertID int64, er
 
 		if sqlr, args, err = dialect.Insert(goqu.T("permission")).Rows(
 			goqu.Record{
-				"person":               p.PersonID,
-				"permission_name": "r",
-				"permission_item": "entities",
+				"person":            p.PersonID,
+				"permission_name":   "r",
+				"permission_item":   "entities",
 				"permission_entity": entity.EntityID,
 			},
 		).ToSQL(); err != nil {
@@ -683,9 +372,9 @@ func (db *SQLiteDataStore) UpdatePerson(p models.Person) (err error) {
 
 		if sqlr, args, err = dialect.Insert(goqu.T("permission")).Rows(
 			goqu.Record{
-				"person":               p.PersonID,
-				"permission_name": "r",
-				"permission_item": "entities",
+				"person":            p.PersonID,
+				"permission_name":   "r",
+				"permission_item":   "entities",
 				"permission_entity": entity.EntityID,
 			},
 		).ToSQL(); err != nil {
@@ -713,10 +402,10 @@ func (db *SQLiteDataStore) GetAdmins() ([]models.Person, error) {
 	sQuery := dialect.From(tablePerson).Join(
 		goqu.T("permission"),
 		goqu.On(goqu.Ex{
-			"permission.person":               goqu.I("person_id"),
+			"permission.person":          goqu.I("person_id"),
 			"permission.permission_name": "all",
 			"permission.permission_item": "all",
-			"permission_entity":            -1,
+			"permission_entity":          -1,
 		},
 		),
 	).Where(
@@ -871,9 +560,9 @@ func (db *SQLiteDataStore) SetPersonAdmin(id int) error {
 
 	if sqlr, args, err = dialect.Insert(tablePermission).Rows(
 		goqu.Record{
-			"person":               id,
-			"permission_name": "all",
-			"permission_item": "all",
+			"person":            id,
+			"permission_name":   "all",
+			"permission_item":   "all",
 			"permission_entity": -1,
 		},
 	).OnConflict(goqu.DoNothing()).ToSQL(); err != nil {
@@ -886,36 +575,6 @@ func (db *SQLiteDataStore) SetPersonAdmin(id int) error {
 
 	return nil
 }
-
-// IsPersonManager returns true is the person is a manager.
-// func (db *SQLiteDataStore) IsPersonManager(id int) (bool, error) {
-// 	var (
-// 		err   error
-// 		sqlr  string
-// 		args  []interface{}
-// 		count int
-// 	)
-//
-// 	dialect := goqu.Dialect("sqlite3")
-// 	tableEntitypeople := goqu.T("entitypeople")
-//
-// 	sQuery := dialect.From(tableEntitypeople).Select(
-// 		goqu.COUNT("*"),
-// 	).Where(
-// 		goqu.I("entitypeople.entitypeople_person_id").Eq(id),
-// 	)
-//
-// 	if sqlr, args, err = sQuery.ToSQL(); err != nil {
-// 		logger.Log.Error(err)
-// 		return false, err
-// 	}
-//
-// 	if err = db.Get(&count, sqlr, args...); err != nil {
-// 		return false, err
-// 	}
-//
-// 	return count != 0, nil
-// }
 
 func (db *SQLiteDataStore) insertPermissions(p models.Person, tx *sqlx.Tx) error {
 	var (

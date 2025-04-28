@@ -41,29 +41,11 @@ func matchPeople(datastore datastores.Datastore, personID string, itemID string,
 
 	orphan = len(person.Entities) == 0
 
-	// if orphan, err = datastore.IsOrphanPerson(iid); err != nil {
-	// 	logger.Log.Error("matchPeople: " + err.Error())
-	// 	return false
-	// }
 	if orphan {
 		return true
 	}
 
-	// if pid, err = strconv.Atoi(personID); err != nil {
-	// 	logger.Log.Error("matchPeople: " + err.Error())
-	// 	return false
-	// }
-
-	// if iid, err = strconv.Atoi(itemID); err != nil {
-	// 	logger.Log.Error("matchPeople: " + err.Error())
-	// 	return false
-	// }
-
 	ent = person.Entities
-	// if ent, err = datastore.GetPersonEntities(pid, iid); err != nil {
-	// 	logger.Log.Error("matchPeople: " + err.Error())
-	// 	return false
-	// }
 
 	found := false
 
@@ -87,6 +69,7 @@ func MatchPeopleFuncWrapper(datastore datastores.Datastore) func(args ...interfa
 	}
 }
 
+// Return true if the person with personID and store location with itemID are both in entity with entityID.
 func matchStorelocation(datastore datastores.Datastore, personID string, itemID string, entityID string) bool {
 	var (
 		pid, iid       int
@@ -122,10 +105,6 @@ func matchStorelocation(datastore datastores.Datastore, personID string, itemID 
 	}
 
 	store_location = tuple.V1[0]
-	// if store_location, err = datastore.GetStoreLocation(iid); err != nil && err != sql.ErrNoRows {
-	// 	logger.Log.Error("matchStorelocation: " + err.Error())
-	// 	return false
-	// }
 
 	if err == sql.ErrNoRows {
 		return false
@@ -135,11 +114,6 @@ func matchStorelocation(datastore datastores.Datastore, personID string, itemID 
 		return false
 	}
 
-	// if m, err = datastore.DoesPersonBelongsTo(pid, []models.Entity{store_location.Entity}); err != nil {
-	// 	logger.Log.Error("matchStorelocation: " + err.Error())
-	// 	return false
-	// }
-	// Getting the person.
 	var (
 		person *models.Person
 	)
@@ -177,6 +151,7 @@ func MatchStorelocationFuncWrapper(datastore datastores.Datastore) func(args ...
 	}
 }
 
+// Return true if the person with personID and storage with itemID are both in entity with entityID.
 func matchStorage(datastore datastores.Datastore, personID string, itemID string, entityID string) bool {
 	var (
 		pid, iid int
@@ -204,11 +179,6 @@ func matchStorage(datastore datastores.Datastore, personID string, itemID string
 		return false
 	}
 
-	// if m, err = datastore.DoesPersonBelongsTo(pid, []models.Entity{ent}); err != nil {
-	// 	logger.Log.Error(fmt.Sprintf("matchStorage: %v %s", ent, err.Error()))
-	// 	return false
-	// }
-
 	// Getting the person.
 	var (
 		person         *models.Person
@@ -225,6 +195,8 @@ func matchStorage(datastore datastores.Datastore, personID string, itemID string
 		logger.Log.Error("zmqclient.ConvertDBJSONToPerson: " + err.Error())
 		return false
 	}
+
+	logger.Log.WithFields(logrus.Fields{"matchStorage - person": person}).Debug("matchStorage")
 
 	m = false
 	for _, entity := range person.Entities {
@@ -266,11 +238,6 @@ func matchEntity(datastore datastores.Datastore, personID string, entityID strin
 		return false
 	}
 
-	// if m, err = datastore.DoesPersonBelongsTo(pid, []models.Entity{{EntityID: eid}}); err != nil {
-	// 	logger.Log.Error("matchEntity: " + err.Error())
-	// 	return false
-	// }
-
 	// Getting the person.
 	var (
 		person         *models.Person
@@ -288,6 +255,7 @@ func matchEntity(datastore datastores.Datastore, personID string, entityID strin
 		return false
 	}
 
+	// Finding is the person belongs to the entity.
 	m = false
 	for _, entity := range person.Entities {
 		if entity.EntityID == eid {

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -64,8 +65,18 @@ func (env *Env) GetPeopleHandler(w http.ResponseWriter, r *http.Request) *models
 		jsonresp []byte
 		appErr   *models.AppError
 	)
-	if jsonresp, appErr = zmqclient.ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
-		return appErr
+	if r.URL.Query().Get("person") != "" {
+		if jsonresp, appErr = zmqclient.ConvertDBJSONToPersonJSON(jsonRawMessage); appErr != nil {
+			logger.Log.WithFields(logrus.Fields{"ConvertDBJSONToPersonJSON appErr": fmt.Sprintf("%+v", appErr)}).Debug("GetPeopleHandler")
+
+			return appErr
+		}
+	} else {
+		if jsonresp, appErr = zmqclient.ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
+			logger.Log.WithFields(logrus.Fields{"ConvertDBJSONToBSTableJSON appErr": fmt.Sprintf("%+v", appErr)}).Debug("GetPeopleHandler")
+
+			return appErr
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -73,272 +84,6 @@ func (env *Env) GetPeopleHandler(w http.ResponseWriter, r *http.Request) *models
 
 	return nil
 }
-
-// GetPersonHandler returns a json of the person with the requested id.
-func (env *Env) GetPersonHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	vars := mux.Vars(r)
-
-	var (
-		id  int
-		err error
-	)
-
-	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "id atoi conversion",
-			Code:          http.StatusInternalServerError,
-		}
-	}
-
-	// TODO: remove 1 by connected user id.
-	var (
-		jsonRawMessage json.RawMessage
-		person         *models.Person
-	)
-	if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/?person="+strconv.Itoa(id), 1); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "zmqclient.DBGetPeople",
-			Code:          http.StatusInternalServerError,
-		}
-	}
-
-	if person, err = zmqclient.ConvertDBJSONToPerson(jsonRawMessage); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "ConvertDBJSONToPerson",
-			Code:          http.StatusInternalServerError,
-		}
-	}
-
-	logger.Log.WithFields(logrus.Fields{
-		"person": person,
-	}).Debug("GetPersonHandler")
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	if err = json.NewEncoder(w).Encode(person); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
-	return nil
-}
-
-// GetPersonManageEntitiesHandler returns a json of the entities the person with the requested id is manager of.
-func (env *Env) GetPersonManageEntitiesHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	vars := mux.Vars(r)
-
-	var (
-		id  int
-		err error
-	)
-
-	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "id atoi conversion",
-			Code:          http.StatusInternalServerError,
-		}
-	}
-
-	// TODO: remove 1 by connected user id.
-	var (
-		jsonRawMessage json.RawMessage
-		person         *models.Person
-	)
-	if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/?person="+strconv.Itoa(id), 1); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "zmqclient.DBGetPeople",
-			Code:          http.StatusInternalServerError,
-		}
-	}
-
-	if person, err = zmqclient.ConvertDBJSONToPerson(jsonRawMessage); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "ConvertDBJSONToPerson",
-			Code:          http.StatusInternalServerError,
-		}
-	}
-	// entities, err := env.DB.GetPersonManageEntities(id)
-	// if err != nil {
-	// 	return &models.AppError{
-	// 		OriginalError: err,
-	// 		Code:          http.StatusInternalServerError,
-	// 		Message:       "error getting the entities",
-	// 	}
-	// }
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	if err = json.NewEncoder(w).Encode(person.ManagedEntities); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
-	return nil
-}
-
-// GetPersonEntitiesHandler returns a json of the entities of the person with the requested id.
-func (env *Env) GetPersonEntitiesHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	vars := mux.Vars(r)
-
-	var (
-		id  int
-		err error
-	)
-
-	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "id atoi conversion",
-			Code:          http.StatusInternalServerError,
-		}
-	}
-
-	// retrieving the logged user id from request context
-	c := request.ContainerFromRequestContext(r)
-	var (
-		jsonRawMessage json.RawMessage
-		person         *models.Person
-	)
-
-	if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/?person="+strconv.Itoa(id), c.PersonID); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "zmqclient.DBGetPeople",
-			Code:          http.StatusInternalServerError,
-		}
-	}
-
-	if person, err = zmqclient.ConvertDBJSONToPerson(jsonRawMessage); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "ConvertDBJSONToPerson",
-			Code:          http.StatusInternalServerError,
-		}
-	}
-	// entities, err := env.DB.GetPersonEntities(c.PersonID, id)
-	// if err != nil {
-	// 	return &models.AppError{
-	// 		OriginalError: err,
-	// 		Code:          http.StatusInternalServerError,
-	// 		Message:       "error getting the entities",
-	// 	}
-	// }
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	if err = json.NewEncoder(w).Encode(person.Entities); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
-	return nil
-}
-
-// GetPersonPermissionsHandler returns a json of the permissions of the person with the requested id.
-func (env *Env) GetPersonPermissionsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	vars := mux.Vars(r)
-
-	var (
-		id  int
-		err error
-	)
-
-	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "id atoi conversion",
-			Code:          http.StatusInternalServerError,
-		}
-	}
-
-	// TODO: remove 1 by connected user id.
-	var (
-		jsonRawMessage json.RawMessage
-		person         *models.Person
-	)
-
-	if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/?person="+strconv.Itoa(id), 1); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "zmqclient.DBGetPeople",
-			Code:          http.StatusInternalServerError,
-		}
-	}
-
-	if person, err = zmqclient.ConvertDBJSONToPerson(jsonRawMessage); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "ConvertDBJSONToPerson",
-			Code:          http.StatusInternalServerError,
-		}
-	}
-
-	// permissions, err := env.DB.GetPersonPermissions(id)
-	// if err != nil {
-	// 	return &models.AppError{
-	// 		OriginalError: err,
-	// 		Code:          http.StatusInternalServerError,
-	// 		Message:       "error getting the entities",
-	// 	}
-	// }
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	if err = json.NewEncoder(w).Encode(person.Permissions); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
-	return nil
-}
-
-// // CreatePersonHandler creates the person from the request form.
-// func (env *Env) CreatePersonHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-// 	var (
-// 		p   models.Person
-// 		err error
-// 	)
-
-// 	if err = json.NewDecoder(r.Body).Decode(&p); err != nil {
-// 		return &models.AppError{
-// 			OriginalError: err,
-// 			Message:       "JSON decoding error",
-// 			Code:          http.StatusInternalServerError,
-// 		}
-// 	}
-
-// 	logger.Log.WithFields(logrus.Fields{"p": p}).Debug("CreatePersonHandler")
-
-// 	if _, err := env.DB.CreatePerson(p); err != nil {
-// 		return &models.AppError{
-// 			OriginalError: err,
-// 			Message:       "create person error",
-// 			Code:          http.StatusInternalServerError,
-// 		}
-// 	}
-
-// 	env.Enforcer = casbin.InitCasbinPolicy(env.DB)
-
-// 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-// 	if err = json.NewEncoder(w).Encode(p); err != nil {
-// 		return &models.AppError{
-// 			Code:    http.StatusInternalServerError,
-// 			Message: err.Error(),
-// 		}
-// 	}
-// 	return nil
-// }
 
 // UpdatePersonHandler updates the person from the request form.
 func (env *Env) UpdatePersonHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
@@ -390,25 +135,11 @@ func (env *Env) UpdatePersonHandler(w http.ResponseWriter, r *http.Request) *mod
 			Code:          http.StatusInternalServerError,
 		}
 	}
-	// if updatedp, err = env.DB.GetPerson(id); err != nil {
-	// 	return &models.AppError{
-	// 		OriginalError: err,
-	// 		Message:       "error getting the person",
-	// 		Code:          http.StatusInternalServerError,
-	// 	}
-	// }
+
 	updatedp.PersonEmail = p.PersonEmail
 	updatedp.Entities = p.Entities
 	updatedp.Permissions = p.Permissions
 
-	// checking if the person is a manager
-	// if es, err = env.DB.GetPersonManageEntities(id); err != nil {
-	// 	return &models.AppError{
-	// 		OriginalError: err,
-	// 		Message:       "error getting entities managers",
-	// 		Code:          http.StatusInternalServerError,
-	// 	}
-	// }
 	es = updatedp.ManagedEntities
 
 	logger.Log.WithFields(logrus.Fields{"es": es}).Debug("UpdatePersonHandler")
@@ -456,7 +187,7 @@ func (env *Env) UpdatePersonHandler(w http.ResponseWriter, r *http.Request) *mod
 	return nil
 }
 
-// // DeletePersonHandler deletes the person with the requested id.
+// DeletePersonHandler deletes the person with the requested id.
 func (env *Env) DeletePersonHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	vars := mux.Vars(r)
 

@@ -204,6 +204,8 @@ var LOCALES_FR = []byte(`
 	one = "entité"
 [s_store_location]
 	one = "entrepôt"
+[s_storage]
+	one = "numéro de stockage"
 [s_custom_name_part_of]
 	one = "partie du nom"
 [s_producer_ref]
@@ -350,7 +352,7 @@ var LOCALES_FR = []byte(`
 [storage_restored_message]
 	one = "stockage restauré"
 [storage_trashed_message]
-	one = "stockage mis à la corbeille"
+	one = "stockage archivé"
 [storage_deleted_message]
 	one = "storage supprimé"
 [storage_borrow_updated]
@@ -687,6 +689,8 @@ var LOCALES_FR = []byte(`
 	one = "numéro CAS invalide"
 [cas_number_validate_casspecificity]
 	one = "le couple numéro CAS/spécificité existe déjà"
+[cas_number_validate_cas]
+	one = "le numéro CAS existe déjà"
 [ce_number_validate]
 	one = "numéro CE invalide"
 `)

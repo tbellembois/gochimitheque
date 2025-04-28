@@ -96,15 +96,26 @@ func (s Storage) StorageToStringSlice() []string {
 	ret = append(ret, strconv.FormatInt(s.StorageID.Int64, 10))
 	ret = append(ret, s.Product.Name.NameLabel)
 	// ret = append(ret, s.Product.CasNumber.CasNumberLabel.String)
-	ret = append(ret, *s.Product.CasNumber.CasNumberLabel)
-	ret = append(ret, *s.Product.ProductSpecificity)
+	if s.Product.CasNumber.CasNumberLabel != nil {
+		ret = append(ret, *s.Product.CasNumber.CasNumberLabel)
+	}
+	if s.Product.ProductSpecificity != nil {
+		ret = append(ret, *s.Product.ProductSpecificity)
+	}
 
 	ret = append(ret, s.StoreLocation.StoreLocationFullPath)
 
 	ret = append(ret, strconv.FormatFloat(s.StorageQuantity.Float64, 'E', -1, 64))
-	ret = append(ret, *s.UnitQuantity.UnitLabel)
+
+	if s.UnitQuantity.UnitLabel != nil {
+		ret = append(ret, *s.UnitQuantity.UnitLabel)
+	}
+
 	ret = append(ret, s.StorageBarecode.String)
-	ret = append(ret, *s.Supplier.SupplierLabel)
+
+	if s.Supplier.SupplierLabel != nil {
+		ret = append(ret, *s.Supplier.SupplierLabel)
+	}
 
 	ret = append(ret, s.StorageCreationDate.Format("2006-01-02"))
 	ret = append(ret, s.StorageModificationDate.Format("2006-01-02"))

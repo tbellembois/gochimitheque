@@ -8,19 +8,21 @@ import (
 )
 
 // Request.
-type DBGetPrecautionarystatementReq struct {
-	DBGetPrecautionarystatement int `json:"DBGetPrecautionarystatement"`
+type DBGetEntitiesReq struct {
+	DBGetEntities []interface{} `json:"DBGetEntities"`
 }
 
+// string, int
+
 // Response.
-type DBGetPrecautionarystatementOk struct {
+type DBGetEntitiesOk struct {
 	Ok json.RawMessage
 }
-type DBGetPrecautionarystatementErr struct {
+type DBGetEntitiesErr struct {
 	Err string
 }
 
-func DBGetPrecautionarystatement(id int) (json.RawMessage, error) {
+func DBGetEntities(requestRawString string, person_id int) (json.RawMessage, error) {
 	var (
 		s   *zmq.Socket
 		err error
@@ -39,8 +41,12 @@ func DBGetPrecautionarystatement(id int) (json.RawMessage, error) {
 		message []byte
 	)
 
-	if message, err = json.Marshal(DBGetPrecautionarystatementReq{
-		DBGetPrecautionarystatement: id,
+	req := make([]interface{}, 0)
+	req = append(req, requestRawString)
+	req = append(req, person_id)
+
+	if message, err = json.Marshal(DBGetEntitiesReq{
+		DBGetEntities: req,
 	}); err != nil {
 		return json.RawMessage{}, err
 	}
@@ -55,7 +61,7 @@ func DBGetPrecautionarystatement(id int) (json.RawMessage, error) {
 
 		if msg[0:5] == `{"Ok"` {
 
-			var resp DBGetPrecautionarystatementOk
+			var resp DBGetEntitiesOk
 			err = json.Unmarshal([]byte(msg), &resp)
 
 			if err != nil {
@@ -66,7 +72,7 @@ func DBGetPrecautionarystatement(id int) (json.RawMessage, error) {
 
 		} else if msg[0:6] == `{"Err"` {
 
-			var resp DBGetPrecautionarystatementErr
+			var resp DBGetEntitiesErr
 			err = json.Unmarshal([]byte(msg), &resp)
 
 			if err != nil {

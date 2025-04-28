@@ -1,4 +1,4 @@
-FROM golang:1.23-bullseye AS builder
+FROM golang:1.24-bullseye AS builder
 LABEL author="Thomas Bellembois"
 ARG BuildID
 ENV BuildID=${BuildID}
@@ -80,7 +80,7 @@ RUN cargo build --release
 # Final image.
 #
 
-FROM golang:1.23-bullseye
+FROM golang:1.24-bullseye
 
 RUN apt -y update && apt -y upgrade
 RUN update-ca-certificates -v

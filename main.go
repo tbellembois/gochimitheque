@@ -1,4 +1,4 @@
-//go:build go1.21 && linux && amd64
+//go:build go1.24 && linux && amd64
 
 //go:generate jade -writer -basedir static/templates -d ./static/jade welcomeannounce/index.jade home/index.jade login/index.jade about/index.jade entity/index.jade entity/create.jade product/index.jade product/create.jade product/pubchem.jade storage/index.jade storage/create.jade storelocation/index.jade storelocation/create.jade person/index.jade person/create.jade person/password.jade person/qrcode.jade search.jade menu.jade
 //go:generate go run . -genlocalejs
@@ -16,8 +16,10 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"path"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/coreos/go-oidc/v3/oidc"
@@ -180,6 +182,10 @@ func initOIDC() {
 
 }
 
+func closeDB() error {
+	return env.DB.CloseDB()
+}
+
 func initDB() {
 	var (
 		err       error
@@ -191,6 +197,16 @@ func initDB() {
 	if datastore, err = datastores.NewSQLiteDBstore(dbname); err != nil {
 		logger.Log.Fatal(err)
 	}
+
+	// Catch ctrl+c signal.
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		logger.Log.Info("- closing database")
+		datastore.CloseDB()
+		os.Exit(0)
+	}()
 
 	logger.Log.Info("- creating database if needed")
 	if err = datastore.CreateDatabase(); err != nil {
@@ -265,8 +281,6 @@ func initAdmins() {
 				if _, err = env.DB.CreatePerson(models.Person{PersonEmail: ca}); err != nil {
 					logger.Log.Fatal(err)
 				}
-			} else {
-				logger.Log.Fatal(err)
 			}
 
 			if err = env.DB.SetPersonAdmin(person.PersonID); err != nil {
@@ -311,6 +325,17 @@ func main() {
 	}).Debug("main")
 
 	initDB()
+	defer closeDB()
+
+	// Catch ctrl+c signal.
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		logger.Log.Info("- closing database")
+		closeDB()
+		os.Exit(0)
+	}()
 
 	initOIDC()
 

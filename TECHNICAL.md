@@ -10,7 +10,6 @@ possible items:
 - products
 - rproducts
 - storages
-- storelocations
 - entities
 
 - `entity_id` = -1 : all items
@@ -38,8 +37,6 @@ permissions on other items (suppliers, classes of compounds...) are linked to th
 entities / people management:
 - only super admins can create new entities and modify entities
 - entity managers can create/update/delete people in their entities
-
-implemented in `globals/global.go` with `PermMatrix`
 
 ## authorization
 
@@ -72,7 +69,7 @@ rsync -av ./node_modules/bootstrap-colorpicker/dist/js/bootstrap-colorpicker.min
 rsync -av ./node_modules/bootstrap-table/dist/bootstrap-table.min.js  ./static/js/
 rsync -av ./node_modules/jquery/dist/jquery.min.js ./static/js/
 rsync -av ./node_modules/jquery-validation/dist/jquery.validate.min.js ./static/js/
-rsync -av ./node_modules/jquery-validation/dist/additional-methods.min.js  ./static/js/jquery.validate.additional-methods.min.js 
+rsync -av ./node_modules/jquery-validation/dist/additional-methods.min.js  ./static/js/jquery.validate.additional-methods.min.js
 rsync -av ./node_modules/@popperjs/core/dist/umd/popper.min.js ./static/js/
 rsync -av ./node_modules/@popperjs/core/dist/umd/popper.min.js.map ./static/js/
 rsync -av ./node_modules/select2/dist/js/select2.full.min.js ./static/js/
@@ -95,71 +92,30 @@ rsync -av ./node_modules/select2/dist/css/select2.min.css ./static/css/
 rsync -av ./node_modules/animate.css/animate.min.css ./static/css/
 rsync -av ./node_modules/print-js/dist/print.css  ./static/css/
 rsync -av ./node_modules/print-js/dist/print.map ./static/css/
-## windows cross compilation (officially not supported)
-
-### windows 10
-
-```bash
-    go generate
-    CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc CXX=x86_64-w64-mingw32-g++ GOOS=windows GOARCH=amd64 go build
-```
-
-### windows 7
-
-```bash
-    go generate
-    CGO_ENABLED=1 CC=i686-w64-mingw32-gcc CXX=i686-w64-mingw32-g++ GOOS=windows GOARCH=386 go build
-```
-
-### installed arch linux packages
-
-> local/mingw-w64-binutils-bin 2.31.1-1 (mingw-w64-toolchain mingw-w64)
->     Cross binutils for the MinGW-w64 cross-compiler (pre-compiled)
-> local/mingw-w64-crt-bin 6.0.0-1 (mingw-w64-toolchain mingw-w64)
->     MinGW-w64 CRT for Windows (pre-compiled)
-> local/mingw-w64-gcc-bin 8.2.0-1 (mingw-w64-toolchain mingw-w64)
->     Cross GCC for the MinGW-w64 cross-compiler (pre-compiled)
-> local/mingw-w64-headers-bin 6.0.0-1 (mingw-w64-toolchain mingw-w64)
->     MinGW-w64 headers for Windows (pre-compiled)
-> local/mingw-w64-winpthreads-bin 6.0.0-1 (mingw-w64-toolchain mingw-w64)
->     MinGW-w64 winpthreads library (pre-compiled)
-
-## chimithèque V1 databases export
-
-### postgresql to csv
-
-```bash
-SCHEMA="public"; DB="chimitheque"; psql -U [user] -h [host] -p [port] -Atc "select tablename from pg_tables where schemaname='$SCHEMA'" $DB | while read TBL; do psql -U [user] -h [host] -p [port] -c "COPY $SCHEMA.$TBL TO STDOUT WITH CSV HEADER" $DB > $TBL.csv; done;
-```
 
 ## testers
 
 delphine.pitrat@ens-lyon.fr, laurelise.chapellet@ens-lyon.fr, guillaume.george@ens-lyon.fr, sylvain.david@ens-lyon.fr, laure.guy@ens-lyon.fr, yann.bretonniere@ens-lyon.fr, loic.richard@irstea.fr, christophe.le-bourlot@insa-lyon.fr, julien.devemy@uca.fr, alix.tordo@ens-lyon.fr, clement.courtin@ens-lyon.fr
 
-## REST API samples
+## API
 
-### auth
-
-- get an authentication token
+Get admin access token and save access and refresh token in variables:
 ```
-curl -X POST http://localhost:8081/get-token -d "person_email=admin@chimitheque.fr&person_password=test"
-```
-
-### people
-
-- list people
-```
-curl -X GET --cookie "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXJAc3VwZXIuY29tIiwiZXhwIjoxNTUwODU5MTQxfQ.Az49BEqLmxmsS5OxSe49K9Cbli3yhaWMJe_wDsp8A4w" http://localhost:8081/people
+http --body --form POST http://keycloak:8080/keycloak/realms/chimitheque/protocol/openid-connect/token client_id=chimitheque client_secret=mysupersecret grant_type=password username=admin@chimitheque.fr password=chimitheque | jq '.["access_token","refresh_token"]' > /tmp/keycloak_token
+access_token=$(head -1 /tmp/keycloak_token)
+refresh_token=$(tail -1 /tmp/keycloak_token)
+rm /tmp/keycloak_token
 ```
 
-- fake deleting a person
+Create and entity:
 ```
-curl -X DELETE --cookie "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXJAc3VwZXIuY29tIiwiZXhwIjoxNTUwODU5MTQxfQ.Az49BEqLmxmsS5OxSe49K9Cbli3yhaWMJe_wDsp8A4w" http://localhost:8081/f/people/1
+http --print HBhb POST http://localhost:8081/entities entity_name=entity1 "Cookie:access_token=$access_token;refresh_token=$refresh_token"
 ```
 
-### storage
+Create a store location:
+```
+http --print HBhb POST http://localhost:8081/store_locations entity[entity_id]:=1 entity[entity_name]=entity1 store_location_name=storelocation1B store_location_can_store:=true "Cookie:access_token=$access_token;refresh_token=$refresh_token"
+```
 
--- fake accessing any storage
-```
-curl -X GET --cookie "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXJAc3VwZXIuY29tIiwiZXhwIjoxNTUwODU5MTQxfQ.Az49BEqLmxmsS5OxSe49K9Cbli3yhaWMJe_wDsp8A4w" http://localhost:8081/f/storages/-2
-```
+Create a person:
+Set an entity manager:

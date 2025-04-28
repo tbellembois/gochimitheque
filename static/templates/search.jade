@@ -20,7 +20,7 @@ include mixins
             input#searchshowconsu(type="radio" value="consu" name="typechooser")
             label.form-check-label(for="searchshowconsu")
                 span.mdi.mdi-cube-scan.mdi-24px.iconlabel(title=T("consumable_product", 1 ))
-                    =T("consumable_product", 1 ) 
+                    =T("consumable_product", 1 )
         .col-sm-3
             input#searchshowall(checked="checked" type="radio" value="all" name="typechooser")
             label.form-check-label(for="searchshowall")
@@ -42,14 +42,14 @@ include mixins
                     +inputtext(name="s_custom_name_part_of", label="", htmltype="text", placeholder=T("s_custom_name_part_of", 1))
                 .col-sm-6
                     +inputselect(name="s_name", label="", ismultiple=false, placeholder=T("s_name", 1))
-            .row    
+            .row
                 .col-sm-4
                     +inputtext(name="s_storage_barecode", label="", htmltype="text", placeholder=T("s_storage_barecode", 1))
                 .col-sm-4
                     +inputselect(name="s_cas_number", label="", ismultiple=false, placeholder=T("s_cas_number", 1))
                 .col-sm-4
                     +inputselect(name="s_empirical_formula", label="", ismultiple=false, placeholder=T("s_empirical_formula", 1))
-            .row 
+            .row
                 .col-sm-4
                     +inputselect(name="s_producer_ref", label="", ismultiple=false, placeholder="producer_ref_label_title")
                 .col-sm-4
@@ -63,6 +63,8 @@ include mixins
                     .form-row
                         .form-group.col-sm-6
                             +inputtext(name="s_storage_batch_number", label="storage_batch_number_title")
+                        .form-group.col-sm-6
+                            +inputtext(name="s_storage", label="s_storage")
                     .form-row
                         .form-group.col-sm-6
                             +inputselect(name="s_entity", label="s_entity")
@@ -86,13 +88,13 @@ include mixins
                         .form-group.col-sm-4
                             +checkbox(name="s_storage_to_destroy", label="s_storage_to_destroy")
             .row.justify-content-center
-                .btn-group(role="group") 
+                .btn-group(role="group")
                     button.btn.btn-light(data-toggle="collapse" href="#advancedsearch" aria-expanded="false")
                         span.mdi.mdi-magnify-plus-outline.mdi-24px.iconlabel
-                            = T("advancedsearch_text", 1) 
+                            = T("advancedsearch_text", 1)
                     button#clearsearch.btn.btn-light(type="button" onclick="Common_clearSearch();")
                         span.mdi.mdi-filter-off-outline.mdi-24px.iconlabel
-                            = T("clearsearch_text", 1) 
+                            = T("clearsearch_text", 1)
                     button#search.btn.btn-light(type="button" onclick="Common_search();")
                         span.mdi.mdi-magnify.mdi-24px.iconlabel
                             = T("search_text", 1)
@@ -105,10 +107,10 @@ include mixins
                     = T("switchstorageview_text", 1)
             button.btn.btn-outline-primary#export(type="button" onclick="Common_export();")
                 span.mdi.mdi-content-save.mdi-24px.iconlabel
-                    = T("export_text", 1) 
+                    = T("export_text", 1)
             button#s_storage_archive_button.btn.btn-outline-primary.invisible(type="button" data-toggle="button" aria-pressed="true" autocomplete="off")
                 span.mdi.mdi-archive-outline.mdi-24px.iconlabel
-                    = T("showdeleted_text", 1) 
+                    = T("showdeleted_text", 1)
     .col-sm-5
         //- div
         //-     span.text-uppercase.text-primary
@@ -116,8 +118,7 @@ include mixins
         //-     span &nbsp;
         //-     button#clearsearch.btn.btn-outline-primary(type="button" onclick="Common_clearSearch();" title=T("clearsearch_text", 1))
         //-         span.mdi.mdi-filter-off-outline.mdi-24px.iconlabel &nbsp;
-                    
+
         div#filter-item
 
 #stock.row.mt-3.ml-5.mr-5
-    

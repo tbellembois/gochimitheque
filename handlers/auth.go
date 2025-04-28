@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"regexp"
+	"strings"
 	"time"
 
 	"golang.org/x/net/context"
@@ -247,7 +248,7 @@ func (env *Env) CallbackHandler(w http.ResponseWriter, r *http.Request) *models.
 	}
 
 	if person == nil {
-		if _, err = env.DB.CreatePerson(models.Person{PersonEmail: claims.Email}); err != nil {
+		if _, err = env.DB.CreatePerson(models.Person{PersonEmail: strings.ToLower(claims.Email)}); err != nil {
 			http.Error(w, "error creating user"+err.Error(), http.StatusInternalServerError)
 			return &models.AppError{
 				Code:          http.StatusInternalServerError,

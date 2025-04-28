@@ -1,29 +1,11 @@
 package handlers
 
 import (
-	"crypto/rand"
-	"errors"
-
 	"github.com/casbin/casbin/v2"
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/tbellembois/gochimitheque/datastores"
 	"golang.org/x/oauth2"
 )
-
-// https://github.com/northbright/Notes/blob/master/jwt/generate_hmac_secret_key_for_jwt.md
-func genSymmetricKey(bits int) (k []byte, err error) {
-	if bits <= 0 || bits%8 != 0 {
-		return nil, errors.New("key size error")
-	}
-
-	size := bits / 8
-	k = make([]byte, size)
-	if _, err = rand.Read(k); err != nil {
-		return nil, err
-	}
-
-	return k, nil
-}
 
 // Env is used to pass variables throughout the application.
 type Env struct {

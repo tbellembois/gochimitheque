@@ -103,6 +103,10 @@ func (db *SQLiteDataStore) UpdateWelcomeAnnounce(w models.WelcomeAnnounce) error
 	return nil
 }
 
+func (db *SQLiteDataStore) CloseDB() error {
+	return db.DB.Close()
+}
+
 func (db *SQLiteDataStore) GetDB() *sqlx.DB {
 	return db.DB
 }

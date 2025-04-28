@@ -204,6 +204,8 @@ var LOCALES_EN = []byte(`
 	one = "entity"
 [s_store_location]
 	one = "store location"
+[s_storage]
+	one = "storage number"
 [s_producer_ref]
 	one = "producer reference number"
 [s_custom_name_part_of]
@@ -350,7 +352,7 @@ var LOCALES_EN = []byte(`
 [storage_restored_message]
 	one = "storage restored"
 [storage_trashed_message]
-	one = "storage trashed"
+	one = "storage archived"
 [storage_deleted_message]
 	one = "storage deleted"
 [storage_borrow_updated]
@@ -678,15 +680,17 @@ var LOCALES_EN = []byte(`
 	one = "select LDAP group(s)"
 
 [entity_nameexist_validate]
-	one = "entity with this name already present" 
+	one = "entity with this name already present"
 [person_emailexist_validate]
-	one = "person with this email already present" 
+	one = "person with this email already present"
 [empirical_formula_validate]
 	one = "invalid empirical formula"
 [cas_number_validate_wrongcas]
 	one = "invalid CAS number"
 [cas_number_validate_casspecificity]
 	one = "CAS number/specificity pair already exist"
+[cas_number_validate_cas]
+	one = "CAS number already exist"
 [ce_number_validate]
 	one = "invalid EC number"
 `)

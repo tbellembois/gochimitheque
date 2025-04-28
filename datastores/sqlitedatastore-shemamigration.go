@@ -28,9 +28,9 @@ COMMIT;
 `
 
 var migrationTwo = `BEGIN TRANSACTION;
-		
+
 DELETE FROM permission WHERE permission_item_name='storelocations';
-DELETE FROM permission WHERE permission_id IN (SELECT p1.permission_id FROM permission p1 INNER JOIN permission p2 WHERE p1.person=p2.person AND p1.permission_perm_name="r" AND p2.permission_perm_name="w" AND p1.permission_item_name=p2.permission_item_name AND p1.permission_entity_id=p2.permission_entity_id);
+DELETE FROM permission WHERE permission_id IN (SELECT p1.permission_id FROM permission p1 INNER JOIN permission p2 WHERE p1.person=p2.person AND p1.permission_name="r" AND p2.permission_name="w" AND p1.permission_item_name=p2.permission_item_name AND p1.permission_entity=p2.permission_entity);
 
 PRAGMA user_version=2;
 COMMIT;
@@ -61,7 +61,7 @@ SELECT unit_id,
 FROM unit;
 
 DROP table unit;
-ALTER TABLE new_unit RENAME TO unit; 
+ALTER TABLE new_unit RENAME TO unit;
 
 INSERT OR IGNORE INTO unit (unit_label) VALUES ("L"), ("mL"), ("µL");
 UPDATE unit SET unit=(SELECT unit_id FROM unit WHERE unit_label="L"), unit_multiplier=0.001 WHERE unit_label="mL";
@@ -309,7 +309,7 @@ SELECT storage_id,
 FROM storage;
 
 DROP TABLE product;
-ALTER TABLE new_product RENAME TO product; 
+ALTER TABLE new_product RENAME TO product;
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_product_casnumber ON product(product_id, casnumber);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_product_cenumber ON product(product_id, cenumber);
@@ -317,7 +317,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_product_empiricalformula ON product(produc
 CREATE UNIQUE INDEX IF NOT EXISTS idx_product_name ON product(product_id, name);
 
 DROP TABLE storage;
-ALTER TABLE new_storage RENAME TO storage; 
+ALTER TABLE new_storage RENAME TO storage;
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_storage_product ON storage(storage_id, product);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_storage_storelocation ON storage(storage_id, storelocation);
@@ -329,19 +329,6 @@ DELETE FROM empiricalformula where empiricalformula_label="XXXX";
 
 UPDATE product SET casnumber=null WHERE casnumber=(SELECT casnumber_id FROM casnumber WHERE casnumber_label="0000-00-0");
 DELETE FROM casnumber where casnumber_label="0000-00-0";
-
-CREATE INDEX "idx_permission_person" ON "permission" (
-	"person" ASC
-);
-CREATE INDEX "idx_permission_perm_name" ON "permission" (
-	"permission_perm_name"	ASC
-);
-CREATE INDEX "idx_permission_item_name" ON "permission" (
-	"permission_item_name"	ASC
-);
-CREATE INDEX "idx_permission_entity_id" ON "permission" (
-	"permission_entity_id"	ASC
-);
 
 PRAGMA user_version=3;
 COMMIT;
@@ -444,7 +431,7 @@ SELECT storage_id,
 FROM storage;
 
 DROP TABLE storage;
-ALTER TABLE new_storage RENAME TO storage; 
+ALTER TABLE new_storage RENAME TO storage;
 
 PRAGMA user_version=4;
 COMMIT;
@@ -455,7 +442,7 @@ var migrationFive = `PRAGMA foreign_keys=off;
 
 BEGIN TRANSACTION;
 
-INSERT INTO unit (unit_label, unit_multiplier, unit_type) 
+INSERT INTO unit (unit_label, unit_multiplier, unit_type)
 VALUES ("%", 1, "concentration"), ("X", 1, "concentration");
 
 PRAGMA user_version=5;
@@ -561,7 +548,7 @@ SELECT bookmark_id,
 	product
 FROM bookmark;
 DROP TABLE bookmark;
-ALTER TABLE bookmark_new RENAME TO bookmark; 
+ALTER TABLE bookmark_new RENAME TO bookmark;
 
 
 
@@ -590,7 +577,7 @@ SELECT borrowing_id,
 	storage
 FROM borrowing;
 DROP TABLE borrowing;
-ALTER TABLE borrowing_new RENAME TO borrowing; 
+ALTER TABLE borrowing_new RENAME TO borrowing;
 
 
 
@@ -622,12 +609,12 @@ CREATE TABLE "category_new" (
 INSERT INTO category_new (
 	category_id,
 	category_label
-)	
+)
 SELECT category_id,
 	category_label
 FROM category;
 DROP TABLE category;
-ALTER TABLE category_new RENAME TO category; 
+ALTER TABLE category_new RENAME TO category;
 
 
 
@@ -641,7 +628,7 @@ INSERT INTO ce_number_new (
 	ce_number_label
 )
 SELECT cenumber_id,
-	cenumber_label 
+	cenumber_label
 FROM cenumber;
 DROP TABLE cenumber;
 ALTER TABLE ce_number_new RENAME TO ce_number;
@@ -698,7 +685,7 @@ SELECT entity_id,
 	entity_description
 FROM entity;
 DROP TABLE entity;
-ALTER TABLE entity_new RENAME TO entity; 
+ALTER TABLE entity_new RENAME TO entity;
 
 
 
@@ -771,7 +758,7 @@ SELECT name_id,
 	name_label
 FROM name;
 DROP TABLE name;
-ALTER TABLE name_new RENAME TO name; 
+ALTER TABLE name_new RENAME TO name;
 
 
 
@@ -798,7 +785,7 @@ SELECT permission_id,
 	permission_entity_id
 FROM permission;
 DROP TABLE permission;
-ALTER TABLE permission_new RENAME TO permission; 
+ALTER TABLE permission_new RENAME TO permission;
 
 
 
@@ -807,15 +794,28 @@ CREATE TABLE person_new (
 	person_email	TEXT NOT NULL UNIQUE,
 	PRIMARY KEY(person_id)
 ) STRICT;
-INSERT INTO person_new (
-	person_id,
-	person_email
-)
-SELECT person_id,
-	person_email
+-- Step 1: Try to insert normally
+INSERT OR IGNORE INTO person_new (person_id, person_email)
+SELECT person_id, LOWER(person_email)
 FROM person;
+
+-- Step 2: Insert conflicting rows with modified email
+INSERT INTO person_new (person_id, person_email)
+SELECT
+    person_id,
+    LOWER(person_email) || '_' || person_id
+FROM person
+WHERE LOWER(person_email) IN (
+    SELECT LOWER(person_email)
+    FROM person
+    GROUP BY LOWER(person_email)
+    HAVING COUNT(*) > 1
+)
+AND person_id NOT IN (
+    SELECT person_id FROM person_new
+);
 DROP TABLE person;
-ALTER TABLE person_new RENAME TO person; 
+ALTER TABLE person_new RENAME TO person;
 
 
 
@@ -879,15 +879,28 @@ CREATE TABLE producer_new (
 	producer_label	TEXT NOT NULL UNIQUE,
 	PRIMARY KEY(producer_id)
 ) STRICT;
-INSERT INTO producer_new (
-	producer_id,
-	producer_label
-)
-SELECT producer_id,
-	producer_label
+-- Step 1: Try to insert normally
+INSERT OR IGNORE INTO producer_new (producer_id, producer_label)
+SELECT producer_id, producer_label
 FROM producer;
+
+-- Step 2: Insert conflicting rows with modified label
+INSERT INTO producer_new (producer_id, producer_label)
+SELECT
+    producer_id,
+    producer_label || '_' || producer_id
+FROM producer
+WHERE producer_label IN (
+    SELECT producer_label
+    FROM producer
+    GROUP BY producer_label
+    HAVING COUNT(*) > 1
+)
+AND producer_id NOT IN (
+    SELECT producer_id FROM producer_new
+);
 DROP TABLE producer;
-ALTER TABLE producer_new RENAME TO producer; 
+ALTER TABLE producer_new RENAME TO producer;
 
 
 
@@ -1021,7 +1034,7 @@ DROP TABLE product;
 UPDATE product_new SET product_type = "cons" WHERE (product_number_per_carton IS NOT NULL AND product_number_per_carton != 0);
 UPDATE product_new SET product_type = "bio" WHERE (producer_ref IS NOT NULL AND (product_number_per_carton IS NULL OR product_number_per_carton == 0));
 UPDATE product_new SET product_type = "chem" WHERE (producer_ref IS NULL AND (product_number_per_carton IS NULL OR product_number_per_carton == 0));
-ALTER TABLE product_new RENAME TO product; 
+ALTER TABLE product_new RENAME TO product;
 
 
 
@@ -1265,7 +1278,7 @@ supplier,
 storage
 FROM storage;
 DROP TABLE storage;
-ALTER TABLE storage_new RENAME TO storage; 
+ALTER TABLE storage_new RENAME TO storage;
 
 -- CREATE TRIGGER insert_storage_modification_date_Trigger
 -- AFTER INSERT ON storage
@@ -1312,13 +1325,26 @@ CREATE TABLE supplier_new (
 	supplier_label	TEXT NOT NULL UNIQUE,
 	PRIMARY KEY(supplier_id)
 ) STRICT;
-INSERT INTO supplier_new (
-	supplier_id,
-	supplier_label
-)
-SELECT supplier_id,
-	supplier_label
+-- Step 1: Try to insert normally
+INSERT OR IGNORE INTO supplier_new (supplier_id, supplier_label)
+SELECT supplier_id, supplier_label
 FROM supplier;
+
+-- Step 2: Insert conflicting rows with modified label
+INSERT INTO supplier_new (supplier_id, supplier_label)
+SELECT
+    supplier_id,
+    supplier_label || '_' || supplier_id
+FROM supplier
+WHERE supplier_label IN (
+    SELECT supplier_label
+    FROM supplier
+    GROUP BY supplier_label
+    HAVING COUNT(*) > 1
+)
+AND supplier_id NOT IN (
+    SELECT supplier_id FROM supplier_new
+);
 DROP TABLE supplier;
 ALTER TABLE supplier_new RENAME TO supplier;
 
@@ -1435,7 +1461,22 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_product_casnumber ON product(product_id, c
 CREATE UNIQUE INDEX IF NOT EXISTS idx_product_cenumber ON product(product_id, ce_number);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_product_empiricalformula ON product(product_id, empirical_formula);
 
+CREATE INDEX "idx_permission_person" ON "permission" (
+	"person" ASC
+);
+CREATE INDEX "idx_permission_name" ON "permission" (
+	"permission_name"	ASC
+);
+CREATE INDEX "idx_permission_item" ON "permission" (
+	"permission_item"	ASC
+);
+CREATE INDEX "idx_permission_entity" ON "permission" (
+	"permission_entity"	ASC
+);
+
 INSERT INTO unit (unit_label, unit_multiplier, unit_type) VALUES ("g/mol", 1, "molecular_weight");
+
+DELETE FROM permission WHERE permission_item = "people";
 
 COMMIT;
 

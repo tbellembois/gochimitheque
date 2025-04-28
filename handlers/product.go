@@ -648,108 +648,6 @@ func (env *Env) GetProductsLinearFormulasHandler(w http.ResponseWriter, r *http.
 	return nil
 }
 
-// GetProductsEmpiricalFormulaHandler returns a json of the formula matching the id.
-func (env *Env) GetProductsEmpiricalFormulaHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	logger.Log.Debug("GetProductsEmpiricalFormulaHandler")
-
-	vars := mux.Vars(r)
-
-	var (
-		id             int
-		err            error
-		jsonRawMessage json.RawMessage
-	)
-
-	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "id atoi conversion",
-			Code:          http.StatusInternalServerError,
-		}
-	}
-
-	if jsonRawMessage, err = zmqclient.DBGetEmpiricalformula(id); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.DBGetEmpiricalformula",
-		}
-	}
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Write(jsonRawMessage)
-
-	return nil
-}
-
-// GetProductsCasNumberHandler returns a json of the formula matching the id.
-func (env *Env) GetProductsCasNumberHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	logger.Log.Debug("GetProductsCasNumberHandler")
-
-	vars := mux.Vars(r)
-
-	var (
-		id             int
-		err            error
-		jsonRawMessage json.RawMessage
-	)
-
-	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "id atoi conversion",
-			Code:          http.StatusInternalServerError,
-		}
-	}
-
-	if jsonRawMessage, err = zmqclient.DBGetCasnumber(id); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.DBGetCasnumber",
-		}
-	}
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Write(jsonRawMessage)
-
-	return nil
-}
-
-// GetProductsSignalWordHandler returns a json of the signal word matching the id.
-func (env *Env) GetProductsSignalWordHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	logger.Log.Debug("GetProductsSignalWordHandler")
-
-	vars := mux.Vars(r)
-
-	var (
-		id             int
-		err            error
-		jsonRawMessage json.RawMessage
-	)
-
-	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "id atoi conversion",
-			Code:          http.StatusInternalServerError,
-		}
-	}
-
-	if jsonRawMessage, err = zmqclient.DBGetSignalword(id); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.DBGetSignalword",
-		}
-	}
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Write(jsonRawMessage)
-
-	return nil
-}
-
 // GetProductsSymbolsHandler returns a json list of the symbols matching the search criteria.
 func (env *Env) GetProductsSymbolsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	logger.Log.Debug("GetProductsSymbolsHandler")
@@ -777,40 +675,6 @@ func (env *Env) GetProductsSymbolsHandler(w http.ResponseWriter, r *http.Request
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.Write(jsonresp)
-
-	return nil
-}
-
-// GetProductsSymbolHandler returns a json of the symbol matching the id.
-func (env *Env) GetProductsSymbolHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	logger.Log.Debug("GetProductsSymbolHandler")
-
-	vars := mux.Vars(r)
-
-	var (
-		id             int
-		err            error
-		jsonRawMessage json.RawMessage
-	)
-
-	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "id atoi conversion",
-			Code:          http.StatusInternalServerError,
-		}
-	}
-
-	if jsonRawMessage, err = zmqclient.DBGetSymbol(id); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.DBGetSymbol",
-		}
-	}
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Write(jsonRawMessage)
 
 	return nil
 }
@@ -846,40 +710,6 @@ func (env *Env) GetProductsHazardStatementsHandler(w http.ResponseWriter, r *htt
 	return nil
 }
 
-// GetProductsHazardStatementHandler returns a json of the hazard_statement matching the id.
-func (env *Env) GetProductsHazardStatementHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	logger.Log.Debug("GetProductsHazardStatementHandler")
-
-	vars := mux.Vars(r)
-
-	var (
-		id             int
-		err            error
-		jsonRawMessage json.RawMessage
-	)
-
-	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "id atoi conversion",
-			Code:          http.StatusInternalServerError,
-		}
-	}
-
-	if jsonRawMessage, err = zmqclient.DBGetHazardstatement(id); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.DBGetHazardstatement",
-		}
-	}
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Write(jsonRawMessage)
-
-	return nil
-}
-
 // GetProductsPrecautionaryStatementsHandler returns a json list of the precautionary statements matching the search criteria.
 func (env *Env) GetProductsPrecautionaryStatementsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	logger.Log.Debug("GetProductsPrecautionaryStatementsHandler")
@@ -907,40 +737,6 @@ func (env *Env) GetProductsPrecautionaryStatementsHandler(w http.ResponseWriter,
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.Write(jsonresp)
-
-	return nil
-}
-
-// GetProductsPrecautionaryStatementHandler returns a json of the precautionary_statement matching the id.
-func (env *Env) GetProductsPrecautionaryStatementHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	logger.Log.Debug("GetProductsPrecautionaryStatementHandler")
-
-	vars := mux.Vars(r)
-
-	var (
-		id             int
-		err            error
-		jsonRawMessage json.RawMessage
-	)
-
-	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "id atoi conversion",
-			Code:          http.StatusInternalServerError,
-		}
-	}
-
-	if jsonRawMessage, err = zmqclient.DBGetPrecautionarystatement(id); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.DBGetPrecautionarystatement",
-		}
-	}
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Write(jsonRawMessage)
 
 	return nil
 }
@@ -975,40 +771,6 @@ func (env *Env) GetProductsNamesHandler(w http.ResponseWriter, r *http.Request) 
 
 	return nil
 
-}
-
-// GetProductsNameHandler returns a json of the name matching the id.
-func (env *Env) GetProductsNameHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	logger.Log.Debug("GetProductsNameHandler")
-
-	vars := mux.Vars(r)
-
-	var (
-		id             int
-		err            error
-		jsonRawMessage json.RawMessage
-	)
-
-	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "id atoi conversion",
-			Code:          http.StatusInternalServerError,
-		}
-	}
-
-	if jsonRawMessage, err = zmqclient.DBGetName(id); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.DBGetName",
-		}
-	}
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.Write(jsonRawMessage)
-
-	return nil
 }
 
 // GetProductsSynonymsHandler returns a json list of the symbols matching the search criteria.
@@ -1073,45 +835,6 @@ func (env *Env) GetProductsHandler(w http.ResponseWriter, r *http.Request) *mode
 
 	return nil
 }
-
-// GetProductHandler returns a json of the product with the requested id.
-// func (env *Env) GetProductHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-// 	vars := mux.Vars(r)
-//
-// 	var (
-// 		id  int
-// 		err error
-// 	)
-//
-// 	if id, err = strconv.Atoi(vars["id"]); err != nil {
-// 		return &models.AppError{
-// 			OriginalError: err,
-// 			Message:       "id atoi conversion",
-// 			Code:          http.StatusInternalServerError,
-// 		}
-// 	}
-//
-// 	product, err := env.DB.GetProduct(id)
-// 	if err != nil {
-// 		return &models.AppError{
-// 			OriginalError: err,
-// 			Code:          http.StatusInternalServerError,
-// 			Message:       "error getting the product",
-// 		}
-// 	}
-//
-// 	logger.Log.WithFields(logrus.Fields{"product": product}).Debug("GetProductHandler")
-//
-// 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-//
-// 	if err = json.NewEncoder(w).Encode(product); err != nil {
-// 		return &models.AppError{
-// 			Code:    http.StatusInternalServerError,
-// 			Message: err.Error(),
-// 		}
-// 	}
-// 	return nil
-// }
 
 // CreateProductHandler creates the product from the request form.
 func (env *Env) CreateProductHandler(w http.ResponseWriter, r *http.Request) *models.AppError {

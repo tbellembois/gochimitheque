@@ -107,8 +107,8 @@ func (db *SQLiteDataStore) GetStorages(f zmqclient.RequestFilter, person_id int)
 		uc.unit_label AS "unit_concentration.unit_label",
 		supplier.supplier_id AS "supplier.supplier_id",
 		supplier.supplier_label AS "supplier.supplier_label",
-		person.person_id AS "person.person_id", 
-		person.person_email AS "person.person_email", 
+		person.person_id AS "person.person_id",
+		person.person_email AS "person.person_email",
 		product.product_id AS "product.product_id",
 		product.product_specificity AS "product.product_specificity",
 		product.product_number_per_carton AS "product.product_number_per_carton",
@@ -206,8 +206,8 @@ func (db *SQLiteDataStore) GetStorages(f zmqclient.RequestFilter, person_id int)
 	}
 
 	// filter by permissions
-	comreq.WriteString(` JOIN permission AS perm, entity as e ON
-	perm.person = :personid and (perm.permission_item in ("all", "storages")) and (perm.permission_name in ("all", "r", "w")) and (perm.permission_entity in (-1, e.entity_id))
+	comreq.WriteString(` JOIN permission AS perm ON
+	perm.person = :personid and (perm.permission_item in ("all", "storages")) and (perm.permission_name in ("all", "r", "w")) and (perm.permission_entity in (-1, entity.entity_id))
 	`)
 	comreq.WriteString(" WHERE 1")
 	if len(f.Ids) > 0 {
@@ -242,6 +242,14 @@ func (db *SQLiteDataStore) GetStorages(f zmqclient.RequestFilter, person_id int)
 			comreq.WriteString(" AND (s.storage_id = :storage")
 			// getting storages with identical barecode
 			comreq.WriteString(" OR (s.storage_barecode = (SELECT storage_barecode FROM storage WHERE storage_id = :storage)))")
+		}
+	} else if f.Id != 0 {
+		if f.History {
+			comreq.WriteString(" AND (s.storage = :id OR s.storage_id = :id)")
+		} else {
+			comreq.WriteString(" AND (s.storage_id = :id")
+			// getting storages with identical barecode
+			comreq.WriteString(" OR (s.storage_barecode = (SELECT storage_barecode FROM storage WHERE storage_id = :id)))")
 		}
 	}
 	if !f.History {
@@ -359,6 +367,7 @@ func (db *SQLiteDataStore) GetStorages(f zmqclient.RequestFilter, person_id int)
 
 	// building argument map
 	m := map[string]interface{}{
+		"id":                   f.Id,
 		"ids":                  f.Ids,
 		"search":               f.Search,
 		"personid":             person_id,
@@ -423,12 +432,12 @@ func (db *SQLiteDataStore) GetStorages(f zmqclient.RequestFilter, person_id int)
 	//
 	for i, st := range storages {
 		reqhc.Reset()
-		reqhc.WriteString(`SELECT borrowing_id, 
-		borrowing_comment, 
-		person.person_email AS "borrower.person_email" 
-		from borrowing 
-		JOIN person 
-		ON borrowing.borrower = person.person_id 
+		reqhc.WriteString(`SELECT borrowing_id,
+		borrowing_comment,
+		person.person_email AS "borrower.person_email"
+		from borrowing
+		JOIN person
+		ON borrowing.borrower = person.person_id
 		WHERE borrowing.storage = ?`)
 
 		var borrowing models.Borrowing
@@ -618,7 +627,7 @@ func (db *SQLiteDataStore) GetStorageEntity(id int) (models.Entity, error) {
 		err    error
 	)
 
-	sqlr = `SELECT 
+	sqlr = `SELECT
 	entity.entity_id AS "entity_id",
 	entity.entity_name AS "entity_name"
 	FROM storage
@@ -644,13 +653,13 @@ func (db *SQLiteDataStore) DeleteStorage(id int) error {
 	)
 
 	// Delete history first.
-	sqlr = `DELETE FROM storage 
+	sqlr = `DELETE FROM storage
 	WHERE storage = ?`
 	if _, err = db.Exec(sqlr, id); err != nil {
 		return err
 	}
 
-	sqlr = `DELETE FROM storage 
+	sqlr = `DELETE FROM storage
 	WHERE storage_id = ?`
 	if _, err = db.Exec(sqlr, id); err != nil {
 		return err
@@ -666,14 +675,14 @@ func (db *SQLiteDataStore) ArchiveStorage(id int) error {
 		err  error
 	)
 
-	sqlr = `UPDATE storage SET storage_archive = true 
+	sqlr = `UPDATE storage SET storage_archive = true
 	WHERE storage_id = ?`
 
 	if _, err = db.Exec(sqlr, id); err != nil {
 		return err
 	}
 
-	sqlr = `UPDATE storage SET storage_archive = true 
+	sqlr = `UPDATE storage SET storage_archive = true
 	WHERE storage.storage = ?`
 
 	if _, err = db.Exec(sqlr, id); err != nil {
@@ -690,14 +699,14 @@ func (db *SQLiteDataStore) RestoreStorage(id int) error {
 		err  error
 	)
 
-	sqlr = `UPDATE storage SET storage_archive = false 
+	sqlr = `UPDATE storage SET storage_archive = false
 	WHERE storage_id = ?`
 
 	if _, err = db.Exec(sqlr, id); err != nil {
 		return err
 	}
 
-	sqlr = `UPDATE storage SET storage_archive = false 
+	sqlr = `UPDATE storage SET storage_archive = false
 	WHERE storage.storage = ?`
 
 	if _, err = db.Exec(sqlr, id); err != nil {
@@ -828,7 +837,7 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s models.Storage, itemNumber int,
 			// Getting the storage barecodes matching the regex
 			// for the same product in the same entity.
 			//
-			sqlr := `SELECT storage_barecode FROM storage 
+			sqlr := `SELECT storage_barecode FROM storage
 		JOIN store_location on storage.store_location = store_location.store_location_id
 		WHERE product = ? AND store_location.entity = ? AND regexp('^[_a-zA-Z]{0,5}[0-9]+\.[0-9]+$', '' || storage_barecode || '') = true
 		ORDER BY storage_barecode desc`
