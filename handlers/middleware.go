@@ -229,7 +229,6 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			item        string // storages, products...
 			itemid      string // the item id to be accessed: an int, -1, -2 or ""
 			itemidInt   int
-			view        string
 			action      string
 			permok      bool
 			personemail string
@@ -255,8 +254,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 		// extracting request variables
 		//
 		vars := mux.Vars(r)
-		// view = v or vc or ""
-		view = vars["view"]
+
 		// item = products, storages...
 		item = vars["item"]
 		// id = an int or ""
@@ -282,19 +280,12 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 		}
 
 		// action = r or w
-		switch {
-		case view == "v":
+		if r.Method == "GET" || r.RequestURI == "/storages/borrow" {
 			action = "r"
-		case view == "vc":
+			itemid = "-2"
+			r.Method = "GET" // "/storages/borrow" is a PUT so we need to rewrite the Method to GET
+		} else {
 			action = "w"
-		default:
-			if r.Method == "GET" || r.RequestURI == "/storages/borrow" {
-				action = "r"
-				itemid = "-2"
-				r.Method = "GET" // "/storages/borrow" is a PUT so we need to rewrite the Method to GET
-			} else {
-				action = "w"
-			}
 		}
 
 		logger.Log.WithFields(logrus.Fields{"r.Method": fmt.Sprintf("%+v", r.Method)}).Debug("AuthorizeMiddleware")

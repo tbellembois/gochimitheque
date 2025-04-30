@@ -18,6 +18,7 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 		secureChain = alice.New(env.HeadersMiddleware, env.ContextMiddleware, env.LogingMiddleware, env.AuthenticateMiddleware, env.AuthorizeMiddleware)
 	}
 
+	router.Handle("/", commonChain.Then(env.AppMiddleware(env.HomeHandler))).Methods("GET")
 	router.Handle("/login", commonChain.Then(env.AppMiddleware(env.VLoginHandler))).Methods("GET")
 	router.Handle("/menu", commonChain.Then(env.AppMiddleware(env.VMenuHandler))).Methods("GET")
 	router.Handle("/search", commonChain.Then(env.AppMiddleware(env.VSearchHandler))).Methods("GET")
@@ -26,15 +27,10 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 	router.Handle("/delete-token", commonChain.Then(env.AppMiddleware(env.DeleteTokenHandler))).Methods("GET")
 	router.Handle("/about", commonChain.Then(env.AppMiddleware(env.AboutHandler))).Methods("GET")
 	router.Handle("/{item:userinfo}", secureChain.Then(env.AppMiddleware(env.UserInfoHandler))).Methods("GET")
-
-	// ping handler returns pong only if the request is correctly authenticated (ie. with a valid JWT token)
 	router.Handle("/{item:ping}", secureChain.Then(env.AppMiddleware(env.VPingHandler))).Methods("GET")
 
-	// home page
-	router.Handle("/", commonChain.Then(env.AppMiddleware(env.HomeHandler))).Methods("GET")
-
 	// welcome announce
-	router.Handle("/{view:v}/{item:welcomeannounce}", secureChain.Then(env.AppMiddleware(env.VWelcomeAnnounceHandler))).Methods("GET")
+	router.Handle("/v/{item:welcomeannounce}", commonChain.Then(env.AppMiddleware(env.VWelcomeAnnounceHandler))).Methods("GET")
 
 	router.Handle("/{item:welcomeannounce}", secureChain.Then(env.AppMiddleware(env.UpdateWelcomeAnnounceHandler))).Methods("PUT")
 	router.Handle("/{item:welcomeannounce}", commonChain.Then(env.AppMiddleware(env.GetWelcomeAnnounceHandler))).Methods("GET")
@@ -43,25 +39,22 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 	// entities
 	//
 	// views
-	router.Handle("/{view:v}/{item:entities}", secureChain.Then(env.AppMiddleware(env.VGetEntitiesHandler))).Methods("GET")
-	router.Handle("/{view:vc}/{item:entities}", secureChain.Then(env.AppMiddleware(env.VCreateEntityHandler))).Methods("GET")
+	router.Handle("/v/{item:entities}", commonChain.Then(env.AppMiddleware(env.VGetEntitiesHandler))).Methods("GET")
+	router.Handle("/vc/{item:entities}", commonChain.Then(env.AppMiddleware(env.VCreateEntityHandler))).Methods("GET")
 
 	// api
+	router.Handle("/{item:entities}/{id}", secureChain.Then(env.AppMiddleware(env.GetEntitiesHandler))).Methods("GET")
 	router.Handle("/{item:entities}", secureChain.Then(env.AppMiddleware(env.GetEntitiesHandler))).Methods("GET")
-	router.Handle("/{item:entities}?entity={id:[0-9]+}", secureChain.Then(env.AppMiddleware(env.GetEntitiesHandler))).Methods("GET")
 	router.Handle("/{item:entities}", secureChain.Then(env.AppMiddleware(env.CreateEntityHandler))).Methods("POST")
 	router.Handle("/{item:entities}/{id}", secureChain.Then(env.AppMiddleware(env.UpdateEntityHandler))).Methods("PUT")
 	router.Handle("/{item:entities}/{id}", secureChain.Then(env.AppMiddleware(env.DeleteEntityHandler))).Methods("DELETE")
 
 	// fake
-	router.Handle("/f/{view:v}/{item:entities}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
-	router.Handle("/f/{view:vc}/{item:entities}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
-
+	router.Handle("/f/{item:entities}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 	router.Handle("/f/{item:entities}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
-	router.Handle("/f/{item:entities}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET").Queries("id", "{id:-{0,1}[0-9]+}")
 	router.Handle("/f/{item:entities}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("POST")
-	router.Handle("/f/{item:entities}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT").Queries("id", "{id:-{0,1}[0-9]+}")
-	router.Handle("/f/{item:entities}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE").Queries("id", "{id:-{0,1}[0-9]+}")
+	router.Handle("/f/{item:entities}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT")
+	router.Handle("/f/{item:entities}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE")
 
 	//
 	// stocks
@@ -73,48 +66,44 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 	// people
 	//
 	// views
-	router.Handle("/{view:v}/{item:people}", secureChain.Then(env.AppMiddleware(env.VGetPeopleHandler))).Methods("GET")
-	router.Handle("/{view:vc}/{item:people}", secureChain.Then(env.AppMiddleware(env.VCreatePersonHandler))).Methods("GET")
+	router.Handle("/v/{item:people}", commonChain.Then(env.AppMiddleware(env.VGetPeopleHandler))).Methods("GET")
+	router.Handle("/vc/{item:people}", commonChain.Then(env.AppMiddleware(env.VCreatePersonHandler))).Methods("GET")
 
 	// api
+	router.Handle("/{item:people}/{id}", secureChain.Then(env.AppMiddleware(env.GetPeopleHandler))).Methods("GET")
 	router.Handle("/{item:people}", secureChain.Then(env.AppMiddleware(env.GetPeopleHandler))).Methods("GET")
-	router.Handle("/{item:people}?person={id:[0-9]+}", secureChain.Then(env.AppMiddleware(env.GetPeopleHandler))).Methods("GET")
 	router.Handle("/{item:people}/{id}", secureChain.Then(env.AppMiddleware(env.UpdatePersonHandler))).Methods("PUT")
 	router.Handle("/{item:people}/{id}", secureChain.Then(env.AppMiddleware(env.DeletePersonHandler))).Methods("DELETE")
 
 	// fake
-	router.Handle("/f/{view:v}/{item:people}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
-	router.Handle("/f/{view:vc}/{item:people}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
-
-	router.Handle("/f/{item:people}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("POST")
+	router.Handle("/f/{item:people}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 	router.Handle("/f/{item:people}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
-	router.Handle("/f/{item:people}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET").Queries("id", "{id:-{0,1}[0-9]+}")
-	router.Handle("/f/{item:people}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT").Queries("id", "{id:-{0,1}[0-9]+}")
-	router.Handle("/f/{item:people}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE").Queries("id", "{id:-{0,1}[0-9]+}")
+	router.Handle("/f/{item:people}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT")
+	router.Handle("/f/{item:people}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE")
 
 	//
 	// store locations
 	//
 	// views
-	router.Handle("/{view:v}/{item:store_locations}", secureChain.Then(env.AppMiddleware(env.VGetStoreLocationsHandler))).Methods("GET")
-	router.Handle("/{view:vc}/{item:store_locations}", secureChain.Then(env.AppMiddleware(env.VCreateStoreLocationHandler))).Methods("GET")
+	router.Handle("/v/{item:store_locations}", commonChain.Then(env.AppMiddleware(env.VGetStoreLocationsHandler))).Methods("GET")
+	router.Handle("/vc/{item:store_locations}", commonChain.Then(env.AppMiddleware(env.VCreateStoreLocationHandler))).Methods("GET")
 
 	// api
-	router.Handle("/{item:storelocations}?store_location={id:[0-9]+}", secureChain.Then(env.AppMiddleware(env.GetStoreLocationsHandler))).Methods("GET")
+	router.Handle("/{item:store_locations}/{id}", secureChain.Then(env.AppMiddleware(env.GetStoreLocationsHandler))).Methods("GET")
 	router.Handle("/{item:store_locations}", secureChain.Then(env.AppMiddleware(env.GetStoreLocationsHandler))).Methods("GET")
 	router.Handle("/{item:store_locations}/{id}", secureChain.Then(env.AppMiddleware(env.UpdateStoreLocationHandler))).Methods("PUT")
 	router.Handle("/{item:store_locations}", secureChain.Then(env.AppMiddleware(env.CreateStoreLocationHandler))).Methods("POST")
 	router.Handle("/{item:store_locations}/{id}", secureChain.Then(env.AppMiddleware(env.DeleteStoreLocationHandler))).Methods("DELETE")
 
 	// fake
-	router.Handle("/f/{view:v}/{item:store_locations}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
-	router.Handle("/f/{view:vc}/{item:store_locations}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
+	// router.Handle("/f/{view:v}/{item:store_locations}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
+	// router.Handle("/f/{view:vc}/{item:store_locations}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 
+	router.Handle("/f/{item:store_locations}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 	router.Handle("/f/{item:store_locations}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
-	router.Handle("/f/{item:store_locations}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET").Queries("id", "{id:-{0,1}[0-9]+}")
-	router.Handle("/f/{item:store_locations}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT").Queries("id", "{id:-{0,1}[0-9]+}")
+	router.Handle("/f/{item:store_locations}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT")
 	router.Handle("/f/{item:store_locations}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("POST")
-	router.Handle("/f/{item:store_locations}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE").Queries("id", "{id:-{0,1}[0-9]+}")
+	router.Handle("/f/{item:store_locations}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE")
 
 	//
 	// bookmarks
@@ -124,16 +113,15 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 	//
 	// products
 	//
-	router.Handle("/{item:products}/l2eformula/{f}", secureChain.Then(env.AppMiddleware(env.ConvertProductEmpiricalToLinearFormulaHandler))).Methods("GET")
 
 	// views
-	router.Handle("/{view:v}/{item:products}", secureChain.Then(env.AppMiddleware(env.VGetProductsHandler))).Methods("GET")
-	router.Handle("/{view:vc}/{item:products}", secureChain.Then(env.AppMiddleware(env.VCreateProductHandler))).Methods("GET")
-	router.Handle("/{view:vc}/{item:pubchem}", secureChain.Then(env.AppMiddleware(env.VPubchemHandler))).Methods("GET")
+	router.Handle("/v/{item:products}", commonChain.Then(env.AppMiddleware(env.VGetProductsHandler))).Methods("GET")
+	router.Handle("/v/{item:products}", commonChain.Then(env.AppMiddleware(env.VCreateProductHandler))).Methods("GET")
+	router.Handle("/v/{item:pubchem}", commonChain.Then(env.AppMiddleware(env.VPubchemHandler))).Methods("GET")
 
 	// api
+	router.Handle("/{item:products}/{id}", secureChain.Then(env.AppMiddleware(env.GetProductsHandler))).Methods("GET")
 	router.Handle("/{item:products}", secureChain.Then(env.AppMiddleware(env.GetProductsHandler))).Methods("GET")
-	router.Handle("/{item:products}?product={id:[0-9]+}", secureChain.Then(env.AppMiddleware(env.GetProductsHandler))).Methods("GET")
 	router.Handle("/{item:products}/{id}", secureChain.Then(env.AppMiddleware(env.UpdateProductHandler))).Methods("PUT")
 	router.Handle("/{item:products}", secureChain.Then(env.AppMiddleware(env.CreateProductHandler))).Methods("POST")
 	router.Handle("/{item:products}/{id}", secureChain.Then(env.AppMiddleware(env.DeleteProductHandler))).Methods("DELETE")
@@ -166,28 +154,29 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 	router.Handle("/{item:products}/pubchemcreateproduct/{id}", secureChain.Then(env.AppMiddleware(env.CreateUpdateProductFromPubchemHandler))).Methods("POST")
 
 	// fake
-	router.Handle("/f/{view:v}/{item:products}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
-	router.Handle("/f/{view:vc}/{item:products}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
+	// router.Handle("/f/{view:v}/{item:products}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
+	// router.Handle("/f/{view:vc}/{item:products}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 
+	router.Handle("/f/{item:products}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 	router.Handle("/f/{item:products}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
-	router.Handle("/f/{item:products}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET").Queries("id", "{id:-{0,1}[0-9]+}")
-	router.Handle("/f/{item:products}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT").Queries("id", "{id:-{0,1}[0-9]+}")
+	router.Handle("/f/{item:products}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT")
 	router.Handle("/f/{item:products}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("POST")
-	router.Handle("/f/{item:products}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE").Queries("id", "{id:-{0,1}[0-9]+}")
+	router.Handle("/f/{item:products}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE")
 
 	//
 	// storages
 	//
 	// views
-	router.Handle("/{view:v}/{item:storages}", secureChain.Then(env.AppMiddleware(env.VGetStoragesHandler))).Methods("GET")
-	router.Handle("/{view:vc}/{item:storages}", secureChain.Then(env.AppMiddleware(env.VCreateStorageHandler))).Methods("GET")
+	router.Handle("/v/{item:storages}", commonChain.Then(env.AppMiddleware(env.VGetStoragesHandler))).Methods("GET")
+	router.Handle("/vc/{item:storages}", commonChain.Then(env.AppMiddleware(env.VCreateStorageHandler))).Methods("GET")
 
 	// api
-	router.Handle("/{item:storages}", secureChain.Then(env.AppMiddleware(env.GetStoragesHandler))).Methods("GET")
-	router.Handle("/{item:storages}?storage={id:[0-9]+}", secureChain.Then(env.AppMiddleware(env.GetStoragesHandler))).Methods("GET")
 	router.Handle("/{item:storages}/borrow", secureChain.Then(env.AppMiddleware(env.ToogleStorageBorrowingHandler))).Methods("PUT")
 	router.Handle("/{item:storages}/others", secureChain.Then(env.AppMiddleware(env.GetOtherStoragesHandler))).Methods("GET")
 	router.Handle("/{item:storages}/units", secureChain.Then(env.AppMiddleware(env.GetStoragesUnitsHandler))).Methods("GET")
+
+	// router.Handle("/{item:storages}/{id}", secureChain.Then(env.AppMiddleware(env.GetStoragesHandler))).Methods("GET")
+	router.Handle("/{item:storages}", secureChain.Then(env.AppMiddleware(env.GetStoragesHandler))).Methods("GET")
 	router.Handle("/{item:storages}/{id}", secureChain.Then(env.AppMiddleware(env.GetStorageHandler))).Methods("GET")
 	router.Handle("/{item:storages}/{id}", secureChain.Then(env.AppMiddleware(env.UpdateStorageHandler))).Methods("PUT")
 	router.Handle("/{item:storages}", secureChain.Then(env.AppMiddleware(env.CreateStorageHandler))).Methods("POST")
@@ -196,25 +185,26 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 	router.Handle("/{item:storages}/{id}/r", secureChain.Then(env.AppMiddleware(env.RestoreStorageHandler))).Methods("PUT")
 
 	// fake
-	router.Handle("/f/{item:storages}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET").Queries("id", "{id:-{0,1}[0-9]+}")
-	router.Handle("/f/{item:storages}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT").Queries("id", "{id:-{0,1}[0-9]+}")
+	router.Handle("/f/{item:storages}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
+	router.Handle("/f/{item:storages}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
+	router.Handle("/f/{item:storages}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT")
 	router.Handle("/f/{item:storages}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("POST")
-	router.Handle("/f/{item:storages}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE").Queries("id", "{id:-{0,1}[0-9]+}")
+	router.Handle("/f/{item:storages}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE")
 
 	//
 	// validators
 	//
 	router.Handle("/{item:validate}/entity/{id}/name/", secureChain.Then(env.AppMiddleware(env.ValidateEntityNameHandler))).Methods("POST")
-	router.Handle("/{item:validate}/person/{id}/email/{email}", secureChain.Then(env.AppMiddleware(env.ValidatePersonEmailHandler))).Methods("GET")
+	router.Handle("/{item:validate}/person/{id}/email/", secureChain.Then(env.AppMiddleware(env.ValidatePersonEmailHandler))).Methods("POST")
 	router.Handle("/{item:validate}/product/{id}/cas_number/", secureChain.Then(env.AppMiddleware(env.ValidateProductCasNumberHandler))).Methods("POST")
 	router.Handle("/{item:validate}/product/{id}/cenumber/", secureChain.Then(env.AppMiddleware(env.ValidateProductCeNumberHandler))).Methods("POST")
 	router.Handle("/{item:validate}/product/{id}/name/", secureChain.Then(env.AppMiddleware(env.ValidateProductNameHandler))).Methods("POST")
 	router.Handle("/{item:validate}/product/{id}/empiricalformula/", secureChain.Then(env.AppMiddleware(env.ValidateProductEmpiricalFormulaHandler))).Methods("POST")
 
 	//
-	// formatters
+	// formatters / converters
 	//
-	router.Handle("/{item:format}/product/empiricalformula/", secureChain.Then(env.AppMiddleware(env.FormatProductEmpiricalFormulaHandler))).Methods("POST")
+	router.Handle("/format/empiricalformula/", commonChain.Then(env.AppMiddleware(env.FormatProductEmpiricalFormulaHandler))).Methods("POST")
 
 	//
 	// export download

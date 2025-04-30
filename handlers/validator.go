@@ -52,7 +52,14 @@ func (env *Env) ValidatePersonEmailHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	// getting the email
-	personEmail = vars["email"]
+	if err = r.ParseForm(); err != nil {
+		logger.Log.Error("ParseForm error")
+		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "person_emailexist_validate", PluralCount: 1})
+		sendResponse(w, resp)
+		return nil
+	}
+
+	personEmail = r.Form.Get("email")
 
 	// getting the people matching the email
 	if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/?search="+personEmail, c.PersonID); err != nil {

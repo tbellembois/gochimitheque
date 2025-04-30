@@ -1027,29 +1027,6 @@ func (env *Env) DeleteProductHandler(w http.ResponseWriter, r *http.Request) *mo
 	return nil
 }
 
-// ConvertProductEmpiricalToLinearFormulaHandler returns the converted formula.
-func (env *Env) ConvertProductEmpiricalToLinearFormulaHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	vars := mux.Vars(r)
-
-	var (
-		l2ef string
-		err  error
-	)
-
-	l2ef, _ = zmqclient.EmpiricalFormulaFromRawString(vars["f"])
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	if err = json.NewEncoder(w).Encode(l2ef); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
-
-	return nil
-}
-
 // CreateSupplierHandler creates the supplier from the request form.
 func (env *Env) CreateSupplierHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	logger.Log.Debug("CreateSupplierHandler")
