@@ -106,11 +106,6 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 	router.Handle("/f/{item:store_locations}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE")
 
 	//
-	// bookmarks
-	//
-	router.Handle("/{item:bookmarks}/{id}", secureChain.Then(env.AppMiddleware(env.ToogleProductBookmarkHandler))).Methods("PUT")
-
-	//
 	// products
 	//
 
@@ -154,9 +149,6 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 	router.Handle("/{item:products}/pubchemcreateproduct/{id}", secureChain.Then(env.AppMiddleware(env.CreateUpdateProductFromPubchemHandler))).Methods("POST")
 
 	// fake
-	// router.Handle("/f/{view:v}/{item:products}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
-	// router.Handle("/f/{view:vc}/{item:products}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
-
 	router.Handle("/f/{item:products}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 	router.Handle("/f/{item:products}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 	router.Handle("/f/{item:products}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT")
@@ -171,7 +163,6 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 	router.Handle("/vc/{item:storages}", commonChain.Then(env.AppMiddleware(env.VCreateStorageHandler))).Methods("GET")
 
 	// api
-	router.Handle("/{item:storages}/borrow", secureChain.Then(env.AppMiddleware(env.ToogleStorageBorrowingHandler))).Methods("PUT")
 	router.Handle("/{item:storages}/others", secureChain.Then(env.AppMiddleware(env.GetOtherStoragesHandler))).Methods("GET")
 	router.Handle("/{item:storages}/units", secureChain.Then(env.AppMiddleware(env.GetStoragesUnitsHandler))).Methods("GET")
 
@@ -200,6 +191,12 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 	router.Handle("/{item:validate}/product/{id}/cenumber/", secureChain.Then(env.AppMiddleware(env.ValidateProductCeNumberHandler))).Methods("POST")
 	router.Handle("/{item:validate}/product/{id}/name/", secureChain.Then(env.AppMiddleware(env.ValidateProductNameHandler))).Methods("POST")
 	router.Handle("/{item:validate}/product/{id}/empiricalformula/", secureChain.Then(env.AppMiddleware(env.ValidateProductEmpiricalFormulaHandler))).Methods("POST")
+
+	//
+	// bookmarks and borrows
+	//
+	router.Handle("/{item:bookmarks}/{id}", secureChain.Then(env.AppMiddleware(env.ToogleProductBookmarkHandler))).Methods("GET")
+	router.Handle("/{item:borrows}/{id}", secureChain.Then(env.AppMiddleware(env.ToogleStorageBorrowingHandler))).Methods("GET")
 
 	//
 	// formatters / converters

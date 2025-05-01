@@ -52,7 +52,7 @@ func (env *Env) GetStoreLocationsHandler(w http.ResponseWriter, r *http.Request)
 
 	c := request.ContainerFromRequestContext(r)
 
-	if jsonRawMessage, err = zmqclient.DBGetStorelocations("http://localhost/?"+r.URL.RawQuery, c.PersonID); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetStorelocations("http://localhost"+r.RequestURI, c.PersonID); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
@@ -65,7 +65,7 @@ func (env *Env) GetStoreLocationsHandler(w http.ResponseWriter, r *http.Request)
 		appErr   *models.AppError
 	)
 
-	if r.URL.Query().Get("store_location") != "" {
+	if request.EndsPathWithDigits(r.RequestURI) || request.HasIDParam(r) {
 		if jsonresp, appErr = zmqclient.ConvertDBJSONToStorelocationJSON(jsonRawMessage); appErr != nil {
 			logger.Log.WithFields(logrus.Fields{"ConvertDBJSONToStorelocationJSON appErr": fmt.Sprintf("%+v", appErr)}).Debug("GetStoreLocationsHandler")
 

@@ -454,7 +454,7 @@ func (env *Env) CreateStorageHandler(w http.ResponseWriter, r *http.Request) *mo
 	c := request.ContainerFromRequestContext(r)
 
 	// getting the store location matching the id
-	if jsonRawMessage, err = zmqclient.DBGetStorelocations("http://localhost/?store_location="+strconv.Itoa(int(s.StoreLocationID.Int64)), c.PersonID); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetStorelocations("http://localhost/store_locations/"+strconv.Itoa(int(s.StoreLocationID.Int64)), c.PersonID); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,

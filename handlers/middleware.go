@@ -267,7 +267,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			jsonRawMessage json.RawMessage
 			person         *models.Person
 		)
-		if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/?person="+strconv.Itoa(personid), 1); err != nil {
+		if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/"+strconv.Itoa(personid), 1); err != nil {
 			logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -354,7 +354,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 					jsonRawMessage json.RawMessage
 					storeLocation  *models.StoreLocation
 				)
-				if jsonRawMessage, err = zmqclient.DBGetStorelocations("http://localhost/?store_location="+strconv.Itoa(int(itemidInt)), personid); err != nil {
+				if jsonRawMessage, err = zmqclient.DBGetStorelocations("http://localhost/store_locations/"+strconv.Itoa(int(itemidInt)), personid); err != nil {
 					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
@@ -395,7 +395,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 					product        *models.Product
 					count          int
 				)
-				if jsonRawMessage, err = zmqclient.DBGetProducts("http://localhost/?product="+itemid, personid); err != nil {
+				if jsonRawMessage, err = zmqclient.DBGetProducts("http://localhost/"+itemid, personid); err != nil {
 					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
@@ -431,7 +431,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 						jsonRawMessage json.RawMessage
 						entity         *models.Entity
 					)
-					if jsonRawMessage, err = zmqclient.DBGetEntities("http://localhost/?entity="+strconv.Itoa(itemidInt), personid); err != nil {
+					if jsonRawMessage, err = zmqclient.DBGetEntities("http://localhost/entities/"+strconv.Itoa(itemidInt), personid); err != nil {
 						logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
 						http.Error(w, err.Error(), http.StatusInternalServerError)
 						return

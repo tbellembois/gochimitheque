@@ -2,6 +2,8 @@ package request
 
 import (
 	"net/http"
+	"net/url"
+	"regexp"
 )
 
 // ChimithequeContextKey is the Go request context
@@ -35,4 +37,23 @@ func ContainerFromRequestContext(r *http.Request) Container {
 	}
 
 	return container
+}
+
+// EndsPathWithDigits checks if the path of the given URL ends with digits (ignoring query parameters)
+func EndsPathWithDigits(rawURL string) bool {
+	parsedURL, err := url.Parse(rawURL)
+	if err != nil {
+		return false
+	}
+
+	// Regex to match if the path ends with digits
+	re := regexp.MustCompile(`\d+$`)
+	return re.MatchString(parsedURL.Path)
+}
+
+// HasIDParam checks if the request URL has a query parameter named "id"
+func HasIDParam(r *http.Request) bool {
+	// Get the "id" query parameter
+	_, ok := r.URL.Query()["id"]
+	return ok
 }

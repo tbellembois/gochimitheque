@@ -53,7 +53,7 @@ func (env *Env) GetEntitiesHandler(w http.ResponseWriter, r *http.Request) *mode
 
 	c := request.ContainerFromRequestContext(r)
 
-	if jsonRawMessage, err = zmqclient.DBGetEntities("http://localhost/?"+r.URL.RawQuery, c.PersonID); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetEntities("http://localhost"+r.RequestURI, c.PersonID); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
@@ -66,7 +66,7 @@ func (env *Env) GetEntitiesHandler(w http.ResponseWriter, r *http.Request) *mode
 		appErr   *models.AppError
 	)
 
-	if r.URL.Query().Get("entity") != "" {
+	if request.EndsPathWithDigits(r.RequestURI) || request.HasIDParam(r) {
 		if jsonresp, appErr = zmqclient.ConvertDBJSONToEntityJSON(jsonRawMessage); appErr != nil {
 			logger.Log.WithFields(logrus.Fields{"ConvertDBJSONToEntityJSON appErr": fmt.Sprintf("%+v", appErr)}).Debug("GetEntitiesHandler")
 
@@ -195,7 +195,7 @@ func (env *Env) UpdateEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 	var (
 		jsonRawMessage json.RawMessage
 	)
-	if jsonRawMessage, err = zmqclient.DBGetEntities("http://localhost/?entity="+strconv.Itoa(id), c.PersonID); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetEntities("http://localhost/entities/"+strconv.Itoa(id), c.PersonID); err != nil {
 		logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
 		return &models.AppError{
 			OriginalError: err,

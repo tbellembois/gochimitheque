@@ -95,7 +95,7 @@ func (env *Env) ValidatePersonEmailHandler(w http.ResponseWriter, r *http.Reques
 			person         *models.Person
 		)
 
-		if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/?person="+strconv.Itoa(personID), 1); err != nil {
+		if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/"+strconv.Itoa(personID), 1); err != nil {
 			return &models.AppError{
 				OriginalError: err,
 				Message:       "zmqclient.DBGetPeople",

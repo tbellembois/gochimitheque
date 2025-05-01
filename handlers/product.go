@@ -371,14 +371,12 @@ func (env *Env) GetProductsSuppliersHandler(w http.ResponseWriter, r *http.Reque
 func (env *Env) ToogleProductBookmarkHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	var (
 		err        error
-		isbookmark bool
+		product_id int
 	)
 
-	product := models.Product{}
-	person := models.Person{}
 	vars := mux.Vars(r)
 
-	if product.ProductID, err = strconv.Atoi(vars["id"]); err != nil {
+	if product_id, err = strconv.Atoi(vars["id"]); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Message:       "id atoi conversion",
@@ -388,38 +386,18 @@ func (env *Env) ToogleProductBookmarkHandler(w http.ResponseWriter, r *http.Requ
 
 	// retrieving the logged user id from request context
 	c := request.ContainerFromRequestContext(r)
-	person.PersonID = c.PersonID
 
-	if isbookmark, err = env.DB.IsProductBookmark(product, person); err != nil {
+	if _, err = zmqclient.DBToggleProductBookmark(c.PersonID, product_id); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error getting bookmark status",
-		}
-	}
-
-	// toggling the bookmark
-	if isbookmark {
-		err = env.DB.DeleteProductBookmark(product, person)
-		product.Bookmark = nil
-	} else {
-		err = env.DB.CreateProductBookmark(product, person)
-		product.Bookmark = &models.Bookmark{
-			Person:  person,
-			Product: product,
-		}
-	}
-	if err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error creating the bookmark",
+			Message:       "error calling zmqclient.DBCreateUpdateProductFromPubchem",
 		}
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	if err = json.NewEncoder(w).Encode(product); err != nil {
+	if err = json.NewEncoder(w).Encode("ok"); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
 			Message: err.Error(),
@@ -814,7 +792,7 @@ func (env *Env) GetProductsHandler(w http.ResponseWriter, r *http.Request) *mode
 
 	c := request.ContainerFromRequestContext(r)
 
-	if jsonRawMessage, err = zmqclient.DBGetProducts("http://localhost/?"+r.URL.RawQuery, c.PersonID); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetProducts("http://localhost"+r.RequestURI, c.PersonID); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
@@ -923,7 +901,7 @@ func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *mo
 	var (
 		jsonRawMessage json.RawMessage
 	)
-	if jsonRawMessage, err = zmqclient.DBGetProducts("http://localhost/?product="+strconv.Itoa(id), p.PersonID); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetProducts("http://localhost/"+strconv.Itoa(id), p.PersonID); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Message:       "zmqclient.DBGetProducts",

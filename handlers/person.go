@@ -53,7 +53,7 @@ func (env *Env) GetPeopleHandler(w http.ResponseWriter, r *http.Request) *models
 
 	c := request.ContainerFromRequestContext(r)
 
-	if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/?"+r.URL.RawQuery, c.PersonID); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost"+r.RequestURI, c.PersonID); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
@@ -65,7 +65,7 @@ func (env *Env) GetPeopleHandler(w http.ResponseWriter, r *http.Request) *models
 		jsonresp []byte
 		appErr   *models.AppError
 	)
-	if r.URL.Query().Get("person") != "" {
+	if request.EndsPathWithDigits(r.RequestURI) || request.HasIDParam(r) {
 		if jsonresp, appErr = zmqclient.ConvertDBJSONToPersonJSON(jsonRawMessage); appErr != nil {
 			logger.Log.WithFields(logrus.Fields{"ConvertDBJSONToPersonJSON appErr": fmt.Sprintf("%+v", appErr)}).Debug("GetPeopleHandler")
 
@@ -120,7 +120,7 @@ func (env *Env) UpdatePersonHandler(w http.ResponseWriter, r *http.Request) *mod
 		updatedp       *models.Person
 	)
 
-	if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/?person="+strconv.Itoa(id), 1); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/"+strconv.Itoa(id), 1); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Message:       "zmqclient.DBGetPeople",

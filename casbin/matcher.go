@@ -29,7 +29,7 @@ func matchPeople(datastore datastores.Datastore, personID string, itemID string,
 		person         *models.Person
 	)
 
-	if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/?person="+personID, 1); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/"+personID, 1); err != nil {
 		logger.Log.Error("zmqclient.DBGetPeople: " + err.Error())
 		return false
 	}
@@ -92,7 +92,7 @@ func matchStorelocation(datastore datastores.Datastore, personID string, itemID 
 	}
 
 	// getting the store location matching the id
-	if jsonRawMessage, err = zmqclient.DBGetStorelocations("http://localhost/?store_location="+strconv.Itoa(iid), pid); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetStorelocations("http://localhost/store_locations/"+strconv.Itoa(iid), pid); err != nil {
 		logger.Log.Error("matchStorelocation - error calling zmqclient.DBGetStorelocations: " + err.Error())
 		return false
 	}
@@ -118,7 +118,7 @@ func matchStorelocation(datastore datastores.Datastore, personID string, itemID 
 		person *models.Person
 	)
 
-	if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/?person="+strconv.Itoa(pid), pid); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/"+strconv.Itoa(pid), pid); err != nil {
 		logger.Log.Error("zmqclient.DBGetPeople: " + err.Error())
 		return false
 
@@ -185,7 +185,7 @@ func matchStorage(datastore datastores.Datastore, personID string, itemID string
 		jsonRawMessage json.RawMessage
 	)
 
-	if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/?person="+strconv.Itoa(pid), pid); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/"+strconv.Itoa(pid), pid); err != nil {
 		logger.Log.Error("zmqclient.DBGetPeople: " + err.Error())
 		return false
 
@@ -244,7 +244,7 @@ func matchEntity(datastore datastores.Datastore, personID string, entityID strin
 		jsonRawMessage json.RawMessage
 	)
 
-	if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/?person="+strconv.Itoa(pid), pid); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/"+strconv.Itoa(pid), pid); err != nil {
 		logger.Log.Error("zmqclient.DBGetPeople: " + err.Error())
 		return false
 
