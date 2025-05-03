@@ -51,7 +51,7 @@ type Product struct {
 	SupplierRefs            []SupplierRef            `db:"-" json:"supplier_refs" schema:"supplier_refs"`
 	Tags                    []Tag                    `db:"-" json:"tags" schema:"tags"`
 
-	Bookmark *Bookmark `db:"bookmark" json:"bookmark" schema:"bookmark"` // not in db but sqlx requires the "db" entry
+	ProductHasBookmark bool `db:"product_has_bookmark" json:"product_has_bookmark" schema:"product_has_bookmark"` // not in db but sqlx requires the "db" entry
 
 	// archived storage count in the logged user entity(ies)
 	ProductASC int `db:"product_asc" json:"product_asc" schema:"product_asc"` // not in db but sqlx requires the "db" entry
