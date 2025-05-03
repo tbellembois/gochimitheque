@@ -2,131 +2,14 @@ package datastores
 
 import (
 	"database/sql"
-	"fmt"
 	"strings"
 
 	"github.com/doug-martin/goqu/v9"
 	_ "github.com/doug-martin/goqu/v9/dialect/sqlite3"
-	"github.com/jmoiron/sqlx"
 	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
 )
-
-// IsProductBookmark returns true if there is a bookmark for the product pr for the person pe.
-func (db *SQLiteDataStore) IsProductBookmark(pr models.Product, pe models.Person) (bool, error) {
-	var (
-		err   error
-		sqlr  string
-		args  []interface{}
-		count int
-	)
-
-	dialect := goqu.Dialect("sqlite3")
-	tableProduct := goqu.T("bookmark")
-
-	sQuery := dialect.From(tableProduct).Select(
-		goqu.COUNT("*"),
-	).Where(
-		goqu.I("person").Eq(pe.PersonID),
-		goqu.I("product").Eq(pr.ProductID),
-	)
-
-	if sqlr, args, err = sQuery.ToSQL(); err != nil {
-		logger.Log.Error(err)
-		return false, err
-	}
-
-	if err = db.Get(&count, sqlr, args...); err != nil {
-		return false, err
-	}
-
-	return count != 0, nil
-}
-
-// CreateProductBookmark bookmarks the product pr for the person pe.
-func (db *SQLiteDataStore) CreateProductBookmark(pr models.Product, pe models.Person) (err error) {
-	var tx *sqlx.Tx
-
-	logger.Log.WithFields(logrus.Fields{"s": fmt.Sprintf("pr:%+v pe:%+v", pr, pe)}).Debug("CreateProductBookmark")
-
-	dialect := goqu.Dialect("sqlite3")
-	tableBookmark := goqu.T("bookmark")
-
-	if tx, err = db.Beginx(); err != nil {
-		return err
-	}
-
-	defer func() {
-		if err != nil {
-			logger.Log.Error(err)
-
-			if rbErr := tx.Rollback(); rbErr != nil {
-				logger.Log.Error(rbErr)
-				err = rbErr
-
-				return
-			}
-
-			return
-		}
-
-		err = tx.Commit()
-	}()
-
-	iQuery := dialect.Insert(tableBookmark)
-
-	setClause := goqu.Record{
-		"person":  pe.PersonID,
-		"product": pr.ProductID,
-	}
-
-	var (
-		sqlr      string
-		args      []interface{}
-		sqlResult sql.Result
-	)
-
-	if sqlr, args, err = iQuery.Rows(setClause).ToSQL(); err != nil {
-		return
-	}
-
-	if sqlResult, err = tx.Exec(sqlr, args...); err != nil {
-		return
-	}
-
-	_, err = sqlResult.LastInsertId()
-
-	return
-}
-
-// DeleteProductBookmark remove the bookmark for the product pr and the person pe.
-func (db *SQLiteDataStore) DeleteProductBookmark(pr models.Product, pe models.Person) error {
-	dialect := goqu.Dialect("sqlite3")
-	tableBookmark := goqu.T("bookmark")
-
-	dQuery := dialect.From(tableBookmark).Where(
-		goqu.I("person").Eq(pe.PersonID),
-		goqu.I("product").Eq(pr.ProductID),
-	).Delete()
-
-	var (
-		err  error
-		sqlr string
-		args []interface{}
-	)
-
-	if sqlr, args, err = dQuery.ToSQL(); err != nil {
-		logger.Log.Error(err)
-		return err
-	}
-
-	if _, err = db.Exec(sqlr, args...); err != nil {
-		return err
-	}
-
-	return nil
-}
 
 // GetProduct returns the product with the given id.
 func (db *SQLiteDataStore) GetProduct(id int) (models.Product, error) {
@@ -136,11 +19,11 @@ func (db *SQLiteDataStore) GetProduct(id int) (models.Product, error) {
 		err     error
 	)
 
-	sqlr = `SELECT product.product_id, 
+	sqlr = `SELECT product.product_id,
 	product.product_inchi,
 	product.product_inchikey,
 	product.product_specificity,
-	product.product_canonical_smiles, 
+	product.product_canonical_smiles,
 	product.product_molecular_weight,
 	product_msds,
 	product_restricted,

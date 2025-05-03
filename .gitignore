@@ -1,6 +1,7 @@
 *.log
 
 gochimitheque
+chimitheque_people_keycloak_exporter
 
 storage.db*
 

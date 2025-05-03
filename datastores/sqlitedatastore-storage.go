@@ -18,34 +18,6 @@ import (
 	"github.com/tbellembois/gochimitheque/zmqclient"
 )
 
-// ToogleStorageBorrowing borrow/unborrow the storage for the connected user.
-func (db *SQLiteDataStore) ToogleStorageBorrowing(s models.Storage) error {
-	var (
-		sqlr  string
-		count int
-		err   error
-	)
-
-	sqlr = `SELECT COUNT(borrowing_id) FROM borrowing WHERE storage = ?`
-	if err = db.Get(&count, sqlr, s.StorageID.Int64); err != nil {
-		return err
-	}
-
-	if count == 0 {
-		sqlr = `INSERT into borrowing(person, storage, borrower, borrowing_comment) VALUES (?, ?, ?, ?)`
-		if _, err = db.Exec(sqlr, s.Borrowing.Person.PersonID, s.StorageID.Int64, s.Borrowing.Borrower.PersonID, s.Borrowing.BorrowingComment); err != nil {
-			return err
-		}
-	} else {
-		sqlr = `DELETE from borrowing WHERE storage = ?`
-		if _, err = db.Exec(sqlr, s.StorageID.Int64); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 // GetStorages returns the storages matching the request parameters p.
 // Only storages that the logged user can see are returned given his permissions
 // and membership.

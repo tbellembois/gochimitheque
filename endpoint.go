@@ -196,6 +196,8 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 	// bookmarks and borrows
 	//
 	router.Handle("/{item:bookmarks}/{id}", secureChain.Then(env.AppMiddleware(env.ToogleProductBookmarkHandler))).Methods("GET")
+	router.Handle("/{item:borrows}/{id}", secureChain.Then(env.AppMiddleware(env.ToogleStorageBorrowingHandler))).Methods("GET").Queries("{borrower_id:[0-9]+}", "{borrowing_comment:.*}")
+	router.Handle("/{item:borrows}/{id}", secureChain.Then(env.AppMiddleware(env.ToogleStorageBorrowingHandler))).Methods("GET").Queries("{borrower_id:[0-9]+}")
 	router.Handle("/{item:borrows}/{id}", secureChain.Then(env.AppMiddleware(env.ToogleStorageBorrowingHandler))).Methods("GET")
 
 	//

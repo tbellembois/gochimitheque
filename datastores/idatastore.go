@@ -22,9 +22,6 @@ type Datastore interface {
 
 	DeleteProduct(id int) error
 	CreateUpdateProduct(p models.Product, update bool) (int64, error)
-	CreateProductBookmark(pr models.Product, pe models.Person) error
-	DeleteProductBookmark(pr models.Product, pe models.Person) error
-	IsProductBookmark(pr models.Product, pe models.Person) (bool, error)
 
 	GetStorages(zmqclient.RequestFilter, int) ([]models.Storage, int, error)
 	GetOtherStorages(zmqclient.RequestFilter, int) ([]models.Entity, int, error)
@@ -34,7 +31,6 @@ type Datastore interface {
 	ArchiveStorage(id int) error
 	RestoreStorage(id int) error
 	CreateUpdateStorage(s models.Storage, itemNumber int, update bool) (int64, error)
-	ToogleStorageBorrowing(s models.Storage) error
 	UpdateAllQRCodes() error
 
 	DeleteEntity(id int) error

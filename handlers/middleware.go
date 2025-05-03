@@ -280,10 +280,9 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 		}
 
 		// action = r or w
-		if r.Method == "GET" || r.RequestURI == "/storages/borrow" {
+		if r.Method == "GET" {
 			action = "r"
 			itemid = "-2"
-			r.Method = "GET" // "/storages/borrow" is a PUT so we need to rewrite the Method to GET
 		} else {
 			action = "w"
 		}

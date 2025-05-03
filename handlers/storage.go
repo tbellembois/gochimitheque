@@ -48,43 +48,59 @@ func (env *Env) VCreateStorageHandler(w http.ResponseWriter, r *http.Request) *m
 // for the logged user.
 func (env *Env) ToogleStorageBorrowingHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	var (
-		err error
-		s   models.Storage
+		err               error
+		storage_id        int
+		borrower_id       int
+		borrowing_comment *string
 	)
 
-	if err = json.NewDecoder(r.Body).Decode(&s); err != nil {
+	vars := mux.Vars(r)
+
+	logger.Log.WithFields(logrus.Fields{"vars": vars}).Debug("ToogleStorageBorrowingHandler")
+
+	if storage_id, err = strconv.Atoi(vars["id"]); err != nil {
 		return &models.AppError{
 			OriginalError: err,
-			Message:       "JSON decoding error",
+			Message:       "id atoi conversion",
 			Code:          http.StatusInternalServerError,
 		}
 	}
 
+	if var_borrower_id := r.URL.Query().Get("borrower_id"); len(var_borrower_id) > 0 {
+		if borrower_id, err = strconv.Atoi(var_borrower_id); err != nil {
+			return &models.AppError{
+				OriginalError: err,
+				Message:       "id atoi conversion",
+				Code:          http.StatusInternalServerError,
+			}
+		}
+	}
+
+	if var_borrowing_comment := r.URL.Query().Get("borrowing_comment"); len(var_borrowing_comment) > 0 {
+		borrowing_comment = &var_borrowing_comment
+	}
+
 	// retrieving the logged user id from request context
 	c := request.ContainerFromRequestContext(r)
-	s.Borrowing.Person = &models.Person{}
-	s.Borrowing.Person.PersonID = c.PersonID
 
-	// toggling the borrowing
-	err = env.DB.ToogleStorageBorrowing(s)
+	logger.Log.WithFields(logrus.Fields{"storage_id": storage_id, "borrower_id": borrower_id}).Debug("ToogleStorageBorrowingHandler")
 
-	if err != nil {
+	if _, err = zmqclient.DBToggleStorageBorrowing(c.PersonID, storage_id, borrower_id, borrowing_comment); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error creating the borrowing",
+			Message:       "error calling zmqclient.DBToggleStorageBorrowing",
 		}
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	if err = json.NewEncoder(w).Encode(s); err != nil {
+	if err = json.NewEncoder(w).Encode("ok"); err != nil {
 		return &models.AppError{
 			Code:    http.StatusInternalServerError,
 			Message: err.Error(),
 		}
 	}
-
 	return nil
 }
 
