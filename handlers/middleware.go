@@ -282,7 +282,6 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 		// action = r or w
 		if r.Method == "GET" {
 			action = "r"
-			itemid = "-2"
 		} else {
 			action = "w"
 		}
@@ -325,7 +324,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 					return
 				}
 				// we can not delete a manager
-				if person.ManagedEntities == nil || len(person.ManagedEntities) != 0 {
+				if person.ManagedEntities != nil && len(person.ManagedEntities) != 0 {
 					http.Error(w, "can not delete a manager", http.StatusBadRequest)
 					return
 				}

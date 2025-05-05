@@ -111,8 +111,8 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 
 	// views
 	router.Handle("/v/{item:products}", commonChain.Then(env.AppMiddleware(env.VGetProductsHandler))).Methods("GET")
-	router.Handle("/v/{item:products}", commonChain.Then(env.AppMiddleware(env.VCreateProductHandler))).Methods("GET")
-	router.Handle("/v/{item:pubchem}", commonChain.Then(env.AppMiddleware(env.VPubchemHandler))).Methods("GET")
+	router.Handle("/vc/{item:products}", commonChain.Then(env.AppMiddleware(env.VCreateProductHandler))).Methods("GET")
+	router.Handle("/vc/{item:pubchem}", commonChain.Then(env.AppMiddleware(env.VPubchemHandler))).Methods("GET")
 
 	// api
 	router.Handle("/{item:products}/{id}", secureChain.Then(env.AppMiddleware(env.GetProductsHandler))).Methods("GET")
