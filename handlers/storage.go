@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -198,107 +197,31 @@ func (env *Env) GetStoragesHandler(w http.ResponseWriter, r *http.Request) *mode
 	logger.Log.Debug("GetStoragesHandler")
 
 	var (
-		err      error
-		filter   zmqclient.RequestFilter
-		exportfn string
+		err            error
+		jsonRawMessage json.RawMessage
 	)
 
 	c := request.ContainerFromRequestContext(r)
 
-	// init db request parameters
-	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetStorages("http://localhost"+r.RequestURI, c.PersonID); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.Request_filter",
+			Message:       "error calling zmqclient.DBGetStorages",
 		}
 	}
-
-	storages, count, err := env.DB.GetStorages(filter, c.PersonID)
-	if err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error getting the storages",
-		}
-	}
-
-	// export?
-	if _, export := r.URL.Query()["export"]; export {
-		if exportfn, err = models.StoragesToCSV(storages); err != nil {
-			return &models.AppError{
-				Code:    http.StatusInternalServerError,
-				Message: err.Error(),
-			}
-		}
-		// emptying results on exports
-		storages = []models.Storage{}
-		count = 0
-	}
-
-	type resp struct {
-		Rows     []models.Storage `json:"rows"`
-		Total    int              `json:"total"`
-		ExportFN string           `json:"exportfn"`
-	}
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	if err = json.NewEncoder(w).Encode(resp{Rows: storages, Total: count, ExportFN: exportfn}); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
-
-	return nil
-}
-
-// GetStorageHandler godoc
-// @Summary Get a storage.
-// @tags storage
-// @Accept plain
-// @Produce json
-// @Param id path int true "Storage id."
-// @Success 200 {object} models.Storage
-// @Failure 500
-// @Failure 403
-// @Router /storage/{id} [get].
-func (env *Env) GetStorageHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	vars := mux.Vars(r)
 
 	var (
-		id  int
-		err error
+		jsonresp []byte
+		appErr   *models.AppError
 	)
-
-	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "id atoi conversion",
-			Code:          http.StatusInternalServerError,
-		}
+	if jsonresp, appErr = zmqclient.ConvertDBJSONToBSTableJSON(jsonRawMessage); appErr != nil {
+		return appErr
 	}
-
-	storage, err := env.DB.GetStorage(id)
-	if err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error getting the storage",
-		}
-	}
-
-	logger.Log.WithFields(logrus.Fields{"storage": storage}).Debug("GetStorageHandler")
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonresp)
 
-	if err = json.NewEncoder(w).Encode(storage); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
 }
 
@@ -325,6 +248,8 @@ func (env *Env) UpdateStorageHandler(w http.ResponseWriter, r *http.Request) *mo
 
 	logger.Log.WithFields(logrus.Fields{"s": s}).Debug("UpdateStorageHandler")
 
+	s.PersonID = c.PersonID
+
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
 		return &models.AppError{
 			OriginalError: err,
@@ -333,17 +258,29 @@ func (env *Env) UpdateStorageHandler(w http.ResponseWriter, r *http.Request) *mo
 		}
 	}
 
-	var updateds models.Storage
+	var updateds *models.Storage
 
-	if updateds, err = env.DB.GetStorage(id); err != nil {
+	// getting the storage
+	var (
+		jsonRawMessage json.RawMessage
+	)
+	if jsonRawMessage, err = zmqclient.DBGetStorages("http://localhost/"+strconv.Itoa(id), s.PersonID); err != nil {
 		return &models.AppError{
 			OriginalError: err,
-			Message:       "get storage",
+			Message:       "zmqclient.DBGetStorages",
 			Code:          http.StatusInternalServerError,
 		}
 	}
 
-	s.StorageModificationDate = models.MyTime{time.Now()}
+	if updateds, err = zmqclient.ConvertDBJSONToStorage(jsonRawMessage); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Message:       "ConvertDBJSONToStorage",
+			Code:          http.StatusInternalServerError,
+		}
+	}
+
+	s.StorageModificationDate = time.Now()
 	s.StorageID = updateds.StorageID
 	s.PersonID = c.PersonID
 
@@ -490,8 +427,8 @@ func (env *Env) CreateStorageHandler(w http.ResponseWriter, r *http.Request) *mo
 
 	s.StoreLocation = tuple.V1[0]
 
-	s.StorageCreationDate = models.MyTime{time.Now()}
-	s.StorageModificationDate = models.MyTime{time.Now()}
+	s.StorageCreationDate = time.Now()
+	s.StorageModificationDate = time.Now()
 	s.PersonID = c.PersonID
 
 	logger.Log.WithFields(logrus.Fields{"s": fmt.Sprintf("%+v", s)}).Debug("CreateStorageHandler")
@@ -512,11 +449,13 @@ func (env *Env) CreateStorageHandler(w http.ResponseWriter, r *http.Request) *mo
 			}
 		}
 
+		var storage_id int64 = int64(id)
 		result = append(result, models.Storage{
-			StorageID: sql.NullInt64{Valid: true, Int64: int64(id)},
+			StorageID: &storage_id,
 		})
 	}
-	s.StorageID = sql.NullInt64{Valid: true, Int64: id}
+	var storage_id int64 = int64(id)
+	s.StorageID = &storage_id
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 

@@ -259,6 +259,70 @@ func ConvertDBJSONToStorelocationJSON(jsonRawMessage json.RawMessage) ([]byte, *
 	return jsonresp, nil
 }
 
+// Convert a JSON response from the chimitheque_db Rust library to a storage.
+func ConvertDBJSONToStorage(jsonRawMessage json.RawMessage) (*models.Storage, error) {
+
+	// logger.Log.Debug("ConvertDBJSONToStorage")
+	// logger.Log.WithFields(logrus.Fields{"jsonRawMessage": fmt.Sprintf("%+v", jsonRawMessage)}).Debug("ConvertDBJSONToStorage")
+
+	var (
+		tuple tuple.T2[[]models.Storage, int]
+		err   error
+	)
+
+	if err = json.Unmarshal(jsonRawMessage, &tuple); err != nil {
+		return nil, &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling jsonRawMessage",
+		}
+	}
+
+	var resp *models.Storage
+	if len(tuple.V1) == 0 {
+		resp = nil
+	} else {
+		resp = &tuple.V1[0]
+	}
+
+	// logger.Log.WithFields(logrus.Fields{"resp": fmt.Sprintf("%+v", resp)}).Debug("ConvertDBJSONToStorage")
+
+	return resp, nil
+}
+
+// Convert a JSON response from the chimitheque_db Rust library to a Storage JSON.
+func ConvertDBJSONToStorageJSON(jsonRawMessage json.RawMessage) ([]byte, *models.AppError) {
+
+	// logger.Log.Debug("ConvertDBJSONToStorageJSON")
+	// logger.Log.WithFields(logrus.Fields{"jsonRawMessage": fmt.Sprintf("%+v", jsonRawMessage)}).Debug("ConvertDBJSONToStorageJSON")
+
+	var (
+		storage *models.Storage
+		err     error
+	)
+
+	if storage, err = ConvertDBJSONToStorage(jsonRawMessage); err != nil {
+		return nil, &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling jsonRawMessage",
+		}
+	}
+
+	// logger.Log.WithFields(logrus.Fields{"storage": fmt.Sprintf("%+v", storage)}).Debug("ConvertDBJSONToStorageJSON")
+
+	var jsonresp []byte
+	if jsonresp, err = json.Marshal(storage); err != nil {
+		return nil, &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error marshalling storage",
+		}
+	}
+
+	return jsonresp, nil
+}
+
 // Convert a JSON response from the chimitheque_db Rust library to a product.
 func ConvertDBJSONToProduct(jsonRawMessage json.RawMessage) (*models.Product, error) {
 

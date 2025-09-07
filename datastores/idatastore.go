@@ -25,8 +25,6 @@ type Datastore interface {
 
 	GetStorages(zmqclient.RequestFilter, int) ([]models.Storage, int, error)
 	GetOtherStorages(zmqclient.RequestFilter, int) ([]models.Entity, int, error)
-	GetStorage(id int) (models.Storage, error)
-	GetStorageEntity(id int) (models.Entity, error)
 	DeleteStorage(id int) error
 	ArchiveStorage(id int) error
 	RestoreStorage(id int) error
@@ -44,5 +42,4 @@ type Datastore interface {
 	IsPersonAdmin(id int) (bool, error)
 	UnsetPersonAdmin(id int) error
 	SetPersonAdmin(id int) error
-	HasPersonReadRestrictedProductPermission(id int) (bool, error)
 }

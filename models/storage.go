@@ -1,9 +1,7 @@
 package models
 
 import (
-	"database/sql"
 	"encoding/csv"
-	"errors"
 	"os"
 	"strconv"
 	"strings"
@@ -12,73 +10,31 @@ import (
 	"github.com/tbellembois/gochimitheque/logger"
 )
 
-type MyNullTime sql.NullTime
-type MyTime struct{ time.Time }
-
-func (t *MyNullTime) Scan(src interface{}) error {
-	var (
-		tm    time.Time
-		valid bool
-	)
-
-	switch src.(type) {
-	case int64:
-		value := src.(int64)
-		tm = time.Unix(value, 0)
-		valid = false
-	case nil:
-
-	default:
-		return errors.New("Invalid type for ExpireTimestamp")
-	}
-
-	*t = MyNullTime{Valid: valid, Time: tm}
-	return nil
-}
-
-func (t *MyTime) Scan(src interface{}) error {
-	var (
-		tm time.Time
-	)
-
-	switch src.(type) {
-	case int64:
-		value := src.(int64)
-		tm = time.Unix(value, 0)
-	case nil:
-
-	default:
-		return errors.New("Invalid type for ExpireTimestamp")
-	}
-
-	*t = MyTime{tm}
-	return nil
-}
-
 // Storage is a product storage in a store location.
 type Storage struct {
-	StorageID                sql.NullInt64   `db:"storage_id" json:"storage_id" schema:"storage_id" `
-	StorageCreationDate      MyTime          `db:"storage_creation_date" json:"storage_creation_date" schema:"storage_creation_date"`
-	StorageModificationDate  MyTime          `db:"storage_modification_date" json:"storage_modification_date" schema:"storage_modification_date"`
-	StorageEntryDate         MyNullTime      `db:"storage_entry_date" json:"storage_entry_date" schema:"storage_entry_date" `
-	StorageExitDate          MyNullTime      `db:"storage_exit_date" json:"storage_exit_date" schema:"storage_exit_date" `
-	StorageOpeningDate       MyNullTime      `db:"storage_opening_date" json:"storage_opening_date" schema:"storage_opening_date" `
-	StorageExpirationDate    MyNullTime      `db:"storage_expiration_date" json:"storage_expiration_date" schema:"storage_expiration_date" `
-	StorageComment           sql.NullString  `db:"storage_comment" json:"storage_comment" schema:"storage_comment" `
-	StorageReference         sql.NullString  `db:"storage_reference" json:"storage_reference" schema:"storage_reference" `
-	StorageBatchNumber       sql.NullString  `db:"storage_batch_number" json:"storage_batch_number" schema:"storage_batch_number" `
-	StorageQuantity          sql.NullFloat64 `db:"storage_quantity" json:"storage_quantity" schema:"storage_quantity" `
-	StorageNbItem            int             `db:"-" json:"storage_nbitem" schema:"storage_nbitem"`
-	StorageIdenticalBarecode sql.NullBool    `db:"-" json:"storage_identicalbarecode" schema:"storage_identicalbarecode" `
-	StorageBarecode          sql.NullString  `db:"storage_barecode" json:"storage_barecode" schema:"storage_barecode" `
-	StorageQRCode            []byte          `db:"storage_qrcode" json:"storage_qrcode" schema:"storage_qrcode"`
-	StorageToDestroy         sql.NullBool    `db:"storage_to_destroy" json:"storage_to_destroy" schema:"storage_to_destroy" `
-	StorageArchive           sql.NullBool    `db:"storage_archive" json:"storage_archive" schema:"storage_archive" `
-	StorageConcentration     sql.NullInt64   `db:"storage_concentration" json:"storage_concentration" schema:"storage_concentration" `
-	StorageNumberOfBag       sql.NullInt64   `db:"storage_number_of_bag" json:"storage_number_of_bag" schema:"storage_number_of_bag" `
-	StorageNumberOfCarton    sql.NullInt64   `db:"storage_number_of_carton" json:"storage_number_of_carton" schema:"storage_number_of_carton" `
+	StorageID                *int64     `db:"storage_id" json:"storage_id" schema:"storage_id" `
+	StorageCreationDate      time.Time  `db:"storage_creation_date" json:"storage_creation_date" schema:"storage_creation_date"`
+	StorageModificationDate  time.Time  `db:"storage_modification_date" json:"storage_modification_date" schema:"storage_modification_date"`
+	StorageEntryDate         *time.Time `db:"storage_entry_date" json:"storage_entry_date" schema:"storage_entry_date" `
+	StorageExitDate          *time.Time `db:"storage_exit_date" json:"storage_exit_date" schema:"storage_exit_date" `
+	StorageOpeningDate       *time.Time `db:"storage_opening_date" json:"storage_opening_date" schema:"storage_opening_date" `
+	StorageExpirationDate    *time.Time `db:"storage_expiration_date" json:"storage_expiration_date" schema:"storage_expiration_date" `
+	StorageComment           *string    `db:"storage_comment" json:"storage_comment" schema:"storage_comment" `
+	StorageReference         *string    `db:"storage_reference" json:"storage_reference" schema:"storage_reference" `
+	StorageBatchNumber       *string    `db:"storage_batch_number" json:"storage_batch_number" schema:"storage_batch_number" `
+	StorageQuantity          *float64   `db:"storage_quantity" json:"storage_quantity" schema:"storage_quantity" `
+	StorageNbItem            int        `db:"-" json:"storage_nbitem" schema:"storage_nbitem"`
+	StorageIdenticalBarecode bool       `db:"-" json:"storage_identical_barecode" schema:"storage_identical_barecode" `
+	StorageBarecode          *string    `db:"storage_barecode" json:"storage_barecode" schema:"storage_barecode" `
+	StorageQRCode            []byte     `db:"storage_qrcode" json:"storage_qrcode" schema:"storage_qrcode"`
+	StorageToDestroy         bool       `db:"storage_to_destroy" json:"storage_to_destroy" schema:"storage_to_destroy" `
+	StorageArchive           bool       `db:"storage_archive" json:"storage_archive" schema:"storage_archive" `
+	StorageConcentration     *int64     `db:"storage_concentration" json:"storage_concentration" schema:"storage_concentration" `
+	StorageNumberOfBag       *int64     `db:"storage_number_of_bag" json:"storage_number_of_bag" schema:"storage_number_of_bag" `
+	StorageNumberOfCarton    *int64     `db:"storage_number_of_carton" json:"storage_number_of_carton" schema:"storage_number_of_carton" `
 	Person                   `db:"person" json:"person" schema:"person"`
 	Product                  `db:"product" json:"product" schema:"product"`
+	Entity                   `db:"entity" json:"entity" schema:"entity"`
 	StoreLocation            `db:"store_location" json:"store_location" schema:"store_location"`
 	UnitQuantity             Unit `db:"unit_quantity" json:"unit_quantity" schema:"unit_quantity"`
 	UnitConcentration        Unit `db:"unit_concentration" json:"unit_concentration" schema:"unit_concentration"`
@@ -93,7 +49,7 @@ type Storage struct {
 func (s Storage) StorageToStringSlice() []string {
 	ret := make([]string, 0)
 
-	ret = append(ret, strconv.FormatInt(s.StorageID.Int64, 10))
+	ret = append(ret, strconv.FormatInt(*s.StorageID, 10))
 	ret = append(ret, s.Product.Name.NameLabel)
 	// ret = append(ret, s.Product.CasNumber.CasNumberLabel.String)
 	if s.Product.CasNumber.CasNumberLabel != nil {
@@ -105,13 +61,13 @@ func (s Storage) StorageToStringSlice() []string {
 
 	ret = append(ret, s.StoreLocation.StoreLocationFullPath)
 
-	ret = append(ret, strconv.FormatFloat(s.StorageQuantity.Float64, 'E', -1, 64))
+	ret = append(ret, strconv.FormatFloat(*s.StorageQuantity, 'E', -1, 64))
 
 	if s.UnitQuantity.UnitLabel != nil {
 		ret = append(ret, *s.UnitQuantity.UnitLabel)
 	}
 
-	ret = append(ret, s.StorageBarecode.String)
+	ret = append(ret, *s.StorageBarecode)
 
 	if s.Supplier.SupplierLabel != nil {
 		ret = append(ret, *s.Supplier.SupplierLabel)
@@ -119,17 +75,17 @@ func (s Storage) StorageToStringSlice() []string {
 
 	ret = append(ret, s.StorageCreationDate.Format("2006-01-02"))
 	ret = append(ret, s.StorageModificationDate.Format("2006-01-02"))
-	ret = append(ret, s.StorageEntryDate.Time.Format("2006-01-02"))
-	ret = append(ret, s.StorageExitDate.Time.Format("2006-01-02"))
-	ret = append(ret, s.StorageOpeningDate.Time.Format("2006-01-02"))
-	ret = append(ret, s.StorageExpirationDate.Time.Format("2006-01-02"))
+	ret = append(ret, s.StorageEntryDate.Format("2006-01-02"))
+	ret = append(ret, s.StorageExitDate.Format("2006-01-02"))
+	ret = append(ret, s.StorageOpeningDate.Format("2006-01-02"))
+	ret = append(ret, s.StorageExpirationDate.Format("2006-01-02"))
 
-	ret = append(ret, s.StorageComment.String)
-	ret = append(ret, s.StorageReference.String)
-	ret = append(ret, s.StorageBatchNumber.String)
+	ret = append(ret, *s.StorageComment)
+	ret = append(ret, *s.StorageReference)
+	ret = append(ret, *s.StorageBatchNumber)
 
-	ret = append(ret, strconv.FormatBool(s.StorageToDestroy.Bool))
-	ret = append(ret, strconv.FormatBool(s.StorageArchive.Bool))
+	ret = append(ret, strconv.FormatBool(s.StorageToDestroy))
+	ret = append(ret, strconv.FormatBool(s.StorageArchive))
 
 	return ret
 }

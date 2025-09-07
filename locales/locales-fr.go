@@ -452,7 +452,7 @@ var LOCALES_FR = []byte(`
 	one = "synonyme(s)"
 
 [search_pubchem_title]
-	one = "rechercher par nom (ou une partie)"
+	one = "rechercher par (une partie du) nom ou numéro CAS"
 
 [restricted]
 	one = "accès restreint"

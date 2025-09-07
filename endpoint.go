@@ -168,7 +168,7 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 
 	// router.Handle("/{item:storages}/{id}", secureChain.Then(env.AppMiddleware(env.GetStoragesHandler))).Methods("GET")
 	router.Handle("/{item:storages}", secureChain.Then(env.AppMiddleware(env.GetStoragesHandler))).Methods("GET")
-	router.Handle("/{item:storages}/{id}", secureChain.Then(env.AppMiddleware(env.GetStorageHandler))).Methods("GET")
+	router.Handle("/{item:storages}/{id}", secureChain.Then(env.AppMiddleware(env.GetStoragesHandler))).Methods("GET")
 	router.Handle("/{item:storages}/{id}", secureChain.Then(env.AppMiddleware(env.UpdateStorageHandler))).Methods("PUT")
 	router.Handle("/{item:storages}", secureChain.Then(env.AppMiddleware(env.CreateStorageHandler))).Methods("POST")
 	router.Handle("/{item:storages}/{id}", secureChain.Then(env.AppMiddleware(env.DeleteStorageHandler))).Methods("DELETE")

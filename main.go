@@ -16,10 +16,8 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/signal"
 	"path"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/coreos/go-oidc/v3/oidc"
@@ -199,14 +197,14 @@ func initDB() {
 	}
 
 	// Catch ctrl+c signal.
-	c := make(chan os.Signal)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-	go func() {
-		<-c
-		logger.Log.Info("- closing database")
-		datastore.CloseDB()
-		os.Exit(0)
-	}()
+	// c := make(chan os.Signal)
+	// signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	// go func() {
+	// 	<-c
+	// 	logger.Log.Info("- closing database")
+	// 	datastore.CloseDB()
+	// 	os.Exit(0)
+	// }()
 
 	logger.Log.Info("- creating database if needed")
 	if err = datastore.CreateDatabase(); err != nil {
@@ -328,14 +326,14 @@ func main() {
 	defer closeDB()
 
 	// Catch ctrl+c signal.
-	c := make(chan os.Signal)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-	go func() {
-		<-c
-		logger.Log.Info("- closing database")
-		closeDB()
-		os.Exit(0)
-	}()
+	// c := make(chan os.Signal)
+	// signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	// go func() {
+	// 	<-c
+	// 	logger.Log.Info("- closing database")
+	// 	closeDB()
+	// 	os.Exit(0)
+	// }()
 
 	initOIDC()
 

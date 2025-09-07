@@ -951,6 +951,7 @@ func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *mo
 	updatedp.SupplierRefs = p.SupplierRefs
 	updatedp.ProductSheet = p.ProductSheet
 	updatedp.ProductTemperature = p.ProductTemperature
+	updatedp.ProductMolecularWeight = p.ProductMolecularWeight
 	updatedp.UnitTemperature = p.UnitTemperature
 	updatedp.UnitMolecularWeight = p.UnitMolecularWeight
 

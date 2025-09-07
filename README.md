@@ -15,7 +15,7 @@ The project was started in 2015 and has moved to Github in 2017.
 
 ## Web browser compatibility
 
-Chimithèque may NOT work with Microsoft Internet Explorer/Edge.  
+Chimithèque may NOT work with Microsoft Internet Explorer/Edge.
 It was tested successfully with Firefox and Chrome/Chromium.
 
 # Links
@@ -39,7 +39,9 @@ Here is the list of the major changes from the `2.1.0` version:
 
 # Upgrading from 2.0.8
 
-Important: if you upgrade to a `2.1.*` version coming from a `2.0.*` version you *must* first perform the upgrades to the `2.0.8` version. 
+Important: if you upgrade to a `2.1.*` version coming from a `2.0.*` version you *must* first perform the upgrades to the `2.0.8` version.
+
+0. Update QRCode ?
 
 1. Backup your *entire* installation folder.
 
@@ -106,7 +108,7 @@ docker compose up -d
 
 1. Connect to the OIDC server at <https://your_chimitheque_url/keycloak> with the username `admin@chimitheque.fr` and the value of your `KEYCLOAK_ADMIN_PASSWORD` for password.
 
-2. On the top left corner drop-down list choose the `chimitheque` realm. Then click on `Users` on the left column. 
+2. On the top left corner drop-down list choose the `chimitheque` realm. Then click on `Users` on the left column.
 
 3. Click the `Create new user` button and enter the following informations:
 ```
@@ -195,20 +197,20 @@ Subscribe to the mailing list: <https://groupes.renater.fr/sympa/subscribe/chimi
 
 For chemical and biological reagents, there is now the possibility to class products in different categories in order to make easier product research.
 
-This solution is available when creating a new product card with a drop down menu and suggest different preregistered product categories. 
-It is possible to create a new category if concerned product does not feet with already existing suggestions. This solution allows in main menu, with advanced research, to show only products called with a specific category, and thus have a global vision on a specific class of products. 
+This solution is available when creating a new product card with a drop down menu and suggest different preregistered product categories.
+It is possible to create a new category if concerned product does not feet with already existing suggestions. This solution allows in main menu, with advanced research, to show only products called with a specific category, and thus have a global vision on a specific class of products.
 
-This solution is completed with the possibility to apply tags on chemical or biological reagents, also available in product sheet section. This allows to associate a product with various fields, methods, protocols, projects, or application domains. 
-Like previously, preregistered tags are proposed in a scrolling menu with the possibility to create new tags. For example, a stem cell culture medium can be associated with Stem Cells, Cell Culture or Culture Medium tags. This function may reveal particularly useful to rapidly show products associated with a specific activity, projects or method in the advanced research of Chimithéque main menu. Moreover, it is a way to personalize and adapt product research according to a lab or a structure specific needs or habits. 
+This solution is completed with the possibility to apply tags on chemical or biological reagents, also available in product sheet section. This allows to associate a product with various fields, methods, protocols, projects, or application domains.
+Like previously, preregistered tags are proposed in a scrolling menu with the possibility to create new tags. For example, a stem cell culture medium can be associated with Stem Cells, Cell Culture or Culture Medium tags. This function may reveal particularly useful to rapidly show products associated with a specific activity, projects or method in the advanced research of Chimithéque main menu. Moreover, it is a way to personalize and adapt product research according to a lab or a structure specific needs or habits.
 
 # Use of barecode and QRCode
 
-A new option is now available for creating an association between a product and a specific label: the QRCode. 
-It is different from the bare-code, because it is readable by every device which have a camera and permits to access directly to the page with the product's storage. 
-By default, when a product is stocked, the software create a random bare-code and a new QRcode. 
-However, if a product need to be sampled, you can check the option "identical bare-code" when the number of samples is required, and it will generate the same bare-code for each new sample. 
-The major advantage is that you can scan any QRcode of these strictly identical products and it will display the page of the storage with all the samples. 
-Then, any of these samples could be borrowed or archived, for example. 
-For instance, for conservation conditions, it could be recommended to limit freeze-thaw cycles. 
-To avoid that, the product could be sampled in different dishes with the same volume or mass. 
-To store them on Chimitheque, the "identical bare-code" option will permit to create QRcodes linked with all the samples, so that any of them could be destocked when one of them is used. 
+A new option is now available for creating an association between a product and a specific label: the QRCode.
+It is different from the bare-code, because it is readable by every device which have a camera and permits to access directly to the page with the product's storage.
+By default, when a product is stocked, the software create a random bare-code and a new QRcode.
+However, if a product need to be sampled, you can check the option "identical bare-code" when the number of samples is required, and it will generate the same bare-code for each new sample.
+The major advantage is that you can scan any QRcode of these strictly identical products and it will display the page of the storage with all the samples.
+Then, any of these samples could be borrowed or archived, for example.
+For instance, for conservation conditions, it could be recommended to limit freeze-thaw cycles.
+To avoid that, the product could be sampled in different dishes with the same volume or mass.
+To store them on Chimitheque, the "identical bare-code" option will permit to create QRcodes linked with all the samples, so that any of them could be destocked when one of them is used.

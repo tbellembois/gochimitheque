@@ -154,10 +154,9 @@ func MatchStorelocationFuncWrapper(datastore datastores.Datastore) func(args ...
 // Return true if the person with personID and storage with itemID are both in entity with entityID.
 func matchStorage(datastore datastores.Datastore, personID string, itemID string, entityID string) bool {
 	var (
-		pid, iid int
-		err      error
-		m        bool
-		ent      models.Entity
+		pid, iid, person_id int
+		err                 error
+		m                   bool
 	)
 
 	if pid, err = strconv.Atoi(personID); err != nil {
@@ -170,19 +169,28 @@ func matchStorage(datastore datastores.Datastore, personID string, itemID string
 		return false
 	}
 
-	if ent, err = datastore.GetStorageEntity(iid); err != nil {
-		logger.Log.Error(fmt.Sprintf("matchStorage: %v %s", ent, err.Error()))
+	if person_id, err = strconv.Atoi(personID); err != nil {
+		logger.Log.Error("matchStorage - person_id: " + err.Error())
 		return false
 	}
 
-	if strconv.Itoa(ent.EntityID) != entityID {
-		return false
+	var storage *models.Storage
+
+	// getting the storage
+	var (
+		jsonRawMessage json.RawMessage
+	)
+	if jsonRawMessage, err = zmqclient.DBGetStorages("http://localhost/"+strconv.Itoa(iid), person_id); err != nil {
+		logger.Log.Error(fmt.Sprintf("zmqclient.DBGetStorages: %s", err.Error()))
+	}
+
+	if storage, err = zmqclient.ConvertDBJSONToStorage(jsonRawMessage); err != nil {
+		logger.Log.Error(fmt.Sprintf("ConvertDBJSONToStorage: %s", err.Error()))
 	}
 
 	// Getting the person.
 	var (
-		person         *models.Person
-		jsonRawMessage json.RawMessage
+		person *models.Person
 	)
 
 	if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/"+strconv.Itoa(pid), pid); err != nil {
@@ -200,7 +208,7 @@ func matchStorage(datastore datastores.Datastore, personID string, itemID string
 
 	m = false
 	for _, entity := range person.Entities {
-		if entity.EntityID == ent.EntityID {
+		if entity.EntityID == storage.EntityID {
 			m = true
 			break
 		}

@@ -353,7 +353,7 @@ func (db *SQLiteDataStore) GetStorages(f zmqclient.RequestFilter, person_id int)
 		"name":                 f.Name,
 		"cas_number":           f.CasNumber,
 		"empirical_formula":    f.EmpiricalFormula,
-		"storage_barecode":     f.StorageBarecode,
+		"storage_barecode":     "%" + f.StorageBarecode + "%",
 		"storage_batch_number": f.StorageBatchNumber,
 		"custom_name_part_of":  "%" + f.CustomNamePartOf + "%",
 		"signal_word":          f.SignalWord,
@@ -513,106 +513,6 @@ func (db *SQLiteDataStore) GetOtherStorages(f zmqclient.RequestFilter, person_id
 	}
 
 	return entities, count, nil
-}
-
-// GetStorage returns the storage with id "id".
-func (db *SQLiteDataStore) GetStorage(id int) (models.Storage, error) {
-	var (
-		storage models.Storage
-		sqlr    string
-		err     error
-	)
-
-	logger.Log.WithFields(logrus.Fields{"id": id}).Debug("GetStorage")
-
-	sqlr = `SELECT storage.storage_id,
-	storage.storage_entry_date,
-	storage.storage_exit_date,
-	storage.storage_opening_date,
-	storage.storage_expiration_date,
-	storage.storage_reference,
-	storage.storage_batch_number,
-	storage.storage_to_destroy,
-	storage.storage_creation_date,
-	storage.storage_modification_date,
-	storage.storage_quantity,
-	storage.storage_barecode,
-	storage.storage_qrcode,
-	storage.storage_comment,
-	storage.storage_archive,
-	storage.storage_number_of_carton,
-	storage.storage_number_of_bag,
-	uq.unit_id AS "unit_quantity.unit_id",
-	uq.unit_label AS "unit_quantity.unit_label",
-	uc.unit_id AS "unit_concentration.unit_id",
-	uc.unit_label AS "unit_concentration.unit_label",
-	supplier.supplier_id AS "supplier.supplier_id",
-	supplier.supplier_label AS "supplier.supplier_label",
-	person.person_id AS "person.person_id",
-	person.person_email AS "person.person_email",
-	name.name_id AS "product.name.name_id",
-	name.name_label AS "product.name.name_label",
-	product.product_id AS "product.product_id",
-	product.product_number_per_carton AS "product.product_number_per_carton",
-	producer_ref.producer_ref_id AS "product.producer_ref.producer_ref_id",
-	cas_number.cas_number_id AS "product.cas_number.cas_number_id",
-	cas_number.cas_number_label AS "product.cas_number.cas_number_label",
-	store_location.store_location_id AS "store_location.store_location_id",
-	store_location.store_location_name AS "store_location.store_location_name",
-	store_location.store_location_color AS "store_location.store_location_color",
-	store_location.store_location_full_path AS "store_location.store_location_full_path",
-	entity.entity_id AS "store_location.entity.entity_id"
-	FROM storage
-	JOIN store_location ON storage.store_location = store_location.store_location_id
-	JOIN entity ON store_location.entity = entity.entity_id
-	LEFT JOIN unit uq ON storage.unit_quantity = uq.unit_id
-	LEFT JOIN unit uc ON storage.unit_concentration = uc.unit_id
-	LEFT JOIN supplier ON storage.supplier = supplier.supplier_id
-	JOIN person ON storage.person = person.person_id
-	JOIN product ON storage.product = product.product_id
-	LEFT JOIN producer_ref ON product.producer_ref = producer_ref.producer_ref_id
-	LEFT JOIN cas_number ON product.cas_number = cas_number.cas_number_id
-	JOIN name ON product.name = name.name_id
-	WHERE storage.storage_id = ?`
-	if err = db.Get(&storage, sqlr, id); err != nil {
-		return models.Storage{}, err
-	}
-
-	if storage.Product.ProductNumberPerCarton != nil {
-		storage.Product.ProductType = "cons"
-	} else if storage.Product.ProducerRef.ProducerRefID != nil {
-		storage.Product.ProductType = "bio"
-	} else {
-		storage.Product.ProductType = "chem"
-	}
-
-	logger.Log.WithFields(logrus.Fields{"ID": id, "storage": storage}).Debug("GetStorage")
-
-	return storage, nil
-}
-
-// GetStorageEntity returns the entity of the storage with id "id".
-func (db *SQLiteDataStore) GetStorageEntity(id int) (models.Entity, error) {
-	var (
-		entity models.Entity
-		sqlr   string
-		err    error
-	)
-
-	sqlr = `SELECT
-	entity.entity_id AS "entity_id",
-	entity.entity_name AS "entity_name"
-	FROM storage
-	JOIN store_location ON storage.store_location = store_location.store_location_id
-	JOIN entity ON store_location.entity = entity.entity_id
-	WHERE storage.storage_id = ?`
-	if err = db.Get(&entity, sqlr, id); err != nil {
-		return models.Entity{}, err
-	}
-
-	logger.Log.WithFields(logrus.Fields{"ID": id, "entity": entity}).Debug("GetStorageEntity")
-
-	return entity, nil
 }
 
 // DeleteStorage deletes the storages with the given id.
@@ -782,7 +682,7 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s models.Storage, itemNumber int,
 
 	// Generating barecode if empty.
 	if !update {
-		if !(s.StorageBarecode.Valid) || s.StorageBarecode.String == "" {
+		if s.StorageBarecode == nil || *s.StorageBarecode == "" {
 			//
 			// Getting the barecode prefix from the store_location name.
 			//
@@ -792,6 +692,8 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s models.Storage, itemNumber int,
 			matches := prefixRegex.FindAllStringSubmatch(s.StoreLocationName.String, -1)
 			// Building a map of matches.
 			matchesMap := map[string]string{}
+
+			logger.Log.WithFields(logrus.Fields{"s.StoreLocationName.String": s.StoreLocationName.String, "matches": matches}).Debug("CreateStorage")
 
 			if len(matches) != 0 {
 				for i, j := range matches[0] {
@@ -865,16 +767,15 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s models.Storage, itemNumber int,
 				count++
 			}
 
-			if (!s.StorageIdenticalBarecode.Valid || !s.StorageIdenticalBarecode.Bool) || (s.StorageIdenticalBarecode.Valid && s.StorageIdenticalBarecode.Bool && itemNumber == 1) {
+			if !s.StorageIdenticalBarecode || (s.StorageIdenticalBarecode && itemNumber == 1) {
 				newMinor++
 			}
 
 			minor = strconv.Itoa(newMinor)
 
-			s.StorageBarecode.String = prefix + major + "." + minor
-			s.StorageBarecode.Valid = true
+			*s.StorageBarecode = prefix + major + "." + minor
 
-			logger.Log.WithFields(logrus.Fields{"s.StorageBarecode.String": s.StorageBarecode.String}).Debug("CreateStorage")
+			logger.Log.WithFields(logrus.Fields{"s.StorageBarecode.String": s.StorageBarecode}).Debug("CreateStorage")
 		}
 	}
 
@@ -898,20 +799,20 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s models.Storage, itemNumber int,
 
 	// finally updating the storage
 	insertCols := goqu.Record{}
-	if s.StorageComment.Valid {
-		insertCols["storage_comment"] = s.StorageComment.String
+	if s.StorageComment != nil {
+		insertCols["storage_comment"] = s.StorageComment
 	} else {
 		insertCols["storage_comment"] = nil
 	}
 
-	if s.StorageQuantity.Valid {
-		insertCols["storage_quantity"] = s.StorageQuantity.Float64
+	if s.StorageQuantity != nil {
+		insertCols["storage_quantity"] = s.StorageQuantity
 	} else {
 		insertCols["storage_quantity"] = nil
 	}
 
-	if s.StorageBarecode.Valid {
-		insertCols["storage_barecode"] = s.StorageBarecode.String
+	if s.StorageBarecode != nil {
+		insertCols["storage_barecode"] = s.StorageBarecode
 	} else {
 		insertCols["storage_barecode"] = nil
 	}
@@ -928,62 +829,62 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s models.Storage, itemNumber int,
 		insertCols["supplier"] = nil
 	}
 
-	if s.StorageEntryDate.Valid {
-		insertCols["storage_entry_date"] = s.StorageEntryDate.Time
+	if s.StorageEntryDate != nil {
+		insertCols["storage_entry_date"] = s.StorageEntryDate.Unix()
 	} else {
 		insertCols["storage_entry_date"] = nil
 	}
 
-	if s.StorageExitDate.Valid {
-		insertCols["storage_exit_date"] = s.StorageExitDate.Time
+	if s.StorageExitDate != nil {
+		insertCols["storage_exit_date"] = s.StorageExitDate.Unix()
 	} else {
 		insertCols["storage_exit_date"] = nil
 	}
 
-	if s.StorageOpeningDate.Valid {
-		insertCols["storage_opening_date"] = s.StorageOpeningDate.Time
+	if s.StorageOpeningDate != nil {
+		insertCols["storage_opening_date"] = s.StorageOpeningDate.Unix()
 	} else {
 		insertCols["storage_opening_date"] = nil
 	}
 
-	if s.StorageExpirationDate.Valid {
-		insertCols["storage_expiration_date"] = s.StorageExpirationDate.Time
+	if s.StorageExpirationDate != nil {
+		insertCols["storage_expiration_date"] = s.StorageExpirationDate.Unix()
 	} else {
 		insertCols["storage_expiration_date"] = nil
 	}
 
-	if s.StorageReference.Valid {
-		insertCols["storage_reference"] = s.StorageReference.String
+	if s.StorageReference != nil {
+		insertCols["storage_reference"] = s.StorageReference
 	} else {
 		insertCols["storage_reference"] = nil
 	}
 
-	if s.StorageBatchNumber.Valid {
-		insertCols["storage_batch_number"] = s.StorageBatchNumber.String
+	if s.StorageBatchNumber != nil {
+		insertCols["storage_batch_number"] = s.StorageBatchNumber
 	} else {
 		insertCols["storage_batch_number"] = nil
 	}
 
-	if s.StorageToDestroy.Valid {
-		insertCols["storage_to_destroy"] = s.StorageToDestroy.Bool
+	if s.StorageToDestroy {
+		insertCols["storage_to_destroy"] = s.StorageToDestroy
 	} else {
-		insertCols["storage_to_destroy"] = nil
+		insertCols["storage_to_destroy"] = false
 	}
 
-	if s.StorageConcentration.Valid {
-		insertCols["storage_concentration"] = int(s.StorageConcentration.Int64)
+	if s.StorageConcentration != nil {
+		insertCols["storage_concentration"] = int(*s.StorageConcentration)
 	} else {
 		insertCols["storage_concentration"] = nil
 	}
 
-	if s.StorageNumberOfBag.Valid {
-		insertCols["storage_number_of_bag"] = int(s.StorageNumberOfBag.Int64)
+	if s.StorageNumberOfBag != nil {
+		insertCols["storage_number_of_bag"] = int(*s.StorageNumberOfBag)
 	} else {
 		insertCols["storage_number_of_bag"] = nil
 	}
 
-	if s.StorageNumberOfCarton.Valid {
-		insertCols["storage_number_of_carton"] = int(s.StorageNumberOfCarton.Int64)
+	if s.StorageNumberOfCarton != nil {
+		insertCols["storage_number_of_carton"] = int(*s.StorageNumberOfCarton)
 	} else {
 		insertCols["storage_number_of_carton"] = nil
 	}
@@ -1043,7 +944,8 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s models.Storage, itemNumber int,
 		return
 	}
 
-	s.StorageID = sql.NullInt64{Valid: true, Int64: lastInsertID}
+	var storage_id int64 = lastInsertID
+	s.StorageID = &storage_id
 
 	logger.Log.WithFields(logrus.Fields{"s": s}).Debug("CreateUpdateStorage")
 
@@ -1075,8 +977,8 @@ func (db *SQLiteDataStore) UpdateAllQRCodes() error {
 
 	for _, s := range sts {
 		// generating qrcode
-		newqrcode := strconv.FormatInt(s.StorageID.Int64, 10)
-		logger.Log.Debug("  " + strconv.FormatInt(s.StorageID.Int64, 10) + " " + newqrcode)
+		newqrcode := strconv.FormatInt(*s.StorageID, 10)
+		logger.Log.Debug("  " + strconv.FormatInt(*s.StorageID, 10) + " " + newqrcode)
 
 		if png, err = qrcode.Encode(newqrcode, qrcode.Medium, 512); err != nil {
 			return err

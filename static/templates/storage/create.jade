@@ -8,7 +8,7 @@ block CONTENT
 
     .card.mx-auto.w-75.mt-sm-2
         .card-body
-    
+
             button#save.btn.btn-primary.float-right(type='button', onclick='Storage_saveStorage()')
                 span.mdi.mdi-content-save.mdi-24px.iconlabel
                     = T("save", 1)
@@ -40,7 +40,7 @@ block CONTENT
                         = T("storage_one_number_required", 1)
                 .form-group.row.consu.collapse
                     .col-sm-4
-                        +inputnumber(name="storage_quantity", label="storage_quantity_title", step="any", min="0", max="10000000")
+                        +inputnumber(name="storage_number_of_unit", label="storage_number_of_unit", step="1", min="0", max="10000000")
                     .col-sm-4
                         +inputnumber(name="storage_number_of_bag", label="storage_number_of_bag", step="1", min="0", max="10000000", value="", help=T("storage_number_of_bag_comment", 1))
                     .col-sm-4
@@ -53,7 +53,7 @@ block CONTENT
                     .col-sm-6
                         +inputnumber(name="storage_quantity", label="storage_quantity_title", step="any", min="0", max="10000000")
                     .col-sm-6
-                        +inputselect(name="unit_quantity", label="unit_label_title") 
+                        +inputselect(name="unit_quantity", label="unit_label_title")
                 .form-group.row
                     .col-sm-6
                         +inputtext(name="storage_batch_number", label="storage_batch_number_title", htmltype="text", placeholder="", help="", required=true)
@@ -84,7 +84,7 @@ block CONTENT
                         +inputtext(name="storage_barecode", label="storage_barecode_title", htmltype="text", placeholder="", help=T("storage_create_barecode_comment", 1))
                 .form-group.row
                     .col-sm-12
-                        +inputtext(name="storage_comment", label="storage_comment_title")  
+                        +inputtext(name="storage_comment", label="storage_comment_title")
                 .form-group.row
                     .col-sm-12
                         +checkbox(name="storage_to_destroy", label="storage_to_destroy_title")

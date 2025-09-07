@@ -434,50 +434,6 @@ func (db *SQLiteDataStore) GetAdmins() ([]models.Person, error) {
 	return people, nil
 }
 
-// HasPersonReadRestrictedProductPermission returns true if the person
-// can read restricted products.
-func (db *SQLiteDataStore) HasPersonReadRestrictedProductPermission(id int) (bool, error) {
-	var (
-		err   error
-		sqlr  string
-		args  []interface{}
-		count int
-	)
-
-	dialect := goqu.Dialect("sqlite3")
-	tablePermission := goqu.T("permission")
-
-	sQuery := dialect.From(tablePermission).Select(
-		goqu.COUNT("*"),
-	).Where(
-		goqu.And(
-			goqu.I("permission.person").Eq(id),
-			goqu.Or(
-				goqu.And(
-					goqu.I("permission.permission_name").Eq("all"),
-					goqu.I("permission.permission_item").Eq("all"),
-					goqu.I("permission_entity").Eq(-1),
-				),
-				goqu.And(
-					goqu.I("permission.permission_name").Neq("n"),
-					goqu.I("permission.permission_item").Eq("rproducts"),
-				),
-			),
-		),
-	)
-
-	if sqlr, args, err = sQuery.ToSQL(); err != nil {
-		logger.Log.Error(err)
-		return false, err
-	}
-
-	if err = db.Get(&count, sqlr, args...); err != nil {
-		return false, err
-	}
-
-	return count != 0, nil
-}
-
 // IsPersonAdmin returns true is the person is an admin.
 func (db *SQLiteDataStore) IsPersonAdmin(id int) (bool, error) {
 	var (

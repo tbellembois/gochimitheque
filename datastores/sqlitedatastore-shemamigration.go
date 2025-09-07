@@ -1280,11 +1280,7 @@ FROM storage;
 DROP TABLE storage;
 ALTER TABLE storage_new RENAME TO storage;
 
--- CREATE TRIGGER insert_storage_modification_date_Trigger
--- AFTER INSERT ON storage
--- BEGIN
--- UPDATE storage SET storage_modification_date = current_timestamp WHERE storage_id = NEW.storage_id;
--- END;
+UPDATE storage SET storage_to_destroy = 0 WHERE storage_to_destroy is NULL;
 
 CREATE TABLE store_location_new (
 	store_location_id	INTEGER,
