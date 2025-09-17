@@ -163,7 +163,6 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 	router.Handle("/vc/{item:storages}", commonChain.Then(env.AppMiddleware(env.VCreateStorageHandler))).Methods("GET")
 
 	// api
-	router.Handle("/{item:storages}/others", secureChain.Then(env.AppMiddleware(env.GetOtherStoragesHandler))).Methods("GET")
 	router.Handle("/{item:storages}/units", secureChain.Then(env.AppMiddleware(env.GetStoragesUnitsHandler))).Methods("GET")
 
 	// router.Handle("/{item:storages}/{id}", secureChain.Then(env.AppMiddleware(env.GetStoragesHandler))).Methods("GET")

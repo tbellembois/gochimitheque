@@ -15,7 +15,7 @@ type AppError struct {
 func (e *AppError) Error() string {
 
 	if e == nil {
-		return fmt.Sprintf("Unexpected nil error.")
+		return "Unexpected nil error."
 	}
 
 	originalError := ""

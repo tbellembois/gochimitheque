@@ -60,7 +60,8 @@ type Product struct {
 	// storage count in the logged user entity(ies)
 	ProductSC int `db:"product_sc" json:"product_sc" schema:"product_sc"` // not in db but sqlx requires the "db" entry
 	// storage barecode concatenation
-	ProductSL *string `db:"product_sl" json:"product_sl" schema:"product_sl" ` // not in db but sqlx requires the "db" entry
+	ProductSL           *string   `db:"product_sl" json:"product_sl" schema:"product_sl" ` // not in db but sqlx requires the "db" entry
+	ProductAvailability *[]Entity `db:"product_availability" json:"product_availability" schema:"product_availability" `
 	// hazard statement CMR concatenation
 	HazardStatementCMR *string `db:"product_hs_cmr" json:"product_hs_cmr" schema:"product_hs_cmr" ` // not in db but sqlx requires the "db" entry
 }

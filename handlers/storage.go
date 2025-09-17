@@ -143,55 +143,6 @@ func (env *Env) GetStoragesUnitsHandler(w http.ResponseWriter, r *http.Request) 
 
 }
 
-// GetOtherStoragesHandler returns a json list of the storages matching the search criteria
-// in other entities with no storage details.
-func (env *Env) GetOtherStoragesHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	logger.Log.Debug("GetOtherStoragesHandler")
-
-	var (
-		err      error
-		filter   zmqclient.RequestFilter
-		exportfn string
-	)
-
-	c := request.ContainerFromRequestContext(r)
-
-	// init db request parameters
-	if filter, err = zmqclient.RequestFilterFromRawString("http://localhost/?" + r.URL.RawQuery); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.Request_filter",
-		}
-	}
-
-	entities, count, err := env.DB.GetOtherStorages(filter, c.PersonID)
-	if err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error getting the storages",
-		}
-	}
-
-	type resp struct {
-		Rows     []models.Entity `json:"rows"`
-		Total    int             `json:"total"`
-		ExportFN string          `json:"exportfn"`
-	}
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	if err = json.NewEncoder(w).Encode(resp{Rows: entities, Total: count, ExportFN: exportfn}); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
-
-	return nil
-}
-
 // GetStoragesHandler returns a json list of the storages matching the search criteria.
 func (env *Env) GetStoragesHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	logger.Log.Debug("GetStoragesHandler")

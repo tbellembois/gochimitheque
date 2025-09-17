@@ -5,12 +5,12 @@ block CONTENT
         Login(c ViewContainer)
     header
         .row
-            div.card.mx-auto.text-center(style="width: 18rem; border: 1px dotted black; padding: 5px;")
+            div.card.mx-auto.text-center(style="width: 18rem; border: none; padding: 5px;")
                 img(src=c.AppURL + c.AppPath + "static/img/openid.svg", alt="openid", width="100px")
-                .card-body 
+                .card-body
                     h5.card-title
                         //- = T("login_openid", 1 )
-                    p.card-text 
+                    p.card-text
                         //- = T("login_openid_text", 1 )
                     a(href=c.AppURL + c.AppPath + "get-token" class="mdi mdi-location-enter mdi-24px iconlabel")
                         = T("login_openid_link", 1 )

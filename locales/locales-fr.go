@@ -566,6 +566,8 @@ var LOCALES_FR = []byte(`
 	one = "produit créé"
 [product_flammable]
 	one = "inflammable"
+[product_availability_title]
+	one = "disponibilité"
 
 [person_create_title]
 	one = "créer une personne"

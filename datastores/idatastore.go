@@ -3,7 +3,6 @@ package datastores
 import (
 	"github.com/jmoiron/sqlx"
 	"github.com/tbellembois/gochimitheque/models"
-	"github.com/tbellembois/gochimitheque/zmqclient"
 )
 
 // Datastore is an interface to be implemented
@@ -23,8 +22,6 @@ type Datastore interface {
 	DeleteProduct(id int) error
 	CreateUpdateProduct(p models.Product, update bool) (int64, error)
 
-	GetStorages(zmqclient.RequestFilter, int) ([]models.Storage, int, error)
-	GetOtherStorages(zmqclient.RequestFilter, int) ([]models.Entity, int, error)
 	DeleteStorage(id int) error
 	ArchiveStorage(id int) error
 	RestoreStorage(id int) error
