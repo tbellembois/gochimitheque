@@ -2,7 +2,7 @@ package models
 
 // EmpiricalFormula is a product empirical formula.
 type EmpiricalFormula struct {
-	MatchExactSearch      bool    `db:"match_exact_case" json:"match_exact_case"` // not stored in db but db:"c" set for sqlx
+	MatchExactSearch      bool    `db:"match_exact_search" json:"match_exact_search"` // not stored in db but db:"c" set for sqlx
 	EmpiricalFormulaID    *int64  `db:"empirical_formula_id" json:"empirical_formula_id" schema:"empirical_formula_id" `
 	EmpiricalFormulaLabel *string `db:"empirical_formula_label" json:"empirical_formula_label" schema:"empirical_formula_label" `
 }

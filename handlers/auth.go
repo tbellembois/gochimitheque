@@ -103,7 +103,7 @@ func (env *Env) UserInfoHandler(w http.ResponseWriter, r *http.Request) *models.
 
 	// getting auth person informations
 	userinfo := models.Person{
-		PersonID:    container.PersonID,
+		PersonID:    &container.PersonID,
 		PersonEmail: container.PersonEmail,
 	}
 

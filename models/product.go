@@ -11,7 +11,7 @@ import (
 
 // Product is a chemical product card.
 type Product struct {
-	ProductID              int     `db:"product_id" json:"product_id" schema:"product_id"`
+	ProductID              *int64  `db:"product_id" json:"product_id" schema:"product_id"`
 	ProductInchi           *string `db:"product_inchi" json:"product_inchi" schema:"product_inchi"`
 	ProductInchikey        *string `db:"product_inchikey" json:"product_inchikey" schema:"product_inchikey"`
 	ProductCanonicalSmiles *string `db:"product_canonical_smiles" json:"product_canonical_smiles" schema:"product_canonical_smiles"`
@@ -30,18 +30,18 @@ type Product struct {
 	ProductNumberPerCarton *int64   `db:"product_number_per_carton" json:"product_number_per_carton" schema:"product_number_per_carton" `
 	ProductNumberPerBag    *int64   `db:"product_number_per_bag" json:"product_number_per_bag" schema:"product_number_per_bag" `
 	ProductType            string   `db:"-" json:"product_type" schema:"product_type"`
-	EmpiricalFormula       `db:"empirical_formula" json:"empirical_formula" schema:"empirical_formula"`
-	LinearFormula          `db:"linear_formula" json:"linear_formula" schema:"linear_formula"`
-	PhysicalState          `db:"physical_state" json:"physical_state" schema:"physical_state"`
-	SignalWord             `db:"signal_word" json:"signal_word" schema:"signal_word"`
+	*EmpiricalFormula      `db:"empirical_formula" json:"empirical_formula" schema:"empirical_formula"`
+	*LinearFormula         `db:"linear_formula" json:"linear_formula" schema:"linear_formula"`
+	*PhysicalState         `db:"physical_state" json:"physical_state" schema:"physical_state"`
+	*SignalWord            `db:"signal_word" json:"signal_word" schema:"signal_word"`
 	Person                 `db:"person" json:"person" schema:"person"`
-	CasNumber              `db:"cas_number" json:"cas_number" schema:"cas_number"`
-	CeNumber               `db:"ce_number" json:"ce_number" schema:"ce_number"`
-	Name                   `db:"name" json:"name" schema:"name"`
-	ProducerRef            `db:"producer_ref" json:"producer_ref" schema:"producer_ref"`
-	Category               `db:"category" json:"category" schema:"category"`
-	UnitTemperature        Unit `db:"unit_temperature" json:"unit_temperature" schema:"unit_temperature"`
-	UnitMolecularWeight    Unit `db:"unit_molecular_weight" json:"unit_molecular_weight" schema:"unit_molecular_weight"`
+	*CasNumber             `db:"cas_number" json:"cas_number" schema:"cas_number"`
+	*CeNumber              `db:"ce_number" json:"ce_number" schema:"ce_number"`
+	*Name                  `db:"name" json:"name" schema:"name"`
+	*ProducerRef           `db:"producer_ref" json:"producer_ref" schema:"producer_ref"`
+	*Category              `db:"category" json:"category" schema:"category"`
+	UnitTemperature        *Unit `db:"unit_temperature" json:"unit_temperature" schema:"unit_temperature"`
+	UnitMolecularWeight    *Unit `db:"unit_molecular_weight" json:"unit_molecular_weight" schema:"unit_molecular_weight"`
 
 	ClassOfCompound         []ClassOfCompound        `db:"-" schema:"classes_of_compound" json:"classes_of_compound"`
 	Synonyms                []Name                   `db:"-" schema:"synonyms" json:"synonyms"`
@@ -54,11 +54,11 @@ type Product struct {
 	ProductHasBookmark bool `db:"product_has_bookmark" json:"product_has_bookmark" schema:"product_has_bookmark"` // not in db but sqlx requires the "db" entry
 
 	// archived storage count in the logged user entity(ies)
-	ProductASC int `db:"product_asc" json:"product_asc" schema:"product_asc"` // not in db but sqlx requires the "db" entry
+	ProductASC *int `db:"product_asc" json:"product_asc" schema:"product_asc"` // not in db but sqlx requires the "db" entry
 	// total storage count
-	ProductTSC int `db:"product_tsc" json:"product_tsc" schema:"product_tsc"` // not in db but sqlx requires the "db" entry
+	ProductTSC *int `db:"product_tsc" json:"product_tsc" schema:"product_tsc"` // not in db but sqlx requires the "db" entry
 	// storage count in the logged user entity(ies)
-	ProductSC int `db:"product_sc" json:"product_sc" schema:"product_sc"` // not in db but sqlx requires the "db" entry
+	ProductSC *int `db:"product_sc" json:"product_sc" schema:"product_sc"` // not in db but sqlx requires the "db" entry
 	// storage barecode concatenation
 	ProductSL           *string   `db:"product_sl" json:"product_sl" schema:"product_sl" ` // not in db but sqlx requires the "db" entry
 	ProductAvailability *[]Entity `db:"product_availability" json:"product_availability" schema:"product_availability" `
@@ -69,7 +69,11 @@ type Product struct {
 func (p Product) ProductToStringSlice() []string {
 	ret := make([]string, 0)
 
-	ret = append(ret, strconv.Itoa(p.ProductID))
+	if p.ProductID != nil {
+		ret = append(ret, strconv.Itoa(int(*p.ProductID)))
+	} else {
+		ret = append(ret, "")
+	}
 
 	ret = append(ret, p.NameLabel)
 	syn := ""

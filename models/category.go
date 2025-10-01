@@ -2,7 +2,7 @@ package models
 
 // Category is a product category.
 type Category struct {
-	MatchExactSearch bool    `db:"match_exact_case" json:"match_exact_case"` // not stored in db but db:"c" set for sqlx
+	MatchExactSearch bool    `db:"match_exact_search" json:"match_exact_search"` // not stored in db but db:"c" set for sqlx
 	CategoryID       *int64  `db:"category_id" json:"category_id" schema:"category_id" `
 	CategoryLabel    *string `db:"category_label" json:"category_label" schema:"category_label" `
 }

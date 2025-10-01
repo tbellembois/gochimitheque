@@ -22,7 +22,7 @@ type DBGetStoragesErr struct {
 	Err string
 }
 
-func DBGetStorages(requestRawString string, person_id int) (json.RawMessage, error) {
+func DBGetStorages(requestRawString string, person_id int64) (json.RawMessage, error) {
 	var (
 		s   *zmq.Socket
 		err error

@@ -2,7 +2,7 @@ package models
 
 // Entity represent a department, a laboratory...
 type Entity struct {
-	EntityID          int       `db:"entity_id" json:"entity_id" schema:"entity_id"`
+	EntityID          *int64    `db:"entity_id" json:"entity_id" schema:"entity_id"`
 	EntityName        string    `db:"entity_name" json:"entity_name" schema:"entity_name"`
 	EntityDescription string    `db:"entity_description" json:"entity_description" schema:"entity_description"`
 	Managers          []*Person `db:"-" json:"managers" schema:"managers"`

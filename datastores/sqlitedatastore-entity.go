@@ -104,7 +104,7 @@ func (db *SQLiteDataStore) CreateEntity(e models.Entity) (lastInsertID int64, er
 		return
 	}
 
-	e.EntityID = int(lastInsertID)
+	e.EntityID = &lastInsertID
 
 	// Setting up the managers.
 	for _, m := range e.Managers {
@@ -142,7 +142,7 @@ func (db *SQLiteDataStore) CreateEntity(e models.Entity) (lastInsertID int64, er
 		// 1. lazily deleting former permissions
 		if sqlr, args, err = dialect.From(goqu.T("permission")).Where(
 			goqu.Ex{
-				"person":               m.PersonID,
+				"person":            m.PersonID,
 				"permission_entity": e.EntityID,
 			},
 		).Delete().ToSQL(); err != nil {
@@ -156,9 +156,9 @@ func (db *SQLiteDataStore) CreateEntity(e models.Entity) (lastInsertID int64, er
 		// 2. inserting new permissions
 		if sqlr, args, err = dialect.From(goqu.T("permission")).Prepared(true).Insert().Rows(
 			goqu.Record{
-				"person":               m.PersonID,
-				"permission_name": "all",
-				"permission_item": "all",
+				"person":            m.PersonID,
+				"permission_name":   "all",
+				"permission_item":   "all",
 				"permission_entity": e.EntityID,
 			},
 		).ToSQL(); err != nil {
@@ -171,9 +171,9 @@ func (db *SQLiteDataStore) CreateEntity(e models.Entity) (lastInsertID int64, er
 
 		if sqlr, args, err = dialect.From(goqu.T("permission")).Insert().Rows(
 			goqu.Record{
-				"person":               m.PersonID,
-				"permission_name": "w",
-				"permission_item": "products",
+				"person":            m.PersonID,
+				"permission_name":   "w",
+				"permission_item":   "products",
 				"permission_entity": e.EntityID,
 			},
 		).OnConflict(goqu.DoNothing()).ToSQL(); err != nil {
@@ -188,9 +188,9 @@ func (db *SQLiteDataStore) CreateEntity(e models.Entity) (lastInsertID int64, er
 
 		if sqlr, args, err = dialect.From(goqu.T("permission")).Insert().Rows(
 			goqu.Record{
-				"person":               m.PersonID,
-				"permission_name": "w",
-				"permission_item": "rproducts",
+				"person":            m.PersonID,
+				"permission_name":   "w",
+				"permission_item":   "rproducts",
 				"permission_entity": e.EntityID,
 			},
 		).OnConflict(goqu.DoNothing()).ToSQL(); err != nil {
@@ -264,9 +264,9 @@ func (db *SQLiteDataStore) UpdateEntity(e models.Entity) (err error) {
 
 	if len(e.Managers) != 0 {
 		// Except those not removed.
-		var notIn []int
+		var notIn []int64
 		for _, manager := range e.Managers {
-			notIn = append(notIn, manager.PersonID)
+			notIn = append(notIn, *manager.PersonID)
 		}
 
 		whereAnd = append(whereAnd, goqu.I("entitypeople_person_id").NotIn(notIn))
@@ -324,7 +324,7 @@ func (db *SQLiteDataStore) UpdateEntity(e models.Entity) (err error) {
 		// 1. lazily deleting former permissions
 		if sqlr, args, err = dialect.From(goqu.T("permission")).Where(
 			goqu.Ex{
-				"person":               manager.PersonID,
+				"person":            manager.PersonID,
 				"permission_entity": e.EntityID,
 			},
 		).ToSQL(); err != nil {
@@ -341,9 +341,9 @@ func (db *SQLiteDataStore) UpdateEntity(e models.Entity) (err error) {
 		// added OR IGNORE bacause w/(r)products/-1 can already exists for man.PersonID
 		if sqlr, args, err = dialect.From(goqu.T("permission")).Insert().Rows(
 			goqu.Record{
-				"person":               manager.PersonID,
-				"permission_name": "all",
-				"permission_item": "all",
+				"person":            manager.PersonID,
+				"permission_name":   "all",
+				"permission_item":   "all",
 				"permission_entity": e.EntityID,
 			},
 		).OnConflict(goqu.DoNothing()).ToSQL(); err != nil {
@@ -358,9 +358,9 @@ func (db *SQLiteDataStore) UpdateEntity(e models.Entity) (err error) {
 
 		if sqlr, args, err = dialect.From(goqu.T("permission")).Insert().Rows(
 			goqu.Record{
-				"person":               manager.PersonID,
-				"permission_name": "w",
-				"permission_item": "products",
+				"person":            manager.PersonID,
+				"permission_name":   "w",
+				"permission_item":   "products",
 				"permission_entity": "-1",
 			},
 		).OnConflict(goqu.DoNothing()).ToSQL(); err != nil {
@@ -375,9 +375,9 @@ func (db *SQLiteDataStore) UpdateEntity(e models.Entity) (err error) {
 
 		if sqlr, args, err = dialect.From(goqu.T("permission")).Insert().Rows(
 			goqu.Record{
-				"person":               manager.PersonID,
-				"permission_name": "w",
-				"permission_item": "rproducts",
+				"person":            manager.PersonID,
+				"permission_name":   "w",
+				"permission_item":   "rproducts",
 				"permission_entity": "-1",
 			},
 		).OnConflict(goqu.DoNothing()).ToSQL(); err != nil {

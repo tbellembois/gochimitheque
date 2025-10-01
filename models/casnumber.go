@@ -2,7 +2,7 @@ package models
 
 // CasNumber is a product CAS number.
 type CasNumber struct {
-	MatchExactSearch bool `db:"match_exact_case" json:"match_exact_case"` // not stored in db but db:"c" set for sqlx
+	MatchExactSearch bool `db:"match_exact_search" json:"match_exact_search"` // not stored in db but db:"c" set for sqlx
 	// CasNumberID      sql.NullInt64  `db:"cas_number_id" json:"cas_number_id" schema:"cas_number_id" `
 	CasNumberID    *int64  `db:"cas_number_id" json:"cas_number_id" schema:"cas_number_id" `
 	CasNumberLabel *string `db:"cas_number_label" json:"cas_number_label" schema:"cas_number_label" `

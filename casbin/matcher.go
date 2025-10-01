@@ -50,7 +50,7 @@ func matchPeople(datastore datastores.Datastore, personID string, itemID string,
 	found := false
 
 	for _, e := range ent {
-		if strconv.Itoa(e.EntityID) == entityID {
+		if strconv.Itoa(int(*e.EntityID)) == entityID {
 			found = true
 			continue
 		}
@@ -92,7 +92,7 @@ func matchStorelocation(datastore datastores.Datastore, personID string, itemID 
 	}
 
 	// getting the store location matching the id
-	if jsonRawMessage, err = zmqclient.DBGetStorelocations("http://localhost/store_locations/"+strconv.Itoa(iid), pid); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetStorelocations("http://localhost/store_locations/"+strconv.Itoa(iid), int64(pid)); err != nil {
 		logger.Log.Error("matchStorelocation - error calling zmqclient.DBGetStorelocations: " + err.Error())
 		return false
 	}
@@ -110,7 +110,7 @@ func matchStorelocation(datastore datastores.Datastore, personID string, itemID 
 		return false
 	}
 
-	if strconv.Itoa(store_location.EntityID) != entityID {
+	if strconv.Itoa(int(*store_location.EntityID)) != entityID {
 		return false
 	}
 
@@ -118,7 +118,7 @@ func matchStorelocation(datastore datastores.Datastore, personID string, itemID 
 		person *models.Person
 	)
 
-	if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/"+strconv.Itoa(pid), pid); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/"+strconv.Itoa(pid), int64(pid)); err != nil {
 		logger.Log.Error("zmqclient.DBGetPeople: " + err.Error())
 		return false
 
@@ -180,7 +180,7 @@ func matchStorage(datastore datastores.Datastore, personID string, itemID string
 	var (
 		jsonRawMessage json.RawMessage
 	)
-	if jsonRawMessage, err = zmqclient.DBGetStorages("http://localhost/"+strconv.Itoa(iid), person_id); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetStorages("http://localhost/"+strconv.Itoa(iid), int64(person_id)); err != nil {
 		logger.Log.Error(fmt.Sprintf("zmqclient.DBGetStorages: %s", err.Error()))
 	}
 
@@ -193,7 +193,7 @@ func matchStorage(datastore datastores.Datastore, personID string, itemID string
 		person *models.Person
 	)
 
-	if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/"+strconv.Itoa(pid), pid); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/"+strconv.Itoa(pid), int64(pid)); err != nil {
 		logger.Log.Error("zmqclient.DBGetPeople: " + err.Error())
 		return false
 
@@ -252,7 +252,7 @@ func matchEntity(datastore datastores.Datastore, personID string, entityID strin
 		jsonRawMessage json.RawMessage
 	)
 
-	if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/"+strconv.Itoa(pid), pid); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/"+strconv.Itoa(pid), int64(pid)); err != nil {
 		logger.Log.Error("zmqclient.DBGetPeople: " + err.Error())
 		return false
 
@@ -266,7 +266,7 @@ func matchEntity(datastore datastores.Datastore, personID string, entityID strin
 	// Finding is the person belongs to the entity.
 	m = false
 	for _, entity := range person.Entities {
-		if entity.EntityID == eid {
+		if *entity.EntityID == int64(eid) {
 			m = true
 			break
 		}

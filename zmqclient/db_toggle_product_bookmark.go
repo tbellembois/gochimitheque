@@ -20,7 +20,7 @@ type DBToggleProductBookmarkErr struct {
 	Err string
 }
 
-func DBToggleProductBookmark(person_id int, product_id int) (json.RawMessage, error) {
+func DBToggleProductBookmark(person_id int64, product_id int) (json.RawMessage, error) {
 	var (
 		s   *zmq.Socket
 		err error

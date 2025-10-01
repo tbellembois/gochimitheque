@@ -103,7 +103,7 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s models.Storage, itemNumber int,
 	logger.Log.WithFields(logrus.Fields{"s": fmt.Sprintf("%+v", s)}).Debug("CreateUpdateStorage")
 
 	// Default major.
-	major = strconv.Itoa(s.ProductID)
+	major = strconv.Itoa(int(*s.ProductID))
 
 	dialect := goqu.Dialect("sqlite3")
 	tableStorage := goqu.T("storage")
@@ -190,11 +190,11 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s models.Storage, itemNumber int,
 			// regex to detect store locations names starting with [_a-zA-Z] to build barecode prefixes
 			prefixRegex := regexp.MustCompile(`^\[(?P<groupone>[_a-zA-Z]{1,5})\].*$`)
 			groupNames := prefixRegex.SubexpNames()
-			matches := prefixRegex.FindAllStringSubmatch(s.StoreLocationName.String, -1)
+			matches := prefixRegex.FindAllStringSubmatch(s.StoreLocationName, -1)
 			// Building a map of matches.
 			matchesMap := map[string]string{}
 
-			logger.Log.WithFields(logrus.Fields{"s.StoreLocationName.String": s.StoreLocationName.String, "matches": matches}).Debug("CreateStorage")
+			logger.Log.WithFields(logrus.Fields{"s.StoreLocationName.String": s.StoreLocationName, "matches": matches}).Debug("CreateStorage")
 
 			if len(matches) != 0 {
 				for i, j := range matches[0] {
@@ -397,7 +397,7 @@ func (db *SQLiteDataStore) CreateUpdateStorage(s models.Storage, itemNumber int,
 	}
 
 	insertCols["person"] = s.PersonID
-	insertCols["store_location"] = s.StoreLocationID.Int64
+	insertCols["store_location"] = *s.StoreLocationID
 	insertCols["product"] = s.ProductID
 	insertCols["storage_creation_date"] = s.StorageCreationDate.Unix()
 	insertCols["storage_modification_date"] = s.StorageModificationDate.Unix()

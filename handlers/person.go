@@ -150,7 +150,7 @@ func (env *Env) UpdatePersonHandler(w http.ResponseWriter, r *http.Request) *mod
 			updatedp.Permissions = append(updatedp.Permissions, &models.Permission{
 				PermissionName:   "all",
 				PermissionItem:   "all",
-				PermissionEntity: e.EntityID,
+				PermissionEntity: *e.EntityID,
 				Person:           *updatedp,
 			})
 		}

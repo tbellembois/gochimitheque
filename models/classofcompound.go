@@ -3,8 +3,8 @@ package models
 // ClassOfCompound is a product class of compound.
 type ClassOfCompound struct {
 	// nullable values to handle optional Product foreign key (gorilla shema nil values)
-	MatchExactSearch     bool   `db:"match_exact_case" json:"match_exact_case"` // not stored in db but db:"c" set for sqlx
-	ClassOfCompoundID    int    `db:"class_of_compound_id" json:"class_of_compound_id" schema:"class_of_compound_id" `
+	MatchExactSearch     bool   `db:"match_exact_search" json:"match_exact_search"` // not stored in db but db:"c" set for sqlx
+	ClassOfCompoundID    *int64 `db:"class_of_compound_id" json:"class_of_compound_id" schema:"class_of_compound_id" `
 	ClassOfCompoundLabel string `db:"class_of_compound_label" json:"class_of_compound_label" schema:"class_of_compound_label" `
 }
 
@@ -31,5 +31,5 @@ func (coc ClassOfCompound) GetTextFieldName() string {
 }
 
 func (coc ClassOfCompound) GetID() int64 {
-	return int64(coc.ClassOfCompoundID)
+	return int64(*coc.ClassOfCompoundID)
 }

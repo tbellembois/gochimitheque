@@ -207,7 +207,7 @@ func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 
 		// setting up auth person informations
 		container.PersonEmail = userInfo.Email
-		container.PersonID = person.PersonID
+		container.PersonID = *person.PersonID
 
 		ctx = context.WithValue(
 			r.Context(),
@@ -225,7 +225,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 		// defer utils.TimeTrack(time.Now(), "AuthorizeMiddleware")
 
 		var (
-			personid    int    // logged person id
+			personid    int64  // logged person id
 			item        string // storages, products...
 			itemid      string // the item id to be accessed: an int, -1, -2 or ""
 			itemidInt   int
@@ -267,7 +267,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 			jsonRawMessage json.RawMessage
 			person         *models.Person
 		)
-		if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/"+strconv.Itoa(personid), 1); err != nil {
+		if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/"+strconv.Itoa(int(personid)), 1); err != nil {
 			logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -303,7 +303,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 					return
 				}
 				// a user can not edit himself
-				if itemidInt == personid {
+				if itemidInt == int(personid) {
 					http.Error(w, "can not edit/delete yourself", http.StatusBadRequest)
 					return
 				}
@@ -319,7 +319,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 					return
 				}
 				// a user can not delete himself
-				if itemidInt == personid {
+				if itemidInt == int(personid) {
 					http.Error(w, "can not edit/delete yourself", http.StatusBadRequest)
 					return
 				}
@@ -408,7 +408,7 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 				logger.Log.WithFields(logrus.Fields{"product": fmt.Sprintf("%#v", product)}).Debug("AuthorizeMiddleware")
 
 				// we can not delete a product with storages
-				count = product.ProductSC
+				count = *product.ProductSC
 				if count != 0 {
 					http.Error(w, "can not delete a product with storages", http.StatusBadRequest)
 					return
@@ -459,11 +459,11 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 		logger.Log.WithFields(logrus.Fields{
 			"itemid":   itemid,
 			"item":     item,
-			"personid": strconv.Itoa(personid),
+			"personid": strconv.Itoa(int(personid)),
 			"action":   action,
 		}).Debug("AuthorizeMiddleware")
 
-		if permok, err = env.Enforcer.Enforce(strconv.Itoa(personid), action, item, itemid); err != nil {
+		if permok, err = env.Enforcer.Enforce(strconv.Itoa(int(personid)), action, item, itemid); err != nil {
 			http.Error(w, "enforcer error: "+err.Error(), http.StatusInternalServerError)
 			return
 		}

@@ -242,7 +242,7 @@ func (db *SQLiteDataStore) CreatePerson(p models.Person) (lastInsertID int64, er
 		return
 	}
 
-	p.PersonID = int(lastInsertID)
+	p.PersonID = &lastInsertID
 
 	// Inserting entity membership.
 	for _, entity := range p.Entities {
@@ -472,7 +472,7 @@ func (db *SQLiteDataStore) IsPersonAdmin(id int) (bool, error) {
 }
 
 // UnsetPersonAdmin unset the person admin permissions.
-func (db *SQLiteDataStore) UnsetPersonAdmin(id int) error {
+func (db *SQLiteDataStore) UnsetPersonAdmin(id int64) error {
 	dialect := goqu.Dialect("sqlite3")
 	tablePermission := goqu.T("permission")
 
@@ -504,7 +504,7 @@ func (db *SQLiteDataStore) UnsetPersonAdmin(id int) error {
 }
 
 // SetPersonAdmin set the person an admin.
-func (db *SQLiteDataStore) SetPersonAdmin(id int) error {
+func (db *SQLiteDataStore) SetPersonAdmin(id int64) error {
 	var (
 		err  error
 		sqlr string

@@ -199,7 +199,7 @@ func (env *Env) UpdateStorageHandler(w http.ResponseWriter, r *http.Request) *mo
 
 	logger.Log.WithFields(logrus.Fields{"s": s}).Debug("UpdateStorageHandler")
 
-	s.PersonID = c.PersonID
+	s.PersonID = &c.PersonID
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
 		return &models.AppError{
@@ -215,7 +215,7 @@ func (env *Env) UpdateStorageHandler(w http.ResponseWriter, r *http.Request) *mo
 	var (
 		jsonRawMessage json.RawMessage
 	)
-	if jsonRawMessage, err = zmqclient.DBGetStorages("http://localhost/"+strconv.Itoa(id), s.PersonID); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetStorages("http://localhost/"+strconv.Itoa(id), *s.PersonID); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Message:       "zmqclient.DBGetStorages",
@@ -233,7 +233,7 @@ func (env *Env) UpdateStorageHandler(w http.ResponseWriter, r *http.Request) *mo
 
 	s.StorageModificationDate = time.Now()
 	s.StorageID = updateds.StorageID
-	s.PersonID = c.PersonID
+	s.PersonID = &c.PersonID
 
 	logger.Log.WithFields(logrus.Fields{"updateds": updateds}).Debug("UpdateStorageHandler")
 
@@ -358,7 +358,7 @@ func (env *Env) CreateStorageHandler(w http.ResponseWriter, r *http.Request) *mo
 	c := request.ContainerFromRequestContext(r)
 
 	// getting the store location matching the id
-	if jsonRawMessage, err = zmqclient.DBGetStorelocations("http://localhost/store_locations/"+strconv.Itoa(int(s.StoreLocationID.Int64)), c.PersonID); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetStorelocations("http://localhost/store_locations/"+strconv.Itoa(int(*s.StoreLocationID)), c.PersonID); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
@@ -380,7 +380,7 @@ func (env *Env) CreateStorageHandler(w http.ResponseWriter, r *http.Request) *mo
 
 	s.StorageCreationDate = time.Now()
 	s.StorageModificationDate = time.Now()
-	s.PersonID = c.PersonID
+	s.PersonID = &c.PersonID
 
 	logger.Log.WithFields(logrus.Fields{"s": fmt.Sprintf("%+v", s)}).Debug("CreateStorageHandler")
 	logger.Log.WithFields(logrus.Fields{"s.StorageNbItem": s.StorageNbItem}).Debug("CreateStorageHandler")

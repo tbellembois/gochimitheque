@@ -20,7 +20,7 @@ type DBToggleStorageBorrowingErr struct {
 	Err string
 }
 
-func DBToggleStorageBorrowing(person_id int, storage_id int, borrower_id int, borrower_comment *string) (json.RawMessage, error) {
+func DBToggleStorageBorrowing(person_id int64, storage_id int, borrower_id int, borrower_comment *string) (json.RawMessage, error) {
 	var (
 		s   *zmq.Socket
 		err error

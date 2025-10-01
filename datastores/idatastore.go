@@ -20,7 +20,6 @@ type Datastore interface {
 	UpdateWelcomeAnnounce(w models.WelcomeAnnounce) error
 
 	DeleteProduct(id int) error
-	CreateUpdateProduct(p models.Product, update bool) (int64, error)
 
 	DeleteStorage(id int) error
 	ArchiveStorage(id int) error
@@ -37,6 +36,6 @@ type Datastore interface {
 	DeletePerson(id int) error
 	GetAdmins() ([]models.Person, error)
 	IsPersonAdmin(id int) (bool, error)
-	UnsetPersonAdmin(id int) error
-	SetPersonAdmin(id int) error
+	UnsetPersonAdmin(id int64) error
+	SetPersonAdmin(id int64) error
 }

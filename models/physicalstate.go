@@ -3,7 +3,7 @@ package models
 // PhysicalState is a product physical state.
 type PhysicalState struct {
 	// nullable values to handle optional Product foreign key (gorilla shema nil values)
-	MatchExactSearch   bool    `db:"match_exact_case" json:"match_exact_case"` // not stored in db but db:"c" set for sqlx
+	MatchExactSearch   bool    `db:"match_exact_search" json:"match_exact_search"` // not stored in db but db:"c" set for sqlx
 	PhysicalStateID    *int64  `db:"physical_state_id" json:"physical_state_id" schema:"physical_state_id" `
 	PhysicalStateLabel *string `db:"physical_state_label" json:"physical_state_label" schema:"physical_state_label" `
 }

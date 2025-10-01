@@ -22,7 +22,7 @@ type DBGetStorelocationsErr struct {
 	Err string
 }
 
-func DBGetStorelocations(requestRawString string, person_id int) (json.RawMessage, error) {
+func DBGetStorelocations(requestRawString string, person_id int64) (json.RawMessage, error) {
 	var (
 		s   *zmq.Socket
 		err error

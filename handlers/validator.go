@@ -134,7 +134,7 @@ func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request
 		err      error
 		res      bool
 		resp     string
-		entityID int
+		entityID int64
 		filter   zmqclient.RequestFilter
 	)
 
@@ -149,12 +149,14 @@ func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	// converting the id
-	if entityID, err = strconv.Atoi(vars["id"]); err != nil {
+	var entityIDtmp int
+	if entityIDtmp, err = strconv.Atoi(vars["id"]); err != nil {
 		logger.Log.Error("strconv error")
 		resp = locales.Localizer.MustLocalize(&i18n.LocalizeConfig{MessageID: "entity_nameexist_validate", PluralCount: 1})
 		sendResponse(w, resp)
 		return nil
 	}
+	entityID = int64(entityIDtmp)
 
 	// getting the name
 	if err = r.ParseForm(); err != nil {
@@ -202,7 +204,7 @@ func (env *Env) ValidateEntityNameHandler(w http.ResponseWriter, r *http.Request
 	} else {
 		logger.Log.WithFields(logrus.Fields{"entityID": entityID, "entities[0].EntityID": entities[0].EntityID}).Debug("ValidateEntityNameHandler")
 
-		res = (entityID == entities[0].EntityID)
+		res = (entityID == *entities[0].EntityID)
 	}
 
 	logger.Log.WithFields(logrus.Fields{"vars": vars, "res": res}).Debug("ValidateEntityNameHandler")

@@ -2,8 +2,8 @@ package models
 
 // Name is a product name.
 type Name struct {
-	MatchExactSearch bool   `db:"match_exact_case" json:"match_exact_case"` // not stored in db but db:"c" set for sqlx
-	NameID           int    `db:"name_id" json:"name_id" schema:"name_id"`
+	MatchExactSearch bool   `db:"match_exact_search" json:"match_exact_search"` // not stored in db but db:"c" set for sqlx
+	NameID           *int64 `db:"name_id" json:"name_id" schema:"name_id"`
 	NameLabel        string `db:"name_label" json:"name_label" schema:"name_label"`
 }
 
@@ -30,5 +30,5 @@ func (name Name) GetTextFieldName() string {
 }
 
 func (name Name) GetID() int64 {
-	return int64(name.NameID)
+	return int64(*name.NameID)
 }

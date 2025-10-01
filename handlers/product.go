@@ -2,14 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/gorilla/mux"
-	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
 	"github.com/tbellembois/gochimitheque/request"
@@ -819,161 +817,63 @@ func (env *Env) CreateProductHandler(w http.ResponseWriter, r *http.Request) *mo
 	logger.Log.Debug("CreateProductHandler")
 
 	var (
-		p   models.Product
-		err error
+		jsonRawMessage json.RawMessage
+		body           []byte
+		err            error
 	)
 
-	if err = json.NewDecoder(r.Body).Decode(&p); err != nil {
+	if body, err = io.ReadAll(r.Body); err != nil {
 		return &models.AppError{
 			OriginalError: err,
-			Message:       "JSON decoding error",
 			Code:          http.StatusInternalServerError,
+			Message:       "error reading request body",
 		}
 	}
+	logger.Log.Debug("body " + string(body))
 
-	// retrieving the logged user id from request context
-	c := request.ContainerFromRequestContext(r)
-
-	p.PersonID = c.PersonID
-
-	logger.Log.WithFields(logrus.Fields{"p": fmt.Sprintf("%+v", p)}).Debug("CreateProductHandler")
-
-	sanitizeProduct(&p)
-
-	var pid int64
-
-	if pid, err = env.DB.CreateUpdateProduct(p, false); err != nil {
+	if jsonRawMessage, err = zmqclient.DBCreateUpdateProduct(body); err != nil {
 		return &models.AppError{
 			OriginalError: err,
-			Message:       "create product error",
 			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.DBCreateUpdateProduct",
 		}
 	}
-
-	p.ProductID = int(pid)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
-	if err = json.NewEncoder(w).Encode(p); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
 }
 
 // UpdateProductHandler updates the product from the request form.
 func (env *Env) UpdateProductHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	vars := mux.Vars(r)
+	logger.Log.Debug("UpdateProductHandler")
 
-	var (
-		id  int
-		err error
-		p   models.Product
-	)
-
-	if err = json.NewDecoder(r.Body).Decode(&p); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "JSON decoding error",
-			Code:          http.StatusInternalServerError,
-		}
-	}
-
-	// retrieving the logged user id from request context
-	c := request.ContainerFromRequestContext(r)
-
-	// p.ProductCreationDate = time.Now()
-	p.PersonID = c.PersonID
-
-	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "id atoi conversion",
-			Code:          http.StatusInternalServerError,
-		}
-	}
-
-	var updatedp *models.Product
-
-	// getting the product
 	var (
 		jsonRawMessage json.RawMessage
+		body           []byte
+		err            error
 	)
-	if jsonRawMessage, err = zmqclient.DBGetProducts("http://localhost/"+strconv.Itoa(id), p.PersonID); err != nil {
+
+	if body, err = io.ReadAll(r.Body); err != nil {
 		return &models.AppError{
 			OriginalError: err,
-			Message:       "zmqclient.DBGetProducts",
 			Code:          http.StatusInternalServerError,
-		}
-
-	}
-
-	if updatedp, err = zmqclient.ConvertDBJSONToProduct(jsonRawMessage); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "ConvertDBJSONToProduct",
-			Code:          http.StatusInternalServerError,
+			Message:       "error reading request body",
 		}
 	}
+	logger.Log.Debug("body " + string(body))
 
-	updatedp.CasNumber = p.CasNumber
-	updatedp.CeNumber = p.CeNumber
-	updatedp.EmpiricalFormula = p.EmpiricalFormula
-	updatedp.LinearFormula = p.LinearFormula
-	updatedp.Name = p.Name
-	updatedp.ProductSpecificity = p.ProductSpecificity
-	updatedp.Symbols = p.Symbols
-	updatedp.Synonyms = p.Synonyms
-	updatedp.ProductMSDS = p.ProductMSDS
-	updatedp.ProductRestricted = p.ProductRestricted
-	updatedp.ProductRadioactive = p.ProductRadioactive
-	updatedp.LinearFormula = p.LinearFormula
-	updatedp.ProductThreeDFormula = p.ProductThreeDFormula
-	updatedp.ProductTwoDFormula = p.ProductTwoDFormula
-	// updatedp.ProductMolFormula = p.ProductMolFormula
-	updatedp.ProductInchi = p.ProductInchi
-	updatedp.ProductInchikey = p.ProductInchikey
-	updatedp.ProductCanonicalSmiles = p.ProductCanonicalSmiles
-	updatedp.ProductDisposalComment = p.ProductDisposalComment
-	updatedp.ProductRemark = p.ProductRemark
-	updatedp.ProductNumberPerCarton = p.ProductNumberPerCarton
-	updatedp.ProductNumberPerBag = p.ProductNumberPerBag
-	updatedp.PhysicalState = p.PhysicalState
-	updatedp.SignalWord = p.SignalWord
-	updatedp.ClassOfCompound = p.ClassOfCompound
-	updatedp.HazardStatements = p.HazardStatements
-	updatedp.PrecautionaryStatements = p.PrecautionaryStatements
-	updatedp.Tags = p.Tags
-	updatedp.Category = p.Category
-	updatedp.ProducerRef = p.ProducerRef
-	updatedp.SupplierRefs = p.SupplierRefs
-	updatedp.ProductSheet = p.ProductSheet
-	updatedp.ProductTemperature = p.ProductTemperature
-	updatedp.ProductMolecularWeight = p.ProductMolecularWeight
-	updatedp.UnitTemperature = p.UnitTemperature
-	updatedp.UnitMolecularWeight = p.UnitMolecularWeight
-
-	logger.Log.WithFields(logrus.Fields{"updatedp": fmt.Sprintf("%+v", updatedp)}).Debug("UpdateProductHandler")
-
-	sanitizeProduct(updatedp)
-	if _, err := env.DB.CreateUpdateProduct(*updatedp, true); err != nil {
+	if jsonRawMessage, err = zmqclient.DBCreateUpdateProduct(body); err != nil {
 		return &models.AppError{
 			OriginalError: err,
-			Message:       "update product error",
 			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.DBCreateUpdateProduct",
 		}
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	if err = json.NewEncoder(w).Encode(updatedp); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
+	w.Write(jsonRawMessage)
 
 	return nil
 }

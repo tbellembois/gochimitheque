@@ -22,7 +22,7 @@ type DBGetPeopleErr struct {
 	Err string
 }
 
-func DBGetPeople(requestRawString string, person_id int) (json.RawMessage, error) {
+func DBGetPeople(requestRawString string, person_id int64) (json.RawMessage, error) {
 	var (
 		s   *zmq.Socket
 		err error

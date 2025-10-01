@@ -20,7 +20,7 @@ type DBCreateUpdateProductFromPubchemErr struct {
 	Err string
 }
 
-func DBCreateUpdateProductFromPubchem(puchemProductRawString json.RawMessage, person_id int, product_id *int) (json.RawMessage, error) {
+func DBCreateUpdateProductFromPubchem(puchemProductRawString json.RawMessage, person_id int64, product_id *int) (json.RawMessage, error) {
 	var (
 		s   *zmq.Socket
 		err error

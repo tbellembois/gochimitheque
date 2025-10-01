@@ -149,10 +149,10 @@ func (db *SQLiteDataStore) ToCasbinJSONAdapter() ([]byte, error) {
 	for _, p := range ps {
 		js = append(js, CasbinJSON{
 			PType: "p",
-			V0:    strconv.Itoa(p.Person.PersonID),
+			V0:    strconv.Itoa(int(*p.Person.PersonID)),
 			V1:    p.PermissionName,
 			V2:    p.PermissionItem,
-			V3:    strconv.Itoa(p.PermissionEntity),
+			V3:    strconv.Itoa(int(p.PermissionEntity)),
 		})
 	}
 

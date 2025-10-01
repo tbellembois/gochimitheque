@@ -251,7 +251,7 @@ func initAdmins() {
 		}
 		if !isStillAdmin {
 			logger.Log.Info(fa.PersonEmail + " is not an admin anymore, removing permissions")
-			if err = env.DB.UnsetPersonAdmin(fa.PersonID); err != nil {
+			if err = env.DB.UnsetPersonAdmin(*fa.PersonID); err != nil {
 				logger.Log.Fatal(err)
 			}
 		}
@@ -281,7 +281,7 @@ func initAdmins() {
 				}
 			}
 
-			if err = env.DB.SetPersonAdmin(person.PersonID); err != nil {
+			if err = env.DB.SetPersonAdmin(*person.PersonID); err != nil {
 				logger.Log.Fatal(err)
 			}
 		}

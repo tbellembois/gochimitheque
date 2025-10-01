@@ -16,7 +16,7 @@ block CONTENT
                     = T("close", 1)
 
             .form-row.w-100
-                .form-group.col-sm-6
+                .form-group.col-sm-12
                     .card-body
                         .form-check.form-check-inline
                             input#showchem.form-check-input(type="radio" value="chem" name="typechooser")
@@ -65,7 +65,7 @@ block CONTENT
                 // bio and consu
                 .form-row.bio.consu.collapse
                     .form-group.col-sm-6
-                        +inputselect(name="producer", label="producer_label_title")
+                        +inputselect(name="producer", label="producer_label_title", ismultiple=false, placeholder="", help="", required=true)
                     .form-group.col-sm-6
                         +inputselect(name="producer_ref", label="producer_ref_label_title", ismultiple=false, placeholder="", help="", required=true)
                 .form-row.bio.consu.collapse
@@ -94,7 +94,7 @@ block CONTENT
                         +inputnumber(name="product_number_per_carton", label="product_number_per_carton_title", step="1", min="0", max="10000000")
                     .form-group.col-sm-6
                         +inputnumber(name="product_number_per_bag", label="product_number_per_bag_title", step="1", min="0", max="10000000")
-                        
+
                 // bio
                 .form-row.bio.collapse
                     .form-group.col-sm-6

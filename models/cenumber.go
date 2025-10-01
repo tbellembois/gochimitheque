@@ -2,7 +2,7 @@ package models
 
 // CeNumber is a product CE number.
 type CeNumber struct {
-	MatchExactSearch bool    `db:"match_exact_case" json:"match_exact_case"` // not stored in db but db:"c" set for sqlx
+	MatchExactSearch bool    `db:"match_exact_search" json:"match_exact_search"` // not stored in db but db:"c" set for sqlx
 	CeNumberID       *int64  `db:"ce_number_id" json:"ce_number_id" schema:"ce_number_id" `
 	CeNumberLabel    *string `db:"ce_number_label" json:"ce_number_label" schema:"ce_number_label" `
 }

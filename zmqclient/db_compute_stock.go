@@ -22,7 +22,7 @@ type DBComputeStockErr struct {
 	Err string
 }
 
-func DBComputeStock(product_id int, person_id int) (json.RawMessage, error) {
+func DBComputeStock(product_id int, person_id int64) (json.RawMessage, error) {
 	var (
 		s   *zmq.Socket
 		err error
