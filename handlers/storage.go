@@ -2,12 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
+	"io"
 	"net/http"
 	"strconv"
-	"time"
 
-	"github.com/barweiss/go-tuple"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/logger"
@@ -178,81 +176,34 @@ func (env *Env) GetStoragesHandler(w http.ResponseWriter, r *http.Request) *mode
 
 // UpdateStorageHandler updates the storage from the request form.
 func (env *Env) UpdateStorageHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	vars := mux.Vars(r)
+	logger.Log.Debug("UpdateStorageHandler")
 
-	var (
-		id  int
-		err error
-		s   models.Storage
-	)
-
-	if err = json.NewDecoder(r.Body).Decode(&s); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "JSON decoding error",
-			Code:          http.StatusInternalServerError,
-		}
-	}
-
-	// retrieving the logged user id from request context
-	c := request.ContainerFromRequestContext(r)
-
-	logger.Log.WithFields(logrus.Fields{"s": s}).Debug("UpdateStorageHandler")
-
-	s.PersonID = &c.PersonID
-
-	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "id atoi conversion",
-			Code:          http.StatusInternalServerError,
-		}
-	}
-
-	var updateds *models.Storage
-
-	// getting the storage
 	var (
 		jsonRawMessage json.RawMessage
+		body           []byte
+		err            error
 	)
-	if jsonRawMessage, err = zmqclient.DBGetStorages("http://localhost/"+strconv.Itoa(id), *s.PersonID); err != nil {
+
+	if body, err = io.ReadAll(r.Body); err != nil {
 		return &models.AppError{
 			OriginalError: err,
-			Message:       "zmqclient.DBGetStorages",
 			Code:          http.StatusInternalServerError,
+			Message:       "error reading request body",
 		}
 	}
+	logger.Log.Debug("body " + string(body))
 
-	if updateds, err = zmqclient.ConvertDBJSONToStorage(jsonRawMessage); err != nil {
+	if jsonRawMessage, err = zmqclient.DBCreateUpdateStorage(body, 1, false); err != nil {
 		return &models.AppError{
 			OriginalError: err,
-			Message:       "ConvertDBJSONToStorage",
 			Code:          http.StatusInternalServerError,
-		}
-	}
-
-	s.StorageModificationDate = time.Now()
-	s.StorageID = updateds.StorageID
-	s.PersonID = &c.PersonID
-
-	logger.Log.WithFields(logrus.Fields{"updateds": updateds}).Debug("UpdateStorageHandler")
-
-	if _, err := env.DB.CreateUpdateStorage(s, 0, true); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "update storage error",
-			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.DBCreateUpdateStorage",
 		}
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
-	if err = json.NewEncoder(w).Encode([]models.Storage{s}); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
 }
 
@@ -340,81 +291,58 @@ func (env *Env) CreateStorageHandler(w http.ResponseWriter, r *http.Request) *mo
 	logger.Log.Debug("CreateStorageHandler")
 
 	var (
-		s              models.Storage
-		err            error
-		id             int64
-		jsonRawMessage json.RawMessage
+		jsonRawMessage     json.RawMessage
+		body               []byte
+		err                error
+		nb_items           int
+		identical_barecode bool
 	)
 
-	if err = json.NewDecoder(r.Body).Decode(&s); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "JSON decoding error",
-			Code:          http.StatusInternalServerError,
-		}
-	}
+	nb_items = 1
+	identical_barecode = false
 
-	// retrieving the logged user id from request context
-	c := request.ContainerFromRequestContext(r)
-
-	// getting the store location matching the id
-	if jsonRawMessage, err = zmqclient.DBGetStorelocations("http://localhost/store_locations/"+strconv.Itoa(int(*s.StoreLocationID)), c.PersonID); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.DBGetStorelocations",
-		}
-	}
-
-	// unmarshalling response
-	var tuple tuple.T2[[]models.StoreLocation, int]
-	if err = json.Unmarshal(jsonRawMessage, &tuple); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Code:          http.StatusInternalServerError,
-			Message:       "error unmarshalling jsonRawMessage",
-		}
-	}
-
-	s.StoreLocation = tuple.V1[0]
-
-	s.StorageCreationDate = time.Now()
-	s.StorageModificationDate = time.Now()
-	s.PersonID = &c.PersonID
-
-	logger.Log.WithFields(logrus.Fields{"s": fmt.Sprintf("%+v", s)}).Debug("CreateStorageHandler")
-	logger.Log.WithFields(logrus.Fields{"s.StorageNbItem": s.StorageNbItem}).Debug("CreateStorageHandler")
-
-	if s.StorageNbItem == 0 {
-		s.StorageNbItem = 1
-	}
-
-	var result []models.Storage
-
-	for i := 1; i <= s.StorageNbItem; i++ {
-		if id, err = env.DB.CreateUpdateStorage(s, i, false); err != nil {
+	if nb_items_string := r.URL.Query().Get("nb_items"); nb_items_string != "" {
+		if nb_items, err = strconv.Atoi(nb_items_string); err != nil {
 			return &models.AppError{
 				OriginalError: err,
-				Message:       "create storage error",
 				Code:          http.StatusInternalServerError,
+				Message:       "nb_item atoi conversion",
 			}
 		}
-
-		var storage_id int64 = int64(id)
-		result = append(result, models.Storage{
-			StorageID: &storage_id,
-		})
-	}
-	var storage_id int64 = int64(id)
-	s.StorageID = &storage_id
-
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	if err = json.NewEncoder(w).Encode(result); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
+		if nb_items == 0 {
+			nb_items = 1
 		}
 	}
+
+	if identical_barecode_string := r.URL.Query().Get("identical_barecode"); identical_barecode_string != "" {
+		if identical_barecode, err = strconv.ParseBool(identical_barecode_string); err != nil {
+			return &models.AppError{
+				OriginalError: err,
+				Code:          http.StatusInternalServerError,
+				Message:       "identical_barecode parsebool conversion",
+			}
+		}
+	}
+
+	if body, err = io.ReadAll(r.Body); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error reading request body",
+		}
+	}
+	logger.Log.Debug("body " + string(body))
+
+	if jsonRawMessage, err = zmqclient.DBCreateUpdateStorage(body, nb_items, identical_barecode); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.DBCreateUpdateStorage",
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
+
 	return nil
 }

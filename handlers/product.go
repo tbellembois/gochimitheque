@@ -5,7 +5,6 @@ import (
 	"io"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/tbellembois/gochimitheque/logger"
@@ -14,43 +13,6 @@ import (
 	"github.com/tbellembois/gochimitheque/static/jade"
 	"github.com/tbellembois/gochimitheque/zmqclient"
 )
-
-func sanitizeProduct(p *models.Product) {
-	for i := range p.Synonyms {
-		p.Synonyms[i].NameLabel = strings.Trim(p.Synonyms[i].NameLabel, " ")
-	}
-
-	p.NameLabel = strings.Trim(p.NameLabel, " ")
-
-	if p.LinearFormulaLabel != nil {
-		var LinearFormulaLabelPointer *string
-		LinearFormulaLabelPointer = new(string)
-		*LinearFormulaLabelPointer = strings.Trim(*p.LinearFormulaLabel, " ")
-		p.LinearFormulaLabel = LinearFormulaLabelPointer
-	}
-
-	if p.EmpiricalFormulaLabel != nil {
-		var EmpiricalFormulaLabelPointer *string
-		EmpiricalFormulaLabelPointer = new(string)
-		*EmpiricalFormulaLabelPointer = strings.Trim(*p.EmpiricalFormulaLabel, " ")
-		p.EmpiricalFormulaLabel = EmpiricalFormulaLabelPointer
-	}
-	// p.CasNumberLabel.String = strings.Trim(p.CasNumberLabel.String, " ")
-
-	if p.CasNumberLabel != nil {
-		var CasNumberLabelPointer *string
-		CasNumberLabelPointer = new(string)
-		*CasNumberLabelPointer = strings.Trim(*p.CasNumberLabel, " ")
-		p.CasNumberLabel = CasNumberLabelPointer
-	}
-
-	if p.CeNumberLabel != nil {
-		var CeNumberLabelPointer *string
-		CeNumberLabelPointer = new(string)
-		*CeNumberLabelPointer = strings.Trim(*p.CeNumberLabel, " ")
-		p.CeNumberLabel = CeNumberLabelPointer
-	}
-}
 
 /*
 	views handlers

@@ -7,7 +7,7 @@ type StoreLocation struct {
 	StoreLocationName     string  `db:"store_location_name" json:"store_location_name" schema:"store_location_name" `
 	StoreLocationCanStore bool    `db:"store_location_can_store" json:"store_location_can_store" schema:"store_location_can_store" `
 	StoreLocationColor    *string `db:"store_location_color" json:"store_location_color" schema:"store_location_color" `
-	Entity                `db:"entity" json:"entity" schema:"entity"`
+	*Entity               `db:"entity" json:"entity,omitempty" schema:"entity"`
 	StoreLocation         *StoreLocation `db:"store_location" json:"store_location" schema:"store_location"`
 
 	StoreLocationFullPath string `db:"store_location_full_path" json:"store_location_full_path" schema:"store_location_full_path"`

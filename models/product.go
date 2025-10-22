@@ -11,59 +11,59 @@ import (
 
 // Product is a chemical product card.
 type Product struct {
-	ProductID              *int64  `db:"product_id" json:"product_id" schema:"product_id"`
-	ProductInchi           *string `db:"product_inchi" json:"product_inchi" schema:"product_inchi"`
-	ProductInchikey        *string `db:"product_inchikey" json:"product_inchikey" schema:"product_inchikey"`
-	ProductCanonicalSmiles *string `db:"product_canonical_smiles" json:"product_canonical_smiles" schema:"product_canonical_smiles"`
-	ProductSpecificity     *string `db:"product_specificity" json:"product_specificity" schema:"product_specificity" `
-	ProductMSDS            *string `db:"product_msds" json:"product_msds" schema:"product_msds" `
-	ProductRestricted      bool    `db:"product_restricted" json:"product_restricted" schema:"product_restricted" `
-	ProductRadioactive     bool    `db:"product_radioactive" json:"product_radioactive" schema:"product_radioactive" `
-	ProductThreeDFormula   *string `db:"product_threed_formula" json:"product_threed_formula" schema:"product_threed_formula" `
-	ProductTwoDFormula     *string `db:"product_twod_formula" json:"product_twod_formula" schema:"product_twod_formula" `
+	ProductID              *int64  `db:"product_id" json:"product_id,omitempty" schema:"product_id"`
+	ProductInchi           *string `db:"product_inchi" json:"product_inchi,omitempty" schema:"product_inchi"`
+	ProductInchikey        *string `db:"product_inchikey" json:"product_inchikey,omitempty" schema:"product_inchikey"`
+	ProductCanonicalSmiles *string `db:"product_canonical_smiles" json:"product_canonical_smiles,omitempty" schema:"product_canonical_smiles"`
+	ProductSpecificity     *string `db:"product_specificity" json:"product_specificity,omitempty" schema:"product_specificity" `
+	ProductMSDS            *string `db:"product_msds" json:"product_msds,omitempty" schema:"product_msds" `
+	ProductRestricted      bool    `db:"product_restricted" json:"product_restricted,omitempty" schema:"product_restricted" `
+	ProductRadioactive     bool    `db:"product_radioactive" json:"product_radioactive,omitempty" schema:"product_radioactive" `
+	ProductThreeDFormula   *string `db:"product_threed_formula" json:"product_threed_formula,omitempty" schema:"product_threed_formula" `
+	ProductTwoDFormula     *string `db:"product_twod_formula" json:"product_twod_formula,omitempty" schema:"product_twod_formula" `
 	// ProductMolFormula      sql.NullString `db:"product_molformula" json:"product_molformula" schema:"product_molformula" `
-	ProductDisposalComment *string  `db:"product_disposal_comment" json:"product_disposal_comment" schema:"product_disposal_comment" `
-	ProductRemark          *string  `db:"product_remark" json:"product_remark" schema:"product_remark" `
-	ProductMolecularWeight *float64 `db:"product_molecular_weight" json:"product_molecular_weight" schema:"product_molecular_weight" `
-	ProductTemperature     *int64   `db:"product_temperature" json:"product_temperature" schema:"product_temperature" `
-	ProductSheet           *string  `db:"product_sheet" json:"product_sheet" schema:"product_sheet" `
-	ProductNumberPerCarton *int64   `db:"product_number_per_carton" json:"product_number_per_carton" schema:"product_number_per_carton" `
-	ProductNumberPerBag    *int64   `db:"product_number_per_bag" json:"product_number_per_bag" schema:"product_number_per_bag" `
-	ProductType            string   `db:"-" json:"product_type" schema:"product_type"`
-	*EmpiricalFormula      `db:"empirical_formula" json:"empirical_formula" schema:"empirical_formula"`
-	*LinearFormula         `db:"linear_formula" json:"linear_formula" schema:"linear_formula"`
-	*PhysicalState         `db:"physical_state" json:"physical_state" schema:"physical_state"`
-	*SignalWord            `db:"signal_word" json:"signal_word" schema:"signal_word"`
-	Person                 `db:"person" json:"person" schema:"person"`
-	*CasNumber             `db:"cas_number" json:"cas_number" schema:"cas_number"`
-	*CeNumber              `db:"ce_number" json:"ce_number" schema:"ce_number"`
-	*Name                  `db:"name" json:"name" schema:"name"`
-	*ProducerRef           `db:"producer_ref" json:"producer_ref" schema:"producer_ref"`
-	*Category              `db:"category" json:"category" schema:"category"`
-	UnitTemperature        *Unit `db:"unit_temperature" json:"unit_temperature" schema:"unit_temperature"`
-	UnitMolecularWeight    *Unit `db:"unit_molecular_weight" json:"unit_molecular_weight" schema:"unit_molecular_weight"`
+	ProductDisposalComment *string  `db:"product_disposal_comment" json:"product_disposal_comment,omitempty" schema:"product_disposal_comment" `
+	ProductRemark          *string  `db:"product_remark" json:"product_remark,omitempty" schema:"product_remark" `
+	ProductMolecularWeight *float64 `db:"product_molecular_weight" json:"product_molecular_weight,omitempty" schema:"product_molecular_weight" `
+	ProductTemperature     *int64   `db:"product_temperature" json:"product_temperature,omitempty" schema:"product_temperature" `
+	ProductSheet           *string  `db:"product_sheet" json:"product_sheet,omitempty" schema:"product_sheet" `
+	ProductNumberPerCarton *int64   `db:"product_number_per_carton" json:"product_number_per_carton,omitempty" schema:"product_number_per_carton" `
+	ProductNumberPerBag    *int64   `db:"product_number_per_bag" json:"product_number_per_bag,omitempty" schema:"product_number_per_bag" `
+	ProductType            string   `db:"-" json:"product_type,omitempty" schema:"product_type,omitempty"`
+	*EmpiricalFormula      `db:"empirical_formula" json:"empirical_formula,omitempty" schema:"empirical_formula"`
+	*LinearFormula         `db:"linear_formula" json:"linear_formula,omitempty" schema:"linear_formula"`
+	*PhysicalState         `db:"physical_state" json:"physical_state,omitempty" schema:"physical_state"`
+	*SignalWord            `db:"signal_word" json:"signal_word,omitempty" schema:"signal_word"`
+	Person                 `db:"person" json:"person,omitempty" schema:"person"`
+	*CasNumber             `db:"cas_number" json:"cas_number,omitempty" schema:"cas_number"`
+	*CeNumber              `db:"ce_number" json:"ce_number,omitempty" schema:"ce_number"`
+	*Name                  `db:"name" json:"name,omitempty" schema:"name"`
+	*ProducerRef           `db:"producer_ref" json:"producer_ref,omitempty" schema:"producer_ref"`
+	*Category              `db:"category" json:"category,omitempty" schema:"category"`
+	UnitTemperature        *Unit `db:"unit_temperature" json:"unit_temperature,omitempty" schema:"unit_temperature"`
+	UnitMolecularWeight    *Unit `db:"unit_molecular_weight" json:"unit_molecular_weight,omitempty" schema:"unit_molecular_weight"`
 
-	ClassOfCompound         []ClassOfCompound        `db:"-" schema:"classes_of_compound" json:"classes_of_compound"`
-	Synonyms                []Name                   `db:"-" schema:"synonyms" json:"synonyms"`
-	Symbols                 []Symbol                 `db:"-" schema:"symbols" json:"symbols"`
-	HazardStatements        []HazardStatement        `db:"-" schema:"hazard_statements" json:"hazard_statements"`
-	PrecautionaryStatements []PrecautionaryStatement `db:"-" schema:"precautionary_statements" json:"precautionary_statements"`
-	SupplierRefs            []SupplierRef            `db:"-" json:"supplier_refs" schema:"supplier_refs"`
-	Tags                    []Tag                    `db:"-" json:"tags" schema:"tags"`
+	ClassOfCompound         []ClassOfCompound        `db:"-" schema:"classes_of_compound" json:"classes_of_compound,omitempty"`
+	Synonyms                []Name                   `db:"-" schema:"synonyms" json:"synonyms,omitempty"`
+	Symbols                 []Symbol                 `db:"-" schema:"symbols" json:"symbols,omitempty"`
+	HazardStatements        []HazardStatement        `db:"-" schema:"hazard_statements" json:"hazard_statements,omitempty"`
+	PrecautionaryStatements []PrecautionaryStatement `db:"-" schema:"precautionary_statements" json:"precautionary_statements,omitempty"`
+	SupplierRefs            []SupplierRef            `db:"-" json:"supplier_refs,omitempty" schema:"supplier_refs"`
+	Tags                    []Tag                    `db:"-" json:"tags,omitempty" schema:"tags"`
 
-	ProductHasBookmark bool `db:"product_has_bookmark" json:"product_has_bookmark" schema:"product_has_bookmark"` // not in db but sqlx requires the "db" entry
+	ProductHasBookmark bool `db:"product_has_bookmark" json:"product_has_bookmark,omitempty" schema:"product_has_bookmark"` // not in db but sqlx requires the "db" entry
 
 	// archived storage count in the logged user entity(ies)
-	ProductASC *int `db:"product_asc" json:"product_asc" schema:"product_asc"` // not in db but sqlx requires the "db" entry
+	ProductASC *int `db:"product_asc" json:"product_asc,omitempty" schema:"product_asc"` // not in db but sqlx requires the "db" entry
 	// total storage count
-	ProductTSC *int `db:"product_tsc" json:"product_tsc" schema:"product_tsc"` // not in db but sqlx requires the "db" entry
+	ProductTSC *int `db:"product_tsc" json:"product_tsc,omitempty" schema:"product_tsc"` // not in db but sqlx requires the "db" entry
 	// storage count in the logged user entity(ies)
-	ProductSC *int `db:"product_sc" json:"product_sc" schema:"product_sc"` // not in db but sqlx requires the "db" entry
+	ProductSC *int `db:"product_sc" json:"product_sc,omitempty" schema:"product_sc"` // not in db but sqlx requires the "db" entry
 	// storage barecode concatenation
-	ProductSL           *string   `db:"product_sl" json:"product_sl" schema:"product_sl" ` // not in db but sqlx requires the "db" entry
-	ProductAvailability *[]Entity `db:"product_availability" json:"product_availability" schema:"product_availability" `
+	ProductSL           *string   `db:"product_sl" json:"product_sl,omitempty" schema:"product_sl" ` // not in db but sqlx requires the "db" entry
+	ProductAvailability *[]Entity `db:"product_availability" json:"product_availability,omitempty" schema:"product_availability" `
 	// hazard statement CMR concatenation
-	HazardStatementCMR *string `db:"product_hs_cmr" json:"product_hs_cmr" schema:"product_hs_cmr" ` // not in db but sqlx requires the "db" entry
+	HazardStatementCMR *string `db:"product_hs_cmr" json:"product_hs_cmr,omitempty" schema:"product_hs_cmr" ` // not in db but sqlx requires the "db" entry
 }
 
 func (p Product) ProductToStringSlice() []string {

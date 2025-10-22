@@ -24,7 +24,6 @@ type Datastore interface {
 	DeleteStorage(id int) error
 	ArchiveStorage(id int) error
 	RestoreStorage(id int) error
-	CreateUpdateStorage(s models.Storage, itemNumber int, update bool) (int64, error)
 	UpdateAllQRCodes() error
 
 	DeleteEntity(id int) error

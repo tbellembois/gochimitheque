@@ -1,4 +1,17 @@
 #!/usr/bin/env bash
+if [ "$1" == "-clean" ]; then
+    cd /home/thbellem/workspace/workspace_rust/chimitheque_zmq_server
+    cargo clean
+    cd /home/thbellem/workspace/workspace_rust/chimitheque_db
+    cargo clean
+    cd /home/thbellem/workspace/workspace_rust/chimitheque_traits
+    cargo clean
+    cd /home/thbellem/workspace/workspace_rust/chimitheque_types
+    cargo clean
+    cd /home/thbellem/workspace/workspace_rust/chimitheque_utils
+    cargo clean
+fi
+
 cd /home/thbellem/workspace/workspace_go/src/github.com/tbellembois/gochimitheque || exit
 docker compose up -d keycloak
 export SQLITE_EXTENSION_DIR="/home/thbellem/workspace/workspace_rust/chimitheque_db/src/extensions"
