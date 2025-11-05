@@ -26,7 +26,7 @@ It was tested successfully with Firefox and Chrome/Chromium.
 # 2.1.0 News!
 
 Here is the list of the major changes from the `2.1.0` version:
-- the only supported installation is with Docker
+- the only supported installation is with Docker (this may change in the future)
 - the authentication is based on OpenID
 - the LDAP configuration has been removed from Chimithèque to be managed by the OpenID server
 
@@ -36,6 +36,7 @@ Here is the list of the major changes from the `2.1.0` version:
 - [Docker](https://docs.docker.com/get-docker/) and [docker-compose](https://docs.docker.com/compose/install/)
 - an SMTP server
 - an HTTPS certificate
+- the sqlite command line tool if upgrading an existing installation
 
 # Upgrading from 2.0.8
 
@@ -45,11 +46,13 @@ Important: if you upgrade to a `2.1.*` version coming from a `2.0.*` version you
 
 1. Backup your *entire* installation folder.
 
-2. Retrieve the latest release of the `chimitheque_people_keycloak_exporter` binary from <https://github.com/tbellembois/chimitheque_people_keycloak_exporter/releases>.
+## Export users
 
-3. Copy the binary in your *current* Chimithèque installation (where the `storage.db` file is).
+1. Retrieve the latest release of the `chimitheque_people_keycloak_exporter` binary from <https://github.com/tbellembois/chimitheque_people_keycloak_exporter/releases>.
 
-4. Run the binary:
+2. Copy the binary in your *current* Chimithèque installation (where the `storage.db` file is).
+
+3. Run the binary:
 ```
 chmod +x chimitheque_people_keycloak_exporter
 ./chimitheque_people_keycloak_exporter
@@ -58,6 +61,23 @@ chmod +x chimitheque_people_keycloak_exporter
 The exporter will create a `keycloak.json` file. Keep it for later use.
 
 Note that the exporter will panic if your database contains duplicate emails.
+
+## Migrate database
+
+1. From your *current* Chimithèque installation (where the `storage.db` file is), retrieve the `sql` files
+
+```bash
+wget https://raw.githubusercontent.com/tbellembois/chimitheque_db/refs/heads/main/src/resources/shema.sql
+wget https://raw.githubusercontent.com/tbellembois/chimitheque_db/refs/heads/main/src/resources/migration.sql
+```
+
+2. Run the migration
+
+```bash
+sqlite3 chimitheque.sqlite < shema.sql && sqlite3 chimitheque.sqlite < migration.sql
+```
+
+This will create a new `chimitheque.sqlite` file. Keep it for later.
 
 # Installation
 
@@ -93,11 +113,11 @@ wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/docker/n
 
 5. Copy your https certifcate `crt` and `key` files in `/data/docker-nginx/nginx-auth/certs/`. Your certificate *must* contain the certification chain.
 
-6. If you upgrade from a previous version copy the `storage.db`, `storage.db-shm` and `storage.db-wal` files in `/data/docker-chimitheque/chimitheque-db/`.
+6. If you upgrade from a previous version copy the `chimitheque.sqlite` file in `/data/docker-chimitheque/chimitheque-db/`.
 
 7. Configure Nginx, edit the `/data/docker-nginx/nginx-templates/default.conf.template` file. The sections to edit are spotted with the `# CONFIGURE:` string.
 
-8. Wait a moment (it can take several minutes for the containers to start) and start up:
+8. Start up and Wait a moment (it can take several minutes for the containers to start):
 ```bash
 docker compose up -d
 ```
@@ -116,8 +136,6 @@ Email verified: yes
 Email: admin@chimitheque.fr
 ```
 And click the `Create` button.
-
-> We have to do this operation because the installation process create the admin@chimitheque.fr user in the Default realm not the chimitheque realm.
 
 4. Then click on the `Credentials` tab and the `Set password` button. Enter the value of your `KEYCLOAK_ADMIN_PASSWORD`, uncheck `Temporary` and click on `Save`.
 

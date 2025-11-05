@@ -6,8 +6,8 @@
     font-style: normal;
 } */
 @font-face {
-    font-family: 'b612';
-    src: url('../fonts/B612-Regular.ttf') format('truetype');
+    font-family: "b612";
+    src: url("../fonts/B612-Regular.ttf") format("truetype");
     font-weight: normal;
     font-style: normal;
 }

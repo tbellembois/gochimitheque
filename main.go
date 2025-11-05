@@ -74,7 +74,6 @@ func init() {
 	flagFakeAuth := flag.Bool("fakeauth", false, "fake authentication (use in devel only), default is false")
 
 	// One shot commands.
-	flagUpdateQRCode := flag.Bool("updateqrcode", false, "regenerate storages QR codes")
 	flagVersion := flag.Bool("version", false, "display application version")
 	flagGenLocaleJS := flag.Bool("genlocalejs", false, "generate JS locales (developper target)")
 
@@ -92,7 +91,6 @@ func init() {
 	paramDebug = flagDebug
 	paramFakeAuth = flagFakeAuth
 
-	commandUpdateQRCode = flagUpdateQRCode
 	commandVersion = flagVersion
 	commandGenLocaleJS = flagGenLocaleJS
 
@@ -180,17 +178,24 @@ func initOIDC() {
 
 }
 
-func closeDB() error {
-	return env.DB.CloseDB()
-}
-
 func initDB() {
 	var (
 		err       error
 		datastore datastores.Datastore
 	)
 
-	dbname := path.Join(*paramDBPath, "storage.db")
+	dbname := path.Join(*paramDBPath, "chimitheque.sqlite")
+
+	// _, error := os.Stat(dbname)
+	// if os.IsNotExist(error) {
+	// 	logger.Log.Info("- creating database " + dbname)
+	// 	if _, err = zmqclient.DBConnectAndInitDB(dbname); err != nil {
+	// 		logger.Log.Fatal(err)
+	// 	}
+	// } else if error != nil {
+	// 	logger.Log.Fatal(err)
+	// }
+
 	logger.Log.Info("- opening database connection to " + dbname)
 	if datastore, err = datastores.NewSQLiteDBstore(dbname); err != nil {
 		logger.Log.Fatal(err)
@@ -206,16 +211,16 @@ func initDB() {
 	// 	os.Exit(0)
 	// }()
 
-	logger.Log.Info("- creating database if needed")
-	if err = datastore.CreateDatabase(); err != nil {
-		logger.Log.Fatal(err)
-	}
+	// logger.Log.Info("- creating database if needed")
+	// if err = datastore.CreateDatabase(); err != nil {
+	// 	logger.Log.Fatal(err)
+	// }
 
-	logger.Log.Info("- running maintenance job")
-	datastore.Maintenance()
+	// logger.Log.Info("- running maintenance job")
+	// datastore.Maintenance()
 
-	logger.Log.Info("- updating GHS statements")
-	zmqclient.DBUpdateGHSStatements()
+	// logger.Log.Info("- updating GHS statements")
+	// zmqclient.DBUpdateGHSStatements()
 
 	env.DB = datastore
 
@@ -225,40 +230,59 @@ func initAdmins() {
 	var (
 		err error
 		// p             models.Person
-		formerAdmins  []models.Person
-		currentAdmins []string
-		isStillAdmin  bool
+		jsonRawMessage json.RawMessage
+
+		formerAdmins *[]models.Person
+		newAdmins    []string
+		isStillAdmin bool
 	)
 
 	if *paramAdminList != "" {
-		currentAdmins = strings.Split(*paramAdminList, ",")
+		newAdmins = strings.Split(*paramAdminList, ",")
 	}
+	logger.Log.Infof("newAdmins: %s", newAdmins)
 
-	if formerAdmins, err = env.DB.GetAdmins(); err != nil {
+	if jsonRawMessage, err = zmqclient.DBGetAdmins(); err != nil {
+		logger.Log.Fatal(err)
+
+	}
+	if formerAdmins, err = zmqclient.ConvertDBJSONToPeople(jsonRawMessage); err != nil {
 		logger.Log.Fatal(err)
 	}
 
+	// if formerAdmins, err = env.DB.GetAdmins(); err != nil {
+	// 	logger.Log.Fatal(err)
+	// }
+	logger.Log.Infof("formerAdmins: %v", formerAdmins)
+
 	// Cleaning former admins.
-	for _, fa := range formerAdmins {
-		isStillAdmin = false
+	if formerAdmins != nil {
+		for _, fa := range *formerAdmins {
+			isStillAdmin = false
 
-		logger.Log.Info("former admin: " + fa.PersonEmail)
+			logger.Log.Info("former admin: " + fa.PersonEmail)
 
-		for _, ca := range currentAdmins {
-			if ca == fa.PersonEmail {
-				isStillAdmin = true
+			for _, ca := range newAdmins {
+				if ca == fa.PersonEmail {
+					isStillAdmin = true
+				}
 			}
-		}
-		if !isStillAdmin {
-			logger.Log.Info(fa.PersonEmail + " is not an admin anymore, removing permissions")
-			if err = env.DB.UnsetPersonAdmin(*fa.PersonID); err != nil {
-				logger.Log.Fatal(err)
+			if !isStillAdmin {
+				logger.Log.Info(fa.PersonEmail + " is not an admin anymore, removing permissions")
+				if _, err = zmqclient.DBUnsetPersonAdmin(*fa.PersonID); err != nil {
+					logger.Log.Fatal(err)
+				}
+
+				// if err = env.DB.UnsetPersonAdmin(*fa.PersonID); err != nil {
+				// 	logger.Log.Fatal(err)
+				// }
 			}
 		}
 	}
+
 	// Setting up new ones.
-	if len(currentAdmins) > 0 {
-		for _, ca := range currentAdmins {
+	if len(newAdmins) > 0 {
+		for _, ca := range newAdmins {
 			logger.Log.Info("additional admin: " + ca)
 
 			// TODO: remove 1 by connected user id.
@@ -276,14 +300,35 @@ func initAdmins() {
 
 			if person == nil {
 				logger.Log.Info("user " + ca + " not found in database, creating it")
-				if _, err = env.DB.CreatePerson(models.Person{PersonEmail: ca}); err != nil {
+
+				new_person := models.Person{PersonEmail: strings.ToLower(ca)}
+				new_person_json, err := json.Marshal(new_person)
+
+				if err != nil {
+					logger.Log.Fatal(err)
+
+				}
+
+				if jsonRawMessage, err = zmqclient.DBCreateUpdatePerson(new_person_json); err != nil {
+					logger.Log.Fatal(err)
+
+				}
+				if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/?person_email="+ca, 1); err != nil {
+					logger.Log.Fatal(err)
+				}
+
+				if person, err = zmqclient.ConvertDBJSONToPerson(jsonRawMessage); err != nil {
 					logger.Log.Fatal(err)
 				}
 			}
 
-			if err = env.DB.SetPersonAdmin(*person.PersonID); err != nil {
+			logger.Log.Info("setting " + ca + " admin")
+			if _, err = zmqclient.DBSetPersonAdmin(*person.PersonID); err != nil {
 				logger.Log.Fatal(err)
 			}
+			// if err = env.DB.SetPersonAdmin(*person.PersonID); err != nil {
+			// 	logger.Log.Fatal(err)
+			// }
 		}
 	}
 }
@@ -323,7 +368,6 @@ func main() {
 	}).Debug("main")
 
 	initDB()
-	defer closeDB()
 
 	// Catch ctrl+c signal.
 	// c := make(chan os.Signal)
@@ -340,18 +384,6 @@ func main() {
 	logger.Log.Debugf("- env: %+v", env)
 	logger.Log.Info("- application version: " + env.BuildID)
 	logger.Log.Info("- application endpoint: " + env.AppFullURL)
-
-	// Advanced commands.
-	if *commandUpdateQRCode {
-		logger.Log.Info("- updating storages QR codes")
-		err := env.DB.UpdateAllQRCodes()
-		if err != nil {
-			logger.Log.Error("an error occurred: " + err.Error())
-			os.Exit(1)
-		}
-
-		os.Exit(0)
-	}
 
 	initAdmins()
 
