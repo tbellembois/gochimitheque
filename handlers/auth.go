@@ -248,14 +248,35 @@ func (env *Env) CallbackHandler(w http.ResponseWriter, r *http.Request) *models.
 	}
 
 	if person == nil {
-		if _, err = env.DB.CreatePerson(models.Person{PersonEmail: strings.ToLower(claims.Email)}); err != nil {
+
+		new_person := models.Person{PersonEmail: strings.ToLower(claims.Email)}
+		new_person_json, err := json.Marshal(new_person)
+
+		if err != nil {
 			http.Error(w, "error creating user"+err.Error(), http.StatusInternalServerError)
 			return &models.AppError{
-				Code:          http.StatusInternalServerError,
-				OriginalError: nil,
+				OriginalError: err,
 				Message:       "error creating user",
+				Code:          http.StatusInternalServerError,
 			}
 		}
+
+		if jsonRawMessage, err = zmqclient.DBCreateUpdatePerson(new_person_json); err != nil {
+			return &models.AppError{
+				OriginalError: err,
+				Code:          http.StatusInternalServerError,
+				Message:       "error calling zmqclient.DBCreateUpdatePerson",
+			}
+		}
+
+		// if _, err = env.DB.CreatePerson(models.Person{PersonEmail: strings.ToLower(claims.Email)}); err != nil {
+		// 	http.Error(w, "error creating user"+err.Error(), http.StatusInternalServerError)
+		// 	return &models.AppError{
+		// 		Code:          http.StatusInternalServerError,
+		// 		OriginalError: nil,
+		// 		Message:       "error creating user",
+		// 	}
+		// }
 	}
 
 	access_token := http.Cookie{

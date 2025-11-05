@@ -46,14 +46,14 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 	router.Handle("/{item:entities}/{id}", secureChain.Then(env.AppMiddleware(env.GetEntitiesHandler))).Methods("GET")
 	router.Handle("/{item:entities}", secureChain.Then(env.AppMiddleware(env.GetEntitiesHandler))).Methods("GET")
 	router.Handle("/{item:entities}", secureChain.Then(env.AppMiddleware(env.CreateEntityHandler))).Methods("POST")
-	router.Handle("/{item:entities}/{id}", secureChain.Then(env.AppMiddleware(env.UpdateEntityHandler))).Methods("PUT")
+	router.Handle("/{item:entities}", secureChain.Then(env.AppMiddleware(env.UpdateEntityHandler))).Methods("PUT")
 	router.Handle("/{item:entities}/{id}", secureChain.Then(env.AppMiddleware(env.DeleteEntityHandler))).Methods("DELETE")
 
 	// fake
 	router.Handle("/f/{item:entities}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 	router.Handle("/f/{item:entities}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 	router.Handle("/f/{item:entities}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("POST")
-	router.Handle("/f/{item:entities}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT")
+	router.Handle("/f/{item:entities}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT")
 	router.Handle("/f/{item:entities}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE")
 
 	//
@@ -72,13 +72,13 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 	// api
 	router.Handle("/{item:people}/{id}", secureChain.Then(env.AppMiddleware(env.GetPeopleHandler))).Methods("GET")
 	router.Handle("/{item:people}", secureChain.Then(env.AppMiddleware(env.GetPeopleHandler))).Methods("GET")
-	router.Handle("/{item:people}/{id}", secureChain.Then(env.AppMiddleware(env.UpdatePersonHandler))).Methods("PUT")
+	router.Handle("/{item:people}", secureChain.Then(env.AppMiddleware(env.UpdatePersonHandler))).Methods("PUT")
 	router.Handle("/{item:people}/{id}", secureChain.Then(env.AppMiddleware(env.DeletePersonHandler))).Methods("DELETE")
 
 	// fake
 	router.Handle("/f/{item:people}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 	router.Handle("/f/{item:people}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
-	router.Handle("/f/{item:people}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT")
+	router.Handle("/f/{item:people}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT")
 	router.Handle("/f/{item:people}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE")
 
 	//
@@ -91,7 +91,7 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 	// api
 	router.Handle("/{item:store_locations}/{id}", secureChain.Then(env.AppMiddleware(env.GetStoreLocationsHandler))).Methods("GET")
 	router.Handle("/{item:store_locations}", secureChain.Then(env.AppMiddleware(env.GetStoreLocationsHandler))).Methods("GET")
-	router.Handle("/{item:store_locations}/{id}", secureChain.Then(env.AppMiddleware(env.UpdateStoreLocationHandler))).Methods("PUT")
+	router.Handle("/{item:store_locations}", secureChain.Then(env.AppMiddleware(env.UpdateStoreLocationHandler))).Methods("PUT")
 	router.Handle("/{item:store_locations}", secureChain.Then(env.AppMiddleware(env.CreateStoreLocationHandler))).Methods("POST")
 	router.Handle("/{item:store_locations}/{id}", secureChain.Then(env.AppMiddleware(env.DeleteStoreLocationHandler))).Methods("DELETE")
 
@@ -101,7 +101,7 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 
 	router.Handle("/f/{item:store_locations}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 	router.Handle("/f/{item:store_locations}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
-	router.Handle("/f/{item:store_locations}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT")
+	router.Handle("/f/{item:store_locations}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT")
 	router.Handle("/f/{item:store_locations}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("POST")
 	router.Handle("/f/{item:store_locations}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE")
 
@@ -117,7 +117,7 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 	// api
 	router.Handle("/{item:products}/{id}", secureChain.Then(env.AppMiddleware(env.GetProductsHandler))).Methods("GET")
 	router.Handle("/{item:products}", secureChain.Then(env.AppMiddleware(env.GetProductsHandler))).Methods("GET")
-	router.Handle("/{item:products}/{id}", secureChain.Then(env.AppMiddleware(env.UpdateProductHandler))).Methods("PUT")
+	router.Handle("/{item:products}", secureChain.Then(env.AppMiddleware(env.UpdateProductHandler))).Methods("PUT")
 	router.Handle("/{item:products}", secureChain.Then(env.AppMiddleware(env.CreateProductHandler))).Methods("POST")
 	router.Handle("/{item:products}/{id}", secureChain.Then(env.AppMiddleware(env.DeleteProductHandler))).Methods("DELETE")
 
@@ -151,7 +151,7 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 	// fake
 	router.Handle("/f/{item:products}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 	router.Handle("/f/{item:products}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
-	router.Handle("/f/{item:products}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT")
+	router.Handle("/f/{item:products}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT")
 	router.Handle("/f/{item:products}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("POST")
 	router.Handle("/f/{item:products}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE")
 
@@ -168,7 +168,7 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 	// router.Handle("/{item:storages}/{id}", secureChain.Then(env.AppMiddleware(env.GetStoragesHandler))).Methods("GET")
 	router.Handle("/{item:storages}", secureChain.Then(env.AppMiddleware(env.GetStoragesHandler))).Methods("GET")
 	router.Handle("/{item:storages}/{id}", secureChain.Then(env.AppMiddleware(env.GetStoragesHandler))).Methods("GET")
-	router.Handle("/{item:storages}/{id}", secureChain.Then(env.AppMiddleware(env.UpdateStorageHandler))).Methods("PUT")
+	router.Handle("/{item:storages}", secureChain.Then(env.AppMiddleware(env.UpdateStorageHandler))).Methods("PUT")
 	router.Handle("/{item:storages}", secureChain.Then(env.AppMiddleware(env.CreateStorageHandler))).Methods("POST")
 	router.Handle("/{item:storages}/{id}", secureChain.Then(env.AppMiddleware(env.DeleteStorageHandler))).Methods("DELETE")
 	router.Handle("/{item:storages}/{id}/a", secureChain.Then(env.AppMiddleware(env.ArchiveStorageHandler))).Methods("DELETE")
@@ -177,7 +177,7 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 	// fake
 	router.Handle("/f/{item:storages}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 	router.Handle("/f/{item:storages}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
-	router.Handle("/f/{item:storages}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT")
+	router.Handle("/f/{item:storages}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT")
 	router.Handle("/f/{item:storages}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("POST")
 	router.Handle("/f/{item:storages}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE")
 

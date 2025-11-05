@@ -212,8 +212,10 @@ func (env *Env) DeleteStorageHandler(w http.ResponseWriter, r *http.Request) *mo
 	vars := mux.Vars(r)
 
 	var (
-		id  int
-		err error
+		jsonRawMessage json.RawMessage
+		id64           int64
+		id             int
+		err            error
 	)
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
@@ -224,13 +226,21 @@ func (env *Env) DeleteStorageHandler(w http.ResponseWriter, r *http.Request) *mo
 		}
 	}
 
-	if err = env.DB.DeleteStorage(id); err != nil {
+	id64 = int64(id)
+
+	logger.Log.WithFields(logrus.Fields{"id": id}).Debug("DeleteStorageHandler")
+
+	if jsonRawMessage, err = zmqclient.DBDeleteStorage(id64); err != nil {
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       err.Error(),
+			Message:       "error calling zmqclient.DBDeleteStorage",
 		}
 	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
+
 	return nil
 }
 
@@ -239,8 +249,10 @@ func (env *Env) ArchiveStorageHandler(w http.ResponseWriter, r *http.Request) *m
 	vars := mux.Vars(r)
 
 	var (
-		id  int
-		err error
+		jsonRawMessage json.RawMessage
+		id64           int64
+		id             int
+		err            error
 	)
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
@@ -251,12 +263,21 @@ func (env *Env) ArchiveStorageHandler(w http.ResponseWriter, r *http.Request) *m
 		}
 	}
 
-	if err = env.DB.ArchiveStorage(id); err != nil {
+	id64 = int64(id)
+
+	logger.Log.WithFields(logrus.Fields{"id": id}).Debug("ArchiveStorageHandler")
+
+	if jsonRawMessage, err = zmqclient.DBArchiveStorage(id64); err != nil {
 		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.DBArchiveStorage",
 		}
 	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
+
 	return nil
 }
 
@@ -265,8 +286,10 @@ func (env *Env) RestoreStorageHandler(w http.ResponseWriter, r *http.Request) *m
 	vars := mux.Vars(r)
 
 	var (
-		id  int
-		err error
+		jsonRawMessage json.RawMessage
+		id64           int64
+		id             int
+		err            error
 	)
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
@@ -277,12 +300,21 @@ func (env *Env) RestoreStorageHandler(w http.ResponseWriter, r *http.Request) *m
 		}
 	}
 
-	if err = env.DB.RestoreStorage(id); err != nil {
+	id64 = int64(id)
+
+	logger.Log.WithFields(logrus.Fields{"id": id}).Debug("RestoreStorageHandler")
+
+	if jsonRawMessage, err = zmqclient.DBUnarchiveStorage(id64); err != nil {
 		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.DBUnarchiveStorage",
 		}
 	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
+
 	return nil
 }
 

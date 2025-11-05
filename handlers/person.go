@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -87,104 +88,39 @@ func (env *Env) GetPeopleHandler(w http.ResponseWriter, r *http.Request) *models
 
 // UpdatePersonHandler updates the person from the request form.
 func (env *Env) UpdatePersonHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	vars := mux.Vars(r)
 
-	var (
-		id  int
-		err error
-		p   models.Person
-		es  []*models.Entity
-	)
+	logger.Log.Debug("UpdatePersonHandler")
 
-	if err = json.NewDecoder(r.Body).Decode(&p); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "JSON decoding error",
-			Code:          http.StatusInternalServerError,
-		}
-	}
-
-	logger.Log.WithFields(logrus.Fields{"p": p}).Debug("UpdatePersonHandler")
-
-	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "id atoi conversion",
-			Code:          http.StatusInternalServerError,
-		}
-	}
-
-	// TODO: remove 1 by connected user id.
 	var (
 		jsonRawMessage json.RawMessage
-		updatedp       *models.Person
+		body           []byte
+		err            error
 	)
 
-	if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/"+strconv.Itoa(id), 1); err != nil {
+	if body, err = io.ReadAll(r.Body); err != nil {
 		return &models.AppError{
 			OriginalError: err,
-			Message:       "zmqclient.DBGetPeople",
 			Code:          http.StatusInternalServerError,
+			Message:       "error reading request body",
 		}
 	}
+	logger.Log.Debug("body " + string(body))
 
-	if updatedp, err = zmqclient.ConvertDBJSONToPerson(jsonRawMessage); err != nil {
+	if jsonRawMessage, err = zmqclient.DBCreateUpdatePerson(body); err != nil {
 		return &models.AppError{
 			OriginalError: err,
-			Message:       "ConvertDBJSONToPerson",
 			Code:          http.StatusInternalServerError,
-		}
-	}
-
-	updatedp.PersonEmail = p.PersonEmail
-	updatedp.Entities = p.Entities
-	updatedp.Permissions = p.Permissions
-
-	es = updatedp.ManagedEntities
-
-	logger.Log.WithFields(logrus.Fields{"es": es}).Debug("UpdatePersonHandler")
-
-	// for the managed entities setting up the permissions
-	if es != nil && len(es) != 0 {
-		for _, e := range es {
-			updatedp.Permissions = append(updatedp.Permissions, &models.Permission{
-				PermissionName:   "all",
-				PermissionItem:   "all",
-				PermissionEntity: *e.EntityID,
-				Person:           *updatedp,
-			})
-		}
-	}
-
-	// product permissions are not for a given entity
-	for i, p := range updatedp.Permissions {
-		if p.PermissionName == "products" {
-			updatedp.Permissions[i].PermissionEntity = -1
-		}
-	}
-
-	logger.Log.WithFields(logrus.Fields{"updatedp": updatedp}).Debug("UpdatePersonHandler")
-	logger.Log.WithFields(logrus.Fields{"updatedp.Permissions": updatedp.Permissions}).Debug("UpdatePersonHandler")
-
-	if err = env.DB.UpdatePerson(*updatedp); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "update person error",
-			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.DBCreateUpdatePerson",
 		}
 	}
 
 	env.Enforcer = casbin.InitCasbinPolicy(env.DB)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
-	if err = json.NewEncoder(w).Encode(updatedp); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
 	return nil
+
 }
 
 // DeletePersonHandler deletes the person with the requested id.
@@ -192,8 +128,10 @@ func (env *Env) DeletePersonHandler(w http.ResponseWriter, r *http.Request) *mod
 	vars := mux.Vars(r)
 
 	var (
-		id  int
-		err error
+		jsonRawMessage json.RawMessage
+		id64           int64
+		id             int
+		err            error
 	)
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
@@ -204,13 +142,20 @@ func (env *Env) DeletePersonHandler(w http.ResponseWriter, r *http.Request) *mod
 		}
 	}
 
-	if err := env.DB.DeletePerson(id); err != nil {
+	id64 = int64(id)
+
+	logger.Log.WithFields(logrus.Fields{"id": id}).Debug("DeletePersonHandler")
+
+	if jsonRawMessage, err = zmqclient.DBDeletePerson(id64); err != nil {
 		return &models.AppError{
 			OriginalError: err,
-			Message:       "delete person error",
 			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.DBDeletePerson",
 		}
 	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
 	return nil
 }

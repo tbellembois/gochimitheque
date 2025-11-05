@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
 	"github.com/tbellembois/gochimitheque/request"
@@ -845,8 +846,10 @@ func (env *Env) DeleteProductHandler(w http.ResponseWriter, r *http.Request) *mo
 	vars := mux.Vars(r)
 
 	var (
-		id  int
-		err error
+		jsonRawMessage json.RawMessage
+		id64           int64
+		id             int
+		err            error
 	)
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
@@ -857,13 +860,20 @@ func (env *Env) DeleteProductHandler(w http.ResponseWriter, r *http.Request) *mo
 		}
 	}
 
-	if err := env.DB.DeleteProduct(id); err != nil {
+	id64 = int64(id)
+
+	logger.Log.WithFields(logrus.Fields{"id": id}).Debug("DeleteProductHandler")
+
+	if jsonRawMessage, err = zmqclient.DBDeleteProduct(id64); err != nil {
 		return &models.AppError{
 			OriginalError: err,
-			Message:       "delete product error",
 			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.DBDeleteProduct",
 		}
 	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
 	return nil
 }

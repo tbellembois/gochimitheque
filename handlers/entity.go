@@ -3,12 +3,12 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
-	"github.com/tbellembois/gochimitheque/casbin"
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
 	"github.com/tbellembois/gochimitheque/request"
@@ -124,119 +124,61 @@ func (env *Env) GetEntityStockHandler(w http.ResponseWriter, r *http.Request) *m
 // CreateEntityHandler creates the entity from the request form.
 func (env *Env) CreateEntityHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	var (
-		e   models.Entity
-		err error
+		jsonRawMessage json.RawMessage
+		body           []byte
+		err            error
 	)
 
-	if err = json.NewDecoder(r.Body).Decode(&e); err != nil {
+	if body, err = io.ReadAll(r.Body); err != nil {
 		return &models.AppError{
 			OriginalError: err,
-			Message:       "JSON decoding error",
 			Code:          http.StatusInternalServerError,
+			Message:       "error reading request body",
 		}
 	}
+	logger.Log.Debug("body " + string(body))
 
-	logger.Log.WithFields(logrus.Fields{"e": e}).Debug("CreateEntityHandler")
-
-	if _, err = env.DB.CreateEntity(e); err != nil {
+	if jsonRawMessage, err = zmqclient.DBCreateUpdateEntity(body); err != nil {
 		return &models.AppError{
 			OriginalError: err,
-			Message:       "create entity error",
 			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.DBCreateUpdateEntity",
 		}
 	}
-
-	env.Enforcer = casbin.InitCasbinPolicy(env.DB)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	if err = json.NewEncoder(w).Encode(e); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
+	w.Write(jsonRawMessage)
 
 	return nil
 }
 
 // UpdateEntityHandler updates the entity from the request form.
 func (env *Env) UpdateEntityHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
-	vars := mux.Vars(r)
-
-	var (
-		id       int
-		err      error
-		e        models.Entity
-		updatede *models.Entity
-	)
-
-	c := request.ContainerFromRequestContext(r)
-
-	if err = json.NewDecoder(r.Body).Decode(&e); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "JSON decoding error",
-			Code:          http.StatusInternalServerError,
-		}
-	}
-
-	logger.Log.WithFields(logrus.Fields{"e": e}).Debug("UpdateEntityHandler")
-
-	if id, err = strconv.Atoi(vars["id"]); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "id atoi conversion",
-			Code:          http.StatusInternalServerError,
-		}
-	}
-
-	// getting the entity
 	var (
 		jsonRawMessage json.RawMessage
+		body           []byte
+		err            error
 	)
-	if jsonRawMessage, err = zmqclient.DBGetEntities("http://localhost/entities/"+strconv.Itoa(id), c.PersonID); err != nil {
-		logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
+
+	if body, err = io.ReadAll(r.Body); err != nil {
 		return &models.AppError{
 			OriginalError: err,
-			Message:       "get entity error",
 			Code:          http.StatusInternalServerError,
+			Message:       "error reading request body",
 		}
 	}
+	logger.Log.Debug("body " + string(body))
 
-	if updatede, err = zmqclient.ConvertDBJSONToEntity(jsonRawMessage); err != nil {
-		logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
+	if jsonRawMessage, err = zmqclient.DBCreateUpdateEntity(body); err != nil {
 		return &models.AppError{
 			OriginalError: err,
-			Message:       "get entity error",
 			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.DBCreateUpdateEntity",
 		}
 	}
-
-	updatede.EntityName = e.EntityName
-	updatede.EntityDescription = e.EntityDescription
-	updatede.Managers = e.Managers
-
-	logger.Log.WithFields(logrus.Fields{"updatede": updatede}).Debug("UpdateEntityHandler")
-
-	if err = env.DB.UpdateEntity(*updatede); err != nil {
-		return &models.AppError{
-			OriginalError: err,
-			Message:       "update entity error",
-			Code:          http.StatusInternalServerError,
-		}
-	}
-
-	env.Enforcer = casbin.InitCasbinPolicy(env.DB)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
-	if err = json.NewEncoder(w).Encode(updatede); err != nil {
-		return &models.AppError{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
-		}
-	}
+	w.Write(jsonRawMessage)
 
 	return nil
 }
@@ -246,8 +188,10 @@ func (env *Env) DeleteEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 	vars := mux.Vars(r)
 
 	var (
-		id  int
-		err error
+		jsonRawMessage json.RawMessage
+		id64           int64
+		id             int
+		err            error
 	)
 
 	if id, err = strconv.Atoi(vars["id"]); err != nil {
@@ -258,15 +202,20 @@ func (env *Env) DeleteEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 		}
 	}
 
+	id64 = int64(id)
+
 	logger.Log.WithFields(logrus.Fields{"id": id}).Debug("DeleteEntityHandler")
 
-	if err := env.DB.DeleteEntity(id); err != nil {
+	if jsonRawMessage, err = zmqclient.DBDeleteEntity(id64); err != nil {
 		return &models.AppError{
 			OriginalError: err,
-			Message:       "delete entity error",
 			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.DBDeleteEntity",
 		}
 	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.Write(jsonRawMessage)
 
 	return nil
 }

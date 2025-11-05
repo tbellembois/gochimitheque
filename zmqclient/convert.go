@@ -8,6 +8,37 @@ import (
 	"github.com/tbellembois/gochimitheque/models"
 )
 
+// Convert a JSON response from the chimitheque_db Rust library to a slice of person.
+func ConvertDBJSONToPeople(jsonRawMessage json.RawMessage) (*[]models.Person, error) {
+
+	// logger.Log.Debug("ConvertDBJSONToPerson")
+	// logger.Log.WithFields(logrus.Fields{"jsonRawMessage": fmt.Sprintf("%+v", jsonRawMessage)}).Debug("ConvertDBJSONToPerson")
+
+	var (
+		tuple tuple.T2[[]models.Person, int]
+		err   error
+	)
+
+	if err = json.Unmarshal(jsonRawMessage, &tuple); err != nil {
+		return nil, &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling jsonRawMessage",
+		}
+	}
+
+	var resp *[]models.Person
+	if len(tuple.V1) == 0 {
+		resp = nil
+	} else {
+		resp = &tuple.V1
+	}
+
+	// logger.Log.WithFields(logrus.Fields{"resp": fmt.Sprintf("%+v", resp)}).Debug("ConvertDBJSONToPerson")
+
+	return resp, nil
+}
+
 // Convert a JSON response from the chimitheque_db Rust library to a person.
 func ConvertDBJSONToPerson(jsonRawMessage json.RawMessage) (*models.Person, error) {
 
