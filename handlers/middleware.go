@@ -219,27 +219,26 @@ func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 	})
 }
 
-func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// defer utils.TimeTrack(time.Now(), "AuthorizeMiddleware")
-		h.ServeHTTP(w, r)
-	})
-}
+// func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
+// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// 		// defer utils.TimeTrack(time.Now(), "AuthorizeMiddleware")
+// 		h.ServeHTTP(w, r)
+// 	})
+// }
 
 // AuthorizeMiddleware check that the user extracted from the JWT token by the AuthenticateMiddleware has the permissions to access the requested resource.
-func (env *Env) AuthorizeMiddleware2(h http.Handler) http.Handler {
+func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// defer utils.TimeTrack(time.Now(), "AuthorizeMiddleware")
 
 		var (
-			personid    int64  // logged person id
-			item        string // storages, products...
-			itemid      string // the item id to be accessed: an int, -1, -2 or ""
-			itemidInt   int
-			action      string
-			permok      bool
-			personemail string
-			err         error
+			personid        int64 // logged person id
+			personid_string string
+			item            string // storages, products...
+			itemid          string // the item id to be accessed: an int, -1, -2 or ""
+			action          string
+			permok          bool
+			err             error
 		)
 
 		logger.Log.WithFields(logrus.Fields{"r.RequestURI": fmt.Sprintf("%+v", r.RequestURI)}).Debug("AuthorizeMiddleware")
@@ -249,13 +248,7 @@ func (env *Env) AuthorizeMiddleware2(h http.Handler) http.Handler {
 		ctxcontainer := ctx.Value(request.ChimithequeContextKey("container"))
 		container := ctxcontainer.(request.Container)
 		personid = container.PersonID
-		personemail = container.PersonEmail
-		// should not be necessary
-		// AuthenticateMiddleware performs a check
-		if personemail == "" {
-			http.Error(w, "request container personemail empty", http.StatusUnauthorized)
-			return
-		}
+		personid_string = strconv.Itoa(int(personid))
 
 		//
 		// extracting request variables
@@ -267,210 +260,26 @@ func (env *Env) AuthorizeMiddleware2(h http.Handler) http.Handler {
 		// id = an int or ""
 		itemid = vars["id"]
 
-		logger.Log.WithFields(logrus.Fields{"vars": fmt.Sprintf("%+v", vars)}).Debug("AuthorizeMiddleware")
-
-		// getting the connected user
-		var (
-			jsonRawMessage json.RawMessage
-			person         *models.Person
-		)
-		if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/"+strconv.Itoa(int(personid)), 1); err != nil {
-			logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		if person, err = zmqclient.ConvertDBJSONToPerson(jsonRawMessage); err != nil {
-			logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		logger.Log.WithFields(logrus.Fields{"vars": fmt.Sprintf("%+v", vars), "r.Method": r.Method}).Debug("AuthorizeMiddleware")
 
 		// action = r or w
 		if r.Method == "GET" {
 			action = "r"
+		} else if r.Method == "DELETE" {
+			action = "d"
 		} else {
 			action = "w"
 		}
 
-		logger.Log.WithFields(logrus.Fields{"r.Method": fmt.Sprintf("%+v", r.Method)}).Debug("AuthorizeMiddleware")
-
-		//
-		// pre checks
-		//
-		switch r.Method {
-		case "PUT":
-			// REST update,create methods
-			switch item {
-			case "people":
-				// itemid is an int
-				if itemidInt, err = strconv.Atoi(itemid); err != nil {
-					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-				// a user can not edit himself
-				if itemidInt == int(personid) {
-					http.Error(w, "can not edit/delete yourself", http.StatusBadRequest)
-					return
-				}
-			}
-		case "DELETE":
-			// REST delete method
-			switch item {
-			case "people":
-				// itemid is an int
-				if itemidInt, err = strconv.Atoi(itemid); err != nil {
-					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Debug("AuthorizeMiddleware")
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-				// a user can not delete himself
-				if itemidInt == int(personid) {
-					http.Error(w, "can not edit/delete yourself", http.StatusBadRequest)
-					return
-				}
-				// we can not delete a manager
-				if person.ManagedEntities != nil && len(person.ManagedEntities) != 0 {
-					http.Error(w, "can not delete a manager", http.StatusBadRequest)
-					return
-				}
-				// we can not delete an admin
-				a, e := env.DB.IsPersonAdmin(itemidInt)
-				if e != nil {
-					logger.Log.WithFields(logrus.Fields{"e": e.Error()}).Error("AuthorizeMiddleware")
-					http.Error(w, e.Error(), http.StatusInternalServerError)
-					return
-				}
-				if a {
-					http.Error(w, "can not delete an admin", http.StatusBadRequest)
-					return
-				}
-			case "storelocations":
-				// itemid is an int
-				if itemidInt, err = strconv.Atoi(itemid); err != nil {
-					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Debug("AuthorizeMiddleware")
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-
-				// getting the store location
-				var (
-					jsonRawMessage json.RawMessage
-					storeLocation  *models.StoreLocation
-				)
-				if jsonRawMessage, err = zmqclient.DBGetStorelocations("http://localhost/store_locations/"+strconv.Itoa(int(itemidInt)), personid); err != nil {
-					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-
-				if storeLocation, err = zmqclient.ConvertDBJSONToStorelocation(jsonRawMessage); err != nil {
-					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-
-				// can not delete store location with children
-				if storeLocation.StoreLocationNbChildren != nil && *storeLocation.StoreLocationNbChildren > 0 {
-					http.Error(w, "can not delete store location with children", http.StatusBadRequest)
-					return
-				}
-
-				// can not delete a non empty store location
-				if storeLocation.StoreLocationNbStorage != nil && *storeLocation.StoreLocationNbStorage > 0 {
-					http.Error(w, "can not delete a non empty store location", http.StatusBadRequest)
-					return
-				}
-
-			case "products":
-				logger.Log.Debug("DELETE -> products")
-
-				// itemid is an int
-				if itemidInt, err = strconv.Atoi(itemid); err != nil {
-					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-				logger.Log.WithFields(logrus.Fields{"itemidInt": itemidInt}).Debug("AuthorizeMiddleware")
-
-				// getting the product
-				var (
-					jsonRawMessage json.RawMessage
-					product        *models.Product
-					count          int
-				)
-				if jsonRawMessage, err = zmqclient.DBGetProducts("http://localhost/"+itemid, personid); err != nil {
-					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-
-				}
-
-				if product, err = zmqclient.ConvertDBJSONToProduct(jsonRawMessage); err != nil {
-					logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-				logger.Log.WithFields(logrus.Fields{"product": fmt.Sprintf("%#v", product)}).Debug("AuthorizeMiddleware")
-
-				// we can not delete a product with storages
-				count = *product.ProductSC
-				if count != 0 {
-					http.Error(w, "can not delete a product with storages", http.StatusBadRequest)
-					return
-				}
-				logger.Log.WithFields(logrus.Fields{"count": count}).Debug("AuthorizeMiddleware")
-
-			case "entities":
-				if r.Method == "DELETE" {
-					// itemid is an int
-					if itemidInt, err = strconv.Atoi(itemid); err != nil {
-						logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
-						http.Error(w, err.Error(), http.StatusInternalServerError)
-						return
-					}
-
-					// getting the entity
-					var (
-						jsonRawMessage json.RawMessage
-						entity         *models.Entity
-					)
-					if jsonRawMessage, err = zmqclient.DBGetEntities("http://localhost/entities/"+strconv.Itoa(itemidInt), personid); err != nil {
-						logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
-						http.Error(w, err.Error(), http.StatusInternalServerError)
-						return
-					}
-
-					if entity, err = zmqclient.ConvertDBJSONToEntity(jsonRawMessage); err != nil {
-						logger.Log.WithFields(logrus.Fields{"err": err.Error()}).Error("AuthorizeMiddleware")
-						http.Error(w, err.Error(), http.StatusInternalServerError)
-						return
-					}
-
-					m := (entity.EntityNbPeople != nil && *entity.EntityNbPeople == 0)
-					n := (entity.EntityNbStoreLocations != nil && *entity.EntityNbStoreLocations == 0)
-					if m {
-						http.Error(w, "can not delete an entity with members", http.StatusBadRequest)
-						return
-					}
-					if n {
-						http.Error(w, "can not delete an entity with store locations", http.StatusBadRequest)
-						return
-					}
-				}
-			}
-		}
-
 		// allow/deny access
 		logger.Log.WithFields(logrus.Fields{
-			"itemid":   itemid,
-			"item":     item,
-			"personid": strconv.Itoa(int(personid)),
-			"action":   action,
+			"itemid":          itemid,
+			"item":            item,
+			"personid_string": personid_string,
+			"action":          action,
 		}).Debug("AuthorizeMiddleware")
 
-		if permok, err = env.Enforcer.Enforce(strconv.Itoa(int(personid)), action, item, itemid); err != nil {
+		if permok, err = env.Enforcer.Enforce(personid_string, action, item, itemid); err != nil {
 			http.Error(w, "enforcer error: "+err.Error(), http.StatusInternalServerError)
 			return
 		}

@@ -6,10 +6,10 @@ nav.navbar.navbar-expand-lg.navbar-light
         img(src=c.AppURL + c.AppPath + "static/img/logo_chimitheque_simple.svg", width="50px" alt="chimitheque_logo", title="Chimithèque")
     button.navbar-toggler(
                         type="button"
-                        data-toggle="collapse" 
-                        data-target="#navbarSupportedContent" 
-                        aria-controls="navbarSupportedContent" 
-                        aria-expanded="false" 
+                        data-toggle="collapse"
+                        data-target="#navbarSupportedContent"
+                        aria-controls="navbarSupportedContent"
+                        aria-expanded="false"
                         aria-label="Toggle navigation")
         span.navbar-toggler-icon
 
@@ -18,11 +18,11 @@ nav.navbar.navbar-expand-lg.navbar-light
             li.nav-item#menu_list_bookmarks.collapse
                 a(href="#", onclick="Product_listBookmark()").nav-link
                     span.mdi.mdi-bookmark.mdi-36px.iconlabel
-                        = T("menu_bookmark", 1) 
+                        = T("menu_bookmark", 1)
             li.nav-item#menu_scan_qrcode.collapse
                 a(onclick="scanQR();").nav-link
                     span.mdi.mdi-qrcode-scan.mdi-36px.iconlabel
-                        = T("menu_scanqr", 1) 
+                        = T("menu_scanqr", 1)
             li.nav-item#menu_create_product.collapse
                 a(href="#", onclick="Menu_loadContent('product', '" + c.AppURL + c.AppPath + "vc/products', 'Product_create')").nav-link
                     span.mdi.mdi-tag.mdi-36px.iconlabel
@@ -34,13 +34,13 @@ nav.navbar.navbar-expand-lg.navbar-light
 
             li.nav-item.dropdown#menu_management.collapse
                 a(href="#").nav-link.dropdown-toggle#navbarDropdown(
-                    role="button" 
-                    data-toggle="dropdown" 
-                    aria-haspopup="true" 
+                    role="button"
+                    data-toggle="dropdown"
+                    aria-haspopup="true"
                     aria-expanded="false")
                     span.mdi.mdi-domain.mdi-36px.iconlabel
                         = T("menu_management", 1)
-                        
+
                 div.dropdown-menu(aria-labelledby="navbarDropdown")
                     div#menu_entities.collapse
                         span.p-2.mdi.mdi-home-group.mdi-24px
@@ -75,15 +75,12 @@ nav.navbar.navbar-expand-lg.navbar-light
                     div#menu_settings.collapse
                         span.p-2.mdi.mdi-cog.mdi-24px
                             = T("menu_settings", 1)
-                        a#menu_update_welcome_announce.dropdown-item(href="#", onclick="Menu_loadContent('welcome', '" + c.AppURL + c.AppPath + "v/welcomeannounce', 'WelcomeAnnounce_list')")
-                            span.iconlabel
-                                = T("menu_welcome_announce", 1)
 
             li.nav-item.dropdown#menu_account
                 a(href="#").nav-link.dropdown-toggle#navbarDropdown(
-                    role="button" 
-                    data-toggle="dropdown" 
-                    aria-haspopup="true" 
+                    role="button"
+                    data-toggle="dropdown"
+                    aria-haspopup="true"
                     aria-expanded="false")
                     span.mdi.mdi-account.mdi-36px.iconlabel
                         = T("menu_account", 1)
