@@ -4,7 +4,7 @@ go 1.24
 
 require (
 	github.com/BurntSushi/toml v1.5.0
-	github.com/casbin/casbin/v2 v2.104.0
+	github.com/casbin/casbin/v2 v2.132.0
 	github.com/doug-martin/goqu/v9 v9.19.0
 	github.com/gorilla/mux v1.8.1
 	github.com/jmoiron/sqlx v1.4.0
@@ -32,10 +32,11 @@ require (
 
 require (
 	github.com/Joker/hpp v1.0.0 // indirect
-	github.com/bmatcuk/doublestar/v4 v4.8.1 // indirect
-	github.com/casbin/govaluate v1.3.0 // indirect
+	github.com/bmatcuk/doublestar/v4 v4.9.1 // indirect
+	github.com/casbin/govaluate v1.10.0 // indirect
 	github.com/go-jose/go-jose/v4 v4.1.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/pquerna/cachecontrol v0.2.0 // indirect
 	github.com/stretchr/objx v0.4.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect

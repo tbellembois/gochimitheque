@@ -246,7 +246,7 @@ func initAdmins() {
 		logger.Log.Fatal(err)
 
 	}
-	if formerAdmins, err = zmqclient.ConvertDBJSONToPeople(jsonRawMessage); err != nil {
+	if formerAdmins, err = zmqclient.ConvertDBJSONToAdmins(jsonRawMessage); err != nil {
 		logger.Log.Fatal(err)
 	}
 
