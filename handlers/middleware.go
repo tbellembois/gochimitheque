@@ -258,17 +258,23 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 		// item = products, storages...
 		item = vars["item"]
 		// id = an int or ""
+		// TODO: for POST requests item_id is in the body JSON.
 		itemid = vars["id"]
 
 		logger.Log.WithFields(logrus.Fields{"vars": fmt.Sprintf("%+v", vars), "r.Method": r.Method}).Debug("AuthorizeMiddleware")
 
-		// action = r or w
+		// action = CRUD
 		if r.Method == "GET" {
 			action = "r"
 		} else if r.Method == "DELETE" {
 			action = "d"
+		} else if r.Method == "POST" {
+			action = "c"
+		} else if r.Method == "PUT" {
+			action = "u"
 		} else {
-			action = "w"
+			http.Error(w, "unexpected HTTP verb: "+r.Method, http.StatusBadRequest)
+			return
 		}
 
 		// allow/deny access
