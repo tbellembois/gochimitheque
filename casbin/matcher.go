@@ -9,6 +9,99 @@ import (
 	"github.com/tbellembois/gochimitheque/zmqclient"
 )
 
+func matchStoreLocationIsInEntity(storeLocationId int64, entityId int64) bool {
+
+	var (
+		err            error
+		jsonRawMessage json.RawMessage
+		result         bool
+	)
+
+	logger.Log.WithFields(logrus.Fields{"storageId": storeLocationId, "entityId": entityId}).Debug("matchStoreLocationIsInEntity")
+
+	if jsonRawMessage, err = zmqclient.CasbinMatchStoreLocationIsInEntity(storeLocationId, entityId); err != nil {
+		logger.Log.Error("CasbinMatchStoreLocationIsInEntity: " + err.Error())
+		return false
+	}
+
+	if result, err = zmqclient.ConvertDBJSONToBool(jsonRawMessage); err != nil {
+		logger.Log.Error("CasbinMatchStoreLocationIsInEntity: " + err.Error())
+		return false
+	}
+
+	logger.Log.WithFields(logrus.Fields{"result": result}).Debug("matchStoreLocationIsInEntity")
+
+	return result
+}
+
+func MatchStoreLocationIsInEntityFuncWrapper() func(args ...interface{}) (interface{}, error) {
+	return func(args ...interface{}) (interface{}, error) {
+		storeLocationID := args[0].(string)
+		itemID := args[1].(string)
+
+		var (
+			storeLocationID_int64 int64
+			itemID_int64          int64
+			err                   error
+		)
+
+		if storeLocationID_int64, err = strconv.ParseInt(storeLocationID, 10, 64); err != nil {
+			return false, err
+		}
+		if itemID_int64, err = strconv.ParseInt(itemID, 10, 64); err != nil {
+			return false, err
+		}
+
+		return (bool)(matchStoreLocationIsInEntity(storeLocationID_int64, itemID_int64)), nil
+	}
+}
+func matchStorageIsInEntity(storageId int64, entityId int64) bool {
+
+	var (
+		err            error
+		jsonRawMessage json.RawMessage
+		result         bool
+	)
+
+	logger.Log.WithFields(logrus.Fields{"storageId": storageId, "entityId": entityId}).Debug("matchStorageIsInEntity")
+
+	if jsonRawMessage, err = zmqclient.CasbinMatchStorageIsInEntity(storageId, entityId); err != nil {
+		logger.Log.Error("CasbinMatchStorageIsInEntity: " + err.Error())
+		return false
+	}
+
+	if result, err = zmqclient.ConvertDBJSONToBool(jsonRawMessage); err != nil {
+		logger.Log.Error("CasbinMatchStorageIsInEntity: " + err.Error())
+		return false
+	}
+
+	logger.Log.WithFields(logrus.Fields{"result": result}).Debug("matchStorageIsInEntity")
+
+	return result
+}
+
+func MatchStorageisInEntityFuncWrapper() func(args ...interface{}) (interface{}, error) {
+	return func(args ...interface{}) (interface{}, error) {
+		storageID := args[0].(string)
+		itemID := args[1].(string)
+
+		var (
+			storageID_int64 int64
+			itemID_int64    int64
+			err             error
+		)
+
+		if storageID_int64, err = strconv.ParseInt(storageID, 10, 64); err != nil {
+			return false, err
+		}
+		if itemID_int64, err = strconv.ParseInt(itemID, 10, 64); err != nil {
+			return false, err
+		}
+
+		return (bool)(matchStorageIsInEntity(storageID_int64, itemID_int64)), nil
+	}
+}
+
 func matchPersonIsInPersonEntity(personId int64, otherPersonId int64) bool {
 
 	var (
