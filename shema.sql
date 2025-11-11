@@ -210,7 +210,7 @@ CREATE TABLE "product" (
 	"product_molecular_weight"	REAL,
 	"cas_number"	INTEGER,
 	"ce_number"	INTEGER,
-	"person"	INTEGER NOT NULL,
+	"person"	INTEGER NOT NULL DEFAULT 1,
 	"empirical_formula"	INTEGER,
 	"linear_formula"	INTEGER,
 	"physical_state"	INTEGER,
@@ -229,7 +229,7 @@ CREATE TABLE "product" (
 	FOREIGN KEY("empirical_formula") REFERENCES "empirical_formula"("empirical_formula_id"),
 	FOREIGN KEY("linear_formula") REFERENCES "linear_formula"("linear_formula_id"),
 	FOREIGN KEY("name") REFERENCES "name"("name_id"),
-	FOREIGN KEY("person") REFERENCES "person"("person_id"),
+	FOREIGN KEY("person") REFERENCES "person"("person_id") ON DELETE SET DEFAULT,
 	FOREIGN KEY("physical_state") REFERENCES "physical_state"("physical_state_id"),
 	FOREIGN KEY("producer_ref") REFERENCES "producer_ref"("producer_ref_id"),
 	FOREIGN KEY("signal_word") REFERENCES "signal_word"("signal_word_id"),
@@ -271,7 +271,7 @@ CREATE TABLE "storage" (
 	"storage_concentration"	REAL,
 	"storage_number_of_bag"	INTEGER,
 	"storage_number_of_carton"	INTEGER,
-	"person"	INTEGER NOT NULL,
+	"person"	INTEGER NOT NULL DEFAULT 1,
 	"product"	INTEGER NOT NULL,
 	"store_location"	INTEGER NOT NULL,
 	"unit_concentration"	REAL,
@@ -279,7 +279,7 @@ CREATE TABLE "storage" (
 	"supplier"	INTEGER,
 	"storage"	INTEGER,
 	PRIMARY KEY("storage_id"),
-	FOREIGN KEY("person") REFERENCES "person"("person_id"),
+	FOREIGN KEY("person") REFERENCES "person"("person_id") ON DELETE SET DEFAULT,
 	FOREIGN KEY("product") REFERENCES "product"("product_id"),
 	FOREIGN KEY("storage") REFERENCES "storage"("storage_id"),
 	FOREIGN KEY("store_location") REFERENCES "store_location"("store_location_id"),
@@ -364,7 +364,7 @@ CREATE TABLE "entitypeople" (
 	"entitypeople_person_id"	integer NOT NULL,
 	PRIMARY KEY("entitypeople_entity_id","entitypeople_person_id"),
 	FOREIGN KEY("entitypeople_entity_id") REFERENCES "entity"("entity_id") ON DELETE CASCADE,
-	FOREIGN KEY("entitypeople_person_id") REFERENCES "person"("person_id") ON DELETE CASCADE
+	FOREIGN KEY("entitypeople_person_id") REFERENCES "person"("person_id") ON DELETE RESTRICT
 ) STRICT;
 
 DROP TABLE IF EXISTS "personentities";

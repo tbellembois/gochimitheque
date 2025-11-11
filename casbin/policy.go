@@ -55,6 +55,8 @@ func InitCasbinPolicy(datastore datastores.Datastore) (enforcer *casbin.Enforcer
 	enforcer.AddFunction("matchStoreLocationHasStorages", MatchStoreLocationHasStoragesFuncWrapper())
 	enforcer.AddFunction("matchPersonIsManager", MatchPersonIsManagerFuncWrapper())
 	enforcer.AddFunction("matchPersonIsInStorageEntity", MatchPersonIsInStorageEntityFuncWrapper())
+	enforcer.AddFunction("matchStorageIsInEntity", MatchStorageisInEntityFuncWrapper())
+	enforcer.AddFunction("matchStoreLocationIsInEntity", MatchStoreLocationIsInEntityFuncWrapper())
 
 	if err = enforcer.LoadPolicy(); err != nil {
 		logger.Log.Fatal("enforcer policy load error: " + err.Error())
