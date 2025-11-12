@@ -268,15 +268,6 @@ func (env *Env) CallbackHandler(w http.ResponseWriter, r *http.Request) *models.
 				Message:       "error calling zmqclient.DBCreateUpdatePerson",
 			}
 		}
-
-		// if _, err = env.DB.CreatePerson(models.Person{PersonEmail: strings.ToLower(claims.Email)}); err != nil {
-		// 	http.Error(w, "error creating user"+err.Error(), http.StatusInternalServerError)
-		// 	return &models.AppError{
-		// 		Code:          http.StatusInternalServerError,
-		// 		OriginalError: nil,
-		// 		Message:       "error creating user",
-		// 	}
-		// }
 	}
 
 	access_token := http.Cookie{

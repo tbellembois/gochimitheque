@@ -145,7 +145,7 @@ func initOIDC() {
 		log.Fatal(err)
 	}
 
-	logger.Log.Info("- OICD body: " + string(body))
+	logger.Log.Debug("- OICD body: " + string(body))
 
 	oidcDiscover := OIDCDiscover{}
 	if err = json.Unmarshal(body, &oidcDiscover); err != nil {
@@ -186,61 +186,27 @@ func initDB() {
 
 	dbname := path.Join(*paramDBPath, "chimitheque.sqlite")
 
-	// _, error := os.Stat(dbname)
-	// if os.IsNotExist(error) {
-	// 	logger.Log.Info("- creating database " + dbname)
-	// 	if _, err = zmqclient.DBConnectAndInitDB(dbname); err != nil {
-	// 		logger.Log.Fatal(err)
-	// 	}
-	// } else if error != nil {
-	// 	logger.Log.Fatal(err)
-	// }
-
 	logger.Log.Info("- opening database connection to " + dbname)
 	if datastore, err = datastores.NewSQLiteDBstore(dbname); err != nil {
 		logger.Log.Fatal(err)
 	}
 
-	// Catch ctrl+c signal.
-	// c := make(chan os.Signal)
-	// signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-	// go func() {
-	// 	<-c
-	// 	logger.Log.Info("- closing database")
-	// 	datastore.CloseDB()
-	// 	os.Exit(0)
-	// }()
-
-	// logger.Log.Info("- creating database if needed")
-	// if err = datastore.CreateDatabase(); err != nil {
-	// 	logger.Log.Fatal(err)
-	// }
-
-	// logger.Log.Info("- running maintenance job")
-	// datastore.Maintenance()
-
-	// logger.Log.Info("- updating GHS statements")
-	// zmqclient.DBUpdateGHSStatements()
-
 	env.DB = datastore
-
 }
 
 func initAdmins() {
 	var (
-		err error
-		// p             models.Person
-		jsonRawMessage json.RawMessage
-
-		formerAdmins *[]models.Person
-		newAdmins    []string
-		isStillAdmin bool
+		err               error
+		jsonRawMessage    json.RawMessage
+		formerAdmins      *[]models.Person
+		commandLineAdmins []string
+		isStillAdmin      bool
 	)
 
 	if *paramAdminList != "" {
-		newAdmins = strings.Split(*paramAdminList, ",")
+		commandLineAdmins = strings.Split(*paramAdminList, ",")
 	}
-	logger.Log.Infof("newAdmins: %s", newAdmins)
+	logger.Log.Infof("commandLineAdmins: %s", commandLineAdmins)
 
 	if jsonRawMessage, err = zmqclient.DBGetAdmins(); err != nil {
 		logger.Log.Fatal(err)
@@ -250,9 +216,6 @@ func initAdmins() {
 		logger.Log.Fatal(err)
 	}
 
-	// if formerAdmins, err = env.DB.GetAdmins(); err != nil {
-	// 	logger.Log.Fatal(err)
-	// }
 	logger.Log.Infof("formerAdmins: %v", formerAdmins)
 
 	// Cleaning former admins.
@@ -262,7 +225,7 @@ func initAdmins() {
 
 			logger.Log.Info("former admin: " + fa.PersonEmail)
 
-			for _, ca := range newAdmins {
+			for _, ca := range commandLineAdmins {
 				if ca == fa.PersonEmail {
 					isStillAdmin = true
 				}
@@ -272,18 +235,14 @@ func initAdmins() {
 				if _, err = zmqclient.DBUnsetPersonAdmin(*fa.PersonID); err != nil {
 					logger.Log.Fatal(err)
 				}
-
-				// if err = env.DB.UnsetPersonAdmin(*fa.PersonID); err != nil {
-				// 	logger.Log.Fatal(err)
-				// }
 			}
 		}
 	}
 
 	// Setting up new ones.
-	if len(newAdmins) > 0 {
-		for _, ca := range newAdmins {
-			logger.Log.Info("additional admin: " + ca)
+	if len(commandLineAdmins) > 0 {
+		for _, ca := range commandLineAdmins {
+			logger.Log.Info("commandLineAdmin admin: " + ca)
 
 			// TODO: remove 1 by connected user id.
 			var (
@@ -326,16 +285,11 @@ func initAdmins() {
 			if _, err = zmqclient.DBSetPersonAdmin(*person.PersonID); err != nil {
 				logger.Log.Fatal(err)
 			}
-			// if err = env.DB.SetPersonAdmin(*person.PersonID); err != nil {
-			// 	logger.Log.Fatal(err)
-			// }
 		}
 	}
 }
 
 func initStaticResources(router *mux.Router) {
-	// http.Handle("/wasm/", alice.New(env.HeadersMiddleware).Then(http.FileServer(http.FS(embedWasmBox))))
-	// http.Handle("/static/", alice.New(env.HeadersMiddleware).Then(http.FileServer(http.FS(embedStaticBox))))
 	http.Handle("/wasm/", http.FileServer(http.FS(embedWasmBox)))
 	http.Handle("/static/", http.FileServer(http.FS(embedStaticBox)))
 	http.Handle("/", router)
@@ -369,21 +323,7 @@ func main() {
 
 	initDB()
 
-	// Catch ctrl+c signal.
-	// c := make(chan os.Signal)
-	// signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-	// go func() {
-	// 	<-c
-	// 	logger.Log.Info("- closing database")
-	// 	closeDB()
-	// 	os.Exit(0)
-	// }()
-
 	initOIDC()
-
-	logger.Log.Debugf("- env: %+v", env)
-	logger.Log.Info("- application version: " + env.BuildID)
-	logger.Log.Info("- application endpoint: " + env.AppFullURL)
 
 	initAdmins()
 
@@ -399,6 +339,10 @@ func main() {
 	} else {
 		listenAddr = strings.Split(env.AppURL, "//")[1]
 	}
+
+	logger.Log.Debugf("- env: %+v", env)
+	logger.Log.Info("- application version: " + env.BuildID)
+	logger.Log.Info("- application endpoint: " + env.AppFullURL)
 
 	logger.Log.Infof("- application listening on %s", listenAddr)
 	if err = http.ListenAndServe(listenAddr, nil); err != nil {

@@ -163,7 +163,6 @@ CREATE TABLE "unit" (
 
 DROP TABLE IF EXISTS "permission";
 CREATE TABLE "permission" (
-	"permission_id"	INTEGER,
 	"person"	INTEGER NOT NULL,
 	"permission_name"	TEXT NOT NULL,
 	"permission_item"	TEXT NOT NULL,

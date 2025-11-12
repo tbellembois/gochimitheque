@@ -6,7 +6,7 @@ type Unit struct {
 	UnitLabel      *string `db:"unit_label" json:"unit_label" schema:"unit_label" `
 	UnitType       *string `db:"unit_type" json:"unit_type,omitempty" schema:"unit_type" `
 	Unit           *Unit   `db:"unit" json:"unit,omitempty" schema:"unit"` // reference unit
-	UnitMultiplier int     `db:"unit_multiplier" json:"unit_multiplier" schema:"-"`
+	UnitMultiplier float64 `db:"unit_multiplier" json:"unit_multiplier" schema:"-"`
 }
 
 type UnitsResp struct {

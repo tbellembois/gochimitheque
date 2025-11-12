@@ -114,14 +114,12 @@ SELECT hazardstatement_id,
 FROM Y.hazardstatement;
 
 INSERT INTO permission (
-	permission_id,
 	person,
 	permission_name,
 	permission_item,
 	permission_entity
 )
-SELECT permission_id,
-	person,
+SELECT person,
 	permission_perm_name,
 	permission_item_name,
 	permission_entity_id
