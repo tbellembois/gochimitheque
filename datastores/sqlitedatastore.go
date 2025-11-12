@@ -49,57 +49,6 @@ func init() {
 		})
 }
 
-// GetWelcomeAnnounce returns the welcome announce.
-func (db *SQLiteDataStore) GetWelcomeAnnounce() (models.WelcomeAnnounce, error) {
-	var (
-		wa   models.WelcomeAnnounce
-		sqlr string
-		err  error
-	)
-
-	sqlr = `SELECT welcome_announce.welcome_announce_id, welcome_announce.welcome_announce_text
-	FROM welcome_announce LIMIT 1`
-	if err = db.Get(&wa, sqlr); err != nil && err != sql.ErrNoRows {
-		return models.WelcomeAnnounce{}, err
-	}
-
-	logger.Log.WithFields(logrus.Fields{"wa": wa}).Debug("GetWelcomeAnnounce")
-
-	return wa, nil
-}
-
-// UpdateWelcomeAnnounce updates the main page announce.
-func (db *SQLiteDataStore) UpdateWelcomeAnnounce(w models.WelcomeAnnounce) error {
-	var (
-		sqlr string
-		tx   *sqlx.Tx
-		err  error
-	)
-
-	// beginning new transaction
-	if tx, err = db.Beginx(); err != nil {
-		return err
-	}
-
-	// updating person
-	sqlr = `UPDATE welcome_announce SET welcome_announce_text = ?
-	WHERE welcome_announce_id = (SELECT welcome_announce_id FROM welcome_announce LIMIT 1)`
-	if _, err = tx.Exec(sqlr, w.WelcomeAnnounceText); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return errr
-		}
-	}
-
-	// committing changes
-	if err = tx.Commit(); err != nil {
-		if errr := tx.Rollback(); errr != nil {
-			return errr
-		}
-	}
-
-	return nil
-}
-
 // NewSQLiteDBstore returns a database connection to the given dataSourceName
 // ie. a path to the sqlite database file.
 func NewSQLiteDBstore(dataSourceName string) (*SQLiteDataStore, error) {

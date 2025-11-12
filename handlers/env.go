@@ -13,8 +13,6 @@ type Env struct {
 
 	Enforcer *casbin.Enforcer
 
-	// AutoCreateUser is used with a proxy authentication
-	AutoCreateUser bool
 	// AppPath is the application proxy path if behind a proxy
 	// "/"" by default
 	AppPath string

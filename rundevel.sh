@@ -14,6 +14,11 @@ fi
 
 cp /home/thbellem/workspace/workspace_rust/chimitheque_db/src/resources/shema.sql /tmp/
 cp /home/thbellem/workspace/workspace_rust/chimitheque_db/src/resources/sample.sql /tmp/
+cp /home/thbellem/workspace/workspace_rust/chimitheque_db/src/resources/migration.sql /tmp/
+
+cp /home/thbellem/workspace/workspace_rust/chimitheque_db/src/resources/shema.sql .
+cp /home/thbellem/workspace/workspace_rust/chimitheque_db/src/resources/sample.sql .
+cp /home/thbellem/workspace/workspace_rust/chimitheque_db/src/resources/migration.sql . 
 
 cd /home/thbellem/workspace/workspace_go/src/github.com/tbellembois/gochimitheque || exit
 docker compose up -d keycloak

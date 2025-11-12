@@ -51,12 +51,6 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 	router.Handle("/f/{item:entities}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE")
 
 	//
-	// stocks
-	//
-	router.Handle("/entities/{item:stocks}/{id}", secureChain.Then(env.AppMiddleware(env.GetEntityStockHandler))).Methods("GET")
-	router.Handle("/f/entities/{item:stocks}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
-
-	//
 	// people
 	//
 	// views
@@ -174,6 +168,12 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 	router.Handle("/f/{item:storages}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT")
 	router.Handle("/f/{item:storages}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("POST")
 	router.Handle("/f/{item:storages}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("DELETE")
+
+	//
+	// stocks
+	//
+	router.Handle("/{item:stocks}/{id}", secureChain.Then(env.AppMiddleware(env.GetEntityStockHandler))).Methods("GET")
+	router.Handle("/f/{item:stocks}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 
 	//
 	// validators
