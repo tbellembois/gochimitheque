@@ -1,4 +1,4 @@
-FROM golang:1.24-bullseye AS builder
+FROM golang:1.25-trixie AS builder
 LABEL author="Thomas Bellembois"
 ARG BuildID
 ENV BuildID=${BuildID}
@@ -7,9 +7,7 @@ ENV BuildID=${BuildID}
 # Prepare.
 #
 
-# Install zeromq repository and library.
-RUN echo "deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/release-stable/Debian_11/ ./" >> /etc/apt/sources.list
-RUN wget https://download.opensuse.org/repositories/network:/messaging:/zeromq:/release-stable/Debian_11/Release.key -O- | apt-key add
+# Install zeromq library.
 RUN apt -y update
 RUN apt -y install libzmq3-dev openssl libssl-dev
 
@@ -68,6 +66,7 @@ RUN git clone https://github.com/tbellembois/chimitheque_db.git
 RUN git clone https://github.com/tbellembois/chimitheque_types.git
 RUN git clone https://github.com/tbellembois/chimitheque_traits.git
 RUN git clone https://github.com/tbellembois/chimitheque_utils.git
+RUN git clone https://github.com/tbellembois/chimitheque_pubchem.git
 RUN git clone https://github.com/tbellembois/chimitheque_zmq_server.git
 
 #
@@ -80,14 +79,12 @@ RUN cargo build --release
 # Final image.
 #
 
-FROM golang:1.24-bullseye
+FROM builder
 
 RUN apt -y update && apt -y upgrade
 RUN update-ca-certificates -v
 
-# Install zeromq repository and library.
-RUN echo "deb http://download.opensuse.org/repositories/network:/messaging:/zeromq:/release-stable/Debian_11/ ./" >> /etc/apt/sources.list
-RUN wget https://download.opensuse.org/repositories/network:/messaging:/zeromq:/release-stable/Debian_11/Release.key -O- | apt-key add
+# Install zeromq library.
 RUN apt -y update
 RUN apt -y install libzmq3-dev
 

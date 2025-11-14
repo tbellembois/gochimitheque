@@ -18,13 +18,19 @@ cp /home/thbellem/workspace/workspace_rust/chimitheque_db/src/resources/migratio
 
 cp /home/thbellem/workspace/workspace_rust/chimitheque_db/src/resources/shema.sql .
 cp /home/thbellem/workspace/workspace_rust/chimitheque_db/src/resources/sample.sql .
-cp /home/thbellem/workspace/workspace_rust/chimitheque_db/src/resources/migration.sql . 
+cp /home/thbellem/workspace/workspace_rust/chimitheque_db/src/resources/migration.sql .
 
 cd /home/thbellem/workspace/workspace_go/src/github.com/tbellembois/gochimitheque || exit
 docker compose up -d keycloak
 export SQLITE_EXTENSION_DIR="/home/thbellem/workspace/workspace_rust/chimitheque_db/src/extensions"
 cd /home/thbellem/workspace/workspace_rust/chimitheque_zmq_server || exit
+
+# --DEVEL
 RUST_LOG=debug cargo run -- --db-path /home/thbellem/workspace/workspace_go/src/github.com/tbellembois/gochimitheque/chimitheque.sqlite
+
+# --WITH PROFILER
 # open SVG file a web browser!
 #CARGO_PROFILE_RELEASE_DEBUG=true cargo flamegraph --dev -o /tmp/flamegraph.svg -- --db-path /home/thbellem/workspace/workspace_go/src/github.com/tbellembois/gochimitheque/chimitheque.sqlite
+
+# --WITH BINARY
 #RUST_LOG=error ./target/release/chimitheque_zmq_server --db-path /home/thbellem/workspace/workspace_go/src/github.com/tbellembois/gochimitheque/chimitheque.sqlite
