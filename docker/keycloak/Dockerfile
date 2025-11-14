@@ -1,4 +1,4 @@
-FROM quay.io/keycloak/keycloak:26.2.0 AS builder
+FROM quay.io/keycloak/keycloak:26.4.5 AS builder
 
 ARG KC_DB
 ARG KC_FEATURES
@@ -20,7 +20,7 @@ RUN echo "KC_TZ=${KC_TZ}"
 
 RUN /opt/keycloak/bin/kc.sh --verbose build
 
-FROM quay.io/keycloak/keycloak:26.2.0
+FROM builder
 
 COPY --from=builder /opt/keycloak/ /opt/keycloak/
 WORKDIR /opt/keycloak

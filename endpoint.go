@@ -103,6 +103,7 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 	router.Handle("/vc/{item:pubchem}", commonChain.Then(env.AppMiddleware(env.VPubchemHandler))).Methods("GET")
 
 	// api
+	router.Handle("/{item:products}/export", secureChain.Then(env.AppMiddleware(env.ExportProductsHandler))).Methods("GET")
 	router.Handle("/{item:products}/{id}", secureChain.Then(env.AppMiddleware(env.GetProductsHandler))).Methods("GET")
 	router.Handle("/{item:products}", secureChain.Then(env.AppMiddleware(env.GetProductsHandler))).Methods("GET")
 	router.Handle("/{item:products}/{id}", secureChain.Then(env.AppMiddleware(env.UpdateProductHandler))).Methods("PUT")
@@ -137,6 +138,7 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 	router.Handle("/{item:products}/pubchemcreateproduct/{id}", secureChain.Then(env.AppMiddleware(env.CreateUpdateProductFromPubchemHandler))).Methods("POST")
 
 	// fake
+	router.Handle("/f/{item:products}/export", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 	router.Handle("/f/{item:products}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 	router.Handle("/f/{item:products}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 	router.Handle("/f/{item:products}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT")

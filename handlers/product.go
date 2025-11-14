@@ -743,6 +743,44 @@ func (env *Env) GetProductsSynonymsHandler(w http.ResponseWriter, r *http.Reques
 	return nil
 }
 
+func (env *Env) ExportProductsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+	logger.Log.Debug("ExportProductsHandler")
+
+	var (
+		err            error
+		jsonRawMessage json.RawMessage
+	)
+
+	c := request.ContainerFromRequestContext(r)
+
+	if jsonRawMessage, err = zmqclient.DBExportProducts("http://localhost"+r.RequestURI, c.PersonID); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.DBGetProducts",
+		}
+	}
+
+	var (
+		csv string
+	)
+
+	if err = json.Unmarshal(jsonRawMessage, &csv); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling jsonRawMessage",
+		}
+	}
+
+	w.Header().Set("Content-Type", "text/csv")
+	w.Header().Set("Content-Disposition", "attachment;filename=chimitheque_products.csv")
+
+	w.Write([]byte(csv))
+
+	return nil
+}
+
 func (env *Env) GetProductsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	logger.Log.Debug("GetProductsHandler")
 

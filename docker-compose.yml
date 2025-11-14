@@ -1,7 +1,7 @@
 services:
   nginx:
     container_name: nginx
-    image: nginx:1.27
+    image: nginx:1.29
     restart: unless-stopped
     ports:
       - 443:443
@@ -20,7 +20,7 @@ services:
 
   postgres:
     container_name: postgres
-    image: postgres:17
+    image: postgres:18
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
