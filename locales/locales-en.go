@@ -293,7 +293,7 @@ var LOCALES_EN = []byte(`
 [download_export]
 	one = "download export"
 [export_progress]
-	one = "export in progress -  this operation can be long"
+	one = "export in progress - this operation can be long - please reload the page when done"
 [export_done]
 	one = "export done"
 [showdeleted_text]

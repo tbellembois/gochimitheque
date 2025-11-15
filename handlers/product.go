@@ -757,7 +757,7 @@ func (env *Env) ExportProductsHandler(w http.ResponseWriter, r *http.Request) *m
 		return &models.AppError{
 			OriginalError: err,
 			Code:          http.StatusInternalServerError,
-			Message:       "error calling zmqclient.DBGetProducts",
+			Message:       "error calling zmqclient.DBExportProducts",
 		}
 	}
 

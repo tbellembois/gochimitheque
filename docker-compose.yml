@@ -30,7 +30,7 @@ services:
     networks:
       - chimitheque
     volumes:
-      - /data/docker-postgres/data:/var/lib/postgresql/data
+      - /data/docker-postgres:/var/lib/postgresql
 
   keycloakpre:
     container_name: keycloakpre

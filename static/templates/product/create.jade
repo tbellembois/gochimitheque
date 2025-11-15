@@ -148,7 +148,9 @@ block CONTENT
                 .form-row.chem.collapse
                     .form-group.col-sm-6
                         +inputtext(name="product_threed_formula", label="product_threed_formula_title")
-                    .form-group.col-sm-6
+                    .form-group.col-sm-2
+                        img(id="image", src="")
+                    .form-group.col-sm-4
                         +inputfile("product_twod_formula_title", "product_twod_formula", ".png,.jpg,.jpeg")
                         +inputhidden("product_twod_formula_content", "")
 

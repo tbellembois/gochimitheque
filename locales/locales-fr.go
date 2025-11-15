@@ -293,7 +293,7 @@ var LOCALES_FR = []byte(`
 [download_export]
 	one = "télécharger l'export"
 [export_progress]
-	one = "export en cours -  cette opération peut être longue"
+	one = "export en cours - cette opération peut être longue - merci de recharger la page lorsque l'export est terminé"
 [export_done]
 	one = "export effectué"
 [showdeleted_text]
