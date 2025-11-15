@@ -141,6 +141,44 @@ func (env *Env) GetStoragesUnitsHandler(w http.ResponseWriter, r *http.Request) 
 
 }
 
+func (env *Env) ExportStoragesHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
+	logger.Log.Debug("ExportStoragesHandler")
+
+	var (
+		err            error
+		jsonRawMessage json.RawMessage
+	)
+
+	c := request.ContainerFromRequestContext(r)
+
+	if jsonRawMessage, err = zmqclient.DBExportStorages("http://localhost"+r.RequestURI, c.PersonID); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error calling zmqclient.DBExportStorages",
+		}
+	}
+
+	var (
+		csv string
+	)
+
+	if err = json.Unmarshal(jsonRawMessage, &csv); err != nil {
+		return &models.AppError{
+			OriginalError: err,
+			Code:          http.StatusInternalServerError,
+			Message:       "error unmarshalling jsonRawMessage",
+		}
+	}
+
+	w.Header().Set("Content-Type", "text/csv")
+	w.Header().Set("Content-Disposition", "attachment;filename=chimitheque_storages.csv")
+
+	w.Write([]byte(csv))
+
+	return nil
+}
+
 // GetStoragesHandler returns a json list of the storages matching the search criteria.
 func (env *Env) GetStoragesHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	logger.Log.Debug("GetStoragesHandler")

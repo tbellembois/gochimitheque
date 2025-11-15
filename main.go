@@ -132,9 +132,21 @@ func initOIDC() {
 	if req, err = http.NewRequest(http.MethodGet, env.OIDCDiscoverURL, nil); err != nil {
 		log.Fatal(err)
 	}
-	if res, err = httpClient.Do(req); err != nil {
-		log.Fatal(err)
+
+	for range 10 {
+		if res, err = httpClient.Do(req); err != nil {
+			logger.Log.Info("OIDC not yet available, retrying...")
+		}
+		if res.StatusCode == http.StatusOK {
+			break
+		}
+		time.Sleep(time.Second * 5)
 	}
+
+	if res, err = httpClient.Do(req); err != nil {
+		logger.Log.Info(err)
+	}
+
 	if res.Body != nil {
 		defer res.Body.Close()
 	}

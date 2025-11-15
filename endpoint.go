@@ -156,6 +156,7 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 	router.Handle("/{item:storages}/units", secureChain.Then(env.AppMiddleware(env.GetStoragesUnitsHandler))).Methods("GET")
 
 	// router.Handle("/{item:storages}/{id}", secureChain.Then(env.AppMiddleware(env.GetStoragesHandler))).Methods("GET")
+	router.Handle("/{item:storages}/export", secureChain.Then(env.AppMiddleware(env.ExportStoragesHandler))).Methods("GET")
 	router.Handle("/{item:storages}", secureChain.Then(env.AppMiddleware(env.GetStoragesHandler))).Methods("GET")
 	router.Handle("/{item:storages}/{id}", secureChain.Then(env.AppMiddleware(env.GetStoragesHandler))).Methods("GET")
 	router.Handle("/{item:storages}/{id}", secureChain.Then(env.AppMiddleware(env.UpdateStorageHandler))).Methods("PUT")
@@ -165,6 +166,7 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 	router.Handle("/{item:storages}/{id}/r", secureChain.Then(env.AppMiddleware(env.RestoreStorageHandler))).Methods("PUT")
 
 	// fake
+	router.Handle("/f/{item:storages}/export", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 	router.Handle("/f/{item:storages}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 	router.Handle("/f/{item:storages}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("GET")
 	router.Handle("/f/{item:storages}/{id}", secureChain.Then(env.AppMiddleware(env.FakeHandler))).Methods("PUT")
@@ -199,11 +201,6 @@ func buildEndpoints(fakeAuth bool) (router *mux.Router) {
 	// formatters / converters
 	//
 	router.Handle("/format/empiricalformula/", commonChain.Then(env.AppMiddleware(env.FormatProductEmpiricalFormulaHandler))).Methods("POST")
-
-	//
-	// export download
-	//
-	router.Handle("/{item:download}/{id}", secureChain.Then(env.AppMiddleware(env.DownloadExportHandler))).Methods("GET")
 
 	return router
 }
