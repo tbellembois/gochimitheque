@@ -137,7 +137,7 @@ func initOIDC() {
 		if res, err = httpClient.Do(req); err != nil {
 			logger.Log.Info("OIDC not yet available, retrying...")
 		}
-		if res.StatusCode == http.StatusOK {
+		if res != nil && res.StatusCode == http.StatusOK {
 			break
 		}
 		time.Sleep(time.Second * 5)

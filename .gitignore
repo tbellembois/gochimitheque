@@ -6,6 +6,8 @@ chimitheque_people_keycloak_exporter
 *.db*
 *.sqlite*
 
+*.sql
+
 keycloak.json
 
 wasm/wasm*
