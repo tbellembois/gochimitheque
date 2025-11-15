@@ -41,19 +41,14 @@ if [ ! -z "$CHIMITHEQUE_ADMINS" ]; then
     admins="-admins $CHIMITHEQUE_ADMINS"
     echo $admins
 fi
-if [ ! -z "$CHIMITHEQUE_DEBUG" ]; then
+if [ "$CHIMITHEQUE_DEBUG" == "true" ]; then
     debug="-debug"
     echo $debug
 fi
 
-if [ ! -z "$CHIMITHEQUE_UPDATEQRCODE" ]; then
-    updateqrcode="-updateqrcode"
-    echo $updateqrcode
-fi
-
 export SQLITE_EXTENSION_DIR="/var/www-data/extensions"
 
-command="/var/www-data/chimitheque_zmq_server --db-path /data/storage.sqlite"
+command="/var/www-data/chimitheque_zmq_server --db-path /data/chimitheque.sqlite"
 echo "command:"
 echo $command
 $command &
