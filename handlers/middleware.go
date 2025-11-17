@@ -219,13 +219,6 @@ func (env *Env) AuthenticateMiddleware(h http.Handler) http.Handler {
 	})
 }
 
-// func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
-// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-// 		// defer utils.TimeTrack(time.Now(), "AuthorizeMiddleware")
-// 		h.ServeHTTP(w, r)
-// 	})
-// }
-
 // AuthorizeMiddleware check that the user extracted from the JWT token by the AuthenticateMiddleware has the permissions to access the requested resource.
 func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -264,15 +257,16 @@ func (env *Env) AuthorizeMiddleware(h http.Handler) http.Handler {
 		logger.Log.WithFields(logrus.Fields{"vars": fmt.Sprintf("%+v", vars), "r.Method": r.Method}).Debug("AuthorizeMiddleware")
 
 		// action = CRUD
-		if r.Method == "GET" {
+		switch r.Method {
+		case "GET":
 			action = "r"
-		} else if r.Method == "DELETE" {
+		case "DELETE":
 			action = "d"
-		} else if r.Method == "POST" {
+		case "POST":
 			action = "c"
-		} else if r.Method == "PUT" {
+		case "PUT":
 			action = "u"
-		} else {
+		default:
 			http.Error(w, "unexpected HTTP verb: "+r.Method, http.StatusBadRequest)
 			return
 		}

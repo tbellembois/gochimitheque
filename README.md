@@ -25,9 +25,9 @@ It was tested successfully with Firefox and Chrome/Chromium.
 
 # 2.1.0 News!
 
-Here is the list of the major changes from the `2.1.0` version:
+Here is the list of the major technical changes from the `2.1.0` version:
 - the only supported installation is with Docker (this may change in the future)
-- the authentication is based on OpenID
+- the authentication is based on OpenID managed by the Keycloak application.
 - the LDAP configuration has been removed from Chimithèque to be managed by the OpenID server
 
 # Requirements
@@ -41,8 +41,6 @@ Here is the list of the major changes from the `2.1.0` version:
 # Upgrading from 2.0.8
 
 Important: if you upgrade to a `2.1.*` version coming from a `2.0.*` version you *must* first perform the upgrades to the `2.0.8` version.
-
-0. Update QRCode ?
 
 1. Backup your *entire* installation folder.
 
@@ -71,7 +69,7 @@ wget https://raw.githubusercontent.com/tbellembois/chimitheque_db/refs/heads/mai
 wget https://raw.githubusercontent.com/tbellembois/chimitheque_db/refs/heads/main/src/resources/migration.sql
 ```
 
-2. Run the migration
+2. Run the migration script
 
 ```bash
 sqlite3 chimitheque.sqlite < shema.sql && sqlite3 chimitheque.sqlite < migration.sql
@@ -111,7 +109,7 @@ wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/docker/n
 wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/docker/nginx/nginx.conf -O /data/docker-nginx/nginx-conf/nginx.conf
 ```
 
-5. Copy your https certifcate `crt` and `key` files in `/data/docker-nginx/nginx-auth/certs/`. Your certificate *must* contain the certification chain.
+5. Copy your https certificate `crt` and `key` files in `/data/docker-nginx/nginx-auth/certs/`. Your certificate *must* contain the certification chain.
 
 6. If you upgrade from a previous version copy the `chimitheque.sqlite` file in `/data/docker-chimitheque/chimitheque-db/`.
 
@@ -153,15 +151,9 @@ If you migrate from a `2.0.8` version you should have a `keycloak.json` file fro
 
 2. Fill in the required information.
 
+## Additionnal configuration
 
-<!--TODO: connect to keycloak:
-- change admin password
-- set admin email
-- create admin@chimitheque.fr user and password
-- import users
-- configure mail server
-- enable user registration-->
-
+You mail want to enable/disable user registration as well as activate the LDAP connectivity. Please refer to the [Keycloak documentation](https://www.keycloak.org/docs/latest/server_admin/#_ldap) for more information.
 
 # Connection
 
@@ -173,11 +165,20 @@ Now login with the email `admin@chimitheque.fr` and the value of your `KEYCLOAK_
 
 # Administrators
 
-A static administrator `admin@chimitheque.fr` is created during the installation.
+A static administrator `admin@chimitheque.fr` with id `1` is created during the installation. It is hardcoded and must not be deleted.
+You can add a comma separated list of admins emails. You should limit the number of admins and set entity managers instead. Always keep the `admin@chimitheque.fr` account.
+Non existing accounts will be created.
 
-You can add a comma separated list of admins emails. Accounts must have been created in the application before. You should limit the number of admins and set entity managers instead.
+> example: `-admins=admin@chimitheque.fr,john.bar@foo.com,jean.dupont@foo.com`
 
-> example: `-admins=john.bar@foo.com,jean.dupont@foo.com`
+# Users management
+
+Users permissions are still managed in the Chimithèque application (by admins and entity managers). But user creation and deletion are now managed by the embeded Keycloak application.
+There are two ways to manage users:
+1. enable user registration in Keycloak (easiest way)
+People will have the possibility to create their own account but will NOT be able to connect to Chimithèque until they are affected to an entity.
+2. disable user registration in Keycloak (harder way)
+You will have to create users manually in Keycloak. Currently only the account `admin@chimitheque.fr` can access Keycloak, not other admins nor Chimithèque managers. This will be fixed in a next release.
 
 # Database backup
 

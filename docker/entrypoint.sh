@@ -8,45 +8,37 @@ oidcclientid=""
 oidcclientsecret=""
 admins=""
 debug=""
+rustlog="error"
 updateqrcode=""
-
-echo "parameters:"
 
 if [ ! -z "$CHIMITHEQUE_DOCKERPORT" ]; then
     dockerport="-dockerport $CHIMITHEQUE_DOCKERPORT"
-    echo $dockerport
 fi
 if [ ! -z "$CHIMITHEQUE_APPURL" ]; then
     appurl="-appurl $CHIMITHEQUE_APPURL"
-    echo $appurl
 fi
 if [ ! -z "$CHIMITHEQUE_APPPATH" ]; then
     apppath="-apppath $CHIMITHEQUE_APPPATH"
-    echo $apppath
 fi
 if [ ! -z "$CHIMITHEQUE_OIDCDISCOVERURL" ]; then
     oidcdiscoverurl="-oidcdiscoverurl $CHIMITHEQUE_OIDCDISCOVERURL"
-    echo $oidcdiscoverurl
 fi
 if [ ! -z "$CHIMITHEQUE_OIDCCLIENTID" ]; then
     oidcclientid="-oidcclientid $CHIMITHEQUE_OIDCCLIENTID"
-    echo $oidcclientid
 fi
 if [ ! -z "$CHIMITHEQUE_OIDCCLIENTSECRET" ]; then
     oidcclientsecret="-oidcclientsecret $CHIMITHEQUE_OIDCCLIENTSECRET"
-    echo $oidcclientsecret
 fi
-
 if [ ! -z "$CHIMITHEQUE_ADMINS" ]; then
     admins="-admins $CHIMITHEQUE_ADMINS"
-    echo $admins
 fi
 if [ "$CHIMITHEQUE_DEBUG" == "true" ]; then
     debug="-debug"
-    echo $debug
+    rustlog="debug"
 fi
 
 export SQLITE_EXTENSION_DIR="/var/www-data/extensions"
+export RUST_LOG=$rustlog
 
 command="/var/www-data/chimitheque_zmq_server --db-path /data/chimitheque.sqlite"
 echo "command:"

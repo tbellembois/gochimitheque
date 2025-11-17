@@ -226,7 +226,6 @@ func (env *Env) CallbackHandler(w http.ResponseWriter, r *http.Request) *models.
 	}
 
 	// Insert user if DB if needed.
-	// TODO: remove 1 by connected user id.
 	var (
 		jsonRawMessage json.RawMessage
 		person         *models.Person

@@ -55,6 +55,7 @@ services:
     depends_on:
       - postgres
       - keycloakpre
+    # for devel only
     ports:
       - 8080:8080
     build:
@@ -70,6 +71,7 @@ services:
         KC_HTTP_RELATIVE_PATH: /keycloak
         KC_TZ: "Europe/Paris"
     entrypoint: "/opt/keycloak/bin/kc.sh start --optimized --import-realm"
+    # developper command
     # keycloak export REALM command
     #entrypoint: "/opt/keycloak/bin/kc.sh export --dir /opt/keycloak/data/import --realm chimitheque --users different_files --users-per-file 1000 --optimized"
     environment:

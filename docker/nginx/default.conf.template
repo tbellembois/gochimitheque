@@ -2,10 +2,10 @@ server {
 
     listen 443 ssl;
     #listen 80;
-    
+
     # CONFIGURE: change 127.0.0.1 with the FQDN of your server
     server_name 127.0.0.1;
- 
+
     charset utf-8;
 
     gzip on;
@@ -30,7 +30,7 @@ server {
     # CONFIGURE: change the name (not the path) of the certificates with yours
     ssl_certificate /etc/nginx/certs/chimitheque.crt;
     ssl_certificate_key /etc/nginx/certs/chimitheque.key;
-    
+
     location = / {
         # CONFIGURE: change 127.0.0.1 with the FQDN of your server, keep the /app suffix
         return 301 https://127.0.0.1/app;
@@ -42,7 +42,7 @@ server {
         proxy_set_header Host $host;
         proxy_set_header Upgrade $http_upgrade;
     	proxy_set_header Connection 'upgrade';
- 
+
         proxy_pass http://chimitheque:8081/;
     }
 

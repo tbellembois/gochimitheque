@@ -101,15 +101,6 @@ func (env *Env) ToogleStorageBorrowingHandler(w http.ResponseWriter, r *http.Req
 	return nil
 }
 
-// GetStoragesUnitsHandler godoc
-// @Summary Get units.
-// @Description `unit_type` can be `temperature`, `concentration` or `quantity`.
-// @tags unit
-// @Produce json
-// @Success 200 {object} models.UnitsResp
-// @Failure 500
-// @Failure 403
-// @Router /units/ [get].
 func (env *Env) GetStoragesUnitsHandler(w http.ResponseWriter, r *http.Request) *models.AppError {
 	logger.Log.Debug("GetStoragesUnitsHandler")
 
