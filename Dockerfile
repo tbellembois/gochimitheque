@@ -90,6 +90,10 @@ RUN apt -y install libzmq3-dev
 
 RUN rm -Rf /var/cache/apk
 
+# Retrieve database shema sql files.
+WORKDIR /tmp
+RUN wget https://raw.githubusercontent.com/tbellembois/chimitheque_db/refs/heads/main/src/resources/shema.sql
+
 # Ensure www-data user exists.
 RUN addgroup --gid 82 --system chimitheque \
     && adduser --uid 82 --system --ingroup chimitheque chimitheque \
@@ -102,7 +106,6 @@ RUN addgroup --gid 82 --system chimitheque \
     && chown chimitheque /var/log \
     && chmod 755 /var/log
 
-WORKDIR /tmp
 RUN git clone https://github.com/tbellembois/chimitheque_db.git
 RUN cp /tmp/chimitheque_db/src/extensions/* /var/www-data/extensions/
 RUN rm -Rf /tmp/chimitheque_db

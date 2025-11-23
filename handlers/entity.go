@@ -9,6 +9,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
+	"github.com/tbellembois/gochimitheque/casbin"
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/models"
 	"github.com/tbellembois/gochimitheque/request"
@@ -146,6 +147,8 @@ func (env *Env) CreateEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 		}
 	}
 
+	env.Enforcer = casbin.InitCasbinPolicy(env.DB)
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.Write(jsonRawMessage)
 
@@ -176,6 +179,8 @@ func (env *Env) UpdateEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 			Message:       "error calling zmqclient.DBCreateUpdateEntity",
 		}
 	}
+
+	env.Enforcer = casbin.InitCasbinPolicy(env.DB)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.Write(jsonRawMessage)
@@ -213,6 +218,8 @@ func (env *Env) DeleteEntityHandler(w http.ResponseWriter, r *http.Request) *mod
 			Message:       "error calling zmqclient.DBDeleteEntity",
 		}
 	}
+
+	env.Enforcer = casbin.InitCasbinPolicy(env.DB)
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.Write(jsonRawMessage)

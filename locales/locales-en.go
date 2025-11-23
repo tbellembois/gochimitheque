@@ -262,7 +262,7 @@ var LOCALES_EN = []byte(`
 [menu_account]
 	one = "my account"
 [menu_management]
-	one = "management"
+	one = "organization"
 [menu_settings]
 	one = "settings"
 [menu_pubchem]
