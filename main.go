@@ -7,30 +7,18 @@ package main
 // compile with:
 // BuildID="v2.1.0" && go build -ldflags "-X main.BuildID=$BuildID".
 import (
-	"context"
 	"embed"
-	"encoding/json"
 	"flag"
 	"fmt"
-	"io"
-	"log"
 	"net/http"
 	"os"
-	"path"
-	"strings"
-	"time"
 
-	"github.com/coreos/go-oidc/v3/oidc"
 	zmq "github.com/pebbe/zmq4"
-	"golang.org/x/oauth2"
 
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
-	"github.com/tbellembois/gochimitheque/casbin"
-	"github.com/tbellembois/gochimitheque/datastores"
 	"github.com/tbellembois/gochimitheque/handlers"
 	"github.com/tbellembois/gochimitheque/logger"
-	"github.com/tbellembois/gochimitheque/models"
 	"github.com/tbellembois/gochimitheque/static/localejs"
 	"github.com/tbellembois/gochimitheque/zmqclient"
 )
@@ -39,12 +27,8 @@ var (
 	env handlers.Env
 
 	// Starting parameters and commands.
-	paramDBPath,
-	paramAdminList,
-	paramAutoImportURL *string
 	commandUpdateQRCode,
 	paramDebug,
-	paramFakeAuth,
 	commandVersion,
 	commandGenLocaleJS *bool
 	BuildID string
@@ -59,19 +43,8 @@ func init() {
 	env = handlers.NewEnv()
 
 	// Configuration parameters.
-	flagDBPath := flag.String("dbpath", "./", "the application sqlite directory path")
-	flagAppURL := flag.String("appurl", "http://localhost:8081", "the application url (without the path), with NO trailing /")
-	flagAppPath := flag.String("apppath", "/", "the application path with the trailing /")
-	flagDockerPort := flag.Int("dockerport", 0, "application listen port while running in docker")
-
-	// keycloak
-	flagOIDCDiscoverURL := flag.String("oidcdiscoverurl", "http://localhost:8080/keycloak/realms/chimitheque/.well-known/openid-configuration", "the OIDC server discover URL")
-	flagOIDCClientID := flag.String("oidcclientid", "chimitheque", "the OIDC client ID")
-	flagOIDCClientSecret := flag.String("oidcclientsecret", "mysupersecret", "the OIDC client secret")
-
-	flagAdminList := flag.String("admins", "", "the additional admins (comma separated email adresses) (optional) ")
+	flagAppURL := flag.String("appurl", "https://192.168.1.18:8443", "the application url (without the path), with NO trailing /")
 	flagDebug := flag.Bool("debug", false, "debug (verbose log), default is error")
-	flagFakeAuth := flag.Bool("fakeauth", false, "fake authentication (use in devel only), default is false")
 
 	// One shot commands.
 	flagVersion := flag.Bool("version", false, "display application version")
@@ -80,22 +53,13 @@ func init() {
 	flag.Parse()
 
 	env.AppURL = *flagAppURL
-	env.AppPath = *flagAppPath
-	env.DockerPort = *flagDockerPort
-	env.OIDCDiscoverURL = *flagOIDCDiscoverURL
-	env.OIDCClientID = *flagOIDCClientID
-	env.OIDCClientSecret = *flagOIDCClientSecret
+	env.BuildID = BuildID
 
-	paramDBPath = flagDBPath
-	paramAdminList = flagAdminList
 	paramDebug = flagDebug
-	paramFakeAuth = flagFakeAuth
 
 	commandVersion = flagVersion
 	commandGenLocaleJS = flagGenLocaleJS
 
-	env.AppFullURL = env.AppURL + env.AppPath
-	env.BuildID = BuildID
 }
 
 func initLogger() {
@@ -103,201 +67,6 @@ func initLogger() {
 		logger.Log.SetLevel(logrus.DebugLevel)
 	} else {
 		logger.Log.SetLevel(logrus.InfoLevel)
-	}
-}
-
-type OIDCDiscover struct {
-	Issuer                      string `json:"issuer"`
-	AuthorizationEndpoint       string `json:"authorization_endpoint"`
-	DeviceAuthorizationEndpoint string `json:"device_authorization_endpoint"`
-	TokenEndpoint               string `json:"token_endpoint"`
-	EndSessionEndpoint          string `json:"end_session_endpoint"`
-}
-
-func initOIDC() {
-
-	var err error
-
-	httpClient := http.Client{
-		Timeout: time.Second * 10,
-	}
-
-	var (
-		req *http.Request
-		res *http.Response
-	)
-
-	logger.Log.Info("- fetching OICD discover: " + env.OIDCDiscoverURL)
-
-	if req, err = http.NewRequest(http.MethodGet, env.OIDCDiscoverURL, nil); err != nil {
-		log.Fatal(err)
-	}
-
-	for range 10 {
-		if res, err = httpClient.Do(req); err != nil {
-			logger.Log.Info("OIDC not yet available, retrying...")
-		}
-		if res != nil && res.StatusCode == http.StatusOK {
-			break
-		}
-		time.Sleep(time.Second * 5)
-	}
-
-	if res, err = httpClient.Do(req); err != nil {
-		logger.Log.Info(err)
-	}
-
-	if res.Body != nil {
-		defer res.Body.Close()
-	}
-
-	// Decoding.
-	var body []byte
-	if body, err = io.ReadAll(res.Body); err != nil {
-		log.Fatal(err)
-	}
-
-	logger.Log.Debug("- OICD body: " + string(body))
-
-	oidcDiscover := OIDCDiscover{}
-	if err = json.Unmarshal(body, &oidcDiscover); err != nil {
-		log.Fatal(err)
-	}
-
-	logger.Log.Info("- OICD token endpoint: " + oidcDiscover.TokenEndpoint)
-
-	// Creating new OIDC provider.
-	if env.OIDCProvider, err = oidc.NewProvider(context.Background(), oidcDiscover.Issuer); err != nil {
-		panic(err)
-	}
-
-	env.OIDCEndSessionEndpoint = oidcDiscover.EndSessionEndpoint
-	env.OIDCConfig = &oidc.Config{
-		ClientID: env.OIDCClientID,
-	}
-	env.OIDCVerifier = env.OIDCProvider.Verifier(env.OIDCConfig)
-	env.OAuth2Config = oauth2.Config{
-		ClientID:     env.OIDCClientID,
-		ClientSecret: env.OIDCClientSecret,
-		Endpoint: oauth2.Endpoint{
-			TokenURL:      oidcDiscover.TokenEndpoint,
-			DeviceAuthURL: oidcDiscover.DeviceAuthorizationEndpoint,
-			AuthURL:       oidcDiscover.AuthorizationEndpoint,
-		},
-		RedirectURL: env.AppURL + env.AppPath + "callback",
-		Scopes:      []string{oidc.ScopeOpenID, "profile", "email"},
-	}
-
-}
-
-func initDB() {
-	var (
-		err       error
-		datastore datastores.Datastore
-	)
-
-	dbname := path.Join(*paramDBPath, "chimitheque.sqlite")
-
-	logger.Log.Info("- opening database connection to " + dbname)
-	if datastore, err = datastores.NewSQLiteDBstore(dbname); err != nil {
-		logger.Log.Fatal(err)
-	}
-
-	env.DB = datastore
-}
-
-func initAdmins() {
-	var (
-		err               error
-		jsonRawMessage    json.RawMessage
-		formerAdmins      *[]models.Person
-		commandLineAdmins []string
-		isStillAdmin      bool
-	)
-
-	if *paramAdminList != "" {
-		commandLineAdmins = strings.Split(*paramAdminList, ",")
-	}
-	logger.Log.Infof("commandLineAdmins: %s", commandLineAdmins)
-
-	if jsonRawMessage, err = zmqclient.DBGetAdmins(); err != nil {
-		logger.Log.Fatal(err)
-
-	}
-	if formerAdmins, err = zmqclient.ConvertDBJSONToAdmins(jsonRawMessage); err != nil {
-		logger.Log.Fatal(err)
-	}
-
-	logger.Log.Infof("formerAdmins: %v", formerAdmins)
-
-	// Cleaning former admins.
-	if formerAdmins != nil {
-		for _, fa := range *formerAdmins {
-			isStillAdmin = false
-
-			logger.Log.Info("former admin: " + fa.PersonEmail)
-
-			for _, ca := range commandLineAdmins {
-				if ca == fa.PersonEmail {
-					isStillAdmin = true
-				}
-			}
-			if !isStillAdmin {
-				logger.Log.Info(fa.PersonEmail + " is not an admin anymore, removing permissions")
-				if _, err = zmqclient.DBUnsetPersonAdmin(*fa.PersonID); err != nil {
-					logger.Log.Fatal(err)
-				}
-			}
-		}
-	}
-
-	// Setting up new ones.
-	if len(commandLineAdmins) > 0 {
-		for _, ca := range commandLineAdmins {
-			logger.Log.Info("commandLineAdmin admin: " + ca)
-
-			// TODO: remove 1 by connected user id.
-			var (
-				jsonRawMessage json.RawMessage
-				person         *models.Person
-			)
-			if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/?person_email="+ca, 1); err != nil {
-				logger.Log.Fatal(err)
-			}
-
-			if person, err = zmqclient.ConvertDBJSONToPerson(jsonRawMessage); err != nil {
-				logger.Log.Fatal(err)
-			}
-
-			if person == nil {
-				logger.Log.Info("user " + ca + " not found in database, creating it")
-
-				new_person := models.Person{PersonEmail: strings.ToLower(ca)}
-				new_person_json, err := json.Marshal(new_person)
-
-				if err != nil {
-					logger.Log.Fatal(err)
-
-				}
-
-				if jsonRawMessage, err = zmqclient.DBCreateUpdatePerson(new_person_json); err != nil {
-					logger.Log.Fatal(err)
-
-				}
-				if jsonRawMessage, err = zmqclient.DBGetPeople("http://localhost/?person_email="+ca, 1); err != nil {
-					logger.Log.Fatal(err)
-				}
-
-				if person, err = zmqclient.ConvertDBJSONToPerson(jsonRawMessage); err != nil {
-					logger.Log.Fatal(err)
-				}
-			}
-
-			logger.Log.Info("setting " + ca + " admin")
-			if _, err = zmqclient.DBSetPersonAdmin(*person.PersonID); err != nil {
-				logger.Log.Fatal(err)
-			}
-		}
 	}
 }
 
@@ -333,31 +102,15 @@ func main() {
 		"commandGenLocaleJS":  commandGenLocaleJS,
 	}).Debug("main")
 
-	initDB()
-
-	initOIDC()
-
-	initAdmins()
-
-	router := buildEndpoints(*paramFakeAuth)
+	router := buildEndpoints()
 
 	initStaticResources(router)
 
-	env.Enforcer = casbin.InitCasbinPolicy(env.DB)
-
-	var listenAddr string
-	if env.DockerPort != 0 {
-		listenAddr = fmt.Sprintf(":%d", env.DockerPort)
-	} else {
-		listenAddr = strings.Split(env.AppURL, "//")[1]
-	}
-
 	logger.Log.Debugf("- env: %+v", env)
 	logger.Log.Info("- application version: " + env.BuildID)
-	logger.Log.Info("- application endpoint: " + env.AppFullURL)
 
-	logger.Log.Infof("- application listening on %s", listenAddr)
-	if err = http.ListenAndServe(listenAddr, nil); err != nil {
+	logger.Log.Infof("- application listening on %s", ":8081")
+	if err = http.ListenAndServe(":8081", nil); err != nil {
 		panic("error running the server:" + err.Error())
 	}
 }

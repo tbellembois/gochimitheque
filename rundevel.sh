@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+
+trap 'kill 0' EXIT SIGINT SIGTERM
+
 if [ "$1" == "-clean" ]; then
     cd /home/thbellem/workspace/workspace_rust/chimitheque_zmq_server
     cargo clean
@@ -12,25 +15,25 @@ if [ "$1" == "-clean" ]; then
     cargo clean
 fi
 
-cp /home/thbellem/workspace/workspace_rust/chimitheque_db/src/resources/shema.sql /tmp/
-cp /home/thbellem/workspace/workspace_rust/chimitheque_db/src/resources/sample.sql /tmp/
-cp /home/thbellem/workspace/workspace_rust/chimitheque_db/src/resources/migration.sql /tmp/
-
-cp /home/thbellem/workspace/workspace_rust/chimitheque_db/src/resources/shema.sql .
-cp /home/thbellem/workspace/workspace_rust/chimitheque_db/src/resources/sample.sql .
-cp /home/thbellem/workspace/workspace_rust/chimitheque_db/src/resources/migration.sql .
+echo "#### starting keycloak ####"
 
 cd /home/thbellem/workspace/workspace_go/src/github.com/tbellembois/gochimitheque || exit
 docker compose up -d keycloak
-export SQLITE_EXTENSION_DIR="/home/thbellem/workspace/workspace_rust/chimitheque_db/src/extensions"
-cd /home/thbellem/workspace/workspace_rust/chimitheque_zmq_server || exit
 
-# --DEVEL
-RUST_LOG=debug cargo run -- --db-path /home/thbellem/workspace/workspace_go/src/github.com/tbellembois/gochimitheque/chimitheque.sqlite
+echo "#### starting backend ####"
 
-# --WITH PROFILER
-# open SVG file a web browser!
-#CARGO_PROFILE_RELEASE_DEBUG=true cargo flamegraph --dev -o /tmp/flamegraph.svg -- --db-path /home/thbellem/workspace/workspace_go/src/github.com/tbellembois/gochimitheque/chimitheque.sqlite
+cd /home/thbellem/workspace/workspace_rust/chimitheque_back || exit
+export SQLITE_EXTENSION_DIR="/home/thbellem/workspace/workspace_rust/chimitheque_back/src/extensions"
+RUST_LOG="debug" DB_PATH="/home/thbellem/workspace/workspace_go/src/github.com/tbellembois/gochimitheque/chimitheque.sqlite" KEYCLOAK_BASE_URL="https://192.168.1.18:8443/keycloak" KEYCLOAK_REALM="chimitheque" CLIENT_ID="chimitheque" cargo run . &
 
-# --WITH BINARY
-#RUST_LOG=error ./target/release/chimitheque_zmq_server --db-path /home/thbellem/workspace/workspace_go/src/github.com/tbellembois/gochimitheque/chimitheque.sqlite
+echo "#### starting frontend ####"
+
+cd /home/thbellem/workspace/workspace_go/src/github.com/tbellembois/gochimitheque || exit
+go run . &
+
+echo "#### starting nginx ####"
+
+cd /home/thbellem/workspace/workspace_go/src/github.com/tbellembois/gochimitheque/dev || exit
+./nginx-1.28.1-x86_64-linux &
+
+wait

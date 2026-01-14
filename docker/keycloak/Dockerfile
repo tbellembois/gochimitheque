@@ -1,4 +1,4 @@
-FROM quay.io/keycloak/keycloak:26.4.5 AS builder
+FROM quay.io/keycloak/keycloak:26.4.7 AS builder
 
 ARG KC_DB
 ARG KC_FEATURES

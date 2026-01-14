@@ -2,8 +2,8 @@
     Menu(c ViewContainer)
 
 nav.navbar.navbar-expand-lg.navbar-light
-    a.navbar-brand(href="#", title="product list", onclick="$('#advancedsearch').collapse('hide'); Menu_loadContent('product', '" + c.AppURL + c.AppPath + "v/products', 'Product_list')")
-        img(src=c.AppURL + c.AppPath + "static/img/logo_chimitheque_simple.svg", width="50px" alt="chimitheque_logo", title="Chimithèque")
+    a.navbar-brand(href="#", title="product list", onclick="$('#advancedsearch').collapse('hide'); Menu_loadContent('product', '" + c.AppURL + "/app/v/products', 'Product_list')")
+        img(src=c.AppURL + "/app/static/img/logo_chimitheque_simple.svg", width="50px" alt="chimitheque_logo", title="Chimithèque")
     button.navbar-toggler(
                         type="button"
                         data-toggle="collapse"
@@ -24,11 +24,11 @@ nav.navbar.navbar-expand-lg.navbar-light
                     span.mdi.mdi-qrcode-scan.mdi-36px.iconlabel
                         = T("menu_scanqr", 1)
             li.nav-item#menu_create_product.collapse
-                a(href="#", onclick="Menu_loadContent('product', '" + c.AppURL + c.AppPath + "vc/products', 'Product_create')").nav-link
+                a(href="#", onclick="Menu_loadContent('product', '" + c.AppURL + "/app/vc/products', 'Product_create')").nav-link
                     span.mdi.mdi-tag.mdi-36px.iconlabel
                         = T("menu_create_productcard", 1)
             li.nav-item#menu_pubchem.collapse
-                a(href="#", onclick="Menu_loadContent('pubchem', '" + c.AppURL + c.AppPath + "vc/pubchem', 'Product_pubchem')").nav-link
+                a(href="#", onclick="Menu_loadContent('pubchem', '" + c.AppURL + "/app/vc/pubchem', 'Product_pubchem')").nav-link
                     span.mdi.mdi-alpha-c-circle-outline.mdi-36px.iconlabel
                         = T("menu_pubchem", 1)
 
@@ -45,30 +45,30 @@ nav.navbar.navbar-expand-lg.navbar-light
                     div#menu_entities.collapse
                         span.p-2.mdi.mdi-home-group.mdi-24px
                             = T("menu_entity", 1)
-                        a(href="#", onclick="Menu_loadContent('entity', '" + c.AppURL + c.AppPath + "v/entities', 'Entity_list')").dropdown-item
+                        a(href="#", onclick="Menu_loadContent('entity', '" + c.AppURL + "/app/v/entities', 'Entity_list')").dropdown-item
                             span.iconlabel
                                 = T("list", 1)
-                        a#menu_create_entity.collapse(href="#", onclick="Menu_loadContent('entity', '" + c.AppURL + c.AppPath + "vc/entities', 'Entity_create')").dropdown-item
+                        a#menu_create_entity.collapse(href="#", onclick="Menu_loadContent('entity', '" + c.AppURL + "/app/vc/entities', 'Entity_create')").dropdown-item
                             span.iconlabel
                                 = T("create", 1)
                         hr.dropdown-divider
                     div#menu_store_locations.collapse
                         span.p-2.mdi.mdi-docker.mdi-24px
                             = T("menu_store_location", 1)
-                        a(href="#", onclick="Menu_loadContent('store_location', '" + c.AppURL + c.AppPath + "v/store_locations', 'StoreLocation_list')").dropdown-item
+                        a(href="#", onclick="Menu_loadContent('store_location', '" + c.AppURL + "/app/v/store_locations', 'StoreLocation_list')").dropdown-item
                             span.iconlabel
                                 = T("list", 1)
-                        a#menu_create_store_location.collapse(href="#", onclick="Menu_loadContent('store_location', '" + c.AppURL + c.AppPath + "vc/store_locations', 'StoreLocation_create')").dropdown-item
+                        a#menu_create_store_location.collapse(href="#", onclick="Menu_loadContent('store_location', '" + c.AppURL + "/app/vc/store_locations', 'StoreLocation_create')").dropdown-item
                             span.iconlabel
                                 = T("create", 1)
                         hr.dropdown-divider
                     div#menu_people.collapse
                         span.p-2.mdi.mdi-account-group.mdi-24px
                             = T("menu_people", 1)
-                        a(href="#", onclick="Menu_loadContent('person', '" + c.AppURL + c.AppPath + "v/people', 'Person_list')").dropdown-item
+                        a(href="#", onclick="Menu_loadContent('person', '" + c.AppURL + "/app/v/people', 'Person_list')").dropdown-item
                             span.iconlabel
                                 = T("list", 1)
-                        //- a#menu_create_person.collapse(href="#", onclick="Menu_loadContent('person', '" + c.AppURL + c.AppPath + "vc/people', 'Person_create')").dropdown-item
+                        //- a#menu_create_person.collapse(href="#", onclick="Menu_loadContent('person', '" + c.AppURL + "/app/vc/people', 'Person_create')").dropdown-item
                         //-     span.iconlabel
                         //-         = T("create", 1)
 
@@ -82,9 +82,9 @@ nav.navbar.navbar-expand-lg.navbar-light
                     span.mdi.mdi-account.mdi-36px.iconlabel
                         = T("menu_account", 1)
                 div.dropdown-menu(aria-labelledby="navbarDropdown")
-                    a.dropdown-item(href="#", onclick="localStorage.clear(); document.cookie='token=; expires=Thu, 01 Jan 1970 00:00:00 UTC;'; window.location.replace('" + c.AppURL + c.AppPath + "delete-token')")
+                    a.dropdown-item(href="#", onclick="localStorage.clear(); document.cookie='token=; expires=Thu, 01 Jan 1970 00:00:00 UTC;'; window.location.replace('" + c.AppURL + "/keycloak/realms/chimitheque/protocol/openid-connect/logout')")
                         span.mdi.mdi-logout.mdi-24px.iconlabel
                             = T("menu_logout", 1 )
-                    a.dropdown-item(href="#", onclick="Menu_loadContent('about', '" + c.AppURL + c.AppPath + "about', 'About_list')")
+                    a.dropdown-item(href="#", onclick="Menu_loadContent('about', '" + c.AppURL + "/app/about', 'About_list')")
                         span.mdi.mdi-information.mdi-24px.iconlabel
                             = T("menu_about", 1 )

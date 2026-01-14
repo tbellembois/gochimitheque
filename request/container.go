@@ -16,9 +16,7 @@ type Container struct {
 	PersonLanguage string `json:"PersonLanguage"`
 	PersonID       int64  `json:"PersonID"`
 	AppURL         string `json:"AppURL"`
-	AppPath        string `json:"AppPath"`
 	BuildID        string `json:"BuildID"`
-	DisableCache   bool   `json:"DisableCache"`
 }
 
 // ContainerFromRequestContext returns a ViewContainer from the request context
