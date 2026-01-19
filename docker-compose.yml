@@ -77,7 +77,7 @@ services:
     environment:
       - KC_BOOTSTRAP_ADMIN_USERNAME=${KEYCLOAK_ADMIN}
       - KC_BOOTSTRAP_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
-      - KC_HOSTNAME=${KEYCLOAK_SCHEME}://${KEYCLOAK_HOSTNAME}/keycloak
+      - KC_HOSTNAME=${CHIMITHEQUE_APPURL}/keycloak
       - KC_HTTP_PORT=8080
       - KC_PROXY_HEADERS=xforwarded
       - KC_HTTP_ENABLED=true
@@ -92,15 +92,9 @@ services:
     image: ${CHIMITHEQUE_IMAGE}
     restart: unless-stopped
     environment:
-      - CHIMITHEQUE_DEBUG=${CHIMITHEQUE_DEBUG}
-      - CHIMITHEQUE_APPPATH=/app/
       - CHIMITHEQUE_APPURL=${CHIMITHEQUE_APPURL}
-      - CHIMITHEQUE_DOCKERPORT=8081
-      - CHIMITHEQUE_OIDCDISCOVERURL=${KEYCLOAK_SCHEME}://${KEYCLOAK_HOSTNAME}/keycloak/realms/chimitheque/.well-known/openid-configuration
-      - CHIMITHEQUE_OIDCCLIENTID=chimitheque
-      - CHIMITHEQUE_OIDCCLIENTSECRET=${CHIMITHEQUE_OIDCCLIENTSECRET}
       - CHIMITHEQUE_ADMINS=${CHIMITHEQUE_ADMINS}
-      # - CHIMITHEQUE_UPDATEQRCODE=true
+      - CHIMITHEQUE_DEBUG=${CHIMITHEQUE_DEBUG}
       - TZ='Europe/Paris'
     volumes:
       - /data/docker-chimitheque/chimitheque-db:/data

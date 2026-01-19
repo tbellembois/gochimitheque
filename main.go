@@ -13,14 +13,11 @@ import (
 	"net/http"
 	"os"
 
-	zmq "github.com/pebbe/zmq4"
-
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"github.com/tbellembois/gochimitheque/handlers"
 	"github.com/tbellembois/gochimitheque/logger"
 	"github.com/tbellembois/gochimitheque/static/localejs"
-	"github.com/tbellembois/gochimitheque/zmqclient"
 )
 
 var (
@@ -92,10 +89,6 @@ func main() {
 
 	initLogger()
 
-	if zmqclient.Zctx, err = zmq.NewContext(); err != nil {
-		logger.Log.Fatal(err)
-	}
-
 	logger.Log.WithFields(logrus.Fields{
 		"commandUpdateQRCode": commandUpdateQRCode,
 		"commandVersion":      commandVersion,
@@ -106,10 +99,9 @@ func main() {
 
 	initStaticResources(router)
 
-	logger.Log.Debugf("- env: %+v", env)
+	logger.Log.Infof("- env: %+v", env)
 	logger.Log.Info("- application version: " + env.BuildID)
 
-	logger.Log.Infof("- application listening on %s", ":8081")
 	if err = http.ListenAndServe(":8081", nil); err != nil {
 		panic("error running the server:" + err.Error())
 	}

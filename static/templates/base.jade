@@ -33,8 +33,10 @@ html
 
             import Keycloak from "/app/static/js/keycloak.js"
 
+            let keycloak_url = c.AppURL + '/keycloak';
+
             window.keycloak = new Keycloak({
-                url: 'https://192.168.1.18:8443/keycloak',
+                url: keycloak_url,
                 realm: 'chimitheque',
                 clientId: 'chimitheque'
             });

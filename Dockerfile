@@ -7,9 +7,9 @@ ENV BuildID=${BuildID}
 # Prepare.
 #
 
-# Install zeromq library.
+# Install dependencies.
 RUN apt -y update
-RUN apt -y install libzmq3-dev openssl libssl-dev
+RUN apt -y install openssl libssl-dev
 
 # Create base directory.
 RUN mkdir -p /home/thbellem/workspace \
@@ -45,11 +45,11 @@ RUN cp /go/src/github.com/tbellembois/gochimitheque-wasm/wasm /go/src/github.com
     && gzip -9 -v -c /go/src/github.com/tbellembois/gochimitheque/wasm/wasm > /go/src/github.com/tbellembois/gochimitheque/wasm/wasm.gz \
     && rm /go/src/github.com/tbellembois/gochimitheque/wasm/wasm
 
-# BACKEND: generate code.
+# FRONTEND: generate code.
 WORKDIR /go/src/github.com/tbellembois/gochimitheque/
 RUN go generate
 
-# BACKEND: build.
+# FRONTEND: build.
 RUN if [ -z $BuildID ]; then BuildID=$(date "+%Y%m%d"); fi; echo "BuildID=$BuildID"; go build -ldflags "-X main.BuildID=$BuildID"
 
 #
@@ -62,17 +62,18 @@ ENV PATH="$PATH:/root/.cargo/bin"
 
 # Get sources.
 WORKDIR /go/src/rust
+RUN git clone https://github.com/tbellembois/chimitheque_back.git
 RUN git clone https://github.com/tbellembois/chimitheque_db.git
 RUN git clone https://github.com/tbellembois/chimitheque_types.git
 RUN git clone https://github.com/tbellembois/chimitheque_traits.git
 RUN git clone https://github.com/tbellembois/chimitheque_utils.git
 RUN git clone https://github.com/tbellembois/chimitheque_pubchem.git
-RUN git clone https://github.com/tbellembois/chimitheque_zmq_server.git
+# RUN git clone https://github.com/tbellembois/chimitheque_zmq_server.git
 
 #
 # Chimithèque Rust build.
 #
-WORKDIR /go/src/rust/chimitheque_zmq_server
+WORKDIR /go/src/rust/chimitheque_back
 RUN cargo build --release
 
 #
@@ -106,17 +107,20 @@ RUN addgroup --gid 82 --system chimitheque \
     && chown chimitheque /var/log \
     && chmod 755 /var/log
 
-RUN git clone https://github.com/tbellembois/chimitheque_db.git
-RUN cp /tmp/chimitheque_db/src/extensions/* /var/www-data/extensions/
+# Copy sql extensions.
+RUN git clone https://github.com/tbellembois/chimitheque_back.git
+RUN cp /tmp/chimitheque_back/src/extensions/* /var/www-data/extensions/
 RUN rm -Rf /tmp/chimitheque_db
 
+# Copy frontend binary.
 COPY --from=builder /go/src/github.com/tbellembois/gochimitheque/gochimitheque /var/www-data/
 RUN chown chimitheque /var/www-data/gochimitheque \
     && chmod +x /var/www-data/gochimitheque
 
-COPY --from=builder /go/src/rust/chimitheque_zmq_server/target/release/chimitheque_zmq_server /var/www-data/
-RUN chown chimitheque /var/www-data/chimitheque_zmq_server \
-    && chmod +x /var/www-data/chimitheque_zmq_server
+# Copy backend binary.
+COPY --from=builder /go/src/rust/chimitheque_back/target/release/chimitheque_back /var/www-data/
+RUN chown chimitheque /var/www-data/chimitheque_back \
+    && chmod +x /var/www-data/chimitheque_back
 
 # Copying entrypoint.
 COPY docker/entrypoint.sh /

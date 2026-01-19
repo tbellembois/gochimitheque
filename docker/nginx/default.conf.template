@@ -1,8 +1,6 @@
 server {
 
-    # CONFIGURE: use 443 only in production
     listen 443 ssl;
-    #listen 80;
 
     # CONFIGURE: change 127.0.0.1 with the FQDN of your server
     server_name 127.0.0.1;
