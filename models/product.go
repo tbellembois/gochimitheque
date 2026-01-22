@@ -25,7 +25,7 @@ type Product struct {
 	ProductDisposalComment *string  `db:"product_disposal_comment" json:"product_disposal_comment,omitempty" schema:"product_disposal_comment" `
 	ProductRemark          *string  `db:"product_remark" json:"product_remark,omitempty" schema:"product_remark" `
 	ProductMolecularWeight *float64 `db:"product_molecular_weight" json:"product_molecular_weight,omitempty" schema:"product_molecular_weight" `
-	ProductTemperature     *int64   `db:"product_temperature" json:"product_temperature,omitempty" schema:"product_temperature" `
+	ProductTemperature     *float64 `db:"product_temperature" json:"product_temperature,omitempty" schema:"product_temperature" `
 	ProductSheet           *string  `db:"product_sheet" json:"product_sheet,omitempty" schema:"product_sheet" `
 	ProductNumberPerCarton *int64   `db:"product_number_per_carton" json:"product_number_per_carton,omitempty" schema:"product_number_per_carton" `
 	ProductNumberPerBag    *int64   `db:"product_number_per_bag" json:"product_number_per_bag,omitempty" schema:"product_number_per_bag" `

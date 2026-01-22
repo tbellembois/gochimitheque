@@ -8,6 +8,9 @@ var LOCALES_FR = []byte(`
 [nil]
 	one = " "
 
+[user_not_enrolled]
+	one = "vous ne pouvez pas (encore) accéder à Chimithèque - un gestionnaire doit vous inscrire"
+
 [project_leader]
 	one = "chef de project"
 [project_site]

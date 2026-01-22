@@ -8,6 +8,9 @@ var LOCALES_EN = []byte(`
 [nil]
 	one = " "
 
+[user_not_enrolled]
+	one = "you can not (yet) access Chimithèque - a manager needs to enroll you"
+
 [project_leader]
 	one = "project leader"
 [project_site]

@@ -90,9 +90,8 @@ func main() {
 	initLogger()
 
 	logger.Log.WithFields(logrus.Fields{
-		"commandUpdateQRCode": commandUpdateQRCode,
-		"commandVersion":      commandVersion,
-		"commandGenLocaleJS":  commandGenLocaleJS,
+		"commandVersion":     commandVersion,
+		"commandGenLocaleJS": commandGenLocaleJS,
 	}).Debug("main")
 
 	router := buildEndpoints()

@@ -1,8 +1,10 @@
 # Chimithèque
 
-Chimithèque is an open source *chemical product, biological reagent and lab consumables* management application started by the ENS-Lyon (France) and co-developped with the Université Clermont-Auvergne (France). It is written in *Golang* and *Rust*.
+Chimithèque is an open source *chemical product, biological reagent and lab consumables* management application developped by the ENS-Lyon (France). It is written in *Golang* and *Rust*.
 
-The project was started in 2015 and has moved to Github in 2017.
+The project was started in 2015 and moved to Github in 2017.
+
+It is released under the [GPL v3 License](LICENSE).
 
 ## Team
 
@@ -15,7 +17,7 @@ The project was started in 2015 and has moved to Github in 2017.
 
 ## Web browser compatibility
 
-Chimithèque may NOT work with Microsoft Internet Explorer/Edge.
+Chimithèque may NOT work with Microsoft Edge.
 It was tested successfully with Firefox and Chrome/Chromium.
 
 # Links
@@ -40,7 +42,7 @@ Here is the list of the major technical changes from the `2.1.0` version:
 
 # Upgrading from 2.0.8
 
-Important: if you upgrade to a `2.1.*` version coming from a `2.0.*` version you *must* first perform the upgrades to the `2.0.8` version.
+Important: if you upgrade to a `2.1.*` version coming from a `2.0.*` version you *must* first perform the upgrades up to the `2.0.8` version.
 
 1. Backup your *entire* installation folder.
 
@@ -111,11 +113,11 @@ wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/docker/n
 
 5. Copy your https certificate `crt` and `key` files in `/data/docker-nginx/nginx-auth/certs/`. Your certificate *must* contain the certification chain.
 
-6. If you upgrade from a previous version copy the `chimitheque.sqlite` file in `/data/docker-chimitheque/chimitheque-db/`.
+6. If upgrading from a previous version copy the `chimitheque.sqlite` file in `/data/docker-chimitheque/chimitheque-db/`.
 
 7. Configure Nginx, edit the `/data/docker-nginx/nginx-templates/default.conf.template` file. The sections to edit are spotted with the `# CONFIGURE:` string.
 
-8. Start up and Wait a moment (it can take several minutes for the containers to start):
+8. Start up and wait a moment (it can take several minutes for the containers to start the first time):
 ```bash
 docker compose up -d
 ```
@@ -166,14 +168,15 @@ Now login with the email `admin@chimitheque.fr` and the value of your `KEYCLOAK_
 # Administrators
 
 A static administrator `admin@chimitheque.fr` with id `1` is created during the installation. It is hardcoded and must not be deleted.
-You can add a comma separated list of admins emails. You should limit the number of admins and set entity managers instead. Always keep the `admin@chimitheque.fr` account.
+You can add a comma separated list of admins emails. You should limit the number of admins and set entity managers instead.
 Non existing accounts will be created.
 
-> example: `-admins=admin@chimitheque.fr,john.bar@foo.com,jean.dupont@foo.com`
+> example: `-admins=john.bar@foo.com,jean.dupont@foo.com`
 
 # Users management
 
-Users permissions are still managed in the Chimithèque application (by admins and entity managers). But user creation and deletion are now managed by the embeded Keycloak application.
+Users permissions are still managed by the Chimithèque application (by admins and entity managers). But user creation and deletion are now managed by the embeded Keycloak application.
+
 There are two ways to manage users:
 1. enable user registration in Keycloak (easiest way)
 People will have the possibility to create their own account but will NOT be able to connect to Chimithèque until they are affected to an entity.
@@ -203,8 +206,6 @@ Restore it with:
     docker-compose pull
     docker-compose up -d --force-recreate
 ```
-
-You may want to install [watchtower](https://github.com/containrrr/watchtower) to perfom automatic upgrades.
 
 # Support
 
