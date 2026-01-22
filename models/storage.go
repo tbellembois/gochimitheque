@@ -1,7 +1,6 @@
 package models
 
 import (
-	"strconv"
 	"time"
 )
 
@@ -23,7 +22,7 @@ type Storage struct {
 	StorageBarecode       *string `db:"storage_barecode" json:"storage_barecode,omitempty" schema:"storage_barecode" `
 	StorageQRCode         []byte  `db:"storage_qrcode" json:"storage_qrcode,omitempty" schema:"storage_qrcode"`
 	StorageToDestroy      bool    `db:"storage_to_destroy" json:"storage_to_destroy,omitempty" schema:"storage_to_destroy" `
-	StorageArchive        bool    `db:"storage_archive" json:"storage_archive,omitempty" schema:"storage_archive" `
+	StorageArchive        *bool   `db:"storage_archive" json:"storage_archive,omitempty" schema:"storage_archive" `
 	StorageConcentration  *int64  `db:"storage_concentration" json:"storage_concentration,omitempty" schema:"storage_concentration" `
 	StorageNumberOfBag    *int64  `db:"storage_number_of_bag" json:"storage_number_of_bag,omitempty" schema:"storage_number_of_bag" `
 	StorageNumberOfCarton *int64  `db:"storage_number_of_carton" json:"storage_number_of_carton,omitempty" schema:"storage_number_of_carton" `
@@ -39,50 +38,6 @@ type Storage struct {
 
 	// storage history count
 	StorageHC int `db:"storage_hc" json:"storage_hc,omitempty" schema:"storage_hc"` // not in db but sqlx requires the "db" entry
-}
-
-func (s Storage) StorageToStringSlice() []string {
-	ret := make([]string, 0)
-
-	ret = append(ret, strconv.FormatInt(*s.StorageID, 10))
-	ret = append(ret, s.Product.Name.NameLabel)
-	// ret = append(ret, s.Product.CasNumber.CasNumberLabel.String)
-	if s.Product.CasNumber.CasNumberLabel != nil {
-		ret = append(ret, *s.Product.CasNumber.CasNumberLabel)
-	}
-	if s.Product.ProductSpecificity != nil {
-		ret = append(ret, *s.Product.ProductSpecificity)
-	}
-
-	ret = append(ret, s.StoreLocation.StoreLocationFullPath)
-
-	ret = append(ret, strconv.FormatFloat(*s.StorageQuantity, 'E', -1, 64))
-
-	if s.UnitQuantity.UnitLabel != nil {
-		ret = append(ret, *s.UnitQuantity.UnitLabel)
-	}
-
-	ret = append(ret, *s.StorageBarecode)
-
-	if s.Supplier.SupplierLabel != nil {
-		ret = append(ret, *s.Supplier.SupplierLabel)
-	}
-
-	ret = append(ret, s.StorageCreationDate.Format("2006-01-02"))
-	ret = append(ret, s.StorageModificationDate.Format("2006-01-02"))
-	ret = append(ret, s.StorageEntryDate.Format("2006-01-02"))
-	ret = append(ret, s.StorageExitDate.Format("2006-01-02"))
-	ret = append(ret, s.StorageOpeningDate.Format("2006-01-02"))
-	ret = append(ret, s.StorageExpirationDate.Format("2006-01-02"))
-
-	ret = append(ret, *s.StorageComment)
-	ret = append(ret, *s.StorageReference)
-	ret = append(ret, *s.StorageBatchNumber)
-
-	ret = append(ret, strconv.FormatBool(s.StorageToDestroy))
-	ret = append(ret, strconv.FormatBool(s.StorageArchive))
-
-	return ret
 }
 
 // StoragesToCSV returns a file name of the products prs

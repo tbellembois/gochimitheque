@@ -24,7 +24,6 @@ var (
 	env handlers.Env
 
 	// Starting parameters and commands.
-	commandUpdateQRCode,
 	paramDebug,
 	commandVersion,
 	commandGenLocaleJS *bool

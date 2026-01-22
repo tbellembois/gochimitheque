@@ -12,13 +12,6 @@ require (
 	golang.org/x/text v0.24.0
 )
 
-require github.com/barweiss/go-tuple v1.1.2
-
-require (
-	github.com/Joker/hpp v1.0.0 // indirect
-	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0 // indirect
-	golang.org/x/net v0.0.0-20190327091125-710a502c58a2 // indirect
-)
+require github.com/stretchr/testify v1.8.4 // indirect
 
 replace gopkg.in/russross/blackfriday.v2 => github.com/russross/blackfriday/v2 v2.0.1
