@@ -1,4 +1,5 @@
 include mixins
+<!doctype html>
 html
     head
         meta(charset="utf-8")
@@ -28,6 +29,26 @@ html
         script(src=c.AppURL + "/app/static/js/bootstrap.min.js" )
 
         link(href=c.AppURL + "/app/static/css/chimitheque.css",  rel="stylesheet" )
+
+        script(src=c.AppURL + "/app/static/js/wasm_exec.js")
+        script.
+
+            // https://levelup.gitconnected.com/best-practices-for-webassembly-using-golang-1-15-8dfa439827b8
+            async function loadAndRunGoWasm() {
+                const go = new Go();
+
+                // gzip -9 -v -c wasm > wasm.gz
+                const buffer = pako.ungzip(await (await fetch(c.AppURL + "/app/wasm/wasm.gz")).arrayBuffer());
+
+                // A fetched response might be decompressed twice on Firefox.
+                // See https://bugzilla.mozilla.org/show_bug.cgi?id=610679
+                if (buffer[0] === 0x1f && buffer[1] === 0x8b) {
+                    buffer = pako.ungzip(buffer);
+                }
+
+                const result = await WebAssembly.instantiate(buffer, go.importObject);
+                go.run(result.instance)
+            }
 
         script(type="module").
 
@@ -73,6 +94,8 @@ html
 
                 console.log('Authenticated');
                     startTokenRefresh();
+
+                    loadAndRunGoWasm();
                 }).catch(err => {
                     console.error('Keycloak init failed', err);
                 });
@@ -145,7 +168,7 @@ html
     script(src=c.AppURL + "/app/static/js/pako.min.js" )
 
     script.
-        QrScanner.WORKER_PATH = c.AppURL + c.AppPath + 'static/js/qr-scanner-worker.min.js';
+        QrScanner.WORKER_PATH = c.AppURL + '/app/static/js/qr-scanner-worker.min.js';
         window.QrScanner = QrScanner;
 
     script.
@@ -162,19 +185,6 @@ html
                 }
             });
         }
-        // function scanPersonQR() {
-        //     $("#video").removeClass("invisible")
-        //     const video = document.getElementById("qr-video");
-        //     window.qrScanner = new window.QrScanner(video, result => Person_scanQRdone(result));
-        //     QrScanner.hasCamera().then(hasCamera => {
-        //         if (hasCamera) {
-        //             window.qrScanner.start();
-        //         } else {
-        //             alert(Utils_translate("nocamera", c.PersonLanguage));
-        //             Storage_closeQR();
-        //         }
-        //     });
-        // }
         function closeQR() {
             $("div#video").addClass("invisible")
             window.qrScanner.destroy();
@@ -201,24 +211,6 @@ html
             }
         }
 
-    script(src=c.AppURL + "/app/static/js/wasm_exec.js")
-    script.
 
-        // https://levelup.gitconnected.com/best-practices-for-webassembly-using-golang-1-15-8dfa439827b8
-        (async function loadAndRunGoWasm() {
-            const go = new Go();
-
-            // gzip -9 -v -c wasm > wasm.gz
-            const buffer = pako.ungzip(await (await fetch(c.AppURL + "/app/wasm/wasm.gz")).arrayBuffer());
-
-            // A fetched response might be decompressed twice on Firefox.
-            // See https://bugzilla.mozilla.org/show_bug.cgi?id=610679
-            if (buffer[0] === 0x1f && buffer[1] === 0x8b) {
-                buffer = pako.ungzip(buffer);
-            }
-
-            const result = await WebAssembly.instantiate(buffer, go.importObject);
-            go.run(result.instance)
-        })()
 
     block CONTENTJS

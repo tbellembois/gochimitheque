@@ -12,6 +12,11 @@ require (
 	golang.org/x/text v0.24.0
 )
 
-require github.com/stretchr/testify v1.8.4 // indirect
+require (
+	github.com/Joker/hpp v1.0.0 // indirect
+	github.com/stretchr/testify v1.8.4 // indirect
+	github.com/valyala/bytebufferpool v1.0.0 // indirect
+	golang.org/x/net v0.0.0-20190327091125-710a502c58a2 // indirect
+)
 
 replace gopkg.in/russross/blackfriday.v2 => github.com/russross/blackfriday/v2 v2.0.1
