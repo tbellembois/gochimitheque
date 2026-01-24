@@ -99,6 +99,7 @@ mkdir -p /data/docker-nginx/nginx-templates/
 mkdir -p /data/docker-nginx/nginx-conf/
 mkdir -p /data/docker-nginx/nginx-auth/certs/
 mkdir -p /data/docker-chimitheque/chimitheque-db/
+mkdir /data/docker-postgres/
 ```
 > If you want to choose another directory you will have to replace the `/data` strings in the `docker-compose.yml` file (`volumes` sections). In this documentation we assume that the default directory is kept.
 
@@ -117,7 +118,17 @@ wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/docker/n
 
 7. Configure Nginx, edit the `/data/docker-nginx/nginx-templates/default.conf.template` file. The sections to edit are spotted with the `# CONFIGURE:` string.
 
-8. Start up and wait a moment (it can take several minutes for the containers to start the first time):
+8. Build the keycloak image:
+```bash
+docker compose build
+```
+
+9. Pull the other images:
+```bash
+docker compose pull
+```
+
+10. Start up and wait a moment (it can take several minutes for the containers to start the first time):
 ```bash
 docker compose up -d
 ```

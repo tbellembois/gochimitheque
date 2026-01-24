@@ -50,7 +50,7 @@ WORKDIR /go/src/github.com/tbellembois/gochimitheque/
 RUN go generate
 
 # FRONTEND: build.
-RUN if [ -z $BuildID ]; then BuildID=$(date "+%Y%m%d"); fi; echo "BuildID=$BuildID"; go build -ldflags "-X main.BuildID=$BuildID"
+RUN if [ -z $BuildID ]; then BuildID=$(date "+%Y%m%d"); fi; echo "BuildID=$BuildID"; go build -ldflags "-s -w -X main.BuildID=$BuildID"
 
 #
 # Chimithèque Rust sources.
@@ -75,19 +75,16 @@ RUN git clone https://github.com/tbellembois/chimitheque_pubchem.git
 #
 WORKDIR /go/src/rust/chimitheque_back
 RUN cargo build --release
+RUN strip target/release/chimitheque_back
 
 #
 # Final image.
 #
 
-FROM builder
+FROM golang:1.25-trixie
 
 RUN apt -y update && apt -y upgrade
 RUN update-ca-certificates -v
-
-# Install zeromq library.
-RUN apt -y update
-RUN apt -y install libzmq3-dev
 
 RUN rm -Rf /var/cache/apk
 
@@ -108,9 +105,7 @@ RUN addgroup --gid 82 --system chimitheque \
     && chmod 755 /var/log
 
 # Copy sql extensions.
-RUN git clone https://github.com/tbellembois/chimitheque_back.git
-RUN cp /tmp/chimitheque_back/src/extensions/* /var/www-data/extensions/
-RUN rm -Rf /tmp/chimitheque_db
+COPY --from=builder /go/src/rust/chimitheque_back/src/extensions/ /var/www-data/extensions/
 
 # Copy frontend binary.
 COPY --from=builder /go/src/github.com/tbellembois/gochimitheque/gochimitheque /var/www-data/
@@ -125,6 +120,9 @@ RUN chown chimitheque /var/www-data/chimitheque_back \
 # Copying entrypoint.
 COPY docker/entrypoint.sh /
 RUN chmod +x /entrypoint.sh
+
+# Cleanup
+RUN rm -Rf /root/.rustup
 
 # Container configuration.
 USER chimitheque
