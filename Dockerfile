@@ -68,7 +68,6 @@ RUN git clone https://github.com/tbellembois/chimitheque_types.git
 RUN git clone https://github.com/tbellembois/chimitheque_traits.git
 RUN git clone https://github.com/tbellembois/chimitheque_utils.git
 RUN git clone https://github.com/tbellembois/chimitheque_pubchem.git
-# RUN git clone https://github.com/tbellembois/chimitheque_zmq_server.git
 
 #
 # Chimithèque Rust build.
@@ -120,9 +119,6 @@ RUN chown chimitheque /var/www-data/chimitheque_back \
 # Copying entrypoint.
 COPY docker/entrypoint.sh /
 RUN chmod +x /entrypoint.sh
-
-# Cleanup
-RUN rm -Rf /root/.rustup
 
 # Container configuration.
 USER chimitheque
