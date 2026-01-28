@@ -94,10 +94,24 @@ services:
     environment:
       - CHIMITHEQUE_APPURL=${CHIMITHEQUE_APPURL}
       - CHIMITHEQUE_ADMINS=${CHIMITHEQUE_ADMINS}
-      - CHIMITHEQUE_DEBUG=${CHIMITHEQUE_DEBUG}
       - TZ='Europe/Paris'
     volumes:
       - /data/docker-chimitheque/chimitheque-db:/data
+    networks:
+      - chimitheque
+
+  jaeger:
+    container_name: jaeger
+    image: jaegertracing/all-in-one:latest
+    restart: unless-stopped
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    # for devel only
+    ports:
+      - "6831:6831/udp" # UDP port for Jaeger agent
+      - "16686:16686" # Web UI
+      - "14268:14268" # HTTP port for spans
+      - "4317:4317" # gRPC port for spans
     networks:
       - chimitheque
 

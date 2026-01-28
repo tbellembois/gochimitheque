@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 debug=""
-rustlog="INFO"
 
 if [ "$CHIMITHEQUE_DEBUG" == "true" ]; then
     debug="-debug"
@@ -14,7 +13,6 @@ export KEYCLOAK_BASE_URL=$CHIMITHEQUE_APPURL/keycloak
 export KEYCLOAK_REALM="chimitheque"
 export KEYCLOAK_CLIENT_ID="chimitheque"
 export ADMINS=$CHIMITHEQUE_ADMINS
-export RUST_LOG=$rustlog
 
 command="/var/www-data/chimitheque_back"
 echo "command:"

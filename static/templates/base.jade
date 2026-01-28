@@ -33,6 +33,12 @@ html
         script(src=c.AppURL + "/app/static/js/wasm_exec.js")
         script.
 
+            window.onload = function() {
+                $.ajaxSetup({
+                    headers: { 'Authorization': window.keycloak.token }
+                });
+            };
+
             // https://levelup.gitconnected.com/best-practices-for-webassembly-using-golang-1-15-8dfa439827b8
             async function loadAndRunGoWasm() {
                 const go = new Go();
