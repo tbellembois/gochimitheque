@@ -10,6 +10,8 @@ var LOCALES_EN = []byte(`
 
 [user_not_enrolled]
 	one = "you can not (yet) access Chimithèque - a manager needs to enroll you"
+[pubchem_import_info]
+	one = "The IMPORT button will import the PubChem product as a NEW product, WITHOUT replacing any existing product. The REPLACE button will replace an existing selected product. You can select a product in the menu of the product list."
 
 [project_leader]
 	one = "project leader"
@@ -455,7 +457,7 @@ var LOCALES_EN = []byte(`
 	one = "synonym(s)"
 
 [search_pubchem_title]
-	one = "search by (part of) name or CAS number"
+	one = "search by (part of) name"
 
 [restricted]
 	one = "restricted access"
@@ -484,7 +486,7 @@ var LOCALES_EN = []byte(`
 [product_msds_title]
 	one = "MSDS link"
 [product_sheet_title]
-	one = "producer product cheet"
+	one = "producer product sheet"
 [product_temperature_title]
 	one = "preconised storage temperature"
 [product_number_per_carton_title]

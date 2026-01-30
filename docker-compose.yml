@@ -1,4 +1,24 @@
 services:
+  nginxpre:
+    container_name: nginxpre
+    build:
+      context: ./docker/alpine
+      dockerfile: Dockerfile
+      no_cache: true
+    environment:
+      - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN}
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
+    command: >
+      sh -c "
+      echo $KEYCLOAK_ADMIN &&
+      echo $KEYCLOAK_ADMIN_PASSWORD &&
+      htpasswd -b /etc/nginx/.htpasswd $KEYCLOAK_ADMIN $KEYCLOAK_ADMIN_PASSWORD > /etc/nginx/.htpasswd
+      "
+    volumes:
+      - /data/docker-nginx/:/etc/nginx/
+    networks:
+      - chimitheque
+
   nginx:
     container_name: nginx
     image: nginx:1.29
@@ -7,14 +27,17 @@ services:
       - 443:443
       - 80:80
     environment:
+      - CHIMITHEQUE_CNAME=${CHIMITHEQUE_CNAME}
       - TZ='Europe/Paris'
     volumes:
+      - /data/docker-nginx/.htpasswd:/etc/nginx/.htpasswd
       - /data/docker-nginx/nginx-auth/certs:/etc/nginx/certs
       - /data/docker-nginx/nginx-templates:/etc/nginx/templates
       - /data/docker-nginx/nginx-conf/nginx.conf:/etc/nginx/nginx.conf:ro
     networks:
       - chimitheque
     depends_on:
+      - nginxpre
       - keycloak
       - chimitheque
 
@@ -40,11 +63,13 @@ services:
       - CHIMITHEQUE_OIDCCLIENTSECRET=${CHIMITHEQUE_OIDCCLIENTSECRET}
       - TZ='Europe/Paris'
     command: >
-      bash -c "echo $CHIMITHEQUE_APPURL &&
-               echo $CHIMITHEQUE_OIDCCLIENTSECRET &&
-               sed 's CHIMITHEQUE_APPURL $CHIMITHEQUE_APPURL g; s CHIMITHEQUE_OIDCCLIENTSECRET $CHIMITHEQUE_OIDCCLIENTSECRET g' /templates/chimitheque-realm-template.json > /data/chimitheque-realm.json"
+      bash -c "
+      echo $CHIMITHEQUE_APPURL &&
+      echo $CHIMITHEQUE_OIDCCLIENTSECRET &&
+      sed 's CHIMITHEQUE_APPURL $CHIMITHEQUE_APPURL g; s CHIMITHEQUE_OIDCCLIENTSECRET $CHIMITHEQUE_OIDCCLIENTSECRET g' /templates/chimitheque-realm-template.json > /import/chimitheque-realm.json
+      "
     volumes:
-      - /data/docker-keycloak/import:/data
+      - /data/docker-keycloak/import:/import
       - /data/docker-keycloak/templates:/templates
     networks:
       - chimitheque
@@ -91,7 +116,13 @@ services:
     container_name: chimitheque
     image: ${CHIMITHEQUE_IMAGE}
     restart: unless-stopped
+    depends_on:
+      - jaeger
     environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_TRACES_SAMPLER=parentbased_traceidratio
+      - OTEL_TRACES_SAMPLER_ARG=1.0
       - CHIMITHEQUE_APPURL=${CHIMITHEQUE_APPURL}
       - CHIMITHEQUE_ADMINS=${CHIMITHEQUE_ADMINS}
       - TZ='Europe/Paris'
@@ -104,6 +135,8 @@ services:
     container_name: jaeger
     image: jaegertracing/all-in-one:latest
     restart: unless-stopped
+    command:
+      - "--query.base-path=/jaeger"
     environment:
       - COLLECTOR_OTLP_ENABLED=true
     # for devel only

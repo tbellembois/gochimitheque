@@ -93,6 +93,7 @@ wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/compose-
 3. Create the `data` directory (and sub directories) for the container data.
 ```bash
 mkdir -p /root/docker/keycloak
+mkdir -p /root/docker/alpine
 mkdir /data
 mkdir -p /data/docker-keycloak/templates/
 mkdir -p /data/docker-nginx/nginx-templates/
@@ -106,6 +107,7 @@ mkdir /data/docker-postgres/
 4. Retrieve the containers configuration files:
 ```bash
 wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/docker/keycloak/Dockerfile -O /root/docker/keycloak/Dockerfile
+wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/docker/alpine/Dockerfile -O /root/docker/alpine/Dockerfile
 wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/docker/keycloak/chimitheque-realm-template.json -O /data/docker-keycloak/templates/chimitheque-realm-template.json
 wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/docker/keycloak/chimitheque-users-0.json -O /data/docker-keycloak/templates/chimitheque-users-0.json
 wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/docker/nginx/default.conf.template -O /data/docker-nginx/nginx-templates/default.conf.template
@@ -113,22 +115,21 @@ wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/docker/n
 ```
 
 5. Copy your https certificate `crt` and `key` files in `/data/docker-nginx/nginx-auth/certs/`. Your certificate *must* contain the certification chain.
+They *must* be named `chimitheque.crt` and `chimitheque.key`.
 
 6. If upgrading from a previous version copy the `chimitheque.sqlite` file in `/data/docker-chimitheque/chimitheque-db/`.
 
-7. Configure Nginx, edit the `/data/docker-nginx/nginx-templates/default.conf.template` file. The sections to edit are spotted with the `# CONFIGURE:` string.
-
-8. Build the keycloak image:
+7. Build the keycloak image:
 ```bash
 docker compose build
 ```
 
-9. Pull the other images:
+8. Pull the other images:
 ```bash
 docker compose pull
 ```
 
-10. Start up and wait a moment (it can take several minutes for the containers to start the first time):
+9. Start up and wait a moment (it can take several minutes for the containers to start the first time):
 ```bash
 docker compose up -d
 ```

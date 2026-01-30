@@ -4,7 +4,6 @@ debug=""
 
 if [ "$CHIMITHEQUE_DEBUG" == "true" ]; then
     debug="-debug"
-    rustlog="DEBUG"
 fi
 
 export SQLITE_EXTENSION_DIR="/var/www-data/extensions"

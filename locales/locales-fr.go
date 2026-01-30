@@ -10,6 +10,8 @@ var LOCALES_FR = []byte(`
 
 [user_not_enrolled]
 	one = "vous ne pouvez pas (encore) accéder à Chimithèque - un gestionnaire doit vous inscrire"
+[pubchem_import_info]
+	one = "Le bouton IMPORTER importera le produit PubChem en tant que NOUVEAU produit, SANS remplacer un produit existant. Le bouton REMPLACER remplacera un produit existant sélectionné. Vous pouvez sélectionner un produit dans le menu de la liste des produits."
 
 [project_leader]
 	one = "chef de project"
@@ -455,7 +457,7 @@ var LOCALES_FR = []byte(`
 	one = "synonyme(s)"
 
 [search_pubchem_title]
-	one = "rechercher par (une partie du) nom ou numéro CAS"
+	one = "rechercher par (une partie du) nom"
 
 [restricted]
 	one = "accès restreint"
