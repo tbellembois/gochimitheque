@@ -17,8 +17,8 @@ It is released under the [GPL v3 License](LICENSE).
 
 ## Web browser compatibility
 
-Chimithèque may NOT work with Microsoft Edge.
-It was tested successfully with Firefox and Chrome/Chromium.
+Chimithèque does NOT work with Microsoft Edge.
+It was tested successfully with Firefox/Brave.
 
 # Links
 
@@ -29,22 +29,22 @@ It was tested successfully with Firefox and Chrome/Chromium.
 
 Here is the list of the major technical changes from the `2.1.0` version:
 - the only supported installation is with Docker (this may change in the future)
-- the authentication is based on OpenID managed by the Keycloak application.
-- the LDAP configuration has been removed from Chimithèque to be managed by the OpenID server
+- the authentication is based on OpenID managed by the Keycloak (<https://www.keycloak.org/>) application.
+- the LDAP configuration has been removed from Chimithèque to be handled by the OpenID server
 
 # Requirements
 
-- a *Linux AMD64* machine (glibc 2.29 min)
+- a *Linux AMD64* machine (glibc 2.34 min)
 - [Docker](https://docs.docker.com/get-docker/) and [docker-compose](https://docs.docker.com/compose/install/)
 - an SMTP server
 - an HTTPS certificate
 - the sqlite command line tool if upgrading an existing installation
 
-# Upgrading from 2.0.8
+# Upgrading from 2.0.*
 
 Important: if you upgrade to a `2.1.*` version coming from a `2.0.*` version you *must* first perform the upgrades up to the `2.0.8` version.
 
-1. Backup your *entire* installation folder.
+1. Backup your *entire* installation folder and database.
 
 ## Export users
 
@@ -60,7 +60,7 @@ chmod +x chimitheque_people_keycloak_exporter
 
 The exporter will create a `keycloak.json` file. Keep it for later use.
 
-Note that the exporter will panic if your database contains duplicate emails.
+> Note that the exporter will panic if your database contains duplicate (case insensitive) emails. In the previous versions of Chimithèque, emails were case sensitive. You could have duplicate emails with different cases. The new version uses case insensitive email comparison to avoid duplicates.
 
 ## Migrate database
 
@@ -81,6 +81,8 @@ This will create a new `chimitheque.sqlite` file. Keep it for later.
 
 # Installation
 
+The following commands are to be executed in the `/root` directory (you can change it) with the `root` account. 
+
 1. Retrieve the Chimithèque `docker-compose.yml` and `compose-prod.env` files:
 ```bash
 cd /root
@@ -88,21 +90,22 @@ wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/docker-c
 wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/compose-prod.env -O .env
 ```
 
-2. Edit the `.env` file, it is self documented.
+2. Edit the `.env` file, it is self documented. You can use the command `pwgen -s -B 16` to generate secure passwords.
 
 3. Create the `data` directory (and sub directories) for the container data.
 ```bash
 mkdir -p /root/docker/keycloak
-mkdir -p /root/docker/alpine
+mkdir /root/docker/alpine
 mkdir /data
 mkdir -p /data/docker-keycloak/templates/
 mkdir -p /data/docker-nginx/nginx-templates/
-mkdir -p /data/docker-nginx/nginx-conf/
-mkdir -p /data/docker-nginx/nginx-auth/certs/
+mkdir /data/docker-nginx/nginx-conf/
+mkdir /data/docker-nginx/nginx-auth/certs/
 mkdir -p /data/docker-chimitheque/chimitheque-db/
 mkdir /data/docker-postgres/
 ```
-> If you want to choose another directory you will have to replace the `/data` strings in the `docker-compose.yml` file (`volumes` sections). In this documentation we assume that the default directory is kept.
+
+> If you want to choose another directory for the container data,you will have to replace the `/data` strings in the `docker-compose.yml` file (`volumes` sections). In this documentation we assume that the default directory is kept.
 
 4. Retrieve the containers configuration files:
 ```bash
@@ -153,7 +156,7 @@ And click the `Create` button.
 
 ## Importing previous users (migration from 2.0.8 only)
 
-If you migrate from a `2.0.8` version you should have a `keycloak.json` file from the `Upgrading from 2.0.8` section.
+If you migrate from a `2.0.8` version you should have a `keycloak.json` file from the `Upgrading from 2.0.*` section.
 
 1. Click on `Realm settings` on the left colums, then on the top right drop-down list `Action` choose `Partial import`.
 
@@ -187,13 +190,13 @@ Non existing accounts will be created.
 
 # Users management
 
-Users permissions are still managed by the Chimithèque application (by admins and entity managers). But user creation and deletion are now managed by the embeded Keycloak application.
+Users permissions are still managed by the Chimithèque application (by admins and entity managers).
 
 There are two ways to manage users:
 1. enable user registration in Keycloak (easiest way)
 People will have the possibility to create their own account but will NOT be able to connect to Chimithèque until they are affected to an entity.
-2. disable user registration in Keycloak (harder way)
-You will have to create users manually in Keycloak. Currently only the account `admin@chimitheque.fr` can access Keycloak, not other admins nor Chimithèque managers. This will be fixed in a next release.
+2. disable user registration in Keycloak
+You will have to create users manually in Keycloak. Currently only the account `admin@chimitheque.fr` can access Keycloak, not other admins nor Chimithèque managers. This will be fixed in a future release.
 
 # Database backup
 
@@ -227,22 +230,28 @@ Subscribe to the mailing list: <https://groupes.renater.fr/sympa/subscribe/chimi
 
 # Use of categories and tags
 
-For chemical and biological reagents, there is now the possibility to class products in different categories in order to make easier product research.
+For chemical and biological reagents, it is now possible to classify products into different categories in order to make product searches easier.
 
-This solution is available when creating a new product card with a drop down menu and suggest different preregistered product categories.
-It is possible to create a new category if concerned product does not feet with already existing suggestions. This solution allows in main menu, with advanced research, to show only products called with a specific category, and thus have a global vision on a specific class of products.
+This option is available when creating a new product record through a drop-down menu that suggests several pre-registered product categories. It is also possible to create a new category if the relevant product does not fit any of the existing suggestions.
 
-This solution is completed with the possibility to apply tags on chemical or biological reagents, also available in product sheet section. This allows to associate a product with various fields, methods, protocols, projects, or application domains.
-Like previously, preregistered tags are proposed in a scrolling menu with the possibility to create new tags. For example, a stem cell culture medium can be associated with Stem Cells, Cell Culture or Culture Medium tags. This function may reveal particularly useful to rapidly show products associated with a specific activity, projects or method in the advanced research of Chimithéque main menu. Moreover, it is a way to personalize and adapt product research according to a lab or a structure specific needs or habits.
+This feature also allows users, through the advanced search in the main menu, to display only products belonging to a specific category, providing a global view of a particular class of products.
+
+This functionality is complemented by the possibility of applying tags to chemical or biological reagents, which is also available in the product sheet section. Tags allow a product to be associated with various fields, methods, protocols, projects, or application domains.
+
+As with categories, pre-registered tags are suggested in a scrolling menu, with the possibility of creating new tags if needed. For example, a stem cell culture medium can be associated with tags such as Stem Cells, Cell Culture, or Culture Medium.
+
+This feature is particularly useful for quickly identifying products associated with a specific activity, project, or method through the advanced search in the Chimithèque main menu. Moreover, it provides a way to personalize and adapt product searches according to the specific needs or practices of a laboratory or organization.
 
 # Use of barecode and QRCode
 
-A new option is now available for creating an association between a product and a specific label: the QRCode.
-It is different from the bare-code, because it is readable by every device which have a camera and permits to access directly to the page with the product's storage.
-By default, when a product is stocked, the software create a random bare-code and a new QRcode.
-However, if a product need to be sampled, you can check the option "identical bare-code" when the number of samples is required, and it will generate the same bare-code for each new sample.
-The major advantage is that you can scan any QRcode of these strictly identical products and it will display the page of the storage with all the samples.
-Then, any of these samples could be borrowed or archived, for example.
-For instance, for conservation conditions, it could be recommended to limit freeze-thaw cycles.
-To avoid that, the product could be sampled in different dishes with the same volume or mass.
-To store them on Chimitheque, the "identical bare-code" option will permit to create QRcodes linked with all the samples, so that any of them could be destocked when one of them is used.
+A new option is now available for creating an association between a product and a specific label: the QR code.
+
+It differs from the barcode because it can be read by any device with a camera and allows direct access to the page containing the product’s storage information.
+
+By default, when a product is stocked, the software creates a random barcode and a new QR code. However, if a product needs to be sampled, you can select the “identical barcode” option when specifying the number of samples. This will generate the same barcode for each new sample.
+
+The main advantage is that scanning the QR code of any of these identical products will display the storage page containing all the samples. From there, any of the samples can be borrowed or archived.
+
+For example, in some cases it is recommended to limit freeze–thaw cycles for conservation purposes. To avoid repeated freeze–thaw cycles, the product can be divided into several containers with the same volume or mass.
+
+When storing them in Chimitheque, the “identical barcode” option allows the creation of QR codes linked to all the samples, so that any of them can be removed from storage when one is used.

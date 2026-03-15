@@ -93,6 +93,4 @@ server {
         proxy_pass http://keycloak:8080;
     }
 
-
-
 }

@@ -45,7 +45,7 @@ RUN if [ -z $BuildID ]; then BuildID=$(date "+%Y%m%d"); fi; echo "BuildID=$Build
     go build -ldflags "-s -w -X main.BuildID=$BuildID"
 
 # Stage 2: Build Rust components
-FROM rust:1.93.1 AS rust_builder
+FROM rust:1.94 AS rust_builder
 
 WORKDIR /go/src/rust
 RUN git clone https://github.com/tbellembois/chimitheque_back.git && \

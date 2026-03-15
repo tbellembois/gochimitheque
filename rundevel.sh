@@ -19,7 +19,7 @@ export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
 export OTEL_EXPORTER_OTLP_PROTOCOL=grpc
 export OTEL_TRACES_SAMPLER=parentbased_traceidratio
 export OTEL_TRACES_SAMPLER_ARG=1.0
-export RUST_LOG=chimitheque_back=debug,chimitheque_db=debug,tower_http=warn
+export RUST_LOG=chimitheque_back=info,chimitheque_db=debug,tower_http=warn
 export DB_PATH="/home/thbellem/workspace/workspace_go/src/github.com/tbellembois/gochimitheque/chimitheque.sqlite"
 export KEYCLOAK_BASE_URL="https://192.168.1.18:8443/keycloak"
 export KEYCLOAK_REALM="chimitheque"

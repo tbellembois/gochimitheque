@@ -19,13 +19,13 @@ type Storage struct {
 	StorageQuantity         *float64   `db:"storage_quantity" json:"storage_quantity,omitempty" schema:"storage_quantity" `
 	// StorageNbItem            int        `db:"-" json:"storage_nbitem,omitempty" schema:"storage_nbitem"`
 	// StorageIdenticalBarecode bool    `db:"-" json:"storage_identical_barecode,omitempty" schema:"storage_identical_barecode" `
-	StorageBarecode       *string `db:"storage_barecode" json:"storage_barecode,omitempty" schema:"storage_barecode" `
-	StorageQRCode         []byte  `db:"storage_qrcode" json:"storage_qrcode,omitempty" schema:"storage_qrcode"`
-	StorageToDestroy      bool    `db:"storage_to_destroy" json:"storage_to_destroy,omitempty" schema:"storage_to_destroy" `
-	StorageArchive        *bool   `db:"storage_archive" json:"storage_archive,omitempty" schema:"storage_archive" `
-	StorageConcentration  *int64  `db:"storage_concentration" json:"storage_concentration,omitempty" schema:"storage_concentration" `
-	StorageNumberOfBag    *int64  `db:"storage_number_of_bag" json:"storage_number_of_bag,omitempty" schema:"storage_number_of_bag" `
-	StorageNumberOfCarton *int64  `db:"storage_number_of_carton" json:"storage_number_of_carton,omitempty" schema:"storage_number_of_carton" `
+	StorageBarecode       *string  `db:"storage_barecode" json:"storage_barecode,omitempty" schema:"storage_barecode" `
+	StorageQRCode         []byte   `db:"storage_qrcode" json:"storage_qrcode,omitempty" schema:"storage_qrcode"`
+	StorageToDestroy      bool     `db:"storage_to_destroy" json:"storage_to_destroy,omitempty" schema:"storage_to_destroy" `
+	StorageArchive        *bool    `db:"storage_archive" json:"storage_archive,omitempty" schema:"storage_archive" `
+	StorageConcentration  *float64 `db:"storage_concentration" json:"storage_concentration,omitempty" schema:"storage_concentration" `
+	StorageNumberOfBag    *int64   `db:"storage_number_of_bag" json:"storage_number_of_bag,omitempty" schema:"storage_number_of_bag" `
+	StorageNumberOfCarton *int64   `db:"storage_number_of_carton" json:"storage_number_of_carton,omitempty" schema:"storage_number_of_carton" `
 	Person                `db:"person" json:"person,omitempty" schema:"person"`
 	Product               `db:"product" json:"product,omitempty" schema:"product"`
 	//Entity                   `db:"entity" json:"entity,omitempty" schema:"entity"`
