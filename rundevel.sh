@@ -3,16 +3,34 @@
 trap 'kill 0' EXIT SIGINT SIGTERM
 
 if [ "$1" == "-clean" ]; then
+    echo "chimitheque_back"
     cd /home/thbellem/workspace/workspace_rust/chimitheque_back
     cargo clean
+    cargo update
+    echo "chimitheque_db"
     cd /home/thbellem/workspace/workspace_rust/chimitheque_db
     cargo clean
+    cargo update
+    echo "chimitheque_traits"
     cd /home/thbellem/workspace/workspace_rust/chimitheque_traits
     cargo clean
+    cargo update
+    echo "chimitheque_types"
     cd /home/thbellem/workspace/workspace_rust/chimitheque_types
     cargo clean
+    cargo update
+    echo "chimitheque_utils"
     cd /home/thbellem/workspace/workspace_rust/chimitheque_utils
     cargo clean
+    cargo update
+    echo "chimitheque_people_keycloak_exporter"
+    cd /home/thbellem/workspace/workspace_rust/chimitheque_people_keycloak_exporter
+    cargo clean
+    cargo update
+    # cd /home/thbellem/workspace/workspace_rust/chimitheque_front
+    # cargo clean
+
+    exit 0
 fi
 
 export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317

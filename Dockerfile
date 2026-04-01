@@ -56,7 +56,7 @@ RUN git clone https://github.com/tbellembois/chimitheque_back.git && \
     git clone https://github.com/tbellembois/chimitheque_pubchem.git
 
 WORKDIR /go/src/rust/chimitheque_back
-RUN cargo build --release --locked && \
+RUN cargo build --release && \
     strip target/release/chimitheque_back
 
 # Stage 3: Final image
