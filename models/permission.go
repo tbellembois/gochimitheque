@@ -4,7 +4,7 @@ package models
 type Permission struct {
 	PermissionName   string `db:"permission_name" json:"permission_name" schema:"permission_name"`       // ex: r
 	PermissionItem   string `db:"permission_item" json:"permission_item" schema:"permission_item"`       // ex: entity
-	PermissionEntity int64  `db:"permission_entity" json:"permission_entity" schema:"permission_entity"` // ex: 8
+	PermissionEntity *int64 `db:"permission_entity" json:"permission_entity" schema:"permission_entity"` // ex: 8
 	Person           `db:"person" json:"person"`
 }
 
