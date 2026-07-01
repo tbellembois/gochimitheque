@@ -39,7 +39,7 @@ func init() {
 	env = handlers.NewEnv()
 
 	// Configuration parameters.
-	flagAppURL := flag.String("appurl", "https://192.168.1.18:8443", "the application url (without the path), with NO trailing /")
+	flagAppURL := flag.String("appurl", "https://192.168.1.56:8443", "the application url (without the path), with NO trailing /")
 	flagDebug := flag.Bool("debug", false, "debug (verbose log), default is error")
 
 	// One shot commands.
