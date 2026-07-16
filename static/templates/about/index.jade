@@ -6,35 +6,38 @@ block CONTENT
 
     div.mx-auto(style="width: 60%").mt-sm-4
         span.iconlabel
-            = T("project_leader", 1) 
+            = T("project_leader", 1)
         span &nbsp;Delphine Pitrat (delphine.pitrat@ens-lyon.fr)
     div.mx-auto(style="width: 60%").mt-sm-4
         span.iconlabel
-            = T("project_site", 1) 
-        span 
+            = T("project_site", 1)
+        span
             a(target="_blank", href="https://github.com/tbellembois/gochimitheque")
                 span.mdi.mdi-github-circle &nbsp;https://github.com/tbellembois/gochimitheque
     div.mx-auto(style="width: 60%").mt-sm-4
         span.iconlabel
-            = T("project_support", 1) 
-        span 
+            = T("project_support", 1)
+        span
             a(target="_blank", href="https://github.com/tbellembois/gochimitheque")
                 span.mdi.mdi-github-circle &nbsp;https://github.com/tbellembois/gochimitheque/issues
     div.mx-auto(style="width: 60%").mt-sm-4
         span.iconlabel
-            = T("project_license", 1) 
-        span 
+            = T("project_license", 1)
+        span
             a(target="_blank", href="https://raw.githubusercontent.com/tbellembois/gochimitheque/master/LICENSE") &nbsp;Open Source - GNU GENERAL PUBLIC LICENSE V3
     div.mx-auto(style="width: 60%").mt-sm-4
         span.iconlabel
-            = T("logo_information1", 1) 
+            = T("logo_information1", 1)
         a(title="mon-aloevera [at] hotmail [dot] com")
             b Katia Varet.
     div.mx-auto(style="width: 60%").mt-sm-4
         span.iconlabel
-            = T("project_version", 1) 
+            = T("project_version", 1)
         span#appversion
-            
+        hr
+        a#backversion(href="#", onclick="Backend_versionInfo()") .
+        div#backversion
+
 block CONTENTJS
     script.
         document.getElementById("appversion").innerHTML = "&nbsp;" + c.BuildID;

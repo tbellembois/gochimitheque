@@ -36,7 +36,7 @@ export KEYCLOAK_CLIENT_ID="chimitheque"
 export SQLITE_EXTENSION_DIR="/home/thbellem/workspace/workspace_rust/chimitheque_back/src/extensions"
 
 #export RUST_LOG=chimitheque_back=debug,chimitheque_db=debug,tower_http=warn
-export RUST_LOG=chimitheque_back=error,chimitheque_db=info,tower_http=warn
+export RUST_LOG=chimitheque_back=info,chimitheque_db=info,tower_http=warn
 
 cd /home/thbellem/workspace/workspace_go/src/github.com/tbellembois/gochimitheque || exit
 
@@ -52,8 +52,8 @@ go run . &
 cd /home/thbellem/workspace/workspace_rust/chimitheque_back || exit
 
 echo "#### starting backend ####"
-#cargo run . &
-/home/thbellem/workspace/workspace_rust/chimitheque_back/target/release/chimitheque_back &
+cargo run . &
+#/home/thbellem/workspace/workspace_rust/chimitheque_back/target/release/chimitheque_back &
 #CARGO_PROFILE_RELEASE_DEBUG=true cargo flamegraph -o flamegraph.svg &
 
 cd /home/thbellem/workspace/workspace_go/src/github.com/tbellembois/gochimitheque/dev || exit
