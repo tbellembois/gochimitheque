@@ -14,7 +14,7 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/justinas/alice v1.2.0
-	github.com/mattn/go-sqlite3 v2.0.3+incompatible
+	github.com/mattn/go-sqlite3 v1.14.48
 	github.com/nicksnyder/go-i18n/v2 v2.2.2
 	github.com/sirupsen/logrus v1.9.3
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
@@ -35,6 +35,7 @@ require (
 
 require (
 	github.com/Azure/go-ntlmssp v0.1.1 // indirect
+	github.com/Joker/hpp v1.0.0 // indirect
 	github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible // indirect
 	github.com/go-asn1-ber/asn1-ber v1.5.5 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
@@ -42,6 +43,8 @@ require (
 	github.com/tidwall/gjson v1.17.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
+	github.com/valyala/bytebufferpool v1.0.0 // indirect
+	golang.org/x/net v0.54.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 

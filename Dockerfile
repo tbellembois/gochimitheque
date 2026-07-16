@@ -1,4 +1,4 @@
-FROM golang:1.21-bullseye as builder
+FROM golang:1.26-trixie AS builder
 LABEL author="Thomas Bellembois"
 ARG BuildID
 ENV BuildID=${BuildID}
@@ -21,7 +21,7 @@ RUN go install github.com/Joker/jade/cmd/jade@master
 WORKDIR /go/src/github.com/tbellembois/
 # sudo mount --bind ~/workspace/workspace_go/src/github.com/tbellembois/gochimitheque-wasm ./bind-gochimitheque-wasm
 # sudo mount --bind ~/workspace/workspace_go/src/github.com/tbellembois/gochimitheque-utils ./bind-gochimitheque-utils
-COPY ./bind-gochimitheque-wasm ./gochimitheque-wasm
+#COPY ./bind-gochimitheque-wasm ./gochimitheque-wasm
 COPY ./bind-gochimitheque-utils ./gochimitheque-utils
 
 # Copying Chimithèque sources.
@@ -33,14 +33,14 @@ COPY . .
 #
 
 # Building wasm module.
-WORKDIR /go/src/github.com/tbellembois/gochimitheque-wasm
-RUN GOOS=js GOARCH=wasm go get -v -d ./... \
-    && GOOS=js GOARCH=wasm go build -o wasm .
+#WORKDIR /go/src/github.com/tbellembois/gochimitheque-wasm
+#RUN GOOS=js GOARCH=wasm go get -v -d ./... \
+#    && GOOS=js GOARCH=wasm go build -o wasm .
 
 # Copying and compress WASM module into sources.
-RUN cp /go/src/github.com/tbellembois/gochimitheque-wasm/wasm /go/src/github.com/tbellembois/gochimitheque/wasm/ \
-    && gzip -9 -v -c /go/src/github.com/tbellembois/gochimitheque/wasm/wasm > /go/src/github.com/tbellembois/gochimitheque/wasm/wasm.gz \
-    && rm /go/src/github.com/tbellembois/gochimitheque/wasm/wasm
+#RUN cp /go/src/github.com/tbellembois/gochimitheque-wasm/wasm /go/src/github.com/tbellembois/gochimitheque/wasm/ \
+#    && gzip -9 -v -c /go/src/github.com/tbellembois/gochimitheque/wasm/wasm > /go/src/github.com/tbellembois/gochimitheque/wasm/wasm.gz \
+#    && rm /go/src/github.com/tbellembois/gochimitheque/wasm/wasm
 
 # Installing Chimithèque dependencies.
 WORKDIR /go/src/github.com/tbellembois/gochimitheque/
@@ -49,14 +49,14 @@ WORKDIR /go/src/github.com/tbellembois/gochimitheque/
 RUN go generate
 
 # Building Chimithèque.
-# docker build --build-arg BuildID=2.0.7 -t tbellembois/gochimitheque:2.0.7 .
+# docker build --build-arg BuildID=2.0.9 -t tbellembois/gochimitheque:2.0.9 .
 RUN if [ -z $BuildID ]; then BuildID=$(date "+%Y%m%d"); fi; echo "BuildID=$BuildID"; go build -ldflags "-X main.BuildID=$BuildID"
 
 #
 # Install.
 #
 
-FROM golang:1.21-bullseye
+FROM golang:1.26-trixie
 
 RUN rm -Rf /var/cache/apk
 

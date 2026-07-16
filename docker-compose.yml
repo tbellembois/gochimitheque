@@ -21,7 +21,7 @@ services:
         # development
         #image: tbellembois/gochimitheque:latest
         # production
-        image: tbellembois/gochimitheque:2.0.8
+        image: tbellembois/gochimitheque:2.0.9
         restart: unless-stopped
         environment:
             # enable debug logs - not recommended in production
