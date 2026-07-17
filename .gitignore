@@ -12,11 +12,10 @@ bind-gochimitheque-wasm/*
 bind-gochimitheque-utils/*
 
 static/jade/*
+!static/jade/
 !static/jade/funcs.go
 
 node_modules
 
 package.json
 package-lock.json
-
-jade
