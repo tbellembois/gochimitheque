@@ -28,6 +28,8 @@ WORKDIR /go/src/github.com/tbellembois/
 COPY ./bind-gochimitheque-wasm ./gochimitheque-wasm
 WORKDIR /go/src/github.com/tbellembois/gochimitheque/
 COPY . .
+WORKDIR /go/src/github.com/tbellembois/gochimitheque/static/jade
+RUN find . -type f ! -name funcs.go -exec rm {} \;
 
 WORKDIR /go/src/github.com/tbellembois/gochimitheque-wasm
 RUN GOOS=js GOARCH=wasm go get -v ./... && \
