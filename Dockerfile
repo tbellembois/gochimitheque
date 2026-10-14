@@ -1,112 +1,45 @@
-# Stage 1: Build Go components
-FROM golang:1.25-trixie AS go_builder
+FROM quay.io/keycloak/keycloak:26.8.0 AS builder
 
-LABEL author="Thomas Bellembois"
-ARG BuildID
+# Enable health and metrics support
+ENV KC_HEALTH_ENABLED=true
+ENV KC_METRICS_ENABLED=true
 
-#
-# Prepare.
-#
-# Install dependencies.
-RUN apt -y update && \
-    apt -y install openssl libssl-dev
+ARG KC_DB
+ARG KC_FEATURES
+ARG KC_HTTP_RELATIVE_PATH
+ARG KC_TZ
 
-# Create base directory.
-RUN mkdir -p /home/thbellem/workspace \
-    && ln -s /go /home/thbellem/workspace/workspace_go
+ENV KC_DB=${KC_DB}
+ENV KC_FEATURES=${KC_FEATURES}
+ENV KC_HTTP_RELATIVE_PATH=${KC_HTTP_RELATIVE_PATH}
+ENV TZ=${KC_TZ}
 
-# Install Jade.
-RUN go install github.com/Joker/jade/cmd/jade@master
+RUN echo "KC_DB=${KC_DB}"
+RUN echo "KC_FEATURES=${KC_FEATURES}"
+RUN echo "KC_HTTP_RELATIVE_PATH=${KC_HTTP_RELATIVE_PATH}"
+RUN echo "KC_TZ=${KC_TZ}"
 
-#
-# Chimithèque Go sources.
-#
+RUN /opt/keycloak/bin/kc.sh --verbose build
 
-# Copy sources and build
-# sudo mount --bind ~/workspace/workspace_go/src/github.com/tbellembois/gochimitheque-wasm ./bind-gochimitheque-wasm
-WORKDIR /go/src/github.com/tbellembois/
-COPY ./bind-gochimitheque-wasm ./gochimitheque-wasm
-WORKDIR /go/src/github.com/tbellembois/gochimitheque/
-COPY . .
-WORKDIR /go/src/github.com/tbellembois/gochimitheque/static/jade
-RUN find . -type f ! -name funcs.go -exec rm {} \;
+FROM quay.io/keycloak/keycloak:26.8.0
 
-WORKDIR /go/src/github.com/tbellembois/gochimitheque-wasm
-RUN GOOS=js GOARCH=wasm go get -v ./... && \
-    GOOS=js GOARCH=wasm go build -o wasm
+COPY --from=builder /opt/keycloak/ /opt/keycloak/
+WORKDIR /opt/keycloak
 
-# Compress binary
-RUN cp /go/src/github.com/tbellembois/gochimitheque-wasm/wasm /go/src/github.com/tbellembois/gochimitheque/wasm/ && \
-    gzip -9 -v -c /go/src/github.com/tbellembois/gochimitheque-wasm/wasm > /go/src/github.com/tbellembois/gochimitheque/wasm/wasm.gz && \
-    rm /go/src/github.com/tbellembois/gochimitheque/wasm/wasm
+ARG KC_DB
+ARG KC_DB_URL
+ARG KC_DB_USERNAME
+ARG KC_DB_PASSWORD
+ARG KC_HOSTNAME
+ARG KC_PROXY
+ARG KC_TZ
 
-# Build backend
-WORKDIR /go/src/github.com/tbellembois/gochimitheque/
-RUN go generate
-RUN if [ -z $BuildID ]; then BuildID=$(date "+%Y%m%d"); fi; echo "BuildID=$BuildID"; \
-    go build -ldflags "-s -w -X main.BuildID=$BuildID"
+ENV KC_DB=${KC_DB}
+ENV KC_DB_URL=${KC_DB_URL}
+ENV KC_DB_USERNAME=${KC_DB_USERNAME}
+ENV KC_DB_PASSWORD=${KC_DB_PASSWORD}
+ENV KC_HOSTNAME=${KC_HOSTNAME}
+ENV KC_PROXY=${KC_PROXY}
+ENV TZ=${KC_TZ}
 
-# Stage 2: Build Rust components
-FROM rust:1.94 AS rust_builder
-
-WORKDIR /go/src/rust
-RUN git clone https://github.com/tbellembois/chimitheque_back.git && \
-    git clone https://github.com/tbellembois/chimitheque_db.git && \
-    git clone https://github.com/tbellembois/chimitheque_types.git && \
-    git clone https://github.com/tbellembois/chimitheque_traits.git && \
-    git clone https://github.com/tbellembois/chimitheque_utils.git && \
-    git clone https://github.com/tbellembois/chimitheque_pubchem.git
-
-WORKDIR /go/src/rust/chimitheque_back
-RUN cargo build --release && \
-    strip target/release/chimitheque_back
-
-# Stage 3: Final image
-FROM golang:1.25-trixie AS final_image
-
-RUN apt -y update && \
-    apt -y upgrade && \
-    update-ca-certificates -v
-
-RUN rm -Rf /var/cache/apk
-
-# WORKDIR /tmp
-# RUN wget https://raw.githubusercontent.com/tbellembois/chimitheque_db/refs/heads/main/src/resources/shema.sql
-
-# Ensure www-data user exists.
-RUN addgroup --gid 82 --system chimitheque && \
-    adduser --uid 82 --system --ingroup chimitheque chimitheque && \
-    mkdir /data && \
-    chown chimitheque /data && \
-    chmod 700 /data && \
-    mkdir -p /var/www-data/extensions && \
-    chown chimitheque /var/www-data/extensions && \
-    chown chimitheque /var/log && \
-    chmod 755 /var/log
-
-# Copy SQL extensions.
-COPY --from=rust_builder /go/src/rust/chimitheque_back/src/extensions/ /var/www-data/extensions/
-
-# Copy frontend binary.
-COPY --from=go_builder /go/src/github.com/tbellembois/gochimitheque/wasm/wasm.gz /var/www-data/
-COPY --from=go_builder /go/src/github.com/tbellembois/gochimitheque/gochimitheque /var/www-data/
-# RUN chown chimitheque /var/www-data/{gochimitheque,wasm.gz} && \
-#     chmod +x /var/www-data/{gochimitheque,wasm.gz}
-RUN chown chimitheque /var/www-data/gochimitheque && \
-    chown chimitheque /var/www-data/wasm.gz && \
-    chmod +x /var/www-data/gochimitheque
-
-# Copy backend binary.
-COPY --from=rust_builder /go/src/rust/chimitheque_back/target/release/chimitheque_back /var/www-data/
-RUN chown chimitheque /var/www-data/chimitheque_back && \
-    chmod +x /var/www-data/chimitheque_back
-
-# Copying entrypoint.
-COPY docker/entrypoint.sh /
-RUN chmod +x /entrypoint.sh
-
-USER chimitheque
-WORKDIR /var/www-data
-ENTRYPOINT [ "/entrypoint.sh" ]
-VOLUME [ "/data" ]
-EXPOSE 8081
+ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start", "--optimized", "--import-realm"]

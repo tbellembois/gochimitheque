@@ -100,7 +100,7 @@ mkdir /data
 mkdir -p /data/docker-keycloak/templates/
 mkdir -p /data/docker-nginx/nginx-templates/
 mkdir /data/docker-nginx/nginx-conf/
-mkdir /data/docker-nginx/nginx-auth/certs/
+mkdir -p /data/docker-nginx/nginx-auth/certs/
 mkdir -p /data/docker-chimitheque/chimitheque-db/
 mkdir /data/docker-postgres/
 ```

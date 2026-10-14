@@ -1549,23 +1549,6 @@
     "xXSSProtection": "1; mode=block",
     "strictTransportSecurity": "max-age=31536000; includeSubDomains"
   },
-  "smtpServer": {
-    "allowutf8": "true",
-    "debug": "false",
-    "replyToDisplayName": "",
-    "starttls": "false",
-    "auth": "true",
-    "envelopeFrom": "",
-    "ssl": "true",
-    "password": "",
-    "port": "",
-    "host": "",
-    "replyTo": "",
-    "from": "",
-    "fromDisplayName": "chimitheque",
-    "authType": "basic",
-    "user": ""
-  },
   "eventsEnabled": false,
   "eventsListeners": ["jboss-logging"],
   "enabledEventTypes": [],
