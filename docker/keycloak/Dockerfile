@@ -1,4 +1,8 @@
-FROM quay.io/keycloak/keycloak:26.6 AS builder
+FROM quay.io/keycloak/keycloak:26.8.0 AS builder
+
+# Enable health and metrics support
+ENV KC_HEALTH_ENABLED=true
+ENV KC_METRICS_ENABLED=true
 
 ARG KC_DB
 ARG KC_FEATURES
@@ -17,7 +21,7 @@ RUN echo "KC_TZ=${KC_TZ}"
 
 RUN /opt/keycloak/bin/kc.sh --verbose build
 
-FROM builder
+FROM quay.io/keycloak/keycloak:26.8.0
 
 COPY --from=builder /opt/keycloak/ /opt/keycloak/
 WORKDIR /opt/keycloak
@@ -38,4 +42,4 @@ ENV KC_HOSTNAME=${KC_HOSTNAME}
 ENV KC_PROXY=${KC_PROXY}
 ENV TZ=${KC_TZ}
 
-ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start"]
+ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start", "--optimized", "--import-realm"]
