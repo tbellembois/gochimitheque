@@ -11,6 +11,20 @@ It is released under the [GPL v3 License](LICENSE).
 - *projet leaders*: Delphine Pitrat - ENS-Lyon (delphine[dot]pitrat[at]ens-lyon[dot]fr) - Thomas Bellembois - UCA (thomas[dot]bellembois[at]uca[dot]fr)
 - *technical referent - chemistry*: Delphine Pitrat
 
+## Contributors
+
+- Elodie Goy (ENS Lyon, former project leader)
+- Serges Torres (ENS Lyon, first study and specifications)
+- Sandrine Breteau (ENS Lyon, specifications and tests)
+- Anouk Bedino (ENS Lyon, specifications and tests)
+- Benjamin Gillet (ENS Lyon, specifications and tests)
+- Gilles Chatelain (ENS Lyon, specifications and tests)
+- Odile Coulombel (ENS Lyon, specifications)
+- Loïs Taulelle (ENS Lyon, license)
+- Laure-Lise Chapellet (ENS Lyon, specifications and tests)
+- Antoine Gallavardin (IRSTEA, tests)
+- Julien Devemy (UCA, specifications and tests)
+
 ## Screenshot
 
 ![screenshot](screenshot.png)
@@ -34,7 +48,7 @@ Here is the list of the major technical changes from the `2.1.0` version:
 
 # Requirements
 
-- a *Linux AMD64* machine (glibc 2.34 min)
+- a *Linux AMD64* machine (glibc 2.41 min)
 - [Docker](https://docs.docker.com/get-docker/) and [docker-compose](https://docs.docker.com/compose/install/)
 - an SMTP server
 - an HTTPS certificate
@@ -101,7 +115,7 @@ mkdir -p /data/docker-nginx/nginx-auth/certs/
 mkdir -p /data/docker-chimitheque/chimitheque-db/
 ```
 
-> If you want to choose another directory for the container data,you will have to replace the `/data` strings in the `docker-compose.yml` file (`volumes` sections). In this documentation we assume that the default directory is kept.
+> If you want to choose another directory for the container data, you will have to replace the `/data` strings in the `docker-compose.yml` file (`volumes` sections). In this documentation we assume that the default directory is kept.
 
 4. Retrieve keycloak Dockerfile:
 ```bash
@@ -175,7 +189,6 @@ Now login with the email `admin@chimitheque.fr` and the value of your `KEYCLOAK_
 
 A static administrator `admin@chimitheque.fr` with id `1` is created during the installation. It is hardcoded and must not be deleted.
 You can add a comma separated list of admins emails. You should limit the number of admins and set entity managers instead.
-Non existing accounts will be created.
 
 > example: `-admins=john.bar@foo.com,jean.dupont@foo.com`
 
@@ -183,7 +196,9 @@ Non existing accounts will be created.
 
 Users permissions are still managed by the Chimithèque application (by admins and entity managers).
 
-There are two ways to manage users:
+# Users enrollment
+
+There are two ways to add users:
 1. enable user registration in Keycloak (easiest way)
 People will have the possibility to create their own account but will NOT be able to connect to Chimithèque until they are affected to an entity.
 2. disable user registration in Keycloak
@@ -205,7 +220,7 @@ Restore it with:
 
 # Upgrades
 
-## Docker installation
+Change the `CHIMITHEQUE_IMAGE` environment variable in the `.env` file.
 
 ```bash
     docker-compose down
