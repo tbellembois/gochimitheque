@@ -95,26 +95,17 @@ wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/compose-
 3. Create the `data` directory (and sub directories) for the container data.
 ```bash
 mkdir -p /root/docker/keycloak
-mkdir /root/docker/alpine
 mkdir /data
-mkdir -p /data/docker-keycloak/templates/
-mkdir -p /data/docker-nginx/nginx-templates/
-mkdir /data/docker-nginx/nginx-conf/
+mkdir -p /data/docker-postgres/
 mkdir -p /data/docker-nginx/nginx-auth/certs/
 mkdir -p /data/docker-chimitheque/chimitheque-db/
-mkdir /data/docker-postgres/
 ```
 
 > If you want to choose another directory for the container data,you will have to replace the `/data` strings in the `docker-compose.yml` file (`volumes` sections). In this documentation we assume that the default directory is kept.
 
-4. Retrieve the containers configuration files:
+4. Retrieve keycloak Dockerfile:
 ```bash
 wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/docker/keycloak/Dockerfile -O /root/docker/keycloak/Dockerfile
-wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/docker/alpine/Dockerfile -O /root/docker/alpine/Dockerfile
-wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/docker/keycloak/chimitheque-realm-template.json -O /data/docker-keycloak/templates/chimitheque-realm-template.json
-wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/docker/keycloak/chimitheque-users-0.json -O /data/docker-keycloak/templates/chimitheque-users-0.json
-wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/docker/nginx/default.conf.template -O /data/docker-nginx/nginx-templates/default.conf.template
-wget https://raw.githubusercontent.com/tbellembois/gochimitheque/master/docker/nginx/nginx.conf -O /data/docker-nginx/nginx-conf/nginx.conf
 ```
 
 5. Copy your https certificate `crt` and `key` files in `/data/docker-nginx/nginx-auth/certs/`. Your certificate *must* contain the certification chain.
