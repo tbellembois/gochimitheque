@@ -4,28 +4,28 @@ trap 'kill 0' EXIT SIGINT SIGTERM
 
 if [ "$1" == "-clean" ]; then
     echo "chimitheque_pubchem"
-    cd /home/tbellembois/workspace/workspace_rust/chimitheque_pubchem
+    cd $HOME/workspace/workspace_rust/chimitheque_pubchem
     cargo clean
     echo "chimitheque_db"
-    cd /home/tbellembois/workspace/workspace_rust/chimitheque_db
+    cd $HOME/workspace/workspace_rust/chimitheque_db
     cargo clean
     echo "chimitheque_traits"
-    cd /home/tbellembois/workspace/workspace_rust/chimitheque_traits
+    cd $HOME/workspace/workspace_rust/chimitheque_traits
     cargo clean
     echo "chimitheque_types"
-    cd /home/tbellembois/workspace/workspace_rust/chimitheque_types
+    cd $HOME/workspace/workspace_rust/chimitheque_types
     cargo clean
     echo "chimitheque_utils"
-    cd /home/tbellembois/workspace/workspace_rust/chimitheque_utils
+    cd $HOME/workspace/workspace_rust/chimitheque_utils
     cargo clean
     echo "chimitheque_defines"
-    cd /home/tbellembois/workspace/workspace_rust/chimitheque_defines
+    cd $HOME/workspace/workspace_rust/chimitheque_defines
     cargo clean
     echo "chimitheque_people_keycloak_exporter"
-    cd /home/tbellembois/workspace/workspace_rust/chimitheque_people_keycloak_exporter
+    cd $HOME/workspace/workspace_rust/chimitheque_people_keycloak_exporter
     cargo clean
     echo "chimitheque_back"
-    cd /home/tbellembois/workspace/workspace_rust/chimitheque_back
+    cd $HOME/workspace/workspace_rust/chimitheque_back
     cargo clean
 
     exit 0
@@ -33,28 +33,28 @@ fi
 
 if [ "$1" == "-update" ]; then
     echo "chimitheque_pubchem"
-    cd /home/tbellembois/workspace/workspace_rust/chimitheque_pubchem
+    cd $HOME/workspace/workspace_rust/chimitheque_pubchem
     cargo update
     echo "chimitheque_db"
-    cd /home/tbellembois/workspace/workspace_rust/chimitheque_db
+    cd $HOME/workspace/workspace_rust/chimitheque_db
     cargo update
     echo "chimitheque_traits"
-    cd /home/tbellembois/workspace/workspace_rust/chimitheque_traits
+    cd $HOME/workspace/workspace_rust/chimitheque_traits
     cargo update
     echo "chimitheque_types"
-    cd /home/tbellembois/workspace/workspace_rust/chimitheque_types
+    cd $HOME/workspace/workspace_rust/chimitheque_types
     cargo update
     echo "chimitheque_utils"
-    cd /home/tbellembois/workspace/workspace_rust/chimitheque_utils
+    cd $HOME/workspace/workspace_rust/chimitheque_utils
     cargo update
     echo "chimitheque_defines"
-    cd /home/tbellembois/workspace/workspace_rust/chimitheque_defines
+    cd $HOME/workspace/workspace_rust/chimitheque_defines
     cargo update
     echo "chimitheque_people_keycloak_exporter"
-    cd /home/tbellembois/workspace/workspace_rust/chimitheque_people_keycloak_exporter
+    cd $HOME/workspace/workspace_rust/chimitheque_people_keycloak_exporter
     cargo update
     echo "chimitheque_back"
-    cd /home/tbellembois/workspace/workspace_rust/chimitheque_back
+    cd $HOME/workspace/workspace_rust/chimitheque_back
     cargo update
 
     exit 0
@@ -64,16 +64,16 @@ export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
 export OTEL_EXPORTER_OTLP_PROTOCOL=grpc
 export OTEL_TRACES_SAMPLER=parentbased_traceidratio
 export OTEL_TRACES_SAMPLER_ARG=1.0
-export DB_PATH="/home/tbellembois/workspace/workspace_go/src/github.com/tbellembois/gochimitheque/database/chimitheque.sqlite"
+export DB_PATH="$HOME/workspace/workspace_go/src/github.com/tbellembois/gochimitheque/database/chimitheque.sqlite"
 export KEYCLOAK_BASE_URL="https://192.168.1.56:8443/keycloak"
 export KEYCLOAK_REALM="chimitheque"
 export KEYCLOAK_CLIENT_ID="chimitheque"
-export SQLITE_EXTENSION_DIR="/home/tbellembois/workspace/workspace_rust/chimitheque_back/src/extensions"
+export SQLITE_EXTENSION_DIR="$HOME/workspace/workspace_rust/chimitheque_back/src/extensions"
 
 #export RUST_LOG=chimitheque_back=debug,chimitheque_db=debug,tower_http=warn
 export RUST_LOG=chimitheque_back=info,chimitheque_db=info,tower_http=warn
 
-cd /home/tbellembois/workspace/workspace_go/src/github.com/tbellembois/gochimitheque || exit
+cd $HOME/workspace/workspace_go/src/github.com/tbellembois/gochimitheque || exit
 
 echo "#### starting keycloak ####"
 docker compose up -d keycloak
@@ -84,14 +84,14 @@ docker compose up -d jaeger
 echo "#### starting frontend ####"
 go run . &
 
-cd /home/tbellembois/workspace/workspace_rust/chimitheque_back || exit
+cd $HOME/workspace/workspace_rust/chimitheque_back || exit
 
 echo "#### starting backend ####"
 cargo run . &
-#/home/tbellembois/workspace/workspace_rust/chimitheque_back/target/release/chimitheque_back &
+#$HOME/workspace/workspace_rust/chimitheque_back/target/release/chimitheque_back &
 #CARGO_PROFILE_RELEASE_DEBUG=true cargo flamegraph -o flamegraph.svg &
 
-cd /home/tbellembois/workspace/workspace_go/src/github.com/tbellembois/gochimitheque/dev || exit
+cd $HOME/workspace/workspace_go/src/github.com/tbellembois/gochimitheque/dev || exit
 
 echo "#### starting nginx ####"
 ./nginx-1.28.1-x86_64-linux &
