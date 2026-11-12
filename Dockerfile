@@ -1,4 +1,4 @@
-# Stage 1: Build Go components
+#### Stage 1: Build Go components
 FROM golang:1.27-trixie AS go_builder
 
 LABEL author="Thomas Bellembois"
@@ -46,16 +46,21 @@ RUN go generate
 RUN if [ -z $BuildID ]; then BuildID=$(date "+%Y%m%d"); fi; echo "BuildID=$BuildID"; \
     go build -ldflags "-s -w -X main.BuildID=$BuildID"
 
-# Stage 2: Build Rust components
+#### Stage 2: Build Rust components
 FROM rust:1.99 AS rust_builder
 
+# in case of http proxy
+# build with: docker build --network=host --no-cache -t tbellembois/gochimitheque .
+ENV CARGO_NET_GIT_FETCH_WITH_CLI=true
+ENV GIT_SSL_NO_VERIFY=true
+
 WORKDIR /go/src/rust
-RUN git clone https://github.com/tbellembois/chimitheque_back.git && \
-    git clone https://github.com/tbellembois/chimitheque_db.git && \
-    git clone https://github.com/tbellembois/chimitheque_types.git && \
-    git clone https://github.com/tbellembois/chimitheque_traits.git && \
-    git clone https://github.com/tbellembois/chimitheque_utils.git && \
-    git clone https://github.com/tbellembois/chimitheque_pubchem.git
+RUN git -c http.sslVerify=false clone https://github.com/tbellembois/chimitheque_back.git && \
+    git -c http.sslVerify=false clone https://github.com/tbellembois/chimitheque_db.git && \
+    git -c http.sslVerify=false clone https://github.com/tbellembois/chimitheque_types.git && \
+    git -c http.sslVerify=false clone https://github.com/tbellembois/chimitheque_traits.git && \
+    git -c http.sslVerify=false clone https://github.com/tbellembois/chimitheque_utils.git && \
+    git -c http.sslVerify=false clone https://github.com/tbellembois/chimitheque_pubchem.git
 
 WORKDIR /go/src/rust/chimitheque_back
 RUN cargo build --release && \
